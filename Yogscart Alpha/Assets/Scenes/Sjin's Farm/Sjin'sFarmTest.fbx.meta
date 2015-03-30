@@ -1,0 +1,120 @@
+fileFormatVersion: 2
+guid: 49bf6fb5b9d55d2449db301770d6151b
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Back CliffFace
+    100002: Fields
+    100004: inner fence applied
+    100006: inner fence copy
+    100008: inner hitbox applied
+    100010: NurbsPath
+    100012: NurbsPath.001
+    100014: outer fence applied
+    100016: outer fence copy
+    100018: outer hitbox applied
+    100020: outer hitbox copy
+    100022: Road
+    100024: //RootNode
+    400000: Back CliffFace
+    400002: Fields
+    400004: inner fence applied
+    400006: inner fence copy
+    400008: inner hitbox applied
+    400010: NurbsPath
+    400012: NurbsPath.001
+    400014: outer fence applied
+    400016: outer fence copy
+    400018: outer hitbox applied
+    400020: outer hitbox copy
+    400022: Road
+    400024: //RootNode
+    2300000: Back CliffFace
+    2300002: Fields
+    2300004: inner fence applied
+    2300006: inner fence copy
+    2300008: inner hitbox applied
+    2300010: NurbsPath
+    2300012: NurbsPath.001
+    2300014: outer fence applied
+    2300016: outer fence copy
+    2300018: outer hitbox applied
+    2300020: outer hitbox copy
+    2300022: Road
+    3300000: Back CliffFace
+    3300002: Fields
+    3300004: inner fence applied
+    3300006: inner fence copy
+    3300008: inner hitbox applied
+    3300010: NurbsPath
+    3300012: NurbsPath.001
+    3300014: outer fence applied
+    3300016: outer fence copy
+    3300018: outer hitbox applied
+    3300020: outer hitbox copy
+    3300022: Road
+    4300002: outer fence copy
+    4300004: outer hitbox applied
+    4300006: outer hitbox copy
+    4300010: outer fence applied
+    4300012: inner hitbox applied
+    4300014: inner fence applied
+    4300016: Back CliffFace
+    4300018: Fields
+    4300020: Road
+    4300022: inner fence copy
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 38
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  additionalBone: 0
+  userData: 

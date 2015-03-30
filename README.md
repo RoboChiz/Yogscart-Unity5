@@ -1,6 +1,7 @@
-# Yogscart-Unity5
+# Yogscart Alpha V1.3
 
-Changelog 
- - Version A1.3
-      - Kart script
-      - 
+ChangeLog
+----------------------
+Commit #1
+.Readded Kart Script
+.Added 2 levels (Sjin's Farm & Playground)
