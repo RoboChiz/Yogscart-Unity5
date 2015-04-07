@@ -1,9 +1,12 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Kart Scripts\kartScript.js">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Networking\Network_Manager.js">
     <Files>
-      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="133" Column="29" />
-      <File FileName="..\..\Yogscart Final Alpha\Assets\Scripts\Kart Scripts\kartScript.js" Line="325" Column="7" />
+      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="409" Column="81" />
+      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="153" Column="43" />
+      <File FileName="..\..\Yogscart Final Alpha\Assets\Old Assets\Scripts\Menus\Main_Menu.js" Line="562" Column="49" />
+      <File FileName="Assets\Scripts\Networking\Host_Script.js" Line="231" Column="73" />
+      <File FileName="Assets\Scripts\Networking\Client_Script.js" Line="29" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

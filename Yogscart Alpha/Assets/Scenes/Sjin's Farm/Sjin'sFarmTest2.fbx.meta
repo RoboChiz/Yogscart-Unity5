@@ -1,33 +1,39 @@
 fileFormatVersion: 2
 guid: eda2d22a118851c4fada6c2a4d71c45a
 ModelImporter:
-  serializedVersion: 16
+  serializedVersion: 18
   fileIDToRecycleName:
     100000: //RootNode
     100002: Line001
     100004: Line002
     100006: Object001
     100008: Object002
+    100010: DirtFlaps
     400000: //RootNode
     400002: Line001
     400004: Line002
     400006: Object001
     400008: Object002
+    400010: DirtFlaps
     2300000: //RootNode
     2300002: Line001
     2300004: Object001
     2300006: Object002
+    2300008: DirtFlaps
     3300000: //RootNode
     3300002: Line001
     3300004: Object001
     3300006: Object002
+    3300008: DirtFlaps
     4300000: Line001
     4300002: Object001
     4300004: Object002
+    4300006: DirtFlaps
     6400000: //RootNode
     6400002: Line001
     6400004: Object001
     6400006: Object002
+    6400008: DirtFlaps
     9500000: //RootNode
   materials:
     importMaterials: 1
@@ -56,11 +62,13 @@ ModelImporter:
     generateSecondaryUV: 0
     useFileUnits: 1
     optimizeMeshForGPU: 1
+    keepQuads: 0
     weldVertices: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
+    useFileScale: 0
   tangentSpace:
     normalSmoothAngle: 60
     splitTangentsAcrossUV: 1
@@ -83,3 +91,5 @@ ModelImporter:
   animationType: 0
   additionalBone: 0
   userData: 
+  assetBundleName: 
+  assetBundleVariant: 

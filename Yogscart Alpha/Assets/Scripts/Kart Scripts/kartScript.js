@@ -26,6 +26,10 @@ private var driftStarted : boolean;
 private var applyingDrift : boolean;
 private var DriftVal : float;
 
+private var tricking : boolean;
+private var trickPotential : boolean;
+private var trickLock : boolean;
+
 var lapisAmount : int = 0;
 
 var wheelColliders : WheelCollider[];
@@ -36,7 +40,6 @@ private var isBoosting : boolean;
 
 var flameParticles : ParticleSystem[];
 var DriftParticles : Transform[];
-
 
 var kartbodyRot : float = 20;
 private var driftTime : float;
@@ -55,6 +58,35 @@ function FixedUpdate () {
 	drift = Input.GetAxis(inputString + "Drift") != 0;
 	
 	isFalling = CheckGravity();
+	
+	if(isFalling)
+	{
+		SnapUp();
+		
+		if(trickPotential)
+		{
+			tricking = true;
+			trickPotential = false;
+		}
+	}
+	else
+	{
+		if(!trickPotential && drift && !trickLock)
+		{
+			trickPotential = true;
+			trickLock = true;
+			CancelTrickPotential();
+		}
+		
+		if(tricking)
+		{
+			Boost(0.25f);
+			tricking = false;
+		}
+	}
+	
+	if(drift == false)
+		trickLock = false;
 	
 	CalculateExpectedSpeed();
 	ApplySteering();
@@ -91,7 +123,6 @@ function FixedUpdate () {
 		
 		wheelColliders[i].GetWorldPose(wheelPos,wheelRot);
 		
-		wheelMeshes[i].position = wheelPos;
 		wheelMeshes[i].rotation = wheelRot;
 		
 	}
@@ -152,7 +183,7 @@ function CheckGravity() : boolean
 		}
 	}
 	
-	if(grounded || Physics.Raycast(transform.position,Physics.gravity.normalized,3))
+	if(grounded || Physics.Raycast(transform.position,-transform.up,1))
 		return false;
 	else
 		return true;
@@ -253,6 +284,37 @@ for(var i : int = 0; i < flameParticles.Length; i++)
 flameParticles[i].Stop();
 
 isBoosting = false;
+}
+
+var snapping : boolean;
+
+function CancelTrickPotential()
+{
+	yield WaitForSeconds(0.5f);
+	trickPotential = false;
+}
+
+function SnapUp()
+{
+
+	if(!snapping)
+	{
+	
+	snapping = true;
+	
+	var startRot : Quaternion = transform.rotation;
+	var startTime : float = Time.realtimeSinceStartup;
+	
+	while(Time.realtimeSinceStartup - startTime < 0.5)
+	{
+	Debug.Log("Snapping");
+	transform.rotation = Quaternion.Slerp(startRot,Quaternion.Euler(0,transform.rotation.eulerAngles.y,0),(Time.realtimeSinceStartup - startTime)/0.5f);
+	yield;
+	}
+	
+	snapping = false;
+	
+	}
 }
 
 function HaveTheSameSign(first : float, second : float) : boolean
