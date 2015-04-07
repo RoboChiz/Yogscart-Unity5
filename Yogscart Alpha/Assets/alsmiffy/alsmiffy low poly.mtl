@@ -1,0 +1,22 @@
+# Blender MTL File: 'alsmiffy low poly textured triangulated.blend'
+# Material Count: 2
+
+newmtl Material.006
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.093750 0.093750 0.093750
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd alsmiffy texture.png
+
+newmtl Material.006_NONE
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.093750 0.093750 0.093750
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd alsmiffy texture.png
