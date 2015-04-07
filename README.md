@@ -2,6 +2,8 @@
 
 ChangeLog
 ----------------------
+Commit #3
+.Added New track and stuff Ross is working on
 Commit #2
 .Added Multiplayer Server List and Lobby (Including Functionality)
 Commit #1
