@@ -2,6 +2,9 @@
 
 ChangeLog
 ----------------------
+Commit #4
+.Track Editor V2
+.Started adding old scripts back in
 Commit #3
 .Added New track and stuff Ross is working on
 Commit #2

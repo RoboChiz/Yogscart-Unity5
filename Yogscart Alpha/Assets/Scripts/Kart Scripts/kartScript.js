@@ -1,7 +1,5 @@
 ﻿#pragma strict
 
-var inputString : String;
-
 var locked : boolean;
 
 var throttle : float;
@@ -40,22 +38,25 @@ private var isBoosting : boolean;
 
 var flameParticles : ParticleSystem[];
 var DriftParticles : Transform[];
+var TrickParticles : ParticleSystem;
 
 var kartbodyRot : float = 20;
 private var driftTime : float;
 var blueTime : float = 3;
 var orangeTime : float = 6;
 
-private var expectedSpeed : float;
+var spinTime : float = 1f;
+private var Spinning : boolean;
+
+public var expectedSpeed : float;
 private var actualSpeed : float;
+
+@HideInInspector
+public var startBoostVal : int = -1;
 
 private var localScale : float = 2f;
 
 function FixedUpdate () {
-
-	throttle = Input.GetAxis(inputString + "Throttle");
-	steer = Input.GetAxis(inputString + "Horizontal");
-	drift = Input.GetAxis(inputString + "Drift") != 0;
 	
 	isFalling = CheckGravity();
 	
@@ -67,6 +68,8 @@ function FixedUpdate () {
 		{
 			tricking = true;
 			trickPotential = false;
+			SpinKartBody(Vector3.right);
+			TrickParticles.Play();
 		}
 	}
 	else
@@ -210,7 +213,8 @@ function ApplyDrift(){
 
 	if(driftStarted == true){
 	driftTime += Time.fixedDeltaTime + (Time.fixedDeltaTime * Mathf.Abs(driftSteer+steer));
-	KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,kartbodyRot * driftSteer,0),Time.fixedDeltaTime*2);
+	if(!Spinning)
+		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,kartbodyRot * driftSteer,0),Time.fixedDeltaTime*2);
 
 	for(var f : int = 0; f < 2; f++){
 
@@ -228,7 +232,8 @@ function ApplyDrift(){
 
 	}else{
 	
-	KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,0,0),Time.fixedDeltaTime*2);
+	if(!Spinning)
+		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,0,0),Time.fixedDeltaTime*2);
 
 	if(throttle > 0){
 	if(driftTime >= orangeTime)
@@ -286,12 +291,29 @@ flameParticles[i].Stop();
 isBoosting = false;
 }
 
-var snapping : boolean;
+private var snapping : boolean;
 
 function CancelTrickPotential()
 {
 	yield WaitForSeconds(0.5f);
 	trickPotential = false;
+}
+
+function SpinKartBody(dir : Vector3)
+{
+	
+	Spinning = true;
+
+	var startTime : float = Time.realtimeSinceStartup;
+	
+	while(Time.realtimeSinceStartup - startTime < spinTime)
+	{
+		transform.FindChild("Kart Body").Rotate((dir * 360f * Time.deltaTime)/spinTime);
+		yield;
+	}
+	
+	Spinning = false;
+	
 }
 
 function SnapUp()
@@ -307,7 +329,6 @@ function SnapUp()
 	
 	while(Time.realtimeSinceStartup - startTime < 0.5)
 	{
-	Debug.Log("Snapping");
 	transform.rotation = Quaternion.Slerp(startRot,Quaternion.Euler(0,transform.rotation.eulerAngles.y,0),(Time.realtimeSinceStartup - startTime)/0.5f);
 	yield;
 	}

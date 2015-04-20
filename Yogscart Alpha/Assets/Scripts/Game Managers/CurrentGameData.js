@@ -11,6 +11,8 @@ var currentCup : int = 0;
 
 var currentTrack : int = 0;
 
+var currentChoices : LoadOut[];
+
 @HideInInspector
 var currentPosition : int = 0;
 @HideInInspector
@@ -443,6 +445,15 @@ var points : int;
 
 function Racer(Human : boolean, AiStupidity : int, Character : int, Hat : int, Kart : int, Wheel : int, Position : int)
 {
+	this.constructBase(Human,AiStupidity,Character,Hat,Kart,Wheel,Position);
+}
+
+function Racer()
+{
+}
+
+function constructBase(Human : boolean, AiStupidity : int, Character : int, Hat : int, Kart : int, Wheel : int, Position : int)
+{
 human = Human;
 aiStupidity = AiStupidity;
 character = Character;
@@ -456,17 +467,20 @@ timer = new Timer();
 }
 
 //Used to store additional Racer information for Multiplayer only. 'Racer' is called by reference.
-public class NetworkedRacer
+public class NetworkedRacer extends Racer
 {
- var racer : Racer;
+
  var networkplayer : NetworkPlayer;
  var connected : boolean;
  
- function NetworkedRacer(nracer : Racer, np : NetworkPlayer)
+ function NetworkedRacer(Character : int, Hat : int, Kart : int, Wheel : int, Position : int, np : NetworkPlayer)
  {
- 	racer = nracer;
+  
+    super.constructBase(true, -1, Character, Hat, Kart, Wheel, Position);
+ 
  	networkplayer = np;
  	connected = true;
+ 	
  }
  
 }

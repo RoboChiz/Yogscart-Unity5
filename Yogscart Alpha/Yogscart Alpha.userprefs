@@ -1,12 +1,16 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Networking\Network_Manager.js">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Kart Scripts\kartScript.js">
     <Files>
-      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="409" Column="81" />
-      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="153" Column="43" />
-      <File FileName="..\..\Yogscart Final Alpha\Assets\Old Assets\Scripts\Menus\Main_Menu.js" Line="562" Column="49" />
-      <File FileName="Assets\Scripts\Networking\Host_Script.js" Line="231" Column="73" />
-      <File FileName="Assets\Scripts\Networking\Client_Script.js" Line="29" Column="1" />
+      <File FileName="Assets\Editor\EditorScript.js" Line="83" Column="49" />
+      <File FileName="Assets\Scripts\Track Editor\PointHandler.js" Line="13" Column="46" />
+      <File FileName="Assets\Scripts\Track Editor\TrackData.js" Line="219" Column="1" />
+      <File FileName="Assets\Scripts\Track Editor\Old Scripts - Delete Later\InEngineRender.js" Line="21" Column="46" />
+      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="73" Column="45" />
+      <File FileName="Assets\Scripts\Kart Scripts\Position_Finding.js" Line="87" Column="1" />
+      <File FileName="Assets\Scripts\Kart Scripts\Racer_AI.js" Line="27" Column="3" />
+      <File FileName="Assets\Scripts\Track Editor\DeathCatch.js" Line="20" Column="82" />
+      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="72" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

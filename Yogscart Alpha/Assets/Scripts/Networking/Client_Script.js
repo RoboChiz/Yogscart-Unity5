@@ -24,10 +24,9 @@ Network.Disconnect();
 }
 
 @RPC
-function QuizNewRacer () {
+function QuizNewRacer () 
+{
 
 GetComponent.<NetworkView>().RPC("RecievedNewRacer",RPCMode.Server,PlayerPrefs.GetString("playerName","Player"),0,0,0,0);//Add support for Character Select
 
 }
-
-		

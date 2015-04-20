@@ -219,8 +219,7 @@ var copy = new Array();
 if(RacingPlayers != null)
 copy = RacingPlayers;
 
-var nRacer = new Racer(true,-1,character,hat,kart,wheel,copy.length); 
-var nNetworkRacer = new NetworkedRacer(nRacer,np);
+var nNetworkRacer = new NetworkedRacer(character,hat,kart,wheel,copy.length,np);
 
 copy.Push(nNetworkRacer);
 

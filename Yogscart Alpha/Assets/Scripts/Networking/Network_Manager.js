@@ -24,9 +24,10 @@ class GameMode
 
 	var name : String;
 	var teamGame : boolean;
-
-	var logo32 : Texture2D;
 	var logo : Texture2D;
+	
+	var hostScript : MonoBehaviour;
+	var baseScript : MonoBehaviour;
 	
 }
 
@@ -208,6 +209,27 @@ function OnGUI()
 	
 	case ServerState.ServerList:
 	
+	if(!editServer)
+	{
+			var vert : float = im.c[0].GetMenuInput("Vertical");
+				
+			if(vert > 0)
+			{
+				currentSelection -= 1;
+			}
+			
+			if(vert < 0)
+			{
+				currentSelection += 1;
+			}
+	}
+	
+	if(currentSelection < 0)
+			currentSelection = Mathf.Clamp(servers.Length-1,0,49);
+		
+	if(currentSelection >= Mathf.Clamp(servers.Length,0,50))
+		currentSelection = 0;
+	
 	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*1.5f,chunkSize*4,chunkSize/2f),"Port: ");
 	int.TryParse(GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),hostPort.ToString()),hostPort);
 	
@@ -257,7 +279,7 @@ function OnGUI()
 			if(i == currentSelection)
 				GUI.DrawTexture(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),Resources.Load("UI/Lobby/Selected",Texture2D));
 				
-			if(Input.GetMouseButtonDown(0) && MouseIntersects(Rect(chunkSize + gapSize - 10,chunkSize/2f + gapSize + fontSize*2.2f + startHeight,nameListRect.width,fontSize*1.25f)))
+			if(Input.GetMouseButtonDown(0) && im.MouseIntersects(Rect(chunkSize + gapSize - 10,chunkSize/2f + gapSize + fontSize*2.2f + startHeight,nameListRect.width,fontSize*1.25f)))
 				currentSelection = i;
 			
 		}
@@ -344,26 +366,6 @@ function OnGUI()
 				}
 		}
 		
-		if(!editServer)
-		{
-			var vert : float = im.c[0].GetMenuInput("Vertical");
-				
-			if(vert > 0)
-			{
-				currentSelection -= 1;
-			}
-			
-			if(vert < 0)
-			{
-				currentSelection += 1;
-			}
-		}
-		
-		if(currentSelection < 0)
-			currentSelection = Mathf.Clamp(servers.Length-1,0,49);
-		
-		if(currentSelection >= Mathf.Clamp(servers.Length,0,50))
-			currentSelection = 0;
 	}
 	
 	if(!editServer && servers.Length < 50)
@@ -384,6 +386,12 @@ function OnGUI()
 	break;
 	
 	case ServerState.Lobby:
+	
+	if(currentSelection < 0)
+			currentSelection = gd.onlineGameModes.Length-1;
+		
+	if(currentSelection >= gd.onlineGameModes.Length)
+		currentSelection = 0;
 	
 	GUI.DrawTexture(nameListRect,nameList);
 	
@@ -423,6 +431,42 @@ function OnGUI()
 		{
 			Network.Disconnect();	
 		}
+		
+	if(Network.isServer)
+	{	
+		if(GUI.Button(Rect(chunkSize * 2f,nameListRect.x + nameListRect.height,chunkSize,chunkSize/2f),"Start"))
+			{
+				StartGame();
+			}
+		
+		var hostInfoRect = Rect(Screen.width - chunkSize * 6f,chunkSize/2f + gapSize*1.5f,chunkSize*5f,chunkSize * 2.5f);
+		serverInfo = Resources.Load("UI/Lobby/ServerInfo",Texture2D);
+		GUI.DrawTexture(hostInfoRect,serverInfo);
+		
+		GUI.BeginGroup(hostInfoRect);
+		
+		GUI.Label(Rect(20,10,hostInfoRect.width-40,fontSize*2f),"Host Options");
+		GUI.DrawTexture(Rect(20,10 + fontSize*1.25f,hostInfoRect.width - 40,fontSize*0.2f),Resources.Load("UI/Lobby/Line",Texture2D));
+		
+		GUI.Label(Rect(20,10+ fontSize*1.5f,hostInfoRect.width-40,fontSize*2f),"Game Mode: ");
+		serverScroll = GUI.BeginScrollView(Rect(20,10 + fontSize*2.6f,hostInfoRect.width/2f - 20,hostInfoRect.height - fontSize*2.8f - 20),serverScroll,Rect(0,0,hostInfoRect.width/2f - 40,Mathf.Clamp(gd.onlineGameModes.Length,6,Mathf.Infinity) * fontSize*1.25f));
+		
+		for(i = 0; i < gd.onlineGameModes.Length; i++)
+		{
+			GUI.Label(Rect(10,i * fontSize * 1.25f,hostInfoRect.width - 20 - fontSize*2f,fontSize*1.25f),gd.onlineGameModes[i].name);
+			
+			if(i == currentSelection)
+				GUI.DrawTexture(Rect(0,i * fontSize * 1.25f,nameListRect.width,fontSize*1.25f),Resources.Load("UI/Lobby/Selected",Texture2D));
+				
+				if(Input.GetMouseButtonDown(0) && im.MouseIntersects(Rect(Screen.width - (chunkSize * 6f) + 20,chunkSize/2f + gapSize*1.5f + 10 + fontSize*2.6f + (i * fontSize * 1.25f),nameListRect.width,fontSize*1.25f)))
+					currentSelection = i;
+				
+		}
+		
+		GUI.EndScrollView();
+		GUI.EndGroup();
+		
+	}
 	
 	break;
 	
@@ -466,6 +510,9 @@ function StartServer()
 
 	PlayerPrefs.SetString("playerName",playerName);
 	
+	serverScroll = Vector2.zero;
+	currentSelection = 0;
+	
 	transform.GetComponent(Host_Script).Reset();
 	
 	Network.InitializeServer(25,hostPort,true);
@@ -478,6 +525,41 @@ function StartServer()
 	transform.GetComponent(Host_Script).RecievedNewRacer(PlayerPrefs.GetString("playerName","Player"),0,0,0,0,test);//Add support for Character Select
 	
 }
+
+function StartGame()
+{
+	if(gd.onlineGameModes[currentSelection].baseScript != null)
+	{
+		
+		GetComponent.<NetworkView>().RPC("StartGamemode",RPCMode.All,currentSelection);
+		
+		if(gd.onlineGameModes[currentSelection].hostScript != null)
+		{
+			gd.onlineGameModes[currentSelection].hostScript.enabled = true;
+			gd.onlineGameModes[currentSelection].hostScript.StartCoroutine("StartGame");
+		}
+			
+	}
+	else
+	{
+		Debug.Log("The selected gamemode is missing a base script. This is required for multiplayer");
+	}
+}
+
+@RPC
+function StartGamemode(i : int)
+{
+	state = ServerState.Racing;
+	gd.onlineGameModes[i].baseScript.enabled = true;
+	gd.onlineGameModes[i].baseScript.StartCoroutine("StartGame");
+}
+
+function EndGame()
+{
+	state = ServerState.Lobby;
+}
+
+		
 
 function OnConnectedToServer() 
 {
@@ -509,13 +591,11 @@ function ServerFinish(info : String)
 	transform.GetComponent(Client_Script).enabled = false;
 	transform.GetComponent(Host_Script).enabled = false;
 	
-	finalPlayers = new DisplayName[0];
-}
-
-function MouseIntersects(Area : Rect){
-	if(Input.mousePosition.x >= Area.x && Input.mousePosition.x <= Area.x + Area.width 
-	&&  Screen.height-Input.mousePosition.y >= Area.y &&  Screen.height-Input.mousePosition.y <= Area.y + Area.height)
-		return true;
-	else
-		return false;
+	if(Network.isServer)
+	{
+		finalPlayers = new DisplayName[0];
+		currentSelection = 0;
+	}
+	
+	serverScroll = Vector2.zero;
 }
