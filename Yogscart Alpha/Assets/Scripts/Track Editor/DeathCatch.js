@@ -7,6 +7,8 @@ if(other.name == "DeathCatch"){
 
 DeathParticles.Play();
 
+if(transform.GetComponent(Position_Finding) != null)
+{
 if(transform.GetComponent(kartScript) != null)
 transform.GetComponent(kartScript).expectedSpeed = 0;
 
@@ -30,7 +32,7 @@ transform.rotation = Quaternion.LookRotation(n1Pos-nPos,Vector3.up);
 }
 
 GetComponent.<Rigidbody>().isKinematic = false;
-
+}
 yield WaitForSeconds(0.1);
 
 

@@ -2,6 +2,11 @@
 
 ChangeLog
 ----------------------
+Commit #5
+.Implemented working multiplayer
+.Added basic spectator controls
+.Fixed bugs
+.Fixed issues with joining a game to late or not selecting a character in time .etc
 Commit #4
 .Track Editor V2
 .Started adding old scripts back in

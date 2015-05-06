@@ -13,7 +13,7 @@ var RacingPlayers : NetworkedRacer[];
 var PotentialPlayers : NetworkPlayer[];
 var WaitingPlayers : NetworkPlayer[];
 
-var serverType : ServerState = ServerState.Lobby;
+var serverType : ServerState;
 
 var workingProcesses : int;
 
@@ -30,28 +30,22 @@ function Reset()
 	PotentialPlayers = new NetworkPlayer[0];
 	WaitingPlayers = new NetworkPlayer[0];
 	
-	serverType = ServerState.Lobby;
-	
 	workingProcesses = 0;
 
 }
 
 function OnPlayerConnected(player: NetworkPlayer)
 {
-	var copy = new Array();
-	
-	if(WaitingPlayers != null)
-		copy = WaitingPlayers;
-		
-	copy.Push(player);
-	
-	WaitingPlayers = copy;
+
 	
 }
 
 @RPC
 function VersionUpdate(verText : String,info : NetworkMessageInfo)
 {
+
+	Debug.Log("Version Update!");
+
 	if(verText != gd.version)
 	{
 		GetComponent.<NetworkView>().RPC("CancelReason",info.sender,"Wrong Version! Please download the correct version!");
@@ -59,25 +53,20 @@ function VersionUpdate(verText : String,info : NetworkMessageInfo)
 	}
 	else
 	{
-		if((RacingPlayers != null && PotentialPlayers != null && RacingPlayers.Length + PotentialPlayers.Length < MaxGamemodePlayers) || 
-		(RacingPlayers != null && PotentialPlayers == null && RacingPlayers.Length < MaxGamemodePlayers) ||
-		(RacingPlayers == null && PotentialPlayers != null && PotentialPlayers.Length < MaxGamemodePlayers))
-		{
-			//If a Player slot is available add them to the game
-			GetComponent.<NetworkView>().RPC("QuizNewRacer",info.sender);
-			
-			var copy = new Array();
 	
-			if(PotentialPlayers != null)
-				copy = PotentialPlayers;
-				
-			copy.Add(info.sender);
-			PotentialPlayers = copy;
-			
+		var copy = new Array();
+	
+		if(WaitingPlayers != null)
 			copy = WaitingPlayers;
-			copy.Remove(info.sender);
-			WaitingPlayers = copy;
-			
+		
+		copy.Push(info.sender);
+		
+		WaitingPlayers = copy;
+	
+		if(serverType != ServerState.Lobby)
+		{
+			Debug.Log("But we're already racing...");
+			GetComponent.<NetworkView>().RPC("SpectatePlease",info.sender);
 		}
 	}
 }
@@ -126,6 +115,11 @@ function OnPlayerDisconnected(player: NetworkPlayer) {
 		workingProcesses --;
 }
 
+function Update()
+{
+	serverType = transform.GetComponent(Network_Manager).state;
+}
+
 function FixedUpdate () {
 
 switch (serverType)
@@ -140,9 +134,62 @@ switch (serverType)
 	{
 	Network.Disconnect();
 	}
+	
+	if((RacingPlayers != null && PotentialPlayers != null && RacingPlayers.Length + PotentialPlayers.Length < MaxGamemodePlayers) || 
+	(RacingPlayers != null && PotentialPlayers == null && RacingPlayers.Length < MaxGamemodePlayers) ||
+	(RacingPlayers == null && PotentialPlayers != null && PotentialPlayers.Length < MaxGamemodePlayers))
+	{
+	
+		var playersAsked = RacingPlayers.Length + PotentialPlayers.Length;
+		
+		for(var i : int; i < (12 - playersAsked); i++)
+		{
+		
+			if(WaitingPlayers != null && WaitingPlayers.Length > i)
+			{
+				//If a Player slot is available add them to the game
+				GetComponent.<NetworkView>().RPC("QuizNewRacer",WaitingPlayers[i]);
+				
+				var copy = new Array();
+
+				if(PotentialPlayers != null)
+					copy = PotentialPlayers;
+					
+				copy.Add(WaitingPlayers[i]);
+				PotentialPlayers = copy;
+				
+				copy = WaitingPlayers;
+				copy.RemoveAt(i);
+				WaitingPlayers = copy;
+				
+			}
+		}
+		
+	}
 
 
 	break;
+	default:
+	
+	
+		if(PotentialPlayers != null && PotentialPlayers.Length > 0)
+		{	
+			var copy2 = new Array();
+			
+			if(WaitingPlayers != null)
+				copy2 = WaitingPlayers;
+				
+			if(PotentialPlayers != null)
+				for(var k : int; k < PotentialPlayers.Length; k++)
+				{
+					copy2.Add(PotentialPlayers[k]);
+				}
+				
+			WaitingPlayers = copy2;
+			PotentialPlayers = new NetworkPlayer[0];
+		}
+	
+ 	break; 
 
 }
 }
@@ -170,45 +217,48 @@ workingProcesses --;
 function RecievedNewRacer(name : String, character : int, hat : int, kart : int, wheel : int,info : NetworkMessageInfo)
 {
 
-workingProcesses ++;
-
-if(serverType == ServerState.Lobby)
-{
-
-	var testVal : NetworkPlayer;
-
-	if(info.sender != null)
+	if(serverType == ServerState.Lobby)
 	{
-		testVal = info.sender;
 
-		for(var i : int = 0; i < PotentialPlayers.Length; i++)
+		workingProcesses ++;
+
+		if(character == -1 || hat == -1 || kart == -1 || wheel == -1 || character > gd.Characters.Length || hat > gd.Hats.Length || kart > gd.Karts.Length || wheel > gd.Wheels.Length)
 		{
-			if(PotentialPlayers[i] == testVal)
+			GetComponent.<NetworkView>().RPC("CancelReason",info.sender,"You haven't selected a character!");
+			Network.CloseConnection(info.sender,true);
+		}
+
+		if(serverType == ServerState.Lobby)
+		{
+
+			var testVal : NetworkPlayer;
+
+			testVal = info.sender;
+
+			for(var i : int = 0; i < PotentialPlayers.Length; i++)
 			{
-				//Update Potential Player
-				var copy = new Array();
+				if(PotentialPlayers[i] == testVal)
+				{
+					//Update Potential Player
+					var copy = new Array();
 
-				if(PotentialPlayers != null)
-				copy = PotentialPlayers;
+					if(PotentialPlayers != null)
+					copy = PotentialPlayers;
 
-				copy.RemoveAt(i);
+					copy.RemoveAt(i);
 
-				PotentialPlayers = copy;
+					PotentialPlayers = copy;
 
-				break;
+					break;
+				}
 			}
 		}
+
+		AddRacer(name,character,hat,kart,wheel,testVal);
+
+		workingProcesses --;
+		
 	}
-}
-else
-{
-	testVal = GetComponent.<NetworkView>().owner;
-}
-
-AddRacer(name,character,hat,kart,wheel,testVal);
-
-workingProcesses --;
-
 }
 
 function AddRacer(name : String, character : int, hat : int, kart : int, wheel : int, np : NetworkPlayer)
@@ -219,7 +269,7 @@ var copy = new Array();
 if(RacingPlayers != null)
 copy = RacingPlayers;
 
-var nNetworkRacer = new NetworkedRacer(character,hat,kart,wheel,copy.length,np);
+var nNetworkRacer = new NetworkedRacer(character,hat,kart,wheel,copy.length,name,np);
 
 copy.Push(nNetworkRacer);
 

@@ -6,7 +6,35 @@ private var td : TrackData;
 function Update () {
 
 if(GameObject.Find("Track Manager") != null && GameObject.Find("Track Manager").GetComponent(TrackData) != null){
-td = GameObject.Find("Track Manager").GetComponent(TrackData);
+	td = GameObject.Find("Track Manager").GetComponent(TrackData);
+
+//Draw Spawn Area
+	if(td.spawnPoint != null)
+	{
+	
+		var rot : Quaternion;
+		rot = td.spawnPoint.transform.rotation;
+		
+		var centre : Vector3;
+		centre = td.spawnPoint.transform.position;
+		
+		var pos : Vector3;
+		pos = centre + (rot*Vector3.forward*-6.75f);
+
+		var pos1 : Vector3;
+		pos1 = centre + (rot*Vector3.forward*6.75f);
+		
+		var pos2 : Vector3;
+		pos2 = pos1 + (rot*Vector3.right * 39f);
+		var pos3 : Vector3;
+		pos3 = pos + (rot*Vector3.right * 39f);	
+		
+		Debug.DrawLine(pos,pos1,Color.blue);
+		Debug.DrawLine(pos1,pos2,Color.blue);
+		Debug.DrawLine(pos2,pos3,Color.blue);
+		Debug.DrawLine(pos3,pos,Color.blue);
+		
+	}
 
 //Draw Main Lap Point
  try {
@@ -41,6 +69,9 @@ td = GameObject.Find("Track Manager").GetComponent(TrackData);
 		if(td.PositionPoints.Length >=2){
 		
 			var lapCount : int = 0;
+			
+			var ppCount : int;
+			var copy = new Array();
 		
 			for(var i : int = 0; i < td.PositionPoints.Length; i++){
 			
@@ -73,10 +104,20 @@ td = GameObject.Find("Track Manager").GetComponent(TrackData);
 			 		Debug.DrawRay(Position1,nrot*dir * -9f,Color.yellow);
 			 		
 			 		lapCount += 1;
+			 		
+			 		copy.Push(ppCount);
+			 		ppCount = 0;
 			 
+				}
+				else
+				{
+					if(td.PositionPoints[i].GetComponent(PointHandler).style == Point.Position)
+						ppCount += 1;
 				}
 			
 			}
+			
+			td.pointsNeededToLap = copy;
 			
 			if(lapCount > 1)
 			{

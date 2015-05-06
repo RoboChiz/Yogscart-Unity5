@@ -47,36 +47,38 @@ totalTime = currentTime;
 
 function ChangeCamera()
 {
-if(cameras.Length >= 0 && DesiredPlayer != null){
+	if(DesiredPlayer != null)
+	{
+		if(cameras.Length > 0){
 
-cameras[currentCamera].transform.GetComponent.<Camera>().depth = -depth;
-cameras[currentCamera].transform.GetComponent.<Camera>().enabled = false;
+		cameras[currentCamera].transform.GetComponent.<Camera>().depth = -depth;
+		cameras[currentCamera].transform.GetComponent.<Camera>().enabled = false;
 
-var changed : boolean = false;
+		var changed : boolean = false;
 
-for(var i : int = 0; i < cameras.Length; i++)
-{
+		for(var i : int = 0; i < cameras.Length; i++)
+		{
 
-var currentDist = Vector3.Distance(cameras[currentCamera].transform.position,DesiredPlayer.position);
-var possibleDist = Vector3.Distance(cameras[i].transform.position,DesiredPlayer.position);
+		var currentDist = Vector3.Distance(cameras[currentCamera].transform.position,DesiredPlayer.position);
+		var possibleDist = Vector3.Distance(cameras[i].transform.position,DesiredPlayer.position);
 
-if(cameras[i].interested && (currentCamera == SpecCam || (currentDist >= possibleDist)))
-{
-currentCamera = i;
-changed = true;
-Debug.Log("Someone Interested");
-}
+		if(cameras[i].interested && (currentCamera == SpecCam || (currentDist >= possibleDist)))
+		{
+		currentCamera = i;
+		changed = true;
+		Debug.Log("Someone Interested");
+		}
 
-if(cameras[i].target != DesiredPlayer)
-cameras[i].target = DesiredPlayer;
+		if(cameras[i].target != DesiredPlayer)
+		cameras[i].target = DesiredPlayer;
 
-}
+		}
 
-if(changed == false)
-currentCamera = SpecCam;
+		if(changed == false)
+		currentCamera = SpecCam;
 
-cameras[currentCamera].transform.GetComponent.<Camera>().depth = depth;
-cameras[currentCamera].transform.GetComponent.<Camera>().enabled = true;
-
-}
+		cameras[currentCamera].transform.GetComponent.<Camera>().depth = depth;
+		cameras[currentCamera].transform.GetComponent.<Camera>().enabled = true;
+		}
+	}
 }

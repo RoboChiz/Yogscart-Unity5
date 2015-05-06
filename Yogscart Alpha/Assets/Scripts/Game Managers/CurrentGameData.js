@@ -58,6 +58,13 @@ private var ColourAlpha : Color = Color.white;
 	
 	function Awake () {
 		DontDestroyOnLoad (transform.gameObject);
+				
+		currentChoices = new LoadOut[4];
+		
+		for(var i : int = 0; i < currentChoices.Length; i++)
+		{
+			currentChoices[i] = new LoadOut();
+		}
 		
 		LoadEverything();
 		
@@ -92,7 +99,7 @@ private var ColourAlpha : Color = Color.white;
 		
 		function OnGUI () {
 		
-		GUI.skin = Resources.Load("Font/Menu", GUISkin);
+		GUI.skin = Resources.Load("GUISkins/Menu", GUISkin);
 		
 		GUI.depth = -5;
 		
@@ -473,13 +480,14 @@ public class NetworkedRacer extends Racer
  var networkplayer : NetworkPlayer;
  var connected : boolean;
  
- function NetworkedRacer(Character : int, Hat : int, Kart : int, Wheel : int, Position : int, np : NetworkPlayer)
+ function NetworkedRacer(Character : int, Hat : int, Kart : int, Wheel : int, Position : int, Name : String, np : NetworkPlayer)
  {
   
     super.constructBase(true, -1, Character, Hat, Kart, Wheel, Position);
  
  	networkplayer = np;
  	connected = true;
+ 	name = Name;
  	
  }
  
@@ -494,7 +502,7 @@ Network.SetLevelPrefix(0);
 transform.name = "OldGameData";
 
 yield WaitForSeconds(1);
-Application.LoadLevel(1);
+Application.LoadLevel("Main_Menu");
 yield;
 
 }

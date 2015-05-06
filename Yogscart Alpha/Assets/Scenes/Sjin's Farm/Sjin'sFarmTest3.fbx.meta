@@ -308,6 +308,7 @@ ModelImporter:
     100600: Shape001
     100602: Railing_Collider2
     100604: Object
+    100606: Box002
     400000: Line001
     400002: Line002
     400004: Plane001
@@ -611,6 +612,7 @@ ModelImporter:
     400600: Shape001
     400602: Railing_Collider2
     400604: Object
+    400606: Box002
     2300000: Line001
     2300002: Plane001
     2300004: Cliff
@@ -911,6 +913,8 @@ ModelImporter:
     2300594: Railing2
     2300596: Railing_Collider2
     2300598: Object
+    2300600: //RootNode
+    2300602: Box002
     3300000: Line001
     3300002: Plane001
     3300004: Cliff
@@ -1211,6 +1215,8 @@ ModelImporter:
     3300594: Railing2
     3300596: Railing_Collider2
     3300598: Object
+    3300600: //RootNode
+    3300602: Box002
     4300000: Line001
     4300002: Plane001
     4300004: Road
@@ -1511,6 +1517,7 @@ ModelImporter:
     4300594: Railing2
     4300596: Railing_Collider2
     4300598: Object
+    4300600: Box002
     6400000: Line001
     6400002: Plane001
     6400004: Cliff
@@ -1832,12 +1839,12 @@ ModelImporter:
     lODScreenPercentages: []
     globalScale: 2.75
     meshCompression: 0
-    addColliders: 1
+    addColliders: 0
     importBlendShapes: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
+    optimizeMeshForGPU: 0
     keepQuads: 0
     weldVertices: 1
     secondaryUVAngleDistortion: 8

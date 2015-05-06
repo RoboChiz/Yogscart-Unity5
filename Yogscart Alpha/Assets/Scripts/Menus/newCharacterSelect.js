@@ -382,6 +382,8 @@ icon = Resources.Load("UI Textures/Character Icons/question_mark",Texture2D);
 
 GUI.DrawTexture(iconRect,icon);
 
+
+
 for(var playerCount : int = 0; playerCount < im.c.Length; playerCount++)
 if(im.c[playerCount].inputName == "Key_" && im.MouseIntersects(iconRect) && !ready[playerCount] )
 choice[playerCount].character = characterCounter;
@@ -877,15 +879,6 @@ for(var i : int = 0; i < gd.Characters.Length;i++){
 if(i%5 == 0)
 choicesPerColumn += 1;
 }
-
-}
-
-class LoadOut{
-
-var character : int = 0;
-var hat : int = 0;
-var wheel : int= 0;
-var kart : int = 0;
 
 }
 

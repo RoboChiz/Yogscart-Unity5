@@ -12,6 +12,11 @@ var backgroundMusic : AudioClip;
 var LoopedTrack : boolean = true;
 var Laps : int = 3;
 
+var pointsNeededToLap : int[];
+
+@HideInInspector
+var spawnPoint : Transform;
+
 //@HideInInspector
 var PositionPoints : Transform[];
 
@@ -19,7 +24,7 @@ var ShortCuts : ShortCut[];
 
 var IntroPans : CameraPoint[];
 
-enum Point{Position,Lap,Shortcut};
+enum Point{Position,Lap,Shortcut,Spawn};
 
 public class ShortCut
 {
@@ -47,6 +52,17 @@ public class CameraPoint{
  function Update(){
  
  transform.name = "Track Manager";
+ 
+ //Check for Spawn Point
+ 	if(spawnPoint == null)
+ 	{
+ 		var obj = new GameObject();
+ 		obj.AddComponent(PointHandler);
+ 		
+ 		spawnPoint = obj.transform;		
+ 		spawnPoint.GetComponent(PointHandler).style = Point.Spawn;
+ 		spawnPoint.parent = transform;
+ 	}
  
  //Check for empty objects in Position Points
 	if(PositionPoints != null)
@@ -251,10 +267,10 @@ public class CameraPoint{
  
  var copy = new Array();
  
- if(PositionPoints != null && LoopedTrack == true)
+ if(PositionPoints != null)
  copy = PositionPoints;
  
- if(PositionPoints != null && LoopedTrack == false)
+ if(PositionPoints != null)
  for(var i : int = 0; i < PositionPoints.Length-1; i++)
  copy.Push(PositionPoints[i]);
  
@@ -268,9 +284,7 @@ public class CameraPoint{
  }
 
  copy.Push(nPoint);
- 
- if(LoopedTrack == false)
- copy.Push(PositionPoints[PositionPoints.Length-1]);
+
  
  PositionPoints = copy;
  

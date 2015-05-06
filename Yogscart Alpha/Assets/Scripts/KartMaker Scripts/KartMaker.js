@@ -6,8 +6,6 @@ enum KartType{Display,Local,Online,Spectator};
 private var gd : CurrentGameData;
 private var im : InputManager;
 
-var kartBase : Transform;
-
 var DebugMode : boolean;
 
 function Start()
@@ -24,30 +22,24 @@ SpawnKart(KartType.Local,Vector3.zero,Quaternion.identity,Random.Range(0,gd.Kart
 function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternion, kart : int, wheel : int, character : int, hat : int)
 {
 
-var spawnedKartBase : Transform = Instantiate(kartBase,Vector3.zero,Quaternion.identity);
-var ks : kartScript = spawnedKartBase.GetComponent(kartScript);
-
-
 //Spawn Kart & Wheels
-var kartBody : Transform = Instantiate(gd.Karts[kart].model,Vector3.zero,Quaternion.identity);
-kartBody.parent = spawnedKartBase.FindChild("Kart Body");
-
+var kartBody : Transform = Instantiate(gd.Karts[kart].model,Vector3(0,0,0),Quaternion.identity);
 var kartSkel : KartSkeleton = kartBody.GetComponent(KartSkeleton);
 
 var frontlWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.FrontLPosition,Quaternion.Euler(0,0,0));
-frontlWheel.parent = spawnedKartBase.FindChild("Kart Body");
+frontlWheel.parent = kartBody.FindChild("Kart Body");
 frontlWheel.name = "FrontL Wheel";
 
 var frontrWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.FrontRPosition,Quaternion.Euler(0,180,0));
-frontrWheel.parent = spawnedKartBase.FindChild("Kart Body");
+frontrWheel.parent = kartBody.FindChild("Kart Body");
 frontrWheel.name = "FrontR Wheel";
 
 var backlWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackLPosition,Quaternion.Euler(0,0,0));
-backlWheel.parent = spawnedKartBase.FindChild("Kart Body");
+backlWheel.parent = kartBody.FindChild("Kart Body");
 backlWheel.name = "BackL Wheel";
 
 var backrWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackRPosition,Quaternion.Euler(0,180,0));
-backrWheel.parent = spawnedKartBase.FindChild("Kart Body");
+backrWheel.parent = kartBody.FindChild("Kart Body");
 backrWheel.name = "BackR Wheel";
 
 //Spawn Character & Hat
@@ -57,7 +49,7 @@ characterMesh.name = "Character";
 var charSkel : CharacterSkeleton = characterMesh.GetComponent(CharacterSkeleton);
 
 characterMesh.position = kartSkel.SeatPosition - charSkel.SeatPosition;
-characterMesh.parent = spawnedKartBase.FindChild("Kart Body");
+characterMesh.parent = kartBody.FindChild("Kart Body");
 
 if(hat != 0){
 
@@ -67,23 +59,145 @@ hatMesh.localRotation = Quaternion.Euler(0,0,0);
 
 }
 
-if(kartType == kartType.Display){
-//Delete unwanted scripts
+if(kartType != kartType.Display){
+
+var kb : GameObject = kartBody.gameObject;
+
+if(kartType != kartType.Spectator)
+{
+	kb.AddComponent(Rigidbody);
+	kb.GetComponent.<Rigidbody>().mass = 1500;
+	kb.GetComponent.<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+	kb.GetComponent.<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
+	kb.GetComponent.<Rigidbody>().angularDrag = 0;
 }
-else
+
+kb.AddComponent(AudioSource);
+kartBody.FindChild("Kart Body").gameObject.AddComponent(AudioSource);
+kb.GetComponent(AudioSource).playOnAwake = false;
+kartBody.GetComponent(AudioSource).playOnAwake = false;
+
+kb.AddComponent(DeathCatch);
+kb.GetComponent(DeathCatch).DeathParticles = kartBody.FindChild("Kart Body").FindChild("Particles").FindChild("Death Particles").GetComponent.<ParticleSystem>();
+
+if(kartType != kartType.Spectator)
+{
+var frontlWheelCollider : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.FrontLPosition,Quaternion.Euler(0,0,0));
+frontlWheelCollider.name = "FrontL Wheel";
+frontlWheelCollider.parent = kartBody.FindChild("Colliders");
+SetUpWheelCollider(frontlWheelCollider);
+
+var frontrWheelCollider : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.FrontRPosition,Quaternion.Euler(0,180,0));
+frontrWheelCollider.parent = kartBody.FindChild("Colliders");
+frontrWheelCollider.name = "FrontR Wheel";
+SetUpWheelCollider(frontrWheelCollider);
+
+var backlWheelCollider : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackLPosition,Quaternion.Euler(0,180,0));
+backlWheelCollider.parent = kartBody.FindChild("Colliders");
+backlWheelCollider.name = "BackL Wheel";
+SetUpWheelCollider(backlWheelCollider);
+
+var backrWheelCollider : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackRPosition,Quaternion.Euler(0,0,0));
+backrWheelCollider.parent = kartBody.FindChild("Colliders");
+backrWheelCollider.name = "BackR Wheel";
+SetUpWheelCollider(backrWheelCollider);
+}
+
+kb.AddComponent(kartAnimation);
+kb.GetComponent(kartAnimation).ani = characterMesh.GetComponent(Animator);
+
+if(kartType != kartType.Spectator)
+{
+	kb.AddComponent(kartScript);
+
+	var ks = kb.GetComponent(kartScript);
+
+	ks.engineSound = kartSkel.engineSound;
+
+	ks.wheelColliders = new WheelCollider[4];
+	ks.wheelColliders[0] = frontlWheelCollider.GetComponent(WheelCollider);
+	ks.wheelColliders[1] = frontrWheelCollider.GetComponent(WheelCollider);
+	ks.wheelColliders[2] = backlWheelCollider.GetComponent(WheelCollider);
+	ks.wheelColliders[3] = backrWheelCollider.GetComponent(WheelCollider);
+
+	ks.wheelMeshes = new Transform[4];
+	ks.wheelMeshes[0] = frontlWheel;
+	ks.wheelMeshes[1] = frontrWheel;
+	ks.wheelMeshes[2] = backlWheel;
+	ks.wheelMeshes[3] = backrWheel;
+
+	var kp : Transform = kartBody.FindChild("Kart Body").FindChild("Particles");
+
+	ks.flameParticles = new ParticleSystem[2];
+	ks.flameParticles[0] = kp.FindChild("L_Flame").GetComponent.<ParticleSystem>();
+	ks.flameParticles[1] = kp.FindChild("R_Flame").GetComponent.<ParticleSystem>();
+
+	ks.DriftParticles = new Transform[2];
+	ks.DriftParticles[0] = kp.FindChild("L_Sparks");
+	ks.DriftParticles[1] = kp.FindChild("R_Sparks");
+
+	ks.TrickParticles = kp.FindChild("Trick").GetComponent.<ParticleSystem>();
+
+	kb.AddComponent(Position_Finding);
+	//Add Item
+}
+
+if(kartType != KartType.Display &&  kartType != KartType.Spectator)
 {
 
-ks.wheelMeshes[0] = frontlWheel;
-ks.wheelMeshes[1] = frontrWheel;
-ks.wheelMeshes[2] = backlWheel;
-ks.wheelMeshes[3] = backrWheel;
+//Add Script
+kb.AddComponent(kartInput);
+kb.AddComponent(kartInfo);
+//Adjust Scripts
+kb.GetComponent(kartInput).InputName = im.c[0].inputName;
 
 }
 
+}
+
+//Clear Up
+Destroy(kartSkel);
+Destroy(charSkel);
 
 kartBody.position = position;
 kartBody.rotation = rotation;
 
 return kartBody;
+
+}
+
+function SetUpWheelCollider(collider : Transform)
+{
+
+collider.gameObject.AddComponent(WheelCollider);
+
+var wheelCollider = collider.GetComponent(WheelCollider);
+
+//Setup Collider Settings
+wheelCollider.mass = 20;
+wheelCollider.radius = 0.15;
+wheelCollider.wheelDampingRate = 0.05;
+wheelCollider.suspensionDistance = 0.25;
+wheelCollider.forceAppPointDistance = 1;
+
+wheelCollider.suspensionSpring.spring = 25000;
+wheelCollider.suspensionSpring.damper = 25000;
+wheelCollider.suspensionSpring.targetPosition = 1;
+
+wheelCollider.forwardFriction.extremumSlip = 0.8;
+wheelCollider.forwardFriction.extremumValue = 3;
+wheelCollider.forwardFriction.asymptoteSlip = 1.5;
+wheelCollider.forwardFriction.asymptoteValue = 2.25;
+wheelCollider.forwardFriction.stiffness = 1;
+
+wheelCollider.sidewaysFriction.extremumSlip = 0.8;
+wheelCollider.sidewaysFriction.extremumValue = 3;
+wheelCollider.sidewaysFriction.asymptoteSlip = 1.5;
+wheelCollider.sidewaysFriction.asymptoteValue = 2.25;
+wheelCollider.sidewaysFriction.stiffness = 3;
+
+Destroy(collider.GetComponent(MeshFilter));
+Destroy(collider.GetComponent(MeshRenderer));
+
 
 }

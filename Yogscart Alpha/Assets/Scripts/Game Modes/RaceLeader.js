@@ -20,6 +20,9 @@ var ending : boolean;
 
 var OverallTimer : Timer;
 
+//Used in multiplayer
+private var Votes : Vector2[];
+
 //Create Libaries
 private var gd : CurrentGameData;
 private var im : InputManager;
@@ -38,10 +41,35 @@ function LoadLibaries () {
 	//Load Libaries
 	gd = transform.GetComponent(CurrentGameData);
 	im = transform.GetComponent(InputManager);
-	td = GameObject.Find("Track Manager").GetComponent(TrackData);
-	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
+	
+	if(GameObject.Find("Track Manager") != null)
+		td = GameObject.Find("Track Manager").GetComponent(TrackData);
+	
+	sm = transform.gameObject.Find("Sound System").GetComponent(Sound_Manager); 
 	ss = transform.GetComponent(SortingScript);
 	km = transform.GetComponent(KartMaker);
+	
+}
+
+function StartGame()
+{
+	//Load Level Select to Racing Players
+	var racers : NetworkedRacer[] = transform.GetComponent(Host_Script).RacingPlayers;
+	
+	for(var i : int = 0; i < racers.Length; i++)
+	{
+	
+		if(racers[i].networkplayer != GetComponent.<NetworkView>().owner)
+		{
+			GetComponent.<NetworkView>().RPC("ShowLevelSelect",racers[i].networkplayer);
+			GetComponent.<NetworkView>().RPC("YourID",racers[i].networkplayer,i);
+		}
+		else
+		{
+			transform.GetComponent(RaceBase).ShowLevelSelect();
+			transform.GetComponent(RaceBase).YourID(i);
+		}
+	}
 	
 }
 
@@ -97,7 +125,7 @@ function StartRace () {
 			
 			GetComponent.<NetworkView>().RPC("Countdown",RPCMode.All);
 			
-			yield WaitForSeconds(3.3f);
+			yield WaitForSeconds(3.8f);
 			
 			GetComponent.<NetworkView>().RPC("UnlockKart",RPCMode.All);	
 
@@ -147,12 +175,14 @@ function EndRace()
 	if(type == RaceStyle.Online)
 	{
 		//Send Timer
-		GetComponent.<NetworkView>().RPC("RaceEnded",RPCMode.AllBuffered);
+		
+		StopCoroutine("starttoendRace");
 		
 		GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,5);
 		yield WaitForSeconds(5);	
 			
-		GetComponent.<NetworkView>().RPC("LoadNetworkLevel",RPCMode.AllBuffered,"Lobby",0);
+		GetComponent.<NetworkView>().RPC("RaceEnded",RPCMode.AllBuffered);
+		transform.GetComponent(Network_Manager).EndGame();
 		
 		this.enabled = false;
 		
@@ -222,7 +252,7 @@ function PositionUpdate(toChange : int, total : int, next : float, info : Networ
 	if(toChange == -1 || NetworkRacers[toChange].networkplayer.guid != info.sender.guid)
 		{
 			Debug.Log("Cheating detected! " + info.sender.externalIP + " is changing someone else's position.");
-			GetComponent.<NetworkView>().RPC("DisconnectMessage",info.sender,"You have been kicked for Cheating!");
+			GetComponent.<NetworkView>().RPC("CancelReason",info.sender,"You have been kicked for Cheating!");
 			Network.CloseConnection(info.sender,true);
 		}
 		else
@@ -240,9 +270,11 @@ function LocalFinish(toChange : int)
 	{
 			ending = true;
 			Debug.Log("Starting coutndowner");
-			starttoendRace();
+			StartCoroutine("starttoendRace");
 	}
-		
+	
+	ScoreboardAdd(toChange);
+	
 }
 
 @RPC
@@ -252,7 +284,7 @@ function Finished(toChange : int, info : NetworkMessageInfo)
 	if(toChange == -1 || NetworkRacers[toChange].networkplayer.guid != info.sender.guid)
 	{
 		Debug.Log("Cheating detected! " + info.sender.externalIP + " is finishing for someone else.");
-		GetComponent.<NetworkView>().RPC("DisconnectMessage",info.sender,"You have been kicked for Cheating!");
+		GetComponent.<NetworkView>().RPC("CancelReason",info.sender,"You have been kicked for Cheating!");
 		Network.CloseConnection(info.sender,true);
 	}
 	else
@@ -263,10 +295,21 @@ function Finished(toChange : int, info : NetworkMessageInfo)
 		{
 			ending = true;
 			Debug.Log("Starting coutndowner");
-			starttoendRace();
+			StartCoroutine("starttoendRace");
 		}
+		
+		ScoreboardAdd(toChange);
+
 	}
 
+}
+function ScoreboardAdd(toChange : int)
+{
+		if(cutsceneWait && ending)
+		{
+			Debug.Log(NetworkRacers[toChange].character + " has come " + NetworkRacers[toChange].position + "th");
+			GetComponent.<NetworkView>().RPC("ScoreBoardAdd",RPCMode.AllBuffered,NetworkRacers[toChange].character,NetworkRacers[toChange].position,NetworkRacers.Length);
+		}
 }
 
 function SetFinished(val : boolean)
@@ -292,5 +335,72 @@ function WaitForFinished() : boolean
 	}
 	
 	return returnVal;
+
+}
+
+@RPC
+function LevelChoose(cup : int, track : int){
+
+	var AddTo : int;
+	for(var i : int = 0; i < cup; i++)
+		AddTo += gd.Tournaments[i].Tracks.Length;
+	
+	AddTo += track;
+
+	var copy = new Array();
+
+	if(Votes != null)
+		copy = Votes;
+
+	copy.Push(Vector2(cup,track));
+	Votes = copy;
+
+	GetComponent.<NetworkView>().RPC ("VoteUpdate", RPCMode.All,AddTo);
+
+	if(Votes.Length >= transform.GetComponent(Host_Script).RacingPlayers.Length){
+		Debug.Log("Votes: " + Votes.Length + " RacingPlayers: " + transform.GetComponent(Host_Script).RacingPlayers.Length);
+		StopCoroutine("StartLevelSelect");
+		GetComponent.<NetworkView>().RPC ("Countdowner", RPCMode.All,5);
+		DetermineLevel();
+	}
+
+}
+
+function DetermineLevel(){
+	
+		var toRace : int = Random.Range(0,Votes.Length);
+		var cup : int;
+		var track : int;
+
+		if(Votes.Length > 0){
+			cup = Votes[toRace].x;
+			track = Votes[toRace].y;
+			GetComponent.<NetworkView>().RPC ("StartRoll",RPCMode.All,toRace);
+		}else{
+			cup = Random.Range(0,gd.Tournaments.Length);
+			track  = Random.Range(0,gd.Tournaments[cup].Tracks.Length);
+		}
+
+		yield WaitForSeconds(5.1);
+
+		Network.RemoveRPCs(GetComponent.<NetworkView>().owner);
+		GetComponent.<NetworkView>().RPC ("LoadNetworkLevel", RPCMode.AllBuffered, gd.Tournaments[cup].Tracks[track].SceneID,0);
+		
+		Debug.Log("Level Loaded!");
+
+		while(GameObject.Find("Track Manager") == null)
+			yield;
+		
+		NetworkRacers = transform.GetComponent(Host_Script).RacingPlayers;
+		type = RaceStyle.Online;
+		OverallTimer = new Timer();
+		LoadLibaries();
+		
+		yield;
+		yield;
+		
+		StartRace();
+		
+		Votes = new Vector2[0];
 
 }

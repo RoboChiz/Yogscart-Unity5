@@ -1,23 +1,26 @@
 ﻿#pragma strict
 
-var locked : boolean;
+var locked : boolean = true;
 
+@HideInInspector
 var throttle : float;
+@HideInInspector
 var steer : float;
+@HideInInspector
 var drift : boolean;
 
 private var isFalling : boolean;
 private var isColliding : boolean;
 
-var maxSpeed : float = 15f;
+var maxSpeed : float = 20f;
 private var lastMaxSpeed : float;
 
-var acceleration : float = 10f;
+var acceleration : float = 10;
 
 var BrakeTime : float = 0.5f;
 
-var turnSpeed : float = 2f;
-var driftAmount : float = 5;
+var turnSpeed : float = 4f;
+var driftAmount : float = 2f;
 private var driftSteer : int;
 
 private var driftStarted : boolean;
@@ -35,26 +38,36 @@ var wheelMeshes : Transform[];
 
 var BoostAddition : int = 5;
 private var isBoosting : boolean;
+//Start Boost Variables
+private var allowedBoost : boolean;
+private var spinOut : boolean;
+private var boostAmount : float;
 
 var flameParticles : ParticleSystem[];
 var DriftParticles : Transform[];
 var TrickParticles : ParticleSystem;
+
+var engineSound : AudioClip;
 
 var kartbodyRot : float = 20;
 private var driftTime : float;
 var blueTime : float = 3;
 var orangeTime : float = 6;
 
-var spinTime : float = 1f;
+var spinTime : float = 0.5f;
+var spunTime : float = 1.5f;
 private var Spinning : boolean;
+private var spunOut : boolean;
 
+@HideInInspector
 public var expectedSpeed : float;
+
 private var actualSpeed : float;
 
 @HideInInspector
 public var startBoostVal : int = -1;
 
-private var localScale : float = 2f;
+var snapTime : float = 0f;
 
 function FixedUpdate () {
 	
@@ -68,7 +81,7 @@ function FixedUpdate () {
 		{
 			tricking = true;
 			trickPotential = false;
-			SpinKartBody(Vector3.right);
+			SpinKartBody(Vector3.right,spinTime);
 			TrickParticles.Play();
 		}
 	}
@@ -92,7 +105,17 @@ function FixedUpdate () {
 		trickLock = false;
 	
 	CalculateExpectedSpeed();
-	ApplySteering();
+	
+	if(!isFalling)
+	{
+		ApplySteering();
+	}
+	else
+	{
+		wheelColliders[0].steerAngle = 0;
+		wheelColliders[1].steerAngle = 0;
+	}
+	
 	ApplyDrift();
 	
 	var nMaxSpeed : float = Mathf.Lerp(lastMaxSpeed,maxSpeed-(1f-lapisAmount/10f),Time.fixedDeltaTime);
@@ -108,7 +131,7 @@ function FixedUpdate () {
 	var relativeVelocity : Vector3 = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
 	actualSpeed = relativeVelocity.z;
 	
-	var nExpectedSpeed = expectedSpeed * localScale;
+	var nExpectedSpeed = expectedSpeed;
 	var nA  = (nExpectedSpeed-actualSpeed)/Time.fixedDeltaTime;
 
 	if(!isFalling && !isColliding)
@@ -126,8 +149,55 @@ function FixedUpdate () {
 		
 		wheelColliders[i].GetWorldPose(wheelPos,wheelRot);
 		
-		wheelMeshes[i].rotation = wheelRot;
+		if(i == 3 || i == 0)
+			wheelMeshes[i].rotation = wheelRot;
+		else
+			wheelMeshes[i].rotation = wheelRot * Quaternion.Euler(0,180,0);
+			
+			if(!tricking && !isFalling && !spunOut)
+				wheelMeshes[i].position = wheelPos;
+	}
+	
+	//Play engine Audio
+	if(engineSound != null){
 		
+		if(!GetComponent.<AudioSource>().isPlaying){
+			GetComponent.<AudioSource>().clip = engineSound;
+			GetComponent.<AudioSource>().Play();
+			GetComponent.<AudioSource>().loop = true;
+		}
+
+		var sm : Sound_Manager = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
+
+		var es = expectedSpeed/4f;
+		GetComponent.<AudioSource>().volume = (sm.MasterVolume/100f) * (sm.SFXVolume/150f) * Mathf.Lerp(GetComponent.<AudioSource>().volume,Mathf.Abs(expectedSpeed),Time.deltaTime);
+		GetComponent.<AudioSource>().pitch = Mathf.Lerp(GetComponent.<AudioSource>().pitch,1 + Mathf.Abs(es),Time.deltaTime);
+
+	}
+	
+	//Calculate Start Boost
+	if(startBoostVal == 3 && throttle > 0){
+		spinOut = true;
+	}
+	if(startBoostVal == 2 && throttle > 0 && spinOut == false){
+		allowedBoost = true;
+	}
+
+	if(startBoostVal < 2 && startBoostVal != 0 && throttle == 0){
+		allowedBoost = false;
+	}
+
+	if(allowedBoost && throttle > 0)
+		boostAmount += Time.deltaTime * 0.1f;
+
+	if(startBoostVal == 0 && allowedBoost){
+		Boost(boostAmount);
+		startBoostVal = -1;
+	}
+
+	if(startBoostVal == 0 && spinOut){
+		SpinOut();
+		startBoostVal = -1;
 	}
 	
 }
@@ -158,16 +228,16 @@ function ApplySteering()
 {
 	if(!driftStarted){
 		
-		var speedVal = Mathf.Clamp((maxSpeed - Mathf.Abs(expectedSpeed))/2f,1,Mathf.Infinity);
+		var speedVal = Mathf.Clamp((1f/maxSpeed)*expectedSpeed,0.8,1);
 		
-		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,steer * turnSpeed * speedVal,Time.fixedDeltaTime*25);
-		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,steer * turnSpeed * speedVal,Time.fixedDeltaTime*25);
+		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,steer * turnSpeed * speedVal,Time.fixedDeltaTime*100);
+		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,steer * turnSpeed * speedVal,Time.fixedDeltaTime*100);
 	}else{	
 	
 		var nSteer = driftSteer * Mathf.Clamp(steer/2f,-driftSteer * 0.4, driftSteer*0.5);
 	
-		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*25);
-		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*25);	
+		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*100);
+		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*100);	
 		
 	}
 }
@@ -299,21 +369,51 @@ function CancelTrickPotential()
 	trickPotential = false;
 }
 
-function SpinKartBody(dir : Vector3)
+function SpinKartBody(dir : Vector3, time : float)
 {
 	
 	Spinning = true;
 
 	var startTime : float = Time.realtimeSinceStartup;
 	
-	while(Time.realtimeSinceStartup - startTime < spinTime)
+	while(Time.realtimeSinceStartup - startTime < time)
 	{
-		transform.FindChild("Kart Body").Rotate((dir * 360f * Time.deltaTime)/spinTime);
+		transform.FindChild("Kart Body").Rotate((dir * 360f * Time.deltaTime)/time);
 		yield;
 	}
 	
 	Spinning = false;
 	
+}
+
+function SpinOut(){
+	StartCoroutine("StartSpinOut");
+}
+
+
+function StartSpinOut(){
+	if(!spunOut)
+	{
+
+	spunOut = true;
+
+	CancelBoost();
+
+	locked = true;
+
+	var t : float = 0;
+
+	var Ani = transform.FindChild("Kart Body").FindChild("Character").GetComponent(Animator);
+	Ani.SetBool("Hit",true);
+
+	yield SpinKartBody(Vector3.up,spunTime);
+
+	Ani.SetBool("Hit",false);
+	locked = false;
+
+	spunOut = false;
+
+	}
 }
 
 function SnapUp()
@@ -327,11 +427,15 @@ function SnapUp()
 	var startRot : Quaternion = transform.rotation;
 	var startTime : float = Time.realtimeSinceStartup;
 	
-	while(Time.realtimeSinceStartup - startTime < 0.5)
+	GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
+	
+	while(Time.realtimeSinceStartup - startTime < snapTime)
 	{
-	transform.rotation = Quaternion.Slerp(startRot,Quaternion.Euler(0,transform.rotation.eulerAngles.y,0),(Time.realtimeSinceStartup - startTime)/0.5f);
+	transform.rotation = Quaternion.Lerp(startRot,Quaternion.Euler(0,transform.rotation.eulerAngles.y,0),(Time.realtimeSinceStartup - startTime)/snapTime);
 	yield;
 	}
+	
+	GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
 	
 	snapping = false;
 	
@@ -348,12 +452,13 @@ function HaveTheSameSign(first : float, second : float) : boolean
 
 function OnCollisionEnter(collision : Collision)
 {
-	Collided(collision);
+	//Collided(collision);
 }
 
 function Collided(collision : Collision)
 {
 	isColliding = true;
+	expectedSpeed /= 4f;
 	yield WaitForSeconds(0.4f);
 	isColliding = false;
 }

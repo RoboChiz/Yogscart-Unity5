@@ -19,6 +19,9 @@ var finalPlayers : DisplayName[];
 
 var currentSelection : int;
 
+@HideInInspector
+var SpectatorCam : GameObject;
+
 class GameMode
 {
 
@@ -190,7 +193,7 @@ function LoadServers()
 function OnGUI()
 {
 
-	GUI.skin = Resources.Load("Font/Menu",GUISkin);
+	GUI.skin = Resources.Load("GUISkins/Menu",GUISkin);
 	
 	var fontSize = ((Screen.height + Screen.width)/2f)/40f;
 	GUI.skin.label.fontSize = fontSize;
@@ -203,6 +206,10 @@ function OnGUI()
 	var nameList : Texture2D = Resources.Load("UI/Lobby/NamesList",Texture2D);
 	var nameListRect : Rect = Rect(chunkSize,chunkSize/2f,chunkSize*3f,Screen.height - chunkSize*1.5f);
 	var gapSize = chunkSize/2f;
+	
+	//Render Background
+	var BackgroundTexture : Texture2D = Resources.Load("UI/Main Menu/TempBackground",Texture2D);
+	//GUI.DrawTexture(Rect(0,0,Screen.width,Screen.height),BackgroundTexture,ScaleMode.ScaleAndCrop);
 	
 	switch(state)
 	{
@@ -393,43 +400,47 @@ function OnGUI()
 	if(currentSelection >= gd.onlineGameModes.Length)
 		currentSelection = 0;
 	
-	GUI.DrawTexture(nameListRect,nameList);
-	
-	nameListRect = Rect(chunkSize + gapSize,chunkSize/2f + gapSize,chunkSize*3f - (gapSize*2f),Screen.height - chunkSize*1.5f - (gapSize*2f));
-
-	GUI.BeginGroup(nameListRect);
-	
-	GUI.Label(Rect(0,0,nameListRect.width,fontSize*2f),"Lobby");
-	
-	GUI.DrawTexture(Rect(0,fontSize*1.5f,nameListRect.width - 10,fontSize*0.2f),Resources.Load("UI/Lobby/Line",Texture2D));
-	
-	for(i = 0; i < finalPlayers.Length;i++)
-	{
-	
-		startHeight = fontSize*2f + (i*fontSize*1.25f);
-	
-		textSize = Mathf.Clamp(fontSize / (finalPlayers[i].name.Length /10f),0,fontSize);	
-		GUI.skin.label.fontSize = textSize;
+	if(GameObject.Find("Menu Holder") != null)
+		if(!GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled){
 		
-		GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),finalPlayers[i].name);
-
-		if(finalPlayers[i].networkPlayer != null)
-			finalPlayers[i].ping = Network.GetAveragePing(finalPlayers[i].networkPlayer);		
+			GUI.DrawTexture(nameListRect,nameList);
 			
-		textSize = Mathf.Clamp(fontSize/2f,0,fontSize);
-		GUI.skin.label.fontSize = textSize;
-			
-		GUI.Label(Rect(nameListRect.width - (textSize*5f),startHeight + textSize*0.5f,textSize*10f,fontSize*1.5f),finalPlayers[i].ping.ToString() + " Ping");
+			nameListRect = Rect(chunkSize + gapSize,chunkSize/2f + gapSize,chunkSize*3f - (gapSize*2f),Screen.height - chunkSize*1.5f - (gapSize*2f));
 
-		GUI.skin.label.fontSize = fontSize;
+			GUI.BeginGroup(nameListRect);
+			
+			GUI.Label(Rect(0,0,nameListRect.width,fontSize*2f),"Lobby");
+			
+			GUI.DrawTexture(Rect(0,fontSize*1.5f,nameListRect.width - 10,fontSize*0.2f),Resources.Load("UI/Lobby/Line",Texture2D));
+			
+			for(i = 0; i < finalPlayers.Length;i++)
+			{
+			
+				startHeight = fontSize*2f + (i*fontSize*1.25f);
+			
+				textSize = Mathf.Clamp(fontSize / (finalPlayers[i].name.Length /10f),0,fontSize);	
+				GUI.skin.label.fontSize = textSize;
+				
+				GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),finalPlayers[i].name);
+
+				if(finalPlayers[i].networkPlayer != null)
+					finalPlayers[i].ping = Network.GetAveragePing(finalPlayers[i].networkPlayer);		
+					
+				textSize = Mathf.Clamp(fontSize/2f,0,fontSize);
+				GUI.skin.label.fontSize = textSize;
+					
+				GUI.Label(Rect(nameListRect.width - (textSize*5f),startHeight + textSize*0.5f,textSize*10f,fontSize*1.5f),finalPlayers[i].ping.ToString() + " Ping");
+
+				GUI.skin.label.fontSize = fontSize;
+				
+			}
 		
-	}
-	
-	GUI.EndGroup();
-	
-	if(GUI.Button(Rect(chunkSize ,nameListRect.x + nameListRect.height,chunkSize,chunkSize/2f),"Quit"))
-		{
-			Network.Disconnect();	
+		GUI.EndGroup();
+		
+		if(GUI.Button(Rect(chunkSize ,nameListRect.x + nameListRect.height,chunkSize,chunkSize/2f),"Quit"))
+			{
+				Network.Disconnect();	
+			}
 		}
 		
 	if(Network.isServer)
@@ -515,14 +526,26 @@ function StartServer()
 	
 	transform.GetComponent(Host_Script).Reset();
 	
+	state = ServerState.Connecting;
+	
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).ResetEverything();
+	
+	while(GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled)
+		yield;
+
 	Network.InitializeServer(25,hostPort,true);
-	state = ServerState.Lobby;
 	transform.GetComponent(Host_Script).enabled = true;
 	
 	var test = new NetworkMessageInfo();
 	//test.sender = GetComponent.<NetworkView>().owner;
 	
-	transform.GetComponent(Host_Script).RecievedNewRacer(PlayerPrefs.GetString("playerName","Player"),0,0,0,0,test);//Add support for Character Select
+	transform.GetComponent(Host_Script).RecievedNewRacer(PlayerPrefs.GetString("playerName","Player"),gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,test);//Add support for Character Select
+	
+	GetComponent.<NetworkView>().RPC("LoadNetworkLevel",RPCMode.AllBuffered,"Lobby",0);
+	
+	yield WaitForSeconds(0.5f);
+	state = ServerState.Lobby;
 	
 }
 
@@ -556,14 +579,38 @@ function StartGamemode(i : int)
 
 function EndGame()
 {
+
+	GetComponent.<NetworkView>().RPC("LoadNetworkLevel",RPCMode.AllBuffered,"Lobby",0);
+	
+	while(Application.loadedLevelName != "Lobby")
+		yield;
+	
+	Network.RemoveRPCs(GetComponent.<NetworkView>().owner);	
+				
 	state = ServerState.Lobby;
+	
+	var hs = transform.GetComponent(Host_Script);
+	
+	GetComponent.<NetworkView>().RPC("ClearNames",RPCMode.All);
+		
+	for(var i : int = 0; i < hs.RacingPlayers.Length; i++)
+	{
+		GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,hs.RacingPlayers[i].name,hs.RacingPlayers[i].networkplayer);
+	}
+	
 }
 
+@RPC
+function ClearNames()
+{
+	finalPlayers = new DisplayName[0];
+}
 		
 
 function OnConnectedToServer() 
 {
 	state = ServerState.Lobby;
+		
 	transform.GetComponent(Client_Script).enabled = true;
 	GetComponent.<NetworkView>().RPC("VersionUpdate",RPCMode.Server,gd.version);
 }
@@ -571,6 +618,17 @@ function OnConnectedToServer()
 function OnDisconnectedFromServer(info : NetworkDisconnection) 
 {
 	ServerFinish(info.ToString());
+	finalPlayers = new DisplayName[0];
+	
+	while(popupText != "")
+		yield;
+		
+	Destroy(SpectatorCam);
+		
+	gd.Exit();
+	
+	this.enabled = false;
+	
 }
 
 function OnFailedToConnect(error: NetworkConnectionError) {
@@ -581,6 +639,30 @@ function OnFailedToConnect(error: NetworkConnectionError) {
 function CancelReason(info : String)
 {
 	popupText = info;
+}
+
+@RPC
+function SpectatePlease()
+{
+
+	state = ServerState.Racing;
+	//Genereate Spectator Cam
+		SpectatorCam = new GameObject();
+		SpectatorCam.name = "SpectatorCam";
+		SpectatorCam.AddComponent(Camera);
+		SpectatorCam.AddComponent(AudioListener);
+		SpectatorCam.AddComponent(GUILayer);
+		SpectatorCam.AddComponent(FlareLayer);
+		SpectatorCam.AddComponent(SpectatorCamera);
+		SpectatorCam.AddComponent(Kart_Camera);
+		
+		SpectatorCam.GetComponent(Kart_Camera).smoothTime = 3f;
+		SpectatorCam.GetComponent(Kart_Camera).Height = 3f;
+		
+		SpectatorCam.tag = "MainCamera";
+		DontDestroyOnLoad(SpectatorCam);
+	//SpectatorCam.AddComponent();Add DynamiCam
+		
 }
 
 function ServerFinish(info : String)

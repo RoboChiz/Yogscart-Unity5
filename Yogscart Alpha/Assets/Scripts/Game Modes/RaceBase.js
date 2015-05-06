@@ -10,6 +10,9 @@ Holds functions used by the Client, and Host during Races.
 var networkID : int = -1;
 var myRacer : Racer;
 
+
+var otherRacers : GameObject[];
+
 //Used to load and show the correct GUI
 enum GUIState{Blank,CutScene,RaceInfo,Countdown,RaceGUI,ScoreBoard,NextMenu};
 var currentGUI : GUIState = GUIState.Blank;
@@ -30,31 +33,54 @@ private var td : TrackData;
 private var sm : Sound_Manager;
 private var km : KartMaker;
 
+var finishedCharacters : int[];
 
 function Start()
 {
 	LoadLibaries();
 }
 
+@RPC
 function LoadLibaries () {
 
 	//Load Libaries
 	gd = transform.GetComponent(CurrentGameData);
 	im = transform.GetComponent(InputManager);
-	td = GameObject.Find("Track Manager").GetComponent(TrackData);
+	
+	if(GameObject.Find("Track Manager") != null)
+		td = GameObject.Find("Track Manager").GetComponent(TrackData);
+		
 	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
 	km = transform.GetComponent(KartMaker);
 	
 }
 
 @RPC
+function ShowLevelSelect()
+{
+
+	gameObject.AddComponent(Level_Select);
+	gameObject.AddComponent(VotingScreen);
+	
+	transform.GetComponent(VotingScreen).hidden = true;
+	transform.GetComponent(Level_Select).hidden = false;
+}
+
+@RPC
 function RaceEnded()
 {
 
-Network.RemoveRPCs(GetComponent.<NetworkView>().owner);
+Network.RemoveRPCs(transform.GetComponent.<NetworkView>().owner);
 
 var nRacer = new Racer(true,-1,myRacer.character,myRacer.hat,myRacer.kart,myRacer.wheel,0);
 myRacer = nRacer;
+
+finishedCharacters = new int[0];
+
+currentGUI = GUIState.Blank;
+networkID = -1;
+
+this.enabled = false;
 
 }
 
@@ -68,12 +94,14 @@ function YourID(id : int)
 function SpawnMyKart()
 {
 
+	LoadLibaries();
+
 	//Find Spawn Position
 	var SpawnPosition : Vector3;
-	var rot : Quaternion = td.PositionPoints[0].rotation;
+	var rot : Quaternion = td.spawnPoint.rotation;
 	var i : int = myRacer.position;
 	
-	var startPos : Vector3 = td.PositionPoints[0].position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
+	var startPos : Vector3 = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
 	var x2 : Vector3 = rot*(Vector3.forward*(i%3)*(3*1.5f)+(Vector3.forward*.75f*3));
 	var y2 : Vector3 = rot*(Vector3.right*(i + 1)* 3);
 	SpawnPosition = startPos + x2 + y2;  
@@ -81,9 +109,10 @@ function SpawnMyKart()
 	myRacer.ingameObj = km.SpawnKart(KartType.Online,SpawnPosition,rot * Quaternion.Euler(0,-90,0),myRacer.kart,myRacer.wheel,myRacer.character,myRacer.hat);
 	
 	//Add Camera
-	var IngameCam = Instantiate(Resources.Load("Prefabs/Cameras",Transform),td.PositionPoints[0].position,Quaternion.identity);
+	var IngameCam = Instantiate(Resources.Load("Prefabs/Cameras",Transform),td.spawnPoint.position,Quaternion.identity);
 	IngameCam.name = "InGame Cams";
-
+	
+	myRacer.ingameObj.GetComponent(kartInput).InputName = im.c[0].inputName;
 	myRacer.ingameObj.GetComponent(kartInput).camLocked = true;
 	myRacer.ingameObj.GetComponent(kartInput).frontCamera = IngameCam.GetChild(1).GetComponent.<Camera>();
 	myRacer.ingameObj.GetComponent(kartInput).backCamera = IngameCam.GetChild(0).GetComponent.<Camera>();
@@ -98,6 +127,7 @@ function SpawnMyKart()
 	
 	myRacer.ingameObj.gameObject.AddComponent(NetworkView);
 	myRacer.ingameObj.GetComponent.<NetworkView>().viewID = id;
+	myRacer.ingameObj.GetComponent.<NetworkView>().stateSynchronization = NetworkStateSynchronization.Unreliable;
 	
 	myRacer.ingameObj.gameObject.AddComponent(kartInfo);
 		//SetUpCameras
@@ -107,7 +137,7 @@ function SpawnMyKart()
 
 	myRacer.ingameObj.GetComponent(kartInfo).cameras = copy;
 	
-	GetComponent.<NetworkView>().RPC("SpawnMe",RPCMode.OthersBuffered,PlayerPrefs.GetString("playerName","Player"),myRacer.kart,myRacer.wheel,myRacer.character,myRacer.hat,id);
+	transform.GetComponent.<NetworkView>().RPC("SpawnMe",RPCMode.OthersBuffered,PlayerPrefs.GetString("playerName","Player"),myRacer.kart,myRacer.wheel,myRacer.character,myRacer.hat,id);
 	
 	SendUpdates();
 	
@@ -129,6 +159,17 @@ function SpawnMe(name : String, kart : int, wheel : int, character : int, hat : 
 	
 	newKart.gameObject.AddComponent(NetworkView);
 	newKart.GetComponent.<NetworkView>().viewID = id;
+	newKart.GetComponent.<NetworkView>().stateSynchronization = NetworkStateSynchronization.Unreliable;
+	newKart.tag = "Spectated";
+	
+	var copy = new Array();
+	
+	if(otherRacers != null)
+		copy = otherRacers;
+	
+	copy.Add(newKart.gameObject);
+	
+	otherRacers = copy;
 	
 }
 
@@ -146,6 +187,7 @@ function FixedUpdate ()
 		if(pf.Lap >= td.Laps && !myRacer.finished)
 		{
 			myRacer.finished = true;
+			currentGUI = GUIState.ScoreBoard;
 		}
 	}
 }
@@ -174,7 +216,7 @@ function SendUpdates()
 	myRacer.cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
 	
 	if(Network.isClient)
-		GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
+		transform.GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
 		
 	if(Network.isServer)
 		transform.GetComponent(RaceLeader).LocalFinish(networkID);
@@ -202,7 +244,7 @@ function CalculateSendUpdate()
 		pf.position = myRacer.position;
 			
 		if(Network.isClient)
-			GetComponent.<NetworkView>().RPC("PositionUpdate",RPCMode.Server,networkID,myRacer.TotalDistance,myRacer.NextDistance);
+			transform.GetComponent.<NetworkView>().RPC("PositionUpdate",RPCMode.Server,networkID,myRacer.TotalDistance,myRacer.NextDistance);
 		else
 			transform.GetComponent(RaceLeader).LocalPositionUpdate(networkID,myRacer.TotalDistance,myRacer.NextDistance);
 	}
@@ -222,15 +264,22 @@ function UnlockKart()
 @RPC
 function Countdown(){
 
-	if(Network.isClient || Network.isServer)
-		myRacer.ingameObj.GetComponent(kartInfo).hidden = false;
+	if(networkID != -1)
+		if(Network.isClient || Network.isServer)
+			myRacer.ingameObj.GetComponent(kartInfo).hidden = false;
 
 	ChangeState(GUIState.Countdown);
+	
+	yield WaitForSeconds(0.5f);
+	
 	sm.PlaySFX(Resources.Load("Music & Sounds/CountDown",AudioClip));
 	
 	for(var i : int = 3; i >= 0; i--){
 		CountdownText = i;
-		setStartBoost(i);
+		
+		if(networkID != -1)
+			setStartBoost(i);
+			
 		CountdownRect = Rect(Screen.width/2 - (Screen.height/1.5f)/2f,Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/1.5f,Screen.height/1.5f);
 		CountdownShow = true;
 		yield WaitForSeconds(0.8);
@@ -242,7 +291,8 @@ function Countdown(){
 	
 	yield WaitForSeconds(0.5f);
 	
-	setStartBoost(-1);
+	if(networkID != -1)
+		setStartBoost(-1);
 	
 	ChangeState(GUIState.RaceGUI);
 
@@ -251,6 +301,8 @@ function Countdown(){
 @RPC
 function PlayCutscene()
 {
+
+	LoadLibaries();
 
 	ChangeState(GUIState.CutScene);
 	var CutsceneCam = new GameObject();
@@ -282,11 +334,18 @@ function PlayCutscene()
 	Destroy(CutsceneCam);
 	sm.PlayMusic(td.backgroundMusic);
 	
-	if(Network.isClient)
-		GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
-		
-	if(Network.isServer)
-		transform.GetComponent(RaceLeader).LocalFinish(networkID);
+	if(networkID != -1)
+	{
+		if(Network.isClient)
+			transform.GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
+			
+		if(Network.isServer)
+			transform.GetComponent(RaceLeader).LocalFinish(networkID);
+	}
+	else
+	{
+		transform.GetComponent(Network_Manager).SpectatePlease();
+	}
 
 }
 
@@ -390,9 +449,69 @@ function OnGUI ()
 				CountdownAlpha = Mathf.Lerp(CountdownAlpha,0,Time.deltaTime*10f);
 
 		break;
+		case GUIState.ScoreBoard:
+		
+			var BoardTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
+			var BoardRect : Rect = Rect(Screen.width/2f - Screen.height/16f,Screen.height/16f,Screen.width/2f ,(Screen.height/16f)*14f);
+
+			GUI.DrawTexture(BoardRect,BoardTexture);
+
+			GUI.BeginGroup(BoardRect);
+
+				for(var f : int = 0; f < finishedCharacters.Length; f++){
+				
+					if(finishedCharacters[f] != -1)
+					{
+						var PosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString(),Texture2D);
+						var SelPosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString() + "_Sel",Texture2D);
+						var NameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f]].Name,Texture2D);
+						var SelNameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f]].Name + "_Sel",Texture2D);
+
+						var Ratio = (Screen.height/16f)/PosTexture.height;
+						var Ratio2 = (Screen.height/16f)/NameTexture.height;
+
+						GUI.DrawTexture(Rect(20,(f+1)*Screen.height/16f,PosTexture.width * Ratio,Screen.height/16f),SelPosTexture);
+						GUI.DrawTexture(Rect(20 + PosTexture.width * Ratio,(f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),SelNameTexture);
+
+						var CharacterIcon = gd.Characters[finishedCharacters[f]].Icon;
+
+						GUI.DrawTexture(Rect(10 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2),(f+1)*Screen.height/16f,Screen.height/16f,Screen.height/16f),CharacterIcon);
+
+						/*if(isEmpty(SPRacers[f].timer))
+							GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),"-N/A-");
+						else
+							GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),SPRacers[f].timer.ToString());
+
+						GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),SPRacers[f].points.ToString());
+
+						GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.9f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),"+ " + (15 - f).ToString());*/
+					}
+				}
+
+			GUI.EndGroup();
+
+		break;
 	
 	}
 }	
+
+@RPC
+function ScoreBoardAdd(character : int, i : int, size : int)
+{
+
+	if(finishedCharacters.Length != size)
+	{
+		finishedCharacters = new int[size];
+		
+		for(var j : int; j < finishedCharacters.Length;j++)
+			finishedCharacters[j] = -1;
+	}
+	
+	Debug.Log(gd.Characters[character].Name + " has come " + (i) + "th");
+		
+	finishedCharacters[i] = character;	
+
+}
 
 function setStartBoost(val : int){
 
@@ -403,6 +522,10 @@ function setStartBoost(val : int){
 	}
 }
 	
+function StartGame()
+{
+	//Don't do anything XD
+}	
 	
 	
 	

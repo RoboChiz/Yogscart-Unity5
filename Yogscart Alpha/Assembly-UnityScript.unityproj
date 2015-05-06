@@ -46,6 +46,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\CharacterScripts\StandingCharacter.js" />
      <Compile Include="Assets\Scripts\Game Managers\CurrentGameData.js" />
      <Compile Include="Assets\Scripts\Game Managers\InputManager.js" />
      <Compile Include="Assets\Scripts\Game Managers\Sound_Manager.js" />
@@ -53,20 +54,27 @@
      <Compile Include="Assets\Scripts\Game Modes\RaceLeader.js" />
      <Compile Include="Assets\Scripts\Game Modes\SortingScript.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Kart_Camera.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\NameRotate.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Position_Finding.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Racer_AI.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\kartAnimation.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartScript.js" />
      <Compile Include="Assets\Scripts\KartMaker Scripts\CharacterSkeleton.js" />
      <Compile Include="Assets\Scripts\KartMaker Scripts\KartMaker.js" />
      <Compile Include="Assets\Scripts\KartMaker Scripts\KartSkeleton.js" />
+     <Compile Include="Assets\Scripts\Menus\CharacterSelect.js" />
      <Compile Include="Assets\Scripts\Menus\Level_Select.js" />
+     <Compile Include="Assets\Scripts\Menus\Main Menu\MainMenu.js" />
      <Compile Include="Assets\Scripts\Menus\Main_Menu.js" />
      <Compile Include="Assets\Scripts\Menus\newCharacterSelect.js" />
      <Compile Include="Assets\Scripts\Networking\Client_Script.js" />
+     <Compile Include="Assets\Scripts\Networking\Countdown.js" />
      <Compile Include="Assets\Scripts\Networking\Host_Script.js" />
      <Compile Include="Assets\Scripts\Networking\Network_Manager.js" />
+     <Compile Include="Assets\Scripts\Networking\SpectatorCamera.js" />
+     <Compile Include="Assets\Scripts\Networking\VotingScreen.js" />
      <Compile Include="Assets\Scripts\Networking\Yogball.js" />
      <Compile Include="Assets\Scripts\Track Editor\DeathCatch.js" />
      <Compile Include="Assets\Scripts\Track Editor\DynamiCam\DynamiCamera.js" />

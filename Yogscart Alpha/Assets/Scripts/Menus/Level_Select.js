@@ -5,9 +5,6 @@ private var currentTrack : int;
 private var gd : CurrentGameData;
 private var im : InputManager;
 
-private var stickLockH : boolean;
-private var stickLockV : boolean;
-
 var TypeSelecion : boolean;
 
 var hidden : boolean = true;
@@ -30,43 +27,37 @@ Alpha = Mathf.Lerp(Alpha,0,Time.deltaTime*5);
 GUI.skin = Resources.Load("GUISkins/Main Menu", GUISkin);
 GUI.color = Color(256,256,256,Alpha);
 
-if(!hidden){
-var submitInput = im.c[0].GetInput("Submit");
-var submitBool = (submitInput != 0);
+var submitBool : boolean;
+var cancelBool : boolean;
+var vert : boolean;
+var hori : float;
 
-var cancelInput = im.c[0].GetInput("Cancel");
-var cancelBool = (cancelInput != 0);
+if(!hidden){
+submitBool = im.c[0].GetMenuInput("Submit") != 0;
+cancelBool = im.c[0].GetMenuInput("Cancel") != 0;
+vert = im.c[0].GetMenuInput("Vertical") != 0;
+hori = im.c[0].GetMenuInput("Horizontal");
 }
 
 if(hidden == false){
 //Do Input
-if(im.c[0].GetInput("Vertical") != 0 && stickLockV == false && !GrandPrixOnly){
-stickLockV = true; 
-ButtonWaitV();
+if(vert && GrandPrixOnly){
 TypeSelecion = !TypeSelecion;
 } 
 
 if(cancelBool){
-if(transform.GetComponent(newCharacterSelect) != null){
-gd.currentChoices = new LoadOut[0];
-transform.GetComponent(newCharacterSelect).ResetEverything();
-transform.GetComponent(Main_Menu).StopCoroutine("StartSinglePlayer");
-transform.GetComponent(Main_Menu).StartCoroutine("StartSinglePlayer");
-}
+// Exit Stuff
 }
 
 if(TypeSelecion){ //Track Selection
 
-if(im.c[0].GetInput("Horizontal") != 0 && stickLockH == false){
-currentTrack += Mathf.Sign(im.c[0].GetInput("Horizontal"));
+if(hori != 0){
+currentTrack += Mathf.Sign(hori);
 if(currentTrack < 0)
 currentTrack = 3;
 
 if(currentTrack > 3)
 currentTrack = 0;
-
-stickLockH = true; 
-ButtonWaitH();
 } 
 
 if(submitBool){
@@ -75,16 +66,14 @@ Finished();
 
 }else{
 
-if(im.c[0].GetInput("Horizontal") != 0 && stickLockH == false){
-currentCup += Mathf.Sign(im.c[0].GetInput("Horizontal"));
+if(hori){
+currentCup += Mathf.Sign(hori);
 if(currentCup < 0)
 currentCup = gd.Tournaments.Length-1;
 
 if(currentCup >= gd.Tournaments.Length)
 currentCup = 0;
 
-stickLockH = true; 
-ButtonWaitH();
 }
 
 if(GrandPrixOnly && submitBool){
@@ -105,6 +94,9 @@ var Width : float = Screen.width-150;
 var Ratio : float = Width/LevelHolder.width;
 var Height : int = LevelHolder.height * Ratio;
 
+if(!hidden)
+	var click = im.GetClick();
+
 //Render Tracks
 for(var j : int = 0; j < gd.Tournaments[currentCup].Tracks.Length; j++){
 var OverallRect : Rect = Rect(75 + ((j+1)*14.5f*Ratio) + (j*238f*Ratio),Screen.height/2f + (16f*Ratio),239f*Ratio,210f*Ratio);
@@ -118,7 +110,13 @@ if(!hidden && !GrandPrixOnly && im.MouseIntersects(OverallRect))
 {
 currentTrack = j;
 TypeSelecion = true;
+
+if(click)
+	Finished();
+
 }
+
+
 
 }
 
@@ -141,6 +139,9 @@ if(!hidden && im.MouseIntersects(TRect))
 {
 currentCup = i;
 TypeSelecion = false;
+
+if(GrandPrixOnly && click)
+	Finished();
 }
 
 }
@@ -175,15 +176,15 @@ SendRPC();
 
 function SendRPC(){
 Debug.Log("Send me a RPC");
-/*
+
 if(Network.isClient == true)
 GetComponent.<NetworkView>().RPC ("LevelChoose",RPCMode.Server,currentCup,currentTrack);
 else
-transform.GetComponent(Host_Script).LevelChoose(currentCup,currentTrack);
-*/
-//transform.GetComponent(VotingScreen).hidden = false;
+transform.GetComponent(RaceLeader).LevelChoose(currentCup,currentTrack);
 
-Destroy(this);
+transform.GetComponent(VotingScreen).hidden = false;
+hidden = true;
+
 }
 
 
@@ -195,16 +196,6 @@ return true;
 else
 return false;
 
-}
-
-function ButtonWaitH(){
-yield WaitForSeconds(0.2);
-stickLockH = false;
-}
-
-function ButtonWaitV(){
-yield WaitForSeconds(0.2);
-stickLockV = false;
 }
 
 function OutLineLabel(pos : Rect, text : String,Distance : float,Colour : Color){
