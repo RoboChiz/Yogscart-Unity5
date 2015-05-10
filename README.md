@@ -2,6 +2,11 @@
 
 ChangeLog
 ----------------------
+Commit #6
+.Fix aton of multiplayer bugs
+.Added temporary sound controls
+.Reimplemented Music
+.Add aton of Multiplayer features
 Commit #5
 .Implemented working multiplayer
 .Added basic spectator controls

@@ -163,7 +163,10 @@ function SendPositionUpdates()
 	for(var i : int = 0; i < NetworkRacers.Length; i++)
 	{
 		if(NetworkRacers[i].networkplayer.guid != GetComponent.<NetworkView>().owner.guid)
-			GetComponent.<NetworkView>().RPC("SetPosition",NetworkRacers[i].networkplayer,Racers[i].position);	
+		{
+			if(NetworkRacers[i].connected)
+				GetComponent.<NetworkView>().RPC("SetPosition",NetworkRacers[i].networkplayer,Racers[i].position);	
+		}
 		else
 			transform.GetComponent(RaceBase).SetPosition(Racers[i].position);
 	}
@@ -178,8 +181,11 @@ function EndRace()
 		
 		StopCoroutine("starttoendRace");
 		
-		GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,5);
-		yield WaitForSeconds(5);	
+		Debug.Log("Sending ENCLIENT");
+		GetComponent.<NetworkView>().RPC("EndClient",RPCMode.AllBuffered);
+		
+		GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,10);
+		yield WaitForSeconds(10);	
 			
 		GetComponent.<NetworkView>().RPC("RaceEnded",RPCMode.AllBuffered);
 		transform.GetComponent(Network_Manager).EndGame();
@@ -236,6 +242,16 @@ function OnPlayerDisconnected(player: NetworkPlayer) {
 	{
 		if(NetworkRacers[i].networkplayer.guid == player.guid)
 			NetworkRacers[i].connected = false;
+	}
+	
+	var racers = GameObject.FindObjectsOfType(kartScript);
+	for(i = 0; i < racers.Length; i++)
+	{
+		if(racers[i].transform.GetComponent(NetworkView).owner == player)
+		{
+			racers[i].gameObject.AddComponent(Racer_AI);
+			break;
+		}
 	}
 
 }
@@ -308,7 +324,7 @@ function ScoreboardAdd(toChange : int)
 		if(cutsceneWait && ending)
 		{
 			Debug.Log(NetworkRacers[toChange].character + " has come " + NetworkRacers[toChange].position + "th");
-			GetComponent.<NetworkView>().RPC("ScoreBoardAdd",RPCMode.AllBuffered,NetworkRacers[toChange].character,NetworkRacers[toChange].position,NetworkRacers.Length);
+			GetComponent.<NetworkView>().RPC("ScoreBoardAdd",RPCMode.AllBuffered,NetworkRacers[toChange].character,NetworkRacers[toChange].name,NetworkRacers[toChange].position,NetworkRacers.Length);
 		}
 }
 

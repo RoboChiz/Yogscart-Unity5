@@ -309,6 +309,10 @@ ModelImporter:
     100602: Railing_Collider2
     100604: Object
     100606: Box002
+    100608: Cliff2
+    100610: Ramp
+    100612: Ramp2
+    100614: Terrain
     400000: Line001
     400002: Line002
     400004: Plane001
@@ -613,6 +617,10 @@ ModelImporter:
     400602: Railing_Collider2
     400604: Object
     400606: Box002
+    400608: Cliff2
+    400610: Ramp
+    400612: Ramp2
+    400614: Terrain
     2300000: Line001
     2300002: Plane001
     2300004: Cliff
@@ -915,6 +923,10 @@ ModelImporter:
     2300598: Object
     2300600: //RootNode
     2300602: Box002
+    2300604: Cliff2
+    2300606: Ramp
+    2300608: Ramp2
+    2300610: Terrain
     3300000: Line001
     3300002: Plane001
     3300004: Cliff
@@ -1217,6 +1229,10 @@ ModelImporter:
     3300598: Object
     3300600: //RootNode
     3300602: Box002
+    3300604: Cliff2
+    3300606: Ramp
+    3300608: Ramp2
+    3300610: Terrain
     4300000: Line001
     4300002: Plane001
     4300004: Road
@@ -1518,6 +1534,10 @@ ModelImporter:
     4300596: Railing_Collider2
     4300598: Object
     4300600: Box002
+    4300602: Terrain
+    4300604: Cliff2
+    4300606: Ramp
+    4300608: Ramp2
     6400000: Line001
     6400002: Plane001
     6400004: Cliff

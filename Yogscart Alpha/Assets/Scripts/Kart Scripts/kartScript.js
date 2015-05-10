@@ -2,11 +2,8 @@
 
 var locked : boolean = true;
 
-@HideInInspector
 var throttle : float;
-@HideInInspector
 var steer : float;
-@HideInInspector
 var drift : boolean;
 
 private var isFalling : boolean;
@@ -67,7 +64,7 @@ private var actualSpeed : float;
 @HideInInspector
 public var startBoostVal : int = -1;
 
-var snapTime : float = 0f;
+var snapTime : float = 0.1f;
 
 function FixedUpdate () {
 	

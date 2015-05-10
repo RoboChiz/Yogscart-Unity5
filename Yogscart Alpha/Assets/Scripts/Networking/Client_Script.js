@@ -105,6 +105,9 @@ if(level == "Lobby"){
 		transform.GetComponent(Host_Script).serverType = ServerState.Lobby;
 		
 	transform.GetComponent(Network_Manager).state = ServerState.Lobby;
+	
+	var sm = transform.GetChild(0).GetComponent(Sound_Manager);
+	sm.PlayMusic(Resources.Load("Music & Sounds/YC Main Theme",AudioClip));
 
 }
 

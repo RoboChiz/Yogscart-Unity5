@@ -29,9 +29,16 @@ sfxSource = transform.FindChild("SFX").GetComponent.<AudioSource>();
 
 mSource.loop = true;
 
+UpdateSound();
+
 }
 
-function Update ()
+function Update()
+{
+	UpdateSound();
+}
+
+function UpdateSound()
 {
 var mav : float = MasterVolume/100f;
 var mv : float = MusicVolume/100f;
@@ -70,6 +77,7 @@ function PlayMusic(nMusic : AudioClip)
 {
 	if(mSource != null)
 	{
+	
 		//Wait for current track swap to finish
 		while(mbeingUsed)
 		yield;

@@ -56,6 +56,7 @@
      <None Include="Assets\Scenes\Sjin&apos;s Farm\Materials\Plants\Plant_Shader.shader" />
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\WaterInclude.cginc" />
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Advanced.shader" />
+     <None Include="Assets\Beardbotnik\Terrain Shader\TerrainBlendShader.shader" />
  <Reference Include="Assembly-UnityScript">
  <HintPath>D:/Yogscart/Yogscart Alpha/Library/ScriptAssemblies/Assembly-UnityScript.dll</HintPath>
  </Reference>

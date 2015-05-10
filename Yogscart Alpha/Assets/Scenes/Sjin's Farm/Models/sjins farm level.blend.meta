@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: 823a6bd0bbfcf1a43824a1ca2f8579a0
 ModelImporter:
-  serializedVersion: 16
+  serializedVersion: 18
   fileIDToRecycleName:
     100000: //RootNode
     100002: barn
@@ -302,6 +302,7 @@ ModelImporter:
     4300088: Sphere
     4300090: windmill
     4300092: Cylinder_001
+    4300094: Cylinder_002
     4300096: Cylinder_003
     4300098: Cylinder_004
     4300100: hay_ground_outisde_barn
@@ -345,11 +346,13 @@ ModelImporter:
     generateSecondaryUV: 0
     useFileUnits: 1
     optimizeMeshForGPU: 1
+    keepQuads: 0
     weldVertices: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
+    useFileScale: 0
   tangentSpace:
     normalSmoothAngle: 60
     splitTangentsAcrossUV: 1
@@ -372,3 +375,5 @@ ModelImporter:
   animationType: 2
   additionalBone: 0
   userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,7 +1,9 @@
-﻿#pragma strict
+﻿
+#pragma strict
 
 private var gd : CurrentGameData;
 private var im : InputManager;
+private var sm : Sound_Manager;
 
 enum ServerState {ServerList,Connecting,Popup,Lobby,LoadingRace,LoadingLevel,Racing};
 var state : ServerState;
@@ -21,6 +23,8 @@ var currentSelection : int;
 
 @HideInInspector
 var SpectatorCam : GameObject;
+
+private var connectRot : float;
 
 class GameMode
 {
@@ -89,6 +93,7 @@ class ServerInfo
 class DisplayName
 {
 	var name : String;
+	var character : int;
 	var ping : int;
 	var networkPlayer : NetworkPlayer;
 	
@@ -96,6 +101,13 @@ class DisplayName
 	{
 	name = n;
 	networkPlayer = np;
+	character = -1;
+	}
+	
+	function DisplayName()
+	{
+		name = "";
+		character = -1;
 	}
 }
 
@@ -139,11 +151,17 @@ function Awake()
 {
 	im = transform.GetComponent(InputManager);
 	gd = transform.GetComponent(CurrentGameData);
+	sm = transform.GetChild(0).GetComponent(Sound_Manager);
 	
 	playerName = PlayerPrefs.GetString("playerName","Player");
 	
 	LoadServers();
 	
+}
+
+function Start()
+{
+	sm.PlayMusic(Resources.Load("Music & Sounds/YC Main Theme",AudioClip));
 }
 
 function SaveServers()
@@ -243,6 +261,16 @@ function OnGUI()
 	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*3.5f,chunkSize*4,chunkSize/2f),"Name (Temporary): ");
 	playerName = GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),playerName);
 	
+	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*4.5f,chunkSize*4,chunkSize/2f),"Master Volume: ");
+	sm.MasterVolume = GUI.HorizontalSlider(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*5f,chunkSize*4,chunkSize/2f),sm.MasterVolume,0,100);
+	
+	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*5.5f,chunkSize*4,chunkSize/2f),"Music Volume: ");
+	sm.MusicVolume = GUI.HorizontalSlider(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*6f,chunkSize*4,chunkSize/2f),sm.MusicVolume,0,100);
+	
+	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*6.5f,chunkSize*4,chunkSize/2f),"SFX Volume: ");
+	sm.SFXVolume = GUI.HorizontalSlider(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*7f,chunkSize*4,chunkSize/2f),sm.SFXVolume,0,100);
+
+	
 	if(GUI.Button(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3f + gapSize*1.5f,chunkSize*4,chunkSize/2f),"Host Server"))
 		{
 			StartServer();
@@ -295,7 +323,7 @@ function OnGUI()
 	
 	GUI.EndGroup();
 	
-	//Additional Buttons
+	//Additional Buttons	
 	
 	// Server Information
 	if(servers != null && servers.Length > 0)
@@ -370,6 +398,11 @@ function OnGUI()
 				{
 					editServer = false;
 					SaveServers();
+				}
+			if(GUI.Button(Rect(10 + Screen.width - chunkSize * 5f,chunkSize *2f + gapSize*1.5f,chunkSize,chunkSize/2f),"Cancel"))
+				{
+					editServer = false;
+					LoadServers();
 				}
 		}
 		
@@ -504,6 +537,17 @@ function OnGUI()
 		}
 	
 	break;
+	case ServerState.Connecting:
+	
+		var connectionCircle : Texture2D = Resources.Load("UI Textures/Main Menu/Connecting",Texture2D);
+		
+		GUIUtility.RotateAroundPivot (connectRot, Vector2(Screen.width/2f,Screen.height/2f)); 
+		GUI.DrawTexture(Rect(Screen.width/2f - chunkSize, Screen.height/2f - chunkSize,2f*chunkSize,2f*chunkSize),connectionCircle);
+		
+		connectRot += Time.deltaTime * -50f;
+	
+	break;
+	
 	}
 }
 
@@ -554,7 +598,7 @@ function StartGame()
 	if(gd.onlineGameModes[currentSelection].baseScript != null)
 	{
 		
-		GetComponent.<NetworkView>().RPC("StartGamemode",RPCMode.All,currentSelection);
+		GetComponent.<NetworkView>().RPC("StartGamemode",RPCMode.AllBuffered,currentSelection);
 		
 		if(gd.onlineGameModes[currentSelection].hostScript != null)
 		{
@@ -590,6 +634,8 @@ function EndGame()
 	state = ServerState.Lobby;
 	
 	var hs = transform.GetComponent(Host_Script);
+	
+	hs.CheckforLeavers();
 	
 	GetComponent.<NetworkView>().RPC("ClearNames",RPCMode.All);
 		
@@ -656,7 +702,6 @@ function SpectatePlease()
 		SpectatorCam.AddComponent(SpectatorCamera);
 		SpectatorCam.AddComponent(Kart_Camera);
 		
-		SpectatorCam.GetComponent(Kart_Camera).smoothTime = 3f;
 		SpectatorCam.GetComponent(Kart_Camera).Height = 3f;
 		
 		SpectatorCam.tag = "MainCamera";

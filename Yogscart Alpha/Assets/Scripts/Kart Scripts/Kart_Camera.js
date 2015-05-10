@@ -33,8 +33,10 @@ function Update () {
 			transform.position = Vector3.SmoothDamp(transform.position, pos,velocity, smoothTime);
 			GetComponent.<Camera>().fieldOfView = Mathf.Lerp(GetComponent.<Camera>().fieldOfView,60 + Target.GetComponent.<Rigidbody>().velocity.magnitude/4,Time.deltaTime/50f);
 		}
-
-		transform.position = Vector3.Lerp(transform.position,pos,smoothTime * Time.deltaTime);
+		else
+		{
+			transform.position = Vector3.Lerp(transform.position,pos,smoothTime * Time.deltaTime);
+		}
 
 		var lookDir : Vector3 = Target.position - (transform.position-(Vector3.up*PlayerHeight) + (transform.right * sideAmount));
 

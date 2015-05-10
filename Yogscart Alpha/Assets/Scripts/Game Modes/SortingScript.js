@@ -3,19 +3,25 @@
 function CalculatePositions(array : Racer[])
 {
 
-var sortedArray = new Racer[array.Length];
+var sortedArray = new Racer[0];
+var finished : int = 0;
+var copy = new Array();
 
-for(var i : int = 0; i < sortedArray.Length; i++)
+for(var i : int = 0; i < array.Length; i++)
 {
-sortedArray[i] = array[i];
-
+	if(!array[i].finished)
+		copy.Push(array[i]);
+	else
+		finished += 1;
 }
+
+sortedArray = copy;
 
 quickSort(sortedArray,0,sortedArray.Length-1);
 
-for(i = 0; i < sortedArray.Length; i++)
+for(i = finished; i < array.Length; i++)
 {
-sortedArray[i].position = i;
+sortedArray[i-finished].position = i;
 }
 
 }

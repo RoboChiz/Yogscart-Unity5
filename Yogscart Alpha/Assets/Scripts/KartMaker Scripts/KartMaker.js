@@ -63,14 +63,11 @@ if(kartType != kartType.Display){
 
 var kb : GameObject = kartBody.gameObject;
 
-if(kartType != kartType.Spectator)
-{
-	kb.AddComponent(Rigidbody);
-	kb.GetComponent.<Rigidbody>().mass = 1500;
-	kb.GetComponent.<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-	kb.GetComponent.<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
-	kb.GetComponent.<Rigidbody>().angularDrag = 0;
-}
+kb.AddComponent(Rigidbody);
+kb.GetComponent.<Rigidbody>().mass = 1500;
+kb.GetComponent.<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+kb.GetComponent.<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
+kb.GetComponent.<Rigidbody>().angularDrag = 0;
 
 kb.AddComponent(AudioSource);
 kartBody.FindChild("Kart Body").gameObject.AddComponent(AudioSource);
@@ -80,8 +77,6 @@ kartBody.GetComponent(AudioSource).playOnAwake = false;
 kb.AddComponent(DeathCatch);
 kb.GetComponent(DeathCatch).DeathParticles = kartBody.FindChild("Kart Body").FindChild("Particles").FindChild("Death Particles").GetComponent.<ParticleSystem>();
 
-if(kartType != kartType.Spectator)
-{
 var frontlWheelCollider : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.FrontLPosition,Quaternion.Euler(0,0,0));
 frontlWheelCollider.name = "FrontL Wheel";
 frontlWheelCollider.parent = kartBody.FindChild("Colliders");
@@ -101,46 +96,44 @@ var backrWheelCollider : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel
 backrWheelCollider.parent = kartBody.FindChild("Colliders");
 backrWheelCollider.name = "BackR Wheel";
 SetUpWheelCollider(backrWheelCollider);
-}
 
 kb.AddComponent(kartAnimation);
 kb.GetComponent(kartAnimation).ani = characterMesh.GetComponent(Animator);
 
-if(kartType != kartType.Spectator)
-{
-	kb.AddComponent(kartScript);
+kb.AddComponent(kartScript);
 
-	var ks = kb.GetComponent(kartScript);
+var ks = kb.GetComponent(kartScript);
 
-	ks.engineSound = kartSkel.engineSound;
+ks.engineSound = kartSkel.engineSound;
 
-	ks.wheelColliders = new WheelCollider[4];
-	ks.wheelColliders[0] = frontlWheelCollider.GetComponent(WheelCollider);
-	ks.wheelColliders[1] = frontrWheelCollider.GetComponent(WheelCollider);
-	ks.wheelColliders[2] = backlWheelCollider.GetComponent(WheelCollider);
-	ks.wheelColliders[3] = backrWheelCollider.GetComponent(WheelCollider);
+ks.wheelColliders = new WheelCollider[4];
+ks.wheelColliders[0] = frontlWheelCollider.GetComponent(WheelCollider);
+ks.wheelColliders[1] = frontrWheelCollider.GetComponent(WheelCollider);
+ks.wheelColliders[2] = backlWheelCollider.GetComponent(WheelCollider);
+ks.wheelColliders[3] = backrWheelCollider.GetComponent(WheelCollider);
 
-	ks.wheelMeshes = new Transform[4];
-	ks.wheelMeshes[0] = frontlWheel;
-	ks.wheelMeshes[1] = frontrWheel;
-	ks.wheelMeshes[2] = backlWheel;
-	ks.wheelMeshes[3] = backrWheel;
+ks.wheelMeshes = new Transform[4];
+ks.wheelMeshes[0] = frontlWheel;
+ks.wheelMeshes[1] = frontrWheel;
+ks.wheelMeshes[2] = backlWheel;
+ks.wheelMeshes[3] = backrWheel;
 
-	var kp : Transform = kartBody.FindChild("Kart Body").FindChild("Particles");
+var kp : Transform = kartBody.FindChild("Kart Body").FindChild("Particles");
 
-	ks.flameParticles = new ParticleSystem[2];
-	ks.flameParticles[0] = kp.FindChild("L_Flame").GetComponent.<ParticleSystem>();
-	ks.flameParticles[1] = kp.FindChild("R_Flame").GetComponent.<ParticleSystem>();
+ks.flameParticles = new ParticleSystem[2];
+ks.flameParticles[0] = kp.FindChild("L_Flame").GetComponent.<ParticleSystem>();
+ks.flameParticles[1] = kp.FindChild("R_Flame").GetComponent.<ParticleSystem>();
 
-	ks.DriftParticles = new Transform[2];
-	ks.DriftParticles[0] = kp.FindChild("L_Sparks");
-	ks.DriftParticles[1] = kp.FindChild("R_Sparks");
+ks.DriftParticles = new Transform[2];
+ks.DriftParticles[0] = kp.FindChild("L_Sparks");
+ks.DriftParticles[1] = kp.FindChild("R_Sparks");
 
-	ks.TrickParticles = kp.FindChild("Trick").GetComponent.<ParticleSystem>();
+ks.TrickParticles = kp.FindChild("Trick").GetComponent.<ParticleSystem>();
 
-	kb.AddComponent(Position_Finding);
+kb.AddComponent(Position_Finding);
+kb.AddComponent(kartUpdate);
+
 	//Add Item
-}
 
 if(kartType != KartType.Display &&  kartType != KartType.Spectator)
 {

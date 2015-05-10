@@ -77,7 +77,6 @@ function OnPlayerDisconnected(player: NetworkPlayer) {
 
 		Debug.Log("Clean up after player " +  player);
 		Network.RemoveRPCs(player);
-		Network.DestroyPlayerObjects(player);
 		
 		var copy = new Array();
 
@@ -166,7 +165,6 @@ switch (serverType)
 		}
 		
 	}
-
 
 	break;
 	default:
