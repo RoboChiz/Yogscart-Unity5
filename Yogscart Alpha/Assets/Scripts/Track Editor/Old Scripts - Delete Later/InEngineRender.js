@@ -98,7 +98,10 @@ if(GameObject.Find("Track Manager") != null && GameObject.Find("Track Manager").
 				 	}
 				 
 					var nrot : Quaternion = Quaternion.Euler(0,90,0);
-					var dir : Vector3 = (Position1-Position2).normalized;
+					var dir : Vector3 = (Position1-Position2);
+					
+					dir.y = 0;
+					dir.Normalize();
 				 
 			 		Debug.DrawRay(Position1,nrot*dir * 9f,Color.yellow);
 			 		Debug.DrawRay(Position1,nrot*dir * -9f,Color.yellow);

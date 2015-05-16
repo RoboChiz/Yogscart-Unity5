@@ -9,20 +9,6 @@ function Awake()
 	im = GameObject.Find("GameData").GetComponent(InputManager);
 }
 
-function Update()
-{
-
-var cancelInput : float = im.c[0].GetMenuInput("Cancel");
-var cancelBool = (cancelInput != 0);
-
-if(cancelBool)
-{
-Network.Disconnect();
-}
-
-
-}
-
 @RPC
 function QuizNewRacer () 
 {

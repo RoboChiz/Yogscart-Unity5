@@ -255,7 +255,7 @@ public class CameraPoint{
  var obj = new GameObject();
  
  obj.transform.parent = GameObject.Find("Track Manager").transform;
- obj.name = Point.Position.ToString();
+ obj.name = "Point";
  
  var pos : Vector3;
  if(PositionPoints == null || PositionPoints.Length == 0)
@@ -268,30 +268,19 @@ public class CameraPoint{
  var copy = new Array();
  
  if(PositionPoints != null)
- copy = PositionPoints;
- 
- if(PositionPoints != null)
- for(var i : int = 0; i < PositionPoints.Length-1; i++)
- copy.Push(PositionPoints[i]);
+ 	copy = PositionPoints;
  
  var nPoint : Transform = obj.transform;
  
  obj.AddComponent(PointHandler);
- 
- if(copy.length <= 1)
- {
- 	obj.GetComponent(PointHandler).style = Point.Lap;
- }
 
  copy.Push(nPoint);
-
  
  PositionPoints = copy;
  
  #if UNITY_EDITOR
 	Selection.activeTransform = obj.transform; 
  #endif
-
  
  }
  

@@ -71,6 +71,8 @@ function StartGame()
 		}
 	}
 	
+	StartCoroutine("LevelSelectCountdown");
+	
 }
 
 function StartRace () {
@@ -116,7 +118,7 @@ function StartRace () {
 			GetComponent.<NetworkView>().RPC("PlayCutscene",RPCMode.All);
 			
 			while(WaitForFinished())
-				yield WaitForSeconds(1);
+				yield WaitForSeconds(0.5f);
 			
 			SetFinished(false);
 			cutsceneWait = true;
@@ -204,6 +206,13 @@ function starttoendRace()
 		
 }
 
+function LevelSelectCountdown()
+{
+	GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,30);
+	yield WaitForSeconds(30);
+	DetermineLevel();
+}
+
 function BeginTick(){
 var foo1 = OverallTimer.Minute;
 var foo2 = OverallTimer.Second;
@@ -241,18 +250,24 @@ function OnPlayerDisconnected(player: NetworkPlayer) {
 	for(var i : int = 0; i < NetworkRacers.Length; i++)
 	{
 		if(NetworkRacers[i].networkplayer.guid == player.guid)
-			NetworkRacers[i].connected = false;
-	}
-	
-	var racers = GameObject.FindObjectsOfType(kartScript);
-	for(i = 0; i < racers.Length; i++)
-	{
-		if(racers[i].transform.GetComponent(NetworkView).owner == player)
 		{
-			racers[i].gameObject.AddComponent(Racer_AI);
+			NetworkRacers[i].connected = false;
 			break;
 		}
 	}
+	
+	var racers = GameObject.FindObjectsOfType(kartScript);
+	for(var j : int = 0; j < racers.Length; j++)
+	{
+		if(racers[j].transform.GetComponent(NetworkView).owner == player)
+		{
+			racers[j].gameObject.AddComponent(Racer_AI);
+			racers[j].gameObject.GetComponent(kartUpdate).sending = true;
+			break;
+		}
+	}
+	
+	NetworkRacers[i].ingameObj = racers[j].gameObject.transform;
 
 }
 
@@ -260,6 +275,15 @@ function LocalPositionUpdate(toChange : int, total : int, next : float)
 {
 	Racers[toChange].TotalDistance = total;
 	Racers[toChange].NextDistance = next;
+	
+	for(var i : int = 0; i < NetworkRacers.Length;i++)
+	{
+		if(!NetworkRacers[i].connected)
+		{
+			Racers[i].TotalDistance = Racers[i].ingameObj.GetComponent(Position_Finding).currentTotal;
+			Racers[i].NextDistance = Racers[i].ingameObj.GetComponent(Position_Finding).currentDistance;
+		}
+	}
 }
 
 @RPC
@@ -343,7 +367,7 @@ function WaitForFinished() : boolean
 
 	for(var i : int = 0; i < Racers.Length; i++)
 	{
-		if(!Racers[i].finished)
+		if(!Racers[i].finished && NetworkRacers[i].connected)
 		{
 		returnVal = true;
 		break;
@@ -375,7 +399,7 @@ function LevelChoose(cup : int, track : int){
 
 	if(Votes.Length >= transform.GetComponent(Host_Script).RacingPlayers.Length){
 		Debug.Log("Votes: " + Votes.Length + " RacingPlayers: " + transform.GetComponent(Host_Script).RacingPlayers.Length);
-		StopCoroutine("StartLevelSelect");
+		StopCoroutine("LevelSelectCountdown");
 		GetComponent.<NetworkView>().RPC ("Countdowner", RPCMode.All,5);
 		DetermineLevel();
 	}
@@ -384,23 +408,27 @@ function LevelChoose(cup : int, track : int){
 
 function DetermineLevel(){
 	
-		var toRace : int = Random.Range(0,Votes.Length);
 		var cup : int;
 		var track : int;
-
-		if(Votes.Length > 0){
-			cup = Votes[toRace].x;
-			track = Votes[toRace].y;
-			GetComponent.<NetworkView>().RPC ("StartRoll",RPCMode.All,toRace);
-		}else{
+	
+		if(Votes == null || Votes.Length == 0)
+		{
 			cup = Random.Range(0,gd.Tournaments.Length);
 			track  = Random.Range(0,gd.Tournaments[cup].Tracks.Length);
 		}
-
+		else
+		{
+			var toRace : int = Random.Range(0,Votes.Length);
+			cup = Votes[toRace].x;
+			track = Votes[toRace].y;
+		}
+		
+		GetComponent.<NetworkView>().RPC ("StartRoll",RPCMode.All,toRace);
 		yield WaitForSeconds(5.1);
 
 		Network.RemoveRPCs(GetComponent.<NetworkView>().owner);
 		GetComponent.<NetworkView>().RPC ("LoadNetworkLevel", RPCMode.AllBuffered, gd.Tournaments[cup].Tracks[track].SceneID,0);
+
 		
 		Debug.Log("Level Loaded!");
 

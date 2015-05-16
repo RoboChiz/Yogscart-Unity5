@@ -41,7 +41,7 @@ hori = im.c[0].GetMenuInput("Horizontal");
 
 if(hidden == false){
 //Do Input
-if(vert && GrandPrixOnly){
+if(vert && !GrandPrixOnly){
 TypeSelecion = !TypeSelecion;
 } 
 

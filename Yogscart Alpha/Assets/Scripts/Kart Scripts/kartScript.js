@@ -10,13 +10,15 @@ private var isFalling : boolean;
 private var isColliding : boolean;
 
 var maxSpeed : float = 20f;
+var maxGrassSpeed : float = 7.5f;
 private var lastMaxSpeed : float;
+private var offRoad : boolean;
 
 var acceleration : float = 10;
 
 var BrakeTime : float = 0.5f;
 
-var turnSpeed : float = 4f;
+var turnSpeed : float = 3f;
 var driftAmount : float = 2f;
 private var driftSteer : int;
 
@@ -32,9 +34,10 @@ var lapisAmount : int = 0;
 
 var wheelColliders : WheelCollider[];
 var wheelMeshes : Transform[];
+private var wheelStart : Vector3[];
 
 var BoostAddition : int = 5;
-private var isBoosting : boolean;
+private var isBoosting : String = "";
 //Start Boost Variables
 private var allowedBoost : boolean;
 private var spinOut : boolean;
@@ -65,11 +68,37 @@ private var actualSpeed : float;
 public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
+var pushing : boolean;
+var pushTime : float = 0.12f;
+var pushAmount : float = 0.05f;
+
+function Start()
+{
+
+	wheelStart = new Vector3[wheelMeshes.Length];
+	
+	for(var i : int = 0; i < wheelMeshes.Length; i++)
+	{
+		wheelStart[i] = wheelMeshes[i].localPosition;
+	}
+	
+}
+
+function Update()
+{
+	lapisAmount = Mathf.Clamp(lapisAmount,0,10);
+}	
 
 function FixedUpdate () {
 	
 	isFalling = CheckGravity();
 	
+	var hit : RaycastHit;
+	if(Physics.Raycast(transform.position,-transform.up,hit,1) && hit.collider.tag == "OffRoad")
+		offRoad = true;
+	else
+		offRoad = false;
+		
 	if(isFalling)
 	{
 		SnapUp();
@@ -93,7 +122,7 @@ function FixedUpdate () {
 		
 		if(tricking)
 		{
-			Boost(0.25f);
+			Boost(0.25f,"Trick");
 			tricking = false;
 		}
 	}
@@ -103,7 +132,7 @@ function FixedUpdate () {
 	
 	CalculateExpectedSpeed();
 	
-	if(!isFalling)
+	if(!isFalling && !pushing)
 	{
 		ApplySteering();
 	}
@@ -119,7 +148,7 @@ function FixedUpdate () {
 	
 	expectedSpeed = Mathf.Clamp(expectedSpeed,-nMaxSpeed,nMaxSpeed);
 	
-	if(isBoosting)
+	if(isBoosting != "")
 	{
 		nMaxSpeed = maxSpeed + BoostAddition;
 		expectedSpeed = maxSpeed + BoostAddition;
@@ -153,6 +182,8 @@ function FixedUpdate () {
 			
 			if(!tricking && !isFalling && !spunOut)
 				wheelMeshes[i].position = wheelPos;
+			else
+				wheelMeshes[i].localPosition = wheelStart[i];
 	}
 	
 	//Play engine Audio
@@ -188,13 +219,76 @@ function FixedUpdate () {
 		boostAmount += Time.deltaTime * 0.1f;
 
 	if(startBoostVal == 0 && allowedBoost){
-		Boost(boostAmount);
+		Boost(boostAmount,"Trick");
 		startBoostVal = -1;
 	}
 
 	if(startBoostVal == 0 && spinOut){
 		SpinOut();
 		startBoostVal = -1;
+	}
+	
+	//Kart Collisions
+	var rayHit : RaycastHit;
+	var checkDir : Vector3;
+	if(GetComponent.<Rigidbody>().velocity.magnitude > 5)
+		checkDir = GetComponent.<Rigidbody>().velocity.normalized;
+	else
+		checkDir = transform.forward;
+
+	if(Physics.SphereCast(transform.position,1f,checkDir,rayHit,0.5f))
+	{
+		if(rayHit.transform.GetComponent(kartScript) != null)
+		{
+			var targetDir : Vector3 = rayHit.transform.position - transform.position;
+			var ndir : Vector3;
+			if(Vector3.Angle(targetDir,transform.right) < 90)
+			ndir = -transform.right + transform.forward;
+			else
+			ndir = transform.right + transform.forward;
+			Push(ndir,pushAmount);
+		}
+	}
+	
+}
+
+function Push(dir : Vector3, dist : float)
+{
+	
+	if(!pushing)
+	{
+		pushing = true;
+		//v = u+at
+		//s = ut + 0.5at^2
+		//s/(t^2*0.5) = a;
+		//f = ma
+		
+		GetComponent.<Rigidbody>().freezeRotation = true;
+
+		var startTime = Time.realtimeSinceStartup;
+
+		while((Time.realtimeSinceStartup - startTime) < pushTime)
+		{
+
+		Debug.DrawRay(transform.position,dir * 10);
+
+		var requiredA = dist/((Time.fixedDeltaTime*Time.fixedDeltaTime)*0.5f);
+		GetComponent.<Rigidbody>().AddForce(dir * GetComponent.<Rigidbody>().mass * requiredA);	
+		
+		yield;
+
+		}
+
+		//Remove the horizontal velocity
+		
+		var relativeVelocity : Vector3 = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
+		var stopA = -relativeVelocity.x / Time.fixedDeltaTime;
+		
+		GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
+		
+		Debug.Log("Push");
+		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
+		pushing = false;
 	}
 	
 }
@@ -214,7 +308,14 @@ function CalculateExpectedSpeed()
 		if(HaveTheSameSign(throttle,expectedSpeed) == false)
 			expectedSpeed += (throttle * acceleration * 2) *  Time.fixedDeltaTime;
 		else{
-			var percentage : float = (1f/maxSpeed) * Mathf.Abs(expectedSpeed);
+		
+			var percentage : float;
+			
+			if(offRoad && isBoosting != "Boost")
+				percentage  = (1f/maxGrassSpeed) * Mathf.Abs(expectedSpeed);
+			else
+				percentage  = (1f/maxSpeed) * Mathf.Abs(expectedSpeed);
+				
 			expectedSpeed += (throttle * acceleration * (1f-percentage)) *  Time.fixedDeltaTime;
 		}
 	}
@@ -223,20 +324,30 @@ function CalculateExpectedSpeed()
 
 function ApplySteering()
 {
+
 	if(!driftStarted){
 		
-		var speedVal = Mathf.Clamp((1f/maxSpeed)*expectedSpeed,0.8,1);
+		if(steer != 0)
+			steer = Mathf.Sign(steer);
 		
-		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,steer * turnSpeed * speedVal,Time.fixedDeltaTime*100);
-		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,steer * turnSpeed * speedVal,Time.fixedDeltaTime*100);
+		wheelColliders[0].steerAngle = steer * turnSpeed;
+		wheelColliders[1].steerAngle = steer * turnSpeed;
+		
 	}else{	
 	
 		var nSteer = driftSteer * Mathf.Clamp(steer/2f,-driftSteer * 0.4, driftSteer*0.5);
 	
-		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*100);
-		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*100);	
+		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*500f);
+		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*500f);	
 		
 	}
+	
+	if(isColliding)
+	{
+		wheelColliders[0].steerAngle = 0;
+		wheelColliders[0].steerAngle = 0;
+	}
+		
 }
 
 function CheckGravity() : boolean 
@@ -264,7 +375,7 @@ function ApplyDrift(){
 
 	var KartBody : Transform = transform.FindChild("Kart Body");
 
-	if(drift && expectedSpeed > maxSpeed*0.75f && !isFalling){
+	if(drift && expectedSpeed > maxSpeed*0.75f && !isFalling && (!offRoad || (offRoad && isBoosting == "Boost"))){
 	if(!applyingDrift && Mathf.Abs(steer) > 0.2 && driftStarted == false ){
 	driftStarted = true;
 	driftSteer = Mathf.Sign(steer);
@@ -299,17 +410,20 @@ function ApplyDrift(){
 
 	}else{
 	
+	if(isFalling || offRoad)
+		driftTime = 0;
+	
 	if(!Spinning)
 		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,0,0),Time.fixedDeltaTime*2);
 
 	if(throttle > 0){
 	if(driftTime >= orangeTime)
 	{
-	Boost(1);	
+	Boost(1,"Drift");	
 	}
 	else if(driftTime >= blueTime)
 	{
-	Boost(0.5);
+	Boost(0.5,"Drift");
 	}
 	}
 
@@ -325,9 +439,9 @@ function ResetDrift(){
 	applyingDrift = false;
 }
 
-function Boost(t : float)
+function Boost(t : float, type : String)
 {
-	isBoosting = true;
+	isBoosting = type;
 	StopCoroutine("StartBoost");
 	StartCoroutine("StartBoost",t);
 }
@@ -345,7 +459,7 @@ yield WaitForSeconds(t);
 for(i = 0; i < flameParticles.Length; i++)
 flameParticles[i].Stop();
 
-isBoosting = false;
+isBoosting = "";
 }
 
 function CancelBoost()
@@ -355,7 +469,7 @@ StopCoroutine("Boost");
 for(var i : int = 0; i < flameParticles.Length; i++)
 flameParticles[i].Stop();
 
-isBoosting = false;
+isBoosting = "";
 }
 
 private var snapping : boolean;
@@ -449,13 +563,15 @@ function HaveTheSameSign(first : float, second : float) : boolean
 
 function OnCollisionEnter(collision : Collision)
 {
-	//Collided(collision);
+	if(collision.other.GetComponent(kartScript) == null)
+		Collided(collision);
 }
 
 function Collided(collision : Collision)
 {
 	isColliding = true;
 	expectedSpeed /= 4f;
-	yield WaitForSeconds(0.4f);
+	expectedSpeed = -expectedSpeed;
+	yield WaitForSeconds(0.2f);
 	isColliding = false;
 }

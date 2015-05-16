@@ -4,9 +4,9 @@ var PhysicsProp : Transform;
 
 function OnTriggerEnter (other : Collider) {
 
-if(other.transform.tag == "Kart"){
-Hit();
-other.transform.GetComponent(kartScript).lapisAmount += 1;
+if(other.transform.name == "mesh Collider"){
+	Hit();
+	other.transform.parent.parent.GetComponent(kartScript).lapisAmount += 1;
 }
 
 }

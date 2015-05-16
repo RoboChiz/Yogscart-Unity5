@@ -275,7 +275,11 @@ RacingPlayers = copy;
 
 GetComponent.<NetworkView>().group = RacingPlayers.Length;
 
-GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,name,np);
+GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,name,character);
+
+yield;
+
+transform.GetComponent(Network_Manager).finalPlayers[transform.GetComponent(Network_Manager).finalPlayers.Length-1].networkPlayer = np;
 
 GetComponent.<NetworkView>().group = 0;
 

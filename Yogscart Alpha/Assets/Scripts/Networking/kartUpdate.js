@@ -26,9 +26,9 @@ function FixedUpdate () {
 			updateTime = 0;
 		}
 	
-		if(posTime > 3)
+		if(posTime > 1)
 		{
-			transform.GetComponent.<NetworkView>().RPC("MyPosition",RPCMode.Others,transform.position,transform.rotation);
+			transform.GetComponent.<NetworkView>().RPC("MyPosition",RPCMode.Others,transform.position,transform.rotation,GetComponent.<Rigidbody>().velocity);
 			posTime = 0;
 		}
 		
@@ -48,10 +48,11 @@ function MyInput(t : float, s : float, d : boolean)
 }
 
 @RPC
-function MyPosition(pos : Vector3,rot : Quaternion)
+function MyPosition(pos : Vector3,rot : Quaternion, vel : Vector3)
 {
 
 	transform.position = pos;
 	transform.rotation = rot;
+	GetComponent.<Rigidbody>().velocity = vel;
 	
 }

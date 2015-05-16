@@ -54,6 +54,9 @@ private var selected : int = -1;
 @RPC
 function StartRoll(i : int){
 
+hidden = false;
+transform.GetComponent(Level_Select).hidden = true;
+
 gameObject.AddComponent(AudioSource);
 transform.GetComponent(AudioSource).GetComponent.<AudioSource>().clip = Resources.Load("Music & Sounds/Ting",AudioClip);
 var t : float;

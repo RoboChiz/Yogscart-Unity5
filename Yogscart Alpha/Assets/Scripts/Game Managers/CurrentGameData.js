@@ -48,6 +48,8 @@ var Difficulty : int;
 
 var onlineGameModes : GameMode[];
 
+var im : InputManager;
+
 //@HideInInspector
 var BlackOut : boolean = true;
 private var isPlaying : boolean;
@@ -66,6 +68,7 @@ private var ColourAlpha : Color = Color.white;
 			currentChoices[i] = new LoadOut();
 		}
 		
+		im = transform.GetComponent(InputManager);
 		LoadEverything();
 		
 		
@@ -88,10 +91,11 @@ private var ColourAlpha : Color = Color.white;
 		
 		function Start()
 		{
-		if(GameObject.Find("OldGameData") != null){
-		var oldGD = GameObject.Find("OldGameData").GetComponent(CurrentGameData);
-		Destroy(oldGD.gameObject);
-		}
+			if(GameObject.Find("OldGameData") != null){
+				var oldGD = GameObject.Find("OldGameData").GetComponent(CurrentGameData);
+				im.c = oldGD.transform.GetComponent(InputManager).c;
+				Destroy(oldGD.gameObject);
+			}
 		}
 	
 		private var iconHeights : int[];
@@ -503,6 +507,7 @@ transform.name = "OldGameData";
 
 yield WaitForSeconds(1);
 Application.LoadLevel("Main_Menu");
+
 yield;
 
 }
