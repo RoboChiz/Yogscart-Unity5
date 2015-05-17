@@ -1,0 +1,1235 @@
+fileFormatVersion: 2
+guid: 578a48b93fa806c45baae92e00787020
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Armature
+    100002: chest
+    100004: Cube_016
+    100006: Cube_017
+    100008: Cube_018
+    100010: Cube_019
+    100012: Cube_020
+    100014: Cube_021
+    100016: Cube_022
+    100018: Cube_023
+    100020: Cube_024
+    100022: Cube_027
+    100024: Cube_029
+    100026: Cube_033
+    100028: Cube_034
+    100030: Cube_035
+    100032: foot_l
+    100034: foot_r
+    100036: hand_l
+    100038: hand_r
+    100040: head
+    100042: hip
+    100044: lowerarm_l
+    100046: lowerarm_r
+    100048: lowerfingers_l
+    100050: lowerfingers_r
+    100052: lowerleg_l
+    100054: lowerleg_r
+    100056: neck
+    100058: //RootNode
+    100060: shoulder_l
+    100062: shoulder_r
+    100064: stomach
+    100066: thumb_l
+    100068: thumb_r
+    100070: toe_l
+    100072: toe_r
+    100074: upperarm_l
+    100076: upperarm_r
+    100078: upperfingers_l
+    100080: upperfingers_r
+    100082: upperleft_l
+    100084: upperleft_r
+    400000: Armature
+    400002: chest
+    400004: Cube_016
+    400006: Cube_017
+    400008: Cube_018
+    400010: Cube_019
+    400012: Cube_020
+    400014: Cube_021
+    400016: Cube_022
+    400018: Cube_023
+    400020: Cube_024
+    400022: Cube_027
+    400024: Cube_029
+    400026: Cube_033
+    400028: Cube_034
+    400030: Cube_035
+    400032: foot_l
+    400034: foot_r
+    400036: hand_l
+    400038: hand_r
+    400040: head
+    400042: hip
+    400044: lowerarm_l
+    400046: lowerarm_r
+    400048: lowerfingers_l
+    400050: lowerfingers_r
+    400052: lowerleg_l
+    400054: lowerleg_r
+    400056: neck
+    400058: //RootNode
+    400060: shoulder_l
+    400062: shoulder_r
+    400064: stomach
+    400066: thumb_l
+    400068: thumb_r
+    400070: toe_l
+    400072: toe_r
+    400074: upperarm_l
+    400076: upperarm_r
+    400078: upperfingers_l
+    400080: upperfingers_r
+    400082: upperleft_l
+    400084: upperleft_r
+    4300000: Cube_024
+    4300002: Cube_027
+    4300004: Cube_035
+    4300006: Cube_029
+    4300008: Cube_016
+    4300010: Cube_033
+    4300012: Cube_018
+    4300014: Cube_017
+    4300016: Cube_019
+    4300018: Cube_020
+    4300020: Cube_022
+    4300022: Cube_021
+    4300024: Cube_023
+    4300026: Cube_034
+    7400000: Default Take
+    7400002: ArmatureAction
+    7400004: TPose
+    7400006: Car_Idle
+    7400008: Turn Right
+    7400010: Turn Left
+    9500000: //RootNode
+    13700000: Cube_016
+    13700002: Cube_017
+    13700004: Cube_018
+    13700006: Cube_019
+    13700008: Cube_020
+    13700010: Cube_021
+    13700012: Cube_022
+    13700014: Cube_023
+    13700016: Cube_024
+    13700018: Cube_027
+    13700020: Cube_029
+    13700022: Cube_033
+    13700024: Cube_034
+    13700026: Cube_035
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 3
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Default Take
+      takeName: Default Take
+      firstFrame: -1
+      lastFrame: 89
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/hip
+        weight: 1
+      - path: Armature/hip/stomach
+        weight: 1
+      - path: Armature/hip/stomach/chest
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck/head
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l/lowerfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/thumb_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r/lowerfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/thumb_r
+        weight: 0
+      - path: Armature/hip/upperleft_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l/toe_l
+        weight: 1
+      - path: Armature/hip/upperleft_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r/toe_r
+        weight: 1
+      - path: Cube_016
+        weight: 0
+      - path: Cube_017
+        weight: 0
+      - path: Cube_018
+        weight: 0
+      - path: Cube_019
+        weight: 0
+      - path: Cube_020
+        weight: 0
+      - path: Cube_021
+        weight: 0
+      - path: Cube_022
+        weight: 0
+      - path: Cube_023
+        weight: 0
+      - path: Cube_024
+        weight: 0
+      - path: Cube_027
+        weight: 0
+      - path: Cube_029
+        weight: 0
+      - path: Cube_033
+        weight: 0
+      - path: Cube_034
+        weight: 0
+      - path: Cube_035
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: ArmatureAction
+      takeName: ArmatureAction
+      firstFrame: -1
+      lastFrame: 89
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/hip
+        weight: 1
+      - path: Armature/hip/stomach
+        weight: 1
+      - path: Armature/hip/stomach/chest
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck/head
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l/lowerfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/thumb_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r/lowerfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/thumb_r
+        weight: 0
+      - path: Armature/hip/upperleft_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l/toe_l
+        weight: 1
+      - path: Armature/hip/upperleft_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r/toe_r
+        weight: 1
+      - path: Cube_016
+        weight: 0
+      - path: Cube_017
+        weight: 0
+      - path: Cube_018
+        weight: 0
+      - path: Cube_019
+        weight: 0
+      - path: Cube_020
+        weight: 0
+      - path: Cube_021
+        weight: 0
+      - path: Cube_022
+        weight: 0
+      - path: Cube_023
+        weight: 0
+      - path: Cube_024
+        weight: 0
+      - path: Cube_027
+        weight: 0
+      - path: Cube_029
+        weight: 0
+      - path: Cube_033
+        weight: 0
+      - path: Cube_034
+        weight: 0
+      - path: Cube_035
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: TPose
+      takeName: Default Take
+      firstFrame: 0
+      lastFrame: .100000009
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/hip
+        weight: 1
+      - path: Armature/hip/stomach
+        weight: 1
+      - path: Armature/hip/stomach/chest
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck/head
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l/lowerfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/thumb_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r/lowerfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/thumb_r
+        weight: 0
+      - path: Armature/hip/upperleft_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l/toe_l
+        weight: 1
+      - path: Armature/hip/upperleft_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r/toe_r
+        weight: 1
+      - path: Cube_016
+        weight: 0
+      - path: Cube_017
+        weight: 0
+      - path: Cube_018
+        weight: 0
+      - path: Cube_019
+        weight: 0
+      - path: Cube_020
+        weight: 0
+      - path: Cube_021
+        weight: 0
+      - path: Cube_022
+        weight: 0
+      - path: Cube_023
+        weight: 0
+      - path: Cube_024
+        weight: 0
+      - path: Cube_027
+        weight: 0
+      - path: Cube_029
+        weight: 0
+      - path: Cube_033
+        weight: 0
+      - path: Cube_034
+        weight: 0
+      - path: Cube_035
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: Car_Idle
+      takeName: Default Take
+      firstFrame: 1
+      lastFrame: 30
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/hip
+        weight: 1
+      - path: Armature/hip/stomach
+        weight: 1
+      - path: Armature/hip/stomach/chest
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck/head
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l/lowerfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/thumb_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r/lowerfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/thumb_r
+        weight: 0
+      - path: Armature/hip/upperleft_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l/toe_l
+        weight: 1
+      - path: Armature/hip/upperleft_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r/toe_r
+        weight: 1
+      - path: Cube_016
+        weight: 0
+      - path: Cube_017
+        weight: 0
+      - path: Cube_018
+        weight: 0
+      - path: Cube_019
+        weight: 0
+      - path: Cube_020
+        weight: 0
+      - path: Cube_021
+        weight: 0
+      - path: Cube_022
+        weight: 0
+      - path: Cube_023
+        weight: 0
+      - path: Cube_024
+        weight: 0
+      - path: Cube_027
+        weight: 0
+      - path: Cube_029
+        weight: 0
+      - path: Cube_033
+        weight: 0
+      - path: Cube_034
+        weight: 0
+      - path: Cube_035
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: Turn Right
+      takeName: Default Take
+      firstFrame: 31
+      lastFrame: 60
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/hip
+        weight: 1
+      - path: Armature/hip/stomach
+        weight: 1
+      - path: Armature/hip/stomach/chest
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck/head
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l/lowerfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/thumb_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r/lowerfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/thumb_r
+        weight: 0
+      - path: Armature/hip/upperleft_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l/toe_l
+        weight: 1
+      - path: Armature/hip/upperleft_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r/toe_r
+        weight: 1
+      - path: Cube_016
+        weight: 0
+      - path: Cube_017
+        weight: 0
+      - path: Cube_018
+        weight: 0
+      - path: Cube_019
+        weight: 0
+      - path: Cube_020
+        weight: 0
+      - path: Cube_021
+        weight: 0
+      - path: Cube_022
+        weight: 0
+      - path: Cube_023
+        weight: 0
+      - path: Cube_024
+        weight: 0
+      - path: Cube_027
+        weight: 0
+      - path: Cube_029
+        weight: 0
+      - path: Cube_033
+        weight: 0
+      - path: Cube_034
+        weight: 0
+      - path: Cube_035
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: Turn Left
+      takeName: Default Take
+      firstFrame: 61
+      lastFrame: 90
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/hip
+        weight: 1
+      - path: Armature/hip/stomach
+        weight: 1
+      - path: Armature/hip/stomach/chest
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck
+        weight: 1
+      - path: Armature/hip/stomach/chest/neck/head
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/hand_l/upperfingers_l/lowerfingers_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_l/upperarm_l/lowerarm_l/thumb_l
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r
+        weight: 1
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/hand_r/upperfingers_r/lowerfingers_r
+        weight: 0
+      - path: Armature/hip/stomach/chest/shoulder_r/upperarm_r/lowerarm_r/thumb_r
+        weight: 0
+      - path: Armature/hip/upperleft_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l
+        weight: 1
+      - path: Armature/hip/upperleft_l/lowerleg_l/foot_l/toe_l
+        weight: 1
+      - path: Armature/hip/upperleft_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r
+        weight: 1
+      - path: Armature/hip/upperleft_r/lowerleg_r/foot_r/toe_r
+        weight: 1
+      - path: Cube_016
+        weight: 0
+      - path: Cube_017
+        weight: 0
+      - path: Cube_018
+        weight: 0
+      - path: Cube_019
+        weight: 0
+      - path: Cube_020
+        weight: 0
+      - path: Cube_021
+        weight: 0
+      - path: Cube_022
+        weight: 0
+      - path: Cube_023
+        weight: 0
+      - path: Cube_024
+        weight: 0
+      - path: Cube_027
+        weight: 0
+      - path: Cube_029
+        weight: 0
+      - path: Cube_033
+        weight: 0
+      - path: Cube_034
+        weight: 0
+      - path: Cube_035
+        weight: 0
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human:
+    - boneName: hip
+      humanName: Hips
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: upperleft_l
+      humanName: LeftUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: upperleft_r
+      humanName: RightUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: lowerleg_l
+      humanName: LeftLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: lowerleg_r
+      humanName: RightLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: foot_l
+      humanName: LeftFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: foot_r
+      humanName: RightFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: stomach
+      humanName: Spine
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: chest
+      humanName: Chest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: neck
+      humanName: Neck
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: head
+      humanName: Head
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: shoulder_l
+      humanName: LeftShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: shoulder_r
+      humanName: RightShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: upperarm_l
+      humanName: LeftUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: upperarm_r
+      humanName: RightUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: lowerarm_l
+      humanName: LeftLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: lowerarm_r
+      humanName: RightLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: hand_l
+      humanName: LeftHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: hand_r
+      humanName: RightHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: toe_l
+      humanName: LeftToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: toe_r
+      humanName: RightToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    skeleton:
+    - name: NilesyMECANIM2(Clone)
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Armature
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: -.707106888, y: 0, z: -0, w: .707106769}
+      scale: {x: .400000006, y: .400000006, z: .400000006}
+      transformModified: 1
+    - name: hip
+      position: {x: 1.16415322e-07, y: .1259927, z: 2.30381107}
+      rotation: {x: -.539758801, y: -.539758742, z: .456793666, w: -.456793666}
+      scale: {x: 1.00000036, y: 1.00000036, z: .999998868}
+      transformModified: 1
+    - name: stomach
+      position: {x: -.928707302, y: 1.76334694e-07, z: 8.59844604e-08}
+      rotation: {x: -7.67154251e-09, y: -.0826515555, z: 3.08604129e-08, w: .996578515}
+      scale: {x: 1.00000024, y: .999999762, z: .999999881}
+      transformModified: 1
+    - name: chest
+      position: {x: -.823380888, y: 1.98953217e-07, z: 1.42039696e-07}
+      rotation: {x: 6.80004106e-08, y: .0593464226, z: 1.68773031e-08, w: -.998237431}
+      scale: {x: .999999344, y: 1.00000024, z: .999998808}
+      transformModified: 1
+    - name: neck
+      position: {x: -.838361681, y: 1.74715893e-07, z: 1.28327054e-06}
+      rotation: {x: -8.67335856e-08, y: -.19397375, z: -3.0854082e-08, w: -.981006742}
+      scale: {x: .999998748, y: .999999821, z: 1.0000037}
+      transformModified: 1
+    - name: head
+      position: {x: -.565808892, y: 1.43141506e-07, z: -4.81315112e-07}
+      rotation: {x: -8.2020712e-08, y: -.130869165, z: -2.88547088e-08, w: .991399705}
+      scale: {x: 1.00000024, y: 1.00000012, z: 1.00000072}
+      transformModified: 1
+    - name: shoulder_l
+      position: {x: -.838338673, y: 1.50367185e-07, z: -6.325958e-07}
+      rotation: {x: -.0458375551, y: -.0371989906, z: -.775124192, w: -.629045129}
+      scale: {x: .999997973, y: .999999821, z: .999998391}
+      transformModified: 1
+    - name: upperarm_l
+      position: {x: -.659913421, y: 1.25809447e-05, z: -2.85853474e-07}
+      rotation: {x: .0066202865, y: -.00291475374, z: -.0748886839, w: .99716568}
+      scale: {x: 1.00000274, y: .999998927, z: 1.00000274}
+      transformModified: 1
+    - name: lowerarm_l
+      position: {x: -1.17566597, y: 8.41507608e-06, z: -2.28462611e-07}
+      rotation: {x: .00346955424, y: .0323364325, z: -.0307725333, w: .998997211}
+      scale: {x: 1.00000155, y: .999998569, z: 1.00000131}
+      transformModified: 1
+    - name: hand_l
+      position: {x: -.863591492, y: -2.66045561e-07, z: -2.12570825e-07}
+      rotation: {x: -.0039816401, y: .04560351, z: .00696454663, w: .998927414}
+      scale: {x: 1.00000119, y: 1.00000107, z: .999999702}
+      transformModified: 1
+    - name: upperfingers_l
+      position: {x: -.392544955, y: -8.43077714e-07, z: 2.41881679e-07}
+      rotation: {x: -.0143499142, y: -.00846348517, z: .0230675563, w: .999595106}
+      scale: {x: .999998569, y: .999998987, z: .999999344}
+      transformModified: 1
+    - name: lowerfingers_l
+      position: {x: -.300657541, y: 3.61944171e-06, z: -9.47323144e-08}
+      rotation: {x: -.070077613, y: -.0527468435, z: .129915923, w: .987638056}
+      scale: {x: .999999225, y: 1, z: 1.00000143}
+      transformModified: 1
+    - name: thumb_l
+      position: {x: -1.11777508, y: -.0484858491, z: .293416977}
+      rotation: {x: -.261014462, y: .158219844, z: .343345493, w: .888229549}
+      scale: {x: 1.00000596, y: .999997795, z: .999993622}
+      transformModified: 1
+    - name: shoulder_r
+      position: {x: -.838356256, y: 1.20767623e-07, z: 1.00160628e-06}
+      rotation: {x: -.0458373316, y: .0371988826, z: -.775124073, w: .629045188}
+      scale: {x: 1.00000012, y: 1.00000167, z: 1.00000274}
+      transformModified: 1
+    - name: upperarm_r
+      position: {x: -.659917533, y: 5.10903374e-06, z: 2.0205664e-07}
+      rotation: {x: -.0066204113, y: -.00291483616, z: .0748930722, w: .997165382}
+      scale: {x: .999998987, y: .99999702, z: .999998271}
+      transformModified: 1
+    - name: lowerarm_r
+      position: {x: -1.17566693, y: 2.32730918e-06, z: 8.50476738e-08}
+      rotation: {x: -.00347153074, y: .0323359445, z: .0307717733, w: .998997211}
+      scale: {x: 1.00000155, y: .999999762, z: .999999464}
+      transformModified: 1
+    - name: hand_r
+      position: {x: -.863588989, y: 6.90757042e-06, z: 2.4441146e-08}
+      rotation: {x: .00398154836, y: .0456036553, z: -.00696462719, w: .998927474}
+      scale: {x: 1.00000203, y: .999999642, z: .99999851}
+      transformModified: 1
+    - name: upperfingers_r
+      position: {x: -.392543614, y: 7.56377631e-06, z: -4.72401098e-07}
+      rotation: {x: .0143499114, y: -.00846363511, z: -.0230674539, w: .999595165}
+      scale: {x: .999998033, y: .99999994, z: .999998271}
+      transformModified: 1
+    - name: lowerfingers_r
+      position: {x: -.300655305, y: -4.80873678e-06, z: -9.96577256e-08}
+      rotation: {x: .0700776652, y: -.0527468212, z: -.129915878, w: .987638056}
+      scale: {x: 1.00000048, y: .999999881, z: 1.00000083}
+      transformModified: 1
+    - name: thumb_r
+      position: {x: -1.11777377, y: .0484772734, z: .293417662}
+      rotation: {x: .261014402, y: .158219725, z: -.343345582, w: .888229609}
+      scale: {x: 1.00000548, y: .999998152, z: .999994576}
+      transformModified: 1
+    - name: upperleft_l
+      position: {x: -.16372472, y: -.54480505, z: .100301221}
+      rotation: {x: -.0807304904, y: .00126027479, z: .996626258, w: -.0147388978}
+      scale: {x: 1.00000155, y: .999999464, z: .999999821}
+      transformModified: 1
+    - name: lowerleg_l
+      position: {x: -1.19632375, y: 7.08067944e-07, z: 2.72893863e-09}
+      rotation: {x: .00315973046, y: -.122751378, z: .0246352442, w: .992126644}
+      scale: {x: .999998331, y: 1.00000012, z: 1.00000048}
+      transformModified: 1
+    - name: foot_l
+      position: {x: -1.08763385, y: 3.89019476e-07, z: -1.27208494e-07}
+      rotation: {x: .135415912, y: .695414841, z: -.219489753, w: .670734763}
+      scale: {x: 1.00000095, y: 1.00000012, z: .999999225}
+      transformModified: 1
+    - name: toe_l
+      position: {x: -.682169735, y: 6.41283975e-07, z: 3.23389486e-07}
+      rotation: {x: .699160397, y: .000374857045, z: -.151949108, w: .698631704}
+      scale: {x: 1.00000036, y: .999998569, z: 1.0000006}
+      transformModified: 1
+    - name: upperleft_r
+      position: {x: -.163723573, y: .544804871, z: .10030131}
+      rotation: {x: -.0807304978, y: -.00126012752, z: .996626258, w: .0147388391}
+      scale: {x: 1.00000191, y: .999999225, z: .999999821}
+      transformModified: 1
+    - name: lowerleg_r
+      position: {x: -1.1963222, y: -3.05627708e-07, z: -1.7756097e-08}
+      rotation: {x: -.00315977633, y: -.12275134, z: -.0246352423, w: .992126703}
+      scale: {x: .999999642, y: .999999344, z: 1.00000119}
+      transformModified: 1
+    - name: foot_r
+      position: {x: -1.08763433, y: 3.56809068e-07, z: -2.46640326e-08}
+      rotation: {x: -.135415822, y: .695414722, z: .219489604, w: .670734823}
+      scale: {x: .999998748, y: 1.00000095, z: .999998093}
+      transformModified: 1
+    - name: toe_r
+      position: {x: -.682169497, y: -3.44312213e-07, z: 1.02198825e-07}
+      rotation: {x: -.699160457, y: .000375021773, z: .151949137, w: .698631525}
+      scale: {x: 1.00000131, y: 1.00000083, z: .999999225}
+      transformModified: 1
+    - name: Cube_016
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_017
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_018
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_019
+      position: {x: 0, y: 0, z: -5.3999997e-14}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_020
+      position: {x: 0, y: 0, z: -2.38747799e-09}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_021
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_022
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_023
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_024
+      position: {x: -2.20456631e-08, y: 4.00000001e-15, z: -4.29210388e-07}
+      rotation: {x: 3.6651915e-16, y: 2.87734236e-09, z: 4.45058957e-16, w: 1}
+      scale: {x: 1.00000012, y: 1, z: 1}
+      transformModified: 1
+    - name: Cube_027
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Cube_029
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_033
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_034
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Cube_035
+      position: {x: 1.25713495e-09, y: 4.99999991e-15, z: -5.01576437e-07}
+      rotation: {x: -2.1816616e-16, y: 3.82674753e-10, z: -2.35619446e-16, w: 1}
+      scale: {x: 1, y: 1, z: 1.00000012}
+      transformModified: 1
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 3
+  additionalBone: 0
+  userData: 

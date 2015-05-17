@@ -1,0 +1,147 @@
+fileFormatVersion: 2
+guid: 256bde3add6d72744967152a31990b3e
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: BrakeFL
+    100002: BrakeFR
+    100004: BrakeRL
+    100006: BrakeRR
+    100008: //RootNode
+    100010: Symbol
+    100012: TireFL
+    100014: TireFR
+    100016: TireRL
+    100018: TireRR
+    100020: WheelFL
+    100022: WheelFR
+    100024: WheelRL
+    100026: WheelRR
+    100028: BrakeFL_001
+    100030: Ridgeracer_001
+    100032: Ridgeracer_002
+    100034: Ridgeracer_002_MeshPart0
+    100036: Ridgeracer_002_MeshPart1
+    100038: TireFL_001
+    100040: WheelFL_001
+    100042: Ridgeracer-Body
+    100044: Ridgeracer-Collider
+    100046: Tire-HIRES
+    400000: BrakeFL
+    400002: BrakeFR
+    400004: BrakeRL
+    400006: BrakeRR
+    400008: //RootNode
+    400010: Symbol
+    400012: TireFL
+    400014: TireFR
+    400016: TireRL
+    400018: TireRR
+    400020: WheelFL
+    400022: WheelFR
+    400024: WheelRL
+    400026: WheelRR
+    400028: BrakeFL_001
+    400030: Ridgeracer_001
+    400032: Ridgeracer_002
+    400034: Ridgeracer_002_MeshPart0
+    400036: Ridgeracer_002_MeshPart1
+    400038: TireFL_001
+    400040: WheelFL_001
+    400042: Ridgeracer-Body
+    400044: Ridgeracer-Collider
+    400046: Tire-HIRES
+    2300000: //RootNode
+    2300002: Symbol
+    2300004: TireFL
+    2300006: TireFR
+    2300008: TireRL
+    2300010: TireRR
+    2300012: Ridgeracer_001
+    2300014: Ridgeracer_002_MeshPart0
+    2300016: Ridgeracer_002_MeshPart1
+    2300018: TireFL_001
+    2300020: Ridgeracer-Body
+    2300022: Ridgeracer-Collider
+    2300024: Tire-HIRES
+    3300000: //RootNode
+    3300002: Symbol
+    3300004: TireFL
+    3300006: TireFR
+    3300008: TireRL
+    3300010: TireRR
+    3300012: Ridgeracer_001
+    3300014: Ridgeracer_002_MeshPart0
+    3300016: Ridgeracer_002_MeshPart1
+    3300018: TireFL_001
+    3300020: Ridgeracer-Body
+    3300022: Ridgeracer-Collider
+    3300024: Tire-HIRES
+    4300000: Ridgeracer_001
+    4300002: Symbol
+    4300004: TireRL
+    4300006: TireRR
+    4300008: TireFR
+    4300010: TireFL
+    4300012: Ridgeracer_002_MeshPart0
+    4300014: Ridgeracer_002_MeshPart1
+    4300016: TireFL_001
+    4300018: Ridgeracer-Body
+    4300020: Ridgeracer-Collider
+    4300022: Tire-HIRES
+    7400000: Default Take
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 

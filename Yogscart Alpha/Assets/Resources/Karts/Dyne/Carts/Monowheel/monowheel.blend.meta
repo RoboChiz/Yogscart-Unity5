@@ -1,0 +1,127 @@
+fileFormatVersion: 2
+guid: 0c88459e96519f64f9bddcf9e79c9062
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: Monowheel-arc_002
+    100004: Monowheel-lowpoly_005
+    100006: Monowheel-Wheels-Fore_L
+    100008: Monowheel-Wheels-Fore_R
+    100010: Monowheel-Wheels-Rear_L
+    100012: Monowheel-Wheels-Rear_R
+    100014: Brake-FL
+    100016: Brake-FR
+    100018: Brake-RL
+    100020: Brake-RR
+    100022: Monowheel-Body
+    100024: Monowheel-Collider
+    100026: Wheel-FL
+    100028: Wheel-FR
+    100030: Wheel-RL
+    100032: Wheel-RR
+    100034: Monowheel-Collider-Wheel
+    400000: //RootNode
+    400002: Monowheel-arc_002
+    400004: Monowheel-lowpoly_005
+    400006: Monowheel-Wheels-Fore_L
+    400008: Monowheel-Wheels-Fore_R
+    400010: Monowheel-Wheels-Rear_L
+    400012: Monowheel-Wheels-Rear_R
+    400014: Brake-FL
+    400016: Brake-FR
+    400018: Brake-RL
+    400020: Brake-RR
+    400022: Monowheel-Body
+    400024: Monowheel-Collider
+    400026: Wheel-FL
+    400028: Wheel-FR
+    400030: Wheel-RL
+    400032: Wheel-RR
+    400034: Monowheel-Collider-Wheel
+    2300000: //RootNode
+    2300002: Monowheel-arc_002
+    2300004: Monowheel-lowpoly_005
+    2300006: Monowheel-Wheels-Fore_L
+    2300008: Monowheel-Wheels-Fore_R
+    2300010: Monowheel-Wheels-Rear_L
+    2300012: Monowheel-Wheels-Rear_R
+    2300014: Monowheel-Body
+    2300016: Monowheel-Collider
+    2300018: Monowheel-Collider-Wheel
+    3300000: //RootNode
+    3300002: Monowheel-arc_002
+    3300004: Monowheel-lowpoly_005
+    3300006: Monowheel-Wheels-Fore_L
+    3300008: Monowheel-Wheels-Fore_R
+    3300010: Monowheel-Wheels-Rear_L
+    3300012: Monowheel-Wheels-Rear_R
+    3300014: Monowheel-Body
+    3300016: Monowheel-Collider
+    3300018: Monowheel-Collider-Wheel
+    4300000: Monowheel-frozen
+    4300002: Monowheel-arc_002
+    4300004: Monowheel-lowpoly_005
+    4300006: Monowheel-Wheels-Rear_R
+    4300008: Monowheel-Wheels-Rear_L
+    4300010: Monowheel-Wheels-Fore_L
+    4300012: Monowheel-Wheels-Fore_R
+    4300014: Monowheel-Body
+    4300016: Monowheel-Collider
+    4300018: Monowheel-Collider-Wheel
+    7400000: Default Take
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 

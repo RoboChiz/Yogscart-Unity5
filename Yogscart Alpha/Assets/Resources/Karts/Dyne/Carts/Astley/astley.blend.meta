@@ -1,0 +1,119 @@
+fileFormatVersion: 2
+guid: 7b2b832c34984ca408e648df4f26419b
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: Astley-Body
+    100004: Astley-Collider
+    100006: BrakeFL
+    100008: BrakeFR
+    100010: BrakeRL
+    100012: BrakeRR
+    100014: TireFL
+    100016: TireFR
+    100018: TireRL
+    100020: TireRR
+    100022: WheelFL
+    100024: WheelFR
+    100026: WheelRL
+    100028: WheelRR
+    100030: Astley-Collider-Nacelle-L
+    100032: Astley-Collider-Nacelle-R
+    400000: //RootNode
+    400002: Astley-Body
+    400004: Astley-Collider
+    400006: BrakeFL
+    400008: BrakeFR
+    400010: BrakeRL
+    400012: BrakeRR
+    400014: TireFL
+    400016: TireFR
+    400018: TireRL
+    400020: TireRR
+    400022: WheelFL
+    400024: WheelFR
+    400026: WheelRL
+    400028: WheelRR
+    400030: Astley-Collider-Nacelle-L
+    400032: Astley-Collider-Nacelle-R
+    2300000: Astley-Body
+    2300002: Astley-Collider
+    2300004: TireFL
+    2300006: TireFR
+    2300008: TireRL
+    2300010: TireRR
+    2300012: Astley-Collider-Nacelle-L
+    2300014: Astley-Collider-Nacelle-R
+    3300000: Astley-Body
+    3300002: Astley-Collider
+    3300004: TireFL
+    3300006: TireFR
+    3300008: TireRL
+    3300010: TireRR
+    3300012: Astley-Collider-Nacelle-L
+    3300014: Astley-Collider-Nacelle-R
+    4300000: Astley-Collider
+    4300002: Astley-Body
+    4300004: TireRR
+    4300006: TireRL
+    4300008: TireFR
+    4300010: TireFL
+    4300012: Astley-Collider-Nacelle-R
+    4300014: Astley-Collider-Nacelle-L
+    7400000: Default Take
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 
