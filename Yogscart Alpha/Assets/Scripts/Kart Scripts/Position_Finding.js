@@ -56,7 +56,7 @@ if(tm.PositionPoints[currentPos].GetComponent(PointHandler).style == Point.Lap)
 	
 	var ang : float = Vector3.Angle(Position2-Position1,transform.position-Position1);
 	
-	if(ang > 89 && ang < 91)
+	if(ang > 88 && ang < 92)
 	{
 		if(!tm.LoopedTrack)
 		{
@@ -90,7 +90,7 @@ if(!tm.LoopedTrack)
 else
 {
 //Lap Catch, used if for some reason the above code dosen't work. i.e. Lag going across the line
-	if(currentTotal > (Lap+1)*tm.PositionPoints.Length)
+	if((currentTotal > (Lap+1)*tm.PositionPoints.Length) || (currentTotal >= (Lap+1)*tm.PositionPoints.Length && currentPos > 0))
 	{
 		Lap += 1;
 		Debug.Log("Lap from overlap detection");

@@ -6,6 +6,7 @@ private var sm : Sound_Manager;
 private var km : KartMaker;
 
 var hidden : boolean;
+var cancelled : boolean;
 
 enum csState {Character,Hat,Kart,Off};
 var state : csState = csState.Off;
@@ -512,8 +513,8 @@ function OnGUI()
 		
 		if(cancel)
 		{
-			//if(state == csState.Character)
-				//Cancel();
+			if(state == csState.Character)
+				Cancel();
 				
 			if(state == csState.Hat)
 				state = csState.Character;
@@ -677,6 +678,7 @@ function ResetEverything()
 {
 
 	ResetReady();
+	hidden = false;
 	
 	if(loadedModels != null)
 		for(var i : int = 0; i < 4; i++)
@@ -702,10 +704,15 @@ function ResetEverything()
 		loadedChoice[i].wheel = -1;
 		
 	}
+	
+	cancelled = false;
+	
 }
 
 function Cancel()
 {
+
+	cancelled = true;
 
 	if(loadedModels != null)
 		for(var i : int = 0; i < 4; i++)
@@ -713,6 +720,16 @@ function Cancel()
 			if(loadedModels[i] != null)
 				Destroy(loadedModels[i].gameObject);
 		}
+		
+	gd.transform.GetComponent(Network_Manager).CancelStartServer();
+	
+	if(Network.isClient)
+	{
+	
+	}
+	
+	hidden = true;
+	this.enabled = false;
 		
 }
 

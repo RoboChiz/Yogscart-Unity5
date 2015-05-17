@@ -12,8 +12,6 @@ var smoothTime : float = 0.1;
 var rotsmoothTime : float = 5;
 private var velocity = Vector3.zero;
 
-var Locked : boolean;
-
 function Update () {
 
 	if(Target != null)

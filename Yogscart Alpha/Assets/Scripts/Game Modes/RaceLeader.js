@@ -267,8 +267,19 @@ function OnPlayerDisconnected(player: NetworkPlayer) {
 		}
 	}
 	
-	NetworkRacers[i].ingameObj = racers[j].gameObject.transform;
+	NetworkRacers[i].ingameObj = racers[j].gameObject.transform;	
 
+}
+
+function OnPlayerConnected(player: NetworkPlayer)
+{
+	for(var i : int = 0; i < NetworkRacers.Length; i++)
+	{
+		if(!NetworkRacers[i].connected)
+		{
+			GetComponent.<NetworkView>().RPC("SpawnMe",player,NetworkRacers[i].name,NetworkRacers[i].kart,NetworkRacers[i].wheel,NetworkRacers[i].character,NetworkRacers[i].hat,NetworkRacers[i].ingameObj.GetComponent.<NetworkView>().viewID);
+		}
+	}
 }
 
 function LocalPositionUpdate(toChange : int, total : int, next : float)

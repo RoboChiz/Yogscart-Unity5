@@ -13,38 +13,40 @@ function Awake()
 function QuizNewRacer () 
 {
 
-var timeout : int;
+	var timeout : int;
 
-while(Application.loadedLevelName != "Lobby")
-{
-	if(timeout >= 10)
-		return;
-		
-	timeout ++;
-	yield WaitForSeconds(0.5f);
-}
-
-GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
-GameObject.Find("Menu Holder").GetComponent(CharacterSelect).ResetEverything();
-
-while(true)
-{
-
-	if(GameObject.Find("Menu Holder") != null)
+	while(Application.loadedLevelName != "Lobby")
 	{
-		if(!GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled)
-			break;
+		if(timeout >= 10)
+			return;
+			
+		timeout ++;
+		yield WaitForSeconds(0.5f);
 	}
-	else
+
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
+
+	while(true)
 	{
-		return;
-	}	
 
-	yield;
-}
+		if(GameObject.Find("Menu Holder") != null)
+		{
+			if(!GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled)
+				break;
+		}
+		else
+		{
+			return;
+		}	
 
-GetComponent.<NetworkView>().RPC("RecievedNewRacer",RPCMode.Server,PlayerPrefs.GetString("playerName","Player"),gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel);//Add support for Character Select
+		yield;
+	}
 
+	if(!GameObject.Find("Menu Holder").GetComponent(CharacterSelect).cancelled)
+		GetComponent.<NetworkView>().RPC("RecievedNewRacer",RPCMode.Server,PlayerPrefs.GetString("playerName","Player"),gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel);//Add support for Character Select
+
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).ResetEverything();
+	
 }
 
 @RPC

@@ -5,7 +5,7 @@ var sending : boolean;
 var updateTime : float;
 var posTime : float;
 
-var networkSendRate : float = 15;
+var networkSendRate : float = 20;
 private var timeWait : float;
 
 function Awake()
@@ -26,7 +26,7 @@ function FixedUpdate () {
 			updateTime = 0;
 		}
 	
-		if(posTime > 1)
+		if(posTime > 3)
 		{
 			transform.GetComponent.<NetworkView>().RPC("MyPosition",RPCMode.Others,transform.position,transform.rotation,GetComponent.<Rigidbody>().velocity);
 			posTime = 0;
@@ -53,6 +53,7 @@ function MyPosition(pos : Vector3,rot : Quaternion, vel : Vector3)
 
 	transform.position = pos;
 	transform.rotation = rot;
+	
 	GetComponent.<Rigidbody>().velocity = vel;
 	
 }

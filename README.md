@@ -2,6 +2,15 @@
 
 ChangeLog
 ----------------------
+Commit #9
+.Organised Sjin's Farm
+.Fixed Disconnected AI over networking (Wouldn't psawn for spectator)
+.Fixed even more bugs
+Commit #8
+.Added Tracks 
+Commit #7
+.Fixed more bugs
+.Added Lewis
 Commit #6
 .Fix aton of multiplayer bugs
 .Added temporary sound controls

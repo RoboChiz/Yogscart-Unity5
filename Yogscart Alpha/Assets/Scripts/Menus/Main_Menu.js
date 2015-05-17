@@ -646,7 +646,7 @@ if(GameState != GameChosen.SinglePlayer)
 StopCoroutine("StartMultiPlayer");
 
 im.allowedToChange = true;
-transform.GetComponent(newCharacterSelect).hidden = true;
+transform.GetComponent(CharacterSelect).hidden = true;
 transform.GetComponent(Level_Select).hidden = true;
 
 if(GameState == GameChosen.SinglePlayer)
@@ -659,7 +659,7 @@ function StartSinglePlayer(){
 gd.CheckforNewStuff();
 
 while(gd.currentChoices.Length == 0){
-transform.GetComponent(newCharacterSelect).hidden = false;
+transform.GetComponent(CharacterSelect).hidden = false;
 transform.GetComponent(Level_Select).hidden = true;
 yield;
 }

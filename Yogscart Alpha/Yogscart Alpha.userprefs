@@ -1,17 +1,16 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Networking\kartUpdate.js">
     <Files>
-      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Networking\Host_Script.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Kart Scripts\Racer_AI.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Kart Scripts\Position_Finding.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Networking\Client_Script.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Managers\InputManager.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Networking\kartUpdate.js" Line="29" Column="17" />
+      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="184" Column="42" />
+      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="280" Column="54" />
+      <File FileName="Assets\Scripts\Networking\Host_Script.js" Line="37" Column="1" />
+      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="435" Column="9" />
+      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="829" Column="40" />
+      <File FileName="Assets\Scripts\Networking\SpectatorCamera.js" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Track Editor\DeathCatch.js" Line="17" Column="1" />
+      <File FileName="Assets\Scripts\Networking\kartUpdate.js" Line="56" Column="2" />
+      <File FileName="Assets\Scripts\Kart Scripts\Kart_Camera.js" Line="31" Column="76" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

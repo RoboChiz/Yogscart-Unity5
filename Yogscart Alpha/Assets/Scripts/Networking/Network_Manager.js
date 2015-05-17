@@ -306,7 +306,7 @@ function OnGUI()
 				
 		if(GUI.Button(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3f + gapSize*1.5f,chunkSize*4,chunkSize/2f),hostText) || (xboxController && im.c[0].GetMenuInput("X")!= 0))
 			{
-				StartServer();
+				StartCoroutine("StartServer");
 			}
 			
 		if(xboxController)
@@ -661,6 +661,15 @@ function ConnectToServer()
 	
 	state = ServerState.Connecting;
 	Network.Connect(servers[currentSelection].ip,servers[currentSelection].port);
+}
+
+function CancelStartServer()
+{
+	StopCoroutine("StartServer");
+	
+	if(!Network.isClient)
+		state = ServerState.ServerList;
+	
 }
 
 function StartServer()

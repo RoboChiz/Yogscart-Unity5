@@ -91,7 +91,7 @@ function EndClient()
 	
 	Debug.Log("Ahahaha");
 	
-	if(!myRacer.finished)
+	if(myRacer != null && !myRacer.finished)
 	{
 		myRacer.ingameObj.gameObject.AddComponent(Racer_AI);
 		Destroy(myRacer.ingameObj.GetComponent(kartInput));
