@@ -575,7 +575,14 @@ function setStartBoost(val : int){
 	
 function StartGame()
 {
-	//Don't do anything XD
+ //Don't do anything XD
+ LoadLibaries();
+ 
+ myRacer.character = gd.currentChoices[0].character;
+ myRacer.hat = gd.currentChoices[0].hat;
+ myRacer.kart = gd.currentChoices[0].kart;
+ myRacer.wheel = gd.currentChoices[0].wheel;
+ 
 }	
 	
 	
