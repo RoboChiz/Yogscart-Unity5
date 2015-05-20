@@ -12,95 +12,94 @@ var locked : boolean;
 private var tm : TrackData;
 
 function Start(){
-tm = GameObject.Find("Track Manager").transform.GetComponent(TrackData);
+
+	while(GameObject.Find("Track Manager") == null)
+		yield;
+		
+	tm = GameObject.Find("Track Manager").transform.GetComponent(TrackData);
 }
 
 function Update () {
-
-var closestDistance : float = Mathf.Infinity;
-closestDistance = Vector3.Distance(transform.position,tm.PositionPoints[NumClamp(currentPos,0,tm.PositionPoints.Length)].position);
-
-CheckForward(closestDistance);
-CheckBackwards(closestDistance);
-
-if(Lap == -1)
-{
-currentPos = 0;
-currentTotal = 0;
-}
-else
-currentPos = NumClamp(currentPos,0,tm.PositionPoints.Length);
-
-if(tm.LoopedTrack)
-currentTotal = Mathf.Clamp(currentTotal,Lap * tm.PositionPoints.Length,Mathf.Infinity);
-else
-currentTotal = Mathf.Clamp(currentTotal,CalculateAmount(Lap),Mathf.Infinity);
-
-currentDistance = Vector3.Distance(transform.position,tm.PositionPoints[NumClamp(currentPos + 1,0,tm.PositionPoints.Length)].position);
-
-
-if(tm.PositionPoints[currentPos].GetComponent(PointHandler).style == Point.Lap)
-{
-
-	var Position1 : Vector3 = tm.PositionPoints[currentPos].position;
-	var Position2 : Vector3;
-	
-	if(currentPos+1 < tm.PositionPoints.Length)
+	if(tm != null)
 	{
-		Position2 = tm.PositionPoints[currentPos+1].position;
-	}
-	else if(currentPos-1 >= 0)
-	{
- 		Position2 = tm.PositionPoints[currentPos-1].position;
-	}
-	
-	var ang : float = Vector3.Angle(Position2-Position1,transform.position-Position1);
-	
-	if(ang > 88 && ang < 92)
-	{
+		var closestDistance : float = Mathf.Infinity;
+		closestDistance = Vector3.Distance(transform.position,tm.PositionPoints[NumClamp(currentPos,0,tm.PositionPoints.Length)].position);
+
+		CheckForward(closestDistance);
+		CheckBackwards(closestDistance);
+
+		if(Lap == -1)
+		{
+		currentPos = 0;
+		currentTotal = 0;
+		}
+		else
+		currentPos = NumClamp(currentPos,0,tm.PositionPoints.Length);
+
+		currentDistance = Vector3.Distance(transform.position,tm.PositionPoints[NumClamp(currentPos + 1,0,tm.PositionPoints.Length)].position);
+
+
+		if(tm.PositionPoints[currentPos].GetComponent(PointHandler).style == Point.Lap)
+		{
+
+			var Position1 : Vector3 = tm.PositionPoints[currentPos].position;
+			var Position2 : Vector3;
+			
+			if(currentPos+1 < tm.PositionPoints.Length)
+			{
+				Position2 = tm.PositionPoints[currentPos+1].position;
+			}
+			else if(currentPos-1 >= 0)
+			{
+		 		Position2 = tm.PositionPoints[currentPos-1].position;
+			}
+			
+			var ang : float = Vector3.Angle(Position2-Position1,transform.position-Position1);
+			if(ang > 85 && ang < 95)
+			{
+				if(!tm.LoopedTrack)
+				{
+					if(currentTotal >= CalculateAmount(Lap+1))
+					{
+						Lap += 1;
+						Debug.Log("Lap from proper detection");
+					}
+				}
+				else
+				{
+					if(currentTotal >= (Lap+1)*tm.PositionPoints.Length)
+					{
+						Lap += 1;
+						Debug.Log("Lap from proper detection");
+					}
+				}
+			}
+
+		}
+
 		if(!tm.LoopedTrack)
 		{
-			if(currentTotal == CalculateAmount(Lap+1))
+			//Lap Catch, used if for some reason the above code dosen't work. i.e. Lag going across the line
+			if(currentTotal > CalculateAmount(Lap+1) || Lap == -1)
 			{
-				Lap += 1;
-				Debug.Log("Lap from proper detection");
+				Lap += 1;	
+				Debug.Log("Lap from overlap detection, Lap : " + Lap.ToString());
 			}
 		}
 		else
 		{
-			if(currentTotal == (Lap+1)*tm.PositionPoints.Length)
+		//Lap Catch, used if for some reason the above code dosen't work. i.e. Lag going across the line
+			if((currentTotal > (Lap+1)*tm.PositionPoints.Length) || (currentTotal >= (Lap+1)*tm.PositionPoints.Length && currentPos > 0))
 			{
 				Lap += 1;
-				Debug.Log("Lap from proper detection");
+				Debug.Log("Lap from overlap detection, Lap : " + Lap.ToString());
 			}
 		}
+
+		Lap = Mathf.Clamp(Lap,-1,tm.Laps);
+
+		Debug.DrawLine(transform.position, tm.PositionPoints[currentPos].position,Color.red);
 	}
-
-}
-
-if(!tm.LoopedTrack)
-{
-	//Lap Catch, used if for some reason the above code dosen't work. i.e. Lag going across the line
-	if(currentTotal > CalculateAmount(Lap+1) || Lap == -1)
-	{
-		Lap += 1;	
-		Debug.Log("Lap from overlap detection");
-	}
-}
-else
-{
-//Lap Catch, used if for some reason the above code dosen't work. i.e. Lag going across the line
-	if((currentTotal > (Lap+1)*tm.PositionPoints.Length) || (currentTotal >= (Lap+1)*tm.PositionPoints.Length && currentPos > 0))
-	{
-		Lap += 1;
-		Debug.Log("Lap from overlap detection");
-	}
-}
-
-Lap = Mathf.Clamp(Lap,-1,tm.Laps);
-
-Debug.DrawLine(transform.position, tm.PositionPoints[currentPos].position,Color.red);
-
 }
 
 function CalculateAmount(lVal : int)

@@ -72,6 +72,8 @@ function RaceEnded()
 
 Network.RemoveRPCs(transform.GetComponent.<NetworkView>().owner);
 
+var kartHolder = myRacer.ingameObj;
+
 var nRacer = new Racer(true,-1,myRacer.character,myRacer.hat,myRacer.kart,myRacer.wheel,0);
 myRacer = nRacer;
 
@@ -79,6 +81,15 @@ finishedCharacters = new DisplayName[0];
 
 ChangeState(GUIState.Blank);
 networkID = -1;
+
+while(Application.loadedLevelName != "Lobby")
+	yield;
+	
+var objs = GameObject.FindObjectsOfType(kartScript);
+for(var i : int = 0; i < objs.Length; i++)
+{
+	DestroyImmediate(objs[i].gameObject);
+}
 
 this.enabled = false;
 
@@ -140,7 +151,7 @@ function SpawnMyKart()
 	var IngameCam = Instantiate(Resources.Load("Prefabs/Cameras",Transform),td.spawnPoint.position,Quaternion.identity);
 	IngameCam.name = "InGame Cams";
 	
-	myRacer.ingameObj.GetComponent(kartInput).InputName = im.c[0].inputName;
+	myRacer.ingameObj.GetComponent(kartInput).InputNum = 0;
 	myRacer.ingameObj.GetComponent(kartInput).camLocked = true;
 	myRacer.ingameObj.GetComponent(kartInput).frontCamera = IngameCam.GetChild(1).GetComponent.<Camera>();
 	myRacer.ingameObj.GetComponent(kartInput).backCamera = IngameCam.GetChild(0).GetComponent.<Camera>();
@@ -175,8 +186,8 @@ function SpawnMyKart()
 function SpawnMe(name : String, kart : int, wheel : int, character : int, hat : int,id : NetworkViewID)
 {
 
-	while(GameObject.Find("Track Manager") == null)
-		yield;
+	//while(GameObject.Find("Track Manager") == null)
+		//yield;
 
 	if(km == null)
 		LoadLibaries();
@@ -189,6 +200,7 @@ function SpawnMe(name : String, kart : int, wheel : int, character : int, hat : 
 	newKart.GetComponent.<NetworkView>().viewID = id;
 	newKart.GetComponent.<NetworkView>().stateSynchronization = NetworkStateSynchronization.Off;
 	newKart.tag = "Spectated";
+	Application.DontDestroyOnLoad(newKart);
 	
 	var copy = new Array();
 	
@@ -576,6 +588,13 @@ function setStartBoost(val : int){
 function StartGame()
 {
 	//Don't do anything XD
+	LoadLibaries();
+	
+	myRacer.character = gd.currentChoices[0].character;
+	myRacer.hat = gd.currentChoices[0].hat;
+	myRacer.kart = gd.currentChoices[0].kart;
+	myRacer.wheel = gd.currentChoices[0].wheel;
+	
 }	
 	
 	

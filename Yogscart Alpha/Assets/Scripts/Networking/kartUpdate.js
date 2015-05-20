@@ -2,8 +2,8 @@
 
 var sending : boolean;
 
-var updateTime : float;
-var posTime : float;
+private var updateTime : float;
+private var posTime : float;
 
 var networkSendRate : float = 20;
 private var timeWait : float;
@@ -26,7 +26,7 @@ function FixedUpdate () {
 			updateTime = 0;
 		}
 	
-		if(posTime > 3)
+		if(posTime > 10)
 		{
 			transform.GetComponent.<NetworkView>().RPC("MyPosition",RPCMode.Others,transform.position,transform.rotation,GetComponent.<Rigidbody>().velocity);
 			posTime = 0;

@@ -36,7 +36,7 @@ var wheelColliders : WheelCollider[];
 var wheelMeshes : Transform[];
 private var wheelStart : Vector3[];
 
-var BoostAddition : int = 5;
+var BoostAddition : int = 7.5f;
 private var isBoosting : String = "";
 //Start Boost Variables
 private var allowedBoost : boolean;
@@ -69,7 +69,7 @@ public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
 var pushing : boolean;
-var pushTime : float = 0.12f;
+var pushTime : float = 0.01f;
 var pushAmount : float = 0.05f;
 
 function Start()
@@ -229,27 +229,25 @@ function FixedUpdate () {
 	}
 	
 	//Kart Collisions
-	var rayHit : RaycastHit;
-	var checkDir : Vector3;
-	if(GetComponent.<Rigidbody>().velocity.magnitude > 5)
-		checkDir = GetComponent.<Rigidbody>().velocity.normalized;
-	else
-		checkDir = transform.forward;
+	var rayHit : RaycastHit[] = new RaycastHit[0];
 
-	if(Physics.SphereCast(transform.position,1f,checkDir,rayHit,0.5f))
+	rayHit = GetComponent.<Rigidbody>().SweepTestAll(GetComponent.<Rigidbody>().velocity,1f);
+	
+	for(var rh : int = 0; rh < rayHit.Length; rh++)
 	{
-		if(rayHit.transform.GetComponent(kartScript) != null)
+		if(rayHit[rh].transform.GetComponent(kartScript) != null)
 		{
-			var targetDir : Vector3 = rayHit.transform.position - transform.position;
+			var targetDir : Vector3 = rayHit[rh].transform.position - transform.position;
 			var ndir : Vector3;
 			if(Vector3.Angle(targetDir,transform.right) < 90)
 			ndir = -transform.right + transform.forward;
 			else
 			ndir = transform.right + transform.forward;
+			
 			Push(ndir,pushAmount);
+			
 		}
 	}
-	
 }
 
 function Push(dir : Vector3, dist : float)
@@ -263,7 +261,7 @@ function Push(dir : Vector3, dist : float)
 		//s/(t^2*0.5) = a;
 		//f = ma
 		
-		GetComponent.<Rigidbody>().freezeRotation = true;
+		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
 
 		var startTime = Time.realtimeSinceStartup;
 
@@ -335,10 +333,8 @@ function ApplySteering()
 		
 	}else{	
 	
-		var nSteer = driftSteer * Mathf.Clamp(steer/2f,-driftSteer * 0.4, driftSteer*0.5);
-	
-		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*500f);
-		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer + nSteer) * driftAmount,Time.fixedDeltaTime*500f);	
+		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer * turnSpeed) + (steer * driftAmount),Time.fixedDeltaTime*500f);
+		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer * turnSpeed) + (steer * driftAmount),Time.fixedDeltaTime*500f);	
 		
 	}
 	
@@ -563,7 +559,7 @@ function HaveTheSameSign(first : float, second : float) : boolean
 
 function OnCollisionEnter(collision : Collision)
 {
-	if(collision.other.GetComponent(kartScript) == null)
+	if(collision.other.GetComponent(Rigidbody) == null)
 		Collided(collision);
 }
 

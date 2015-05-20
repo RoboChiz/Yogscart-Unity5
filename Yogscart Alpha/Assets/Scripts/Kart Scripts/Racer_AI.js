@@ -10,7 +10,7 @@ var Difficulty : int;
 //0 - 50cc, 1 - 100cc, 2 - 150cc, 3 - Insane
 var Stupidity : int; //Bigger the number, stupider the AI.
 
-var angleRequired : float = 10f;
+var angleRequired : float = 3f;
 private var steering : int;
 
 private var nTarget : Vector3;

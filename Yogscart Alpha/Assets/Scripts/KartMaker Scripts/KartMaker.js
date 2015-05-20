@@ -59,7 +59,7 @@ hatMesh.localRotation = Quaternion.Euler(0,0,0);
 
 }
 
-if(kartType != kartType.Display){
+if(kartType != KartType.Display){
 
 var kb : GameObject = kartBody.gameObject;
 
@@ -133,19 +133,20 @@ ks.TrickParticles = kp.FindChild("Trick").GetComponent.<ParticleSystem>();
 kb.AddComponent(Position_Finding);
 kb.AddComponent(kartUpdate);
 
-	//Add Item
 
-if(kartType != KartType.Display &&  kartType != KartType.Spectator)
+if(kartType != KartType.Display)
 {
-
-//Add Script
-kb.AddComponent(kartInput);
-kb.AddComponent(kartInfo);
-//Adjust Scripts
-kb.GetComponent(kartInput).InputName = im.c[0].inputName;
-
-}
-
+	if(kartType != KartType.Spectator)
+	{
+		//Add Script
+		kb.AddComponent(kartInput);
+		kb.AddComponent(kartInfo);
+		//Adjust Scripts
+		kb.GetComponent(kartInput).InputNum = 0;
+	}
+	//Apply to Spectators
+	kb.AddComponent(kartItem);
+	}
 }
 
 //Clear Up

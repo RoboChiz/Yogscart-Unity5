@@ -1,6 +1,7 @@
 ﻿private var ks : kartScript;
+private var im : InputManager;
 
-var InputName : String;
+var InputNum : int;
 
 var camLocked : boolean = false;
 var frontCamera : Camera;
@@ -8,24 +9,26 @@ var backCamera : Camera;
 
 function FixedUpdate () {
 
-if(ks == null && transform.GetComponent(kartScript))
-ks = transform.GetComponent(kartScript);
+	im = GameObject.Find("GameData").GetComponent(InputManager);
 
-ks.throttle = Input.GetAxis(InputName+ "Throttle");
-ks.steer = Input.GetAxis(InputName+ "Horizontal");
+	if(ks == null && transform.GetComponent(kartScript))
+		ks = transform.GetComponent(kartScript);
 
-if(Input.GetAxis(InputName+ "Drift")!=0)
-ks.drift = true;
-else
-ks.drift = false;
+	ks.throttle = im.c[InputNum].GetInput("Throttle");
+	ks.steer = im.c[InputNum].GetInput("Horizontal");
+	
+	if(im.c[InputNum].GetInput("Drift")!=0)
+		ks.drift = true;
+	else
+		ks.drift = false;
 
-if(Input.GetAxis(InputName + "Look Behind") != 0 && !camLocked){
-backCamera.enabled = true;
-frontCamera.enabled = false;
-}else{
-backCamera.enabled = false;
-frontCamera.enabled = true;
-}
+	if(im.c[InputNum].GetInput("Look Behind") != 0 && !camLocked){
+		backCamera.enabled = true;
+		frontCamera.enabled = false;
+	}else{
+		backCamera.enabled = false;
+		frontCamera.enabled = true;
+	}
 
 }
 

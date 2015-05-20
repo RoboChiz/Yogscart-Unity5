@@ -63,6 +63,7 @@
      <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\kartItem.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartScript.js" />
      <Compile Include="Assets\Scripts\KartMaker Scripts\CharacterSkeleton.js" />
      <Compile Include="Assets\Scripts\KartMaker Scripts\KartMaker.js" />
@@ -79,8 +80,13 @@
      <Compile Include="Assets\Scripts\Networking\VotingScreen.js" />
      <Compile Include="Assets\Scripts\Networking\Yogball.js" />
      <Compile Include="Assets\Scripts\Networking\kartUpdate.js" />
+     <Compile Include="Assets\Scripts\Power Ups\DirtBlock.js" />
+     <Compile Include="Assets\Scripts\Power Ups\Item_Box.js" />
+     <Compile Include="Assets\Scripts\Power Ups\Lapis_Item.js" />
      <Compile Include="Assets\Scripts\Power Ups\Lapis_Script.js" />
      <Compile Include="Assets\Scripts\Power Ups\Rotate.js" />
+     <Compile Include="Assets\Scripts\Power Ups\Speed_Boost.js" />
+     <Compile Include="Assets\Scripts\Track Editor\BoostPad.js" />
      <Compile Include="Assets\Scripts\Track Editor\DeathCatch.js" />
      <Compile Include="Assets\Scripts\Track Editor\DynamiCam\DynamiCamera.js" />
      <Compile Include="Assets\Scripts\Track Editor\DynamiCam\TV_Controller.js" />

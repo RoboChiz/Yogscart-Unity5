@@ -742,11 +742,12 @@ function EndGame()
 	GetComponent.<NetworkView>().RPC("LoadNetworkLevel",RPCMode.AllBuffered,"Lobby",0);
 	
 	while(Application.loadedLevelName != "Lobby")
-		yield;
+		yield;	
 	
 	Network.RemoveRPCs(GetComponent.<NetworkView>().owner);	
 				
 	state = ServerState.Lobby;
+	sendingPing = false;
 	
 	var hs = transform.GetComponent(Host_Script);
 	
