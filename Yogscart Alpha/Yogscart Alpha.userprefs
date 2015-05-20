@@ -1,4 +1,5 @@
 ﻿<Properties>
+<<<<<<< HEAD
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Kart Scripts\Racer_AI.js">
     <Files>
@@ -7,6 +8,12 @@
       <File FileName="Assets\Scripts\Power Ups\DirtBlock.js" Line="14" Column="3" />
       <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="72" Column="27" />
       <File FileName="Assets\Scripts\Kart Scripts\Racer_AI.js" Line="13" Column="30" />
+=======
+  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Modes\RaceBase.js">
+    <Files>
+      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="574" Column="2" />
+>>>>>>> ee0b2cb3705c56e99607cd7050b37b6b70808c2d
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
