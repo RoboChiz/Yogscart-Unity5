@@ -109,10 +109,21 @@ function StartRace () {
 			
 			for(i = 0; i < NetworkRacers.Length;i++)
 			{
+				
+				//Find Spawn Position
+				var SpawnPosition : Vector3;
+				var rot : Quaternion = td.spawnPoint.rotation;
+				var racepos : int = NetworkRacers[i].position;
+				
+				var startPos : Vector3 = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
+				var x2 : Vector3 = rot*(Vector3.forward*(racepos%3)*(3*1.5f)+(Vector3.forward*.75f*3));
+				var y2 : Vector3 = rot*(Vector3.right*(racepos + 1)* 3);
+				SpawnPosition = startPos + x2 + y2;  
+			
 				if(NetworkRacers[i].networkplayer.guid != GetComponent.<NetworkView>().owner.guid)
-				GetComponent.<NetworkView>().RPC("SpawnMyKart",NetworkRacers[i].networkplayer);
+				GetComponent.<NetworkView>().RPC("SpawnMyKart",NetworkRacers[i].networkplayer,KartType.Online,SpawnPosition,rot * Quaternion.Euler(0,-90,0));
 				else
-				transform.GetComponent(RaceBase).SpawnMyKart();
+				transform.GetComponent(Client_Script).SpawnMyKart(KartType.Online,SpawnPosition,rot * Quaternion.Euler(0,-90,0));
 			}
 			
 			GetComponent.<NetworkView>().RPC("PlayCutscene",RPCMode.All);
@@ -155,7 +166,7 @@ function StartRace () {
 			
 		StopTick();
 		
-		EndRace();
+		EndGame();
 
 	}
 }
@@ -174,7 +185,7 @@ function SendPositionUpdates()
 	}
 }
 
-function EndRace()
+function EndGame()
 {
 	Debug.Log("The Race has ended!");
 	if(type == RaceStyle.Online)
@@ -245,30 +256,31 @@ function StopTick(){
 StopCoroutine("BeginTick");
 }
 
-function OnPlayerDisconnected(player: NetworkPlayer) {
-
-	for(var i : int = 0; i < NetworkRacers.Length; i++)
+function OnPlayerDisconnected(player: NetworkPlayer) 
+{
+	if(this.enabled)
 	{
-		if(NetworkRacers[i].networkplayer.guid == player.guid)
+		for(var i : int = 0; i < NetworkRacers.Length; i++)
 		{
-			NetworkRacers[i].connected = false;
-			break;
+			if(NetworkRacers[i].networkplayer.guid == player.guid)
+			{
+				NetworkRacers[i].connected = false;		
+				break;
+			}
+		}
+		
+		var racers = GameObject.FindObjectsOfType(kartScript);
+		for(var j : int = 0; j < racers.Length; j++)
+		{
+			if(racers[j].transform.GetComponent(NetworkView).owner == player)
+			{
+				racers[j].gameObject.AddComponent(Racer_AI);
+				racers[j].gameObject.GetComponent(kartUpdate).sending = true;
+				NetworkRacers[i].ingameObj = racers[j].gameObject.transform;	
+				break;
+			}
 		}
 	}
-	
-	var racers = GameObject.FindObjectsOfType(kartScript);
-	for(var j : int = 0; j < racers.Length; j++)
-	{
-		if(racers[j].transform.GetComponent(NetworkView).owner == player)
-		{
-			racers[j].gameObject.AddComponent(Racer_AI);
-			racers[j].gameObject.GetComponent(kartUpdate).sending = true;
-			break;
-		}
-	}
-	
-	NetworkRacers[i].ingameObj = racers[j].gameObject.transform;	
-
 }
 
 function OnPlayerConnected(player: NetworkPlayer)
@@ -438,11 +450,13 @@ function DetermineLevel(){
 		yield WaitForSeconds(5.1);
 
 		Network.RemoveRPCs(GetComponent.<NetworkView>().owner);
+		
+		GetComponent.<NetworkView>().RPC ("SetupGDTracks",RPCMode.AllBuffered,cup,track);
 		GetComponent.<NetworkView>().RPC ("LoadNetworkLevel", RPCMode.AllBuffered, gd.Tournaments[cup].Tracks[track].SceneID,0);
-
+		
 		
 		Debug.Log("Level Loaded!");
-
+		
 		while(GameObject.Find("Track Manager") == null)
 			yield;
 		
@@ -457,5 +471,14 @@ function DetermineLevel(){
 		StartRace();
 		
 		Votes = new Vector2[0];
+
+}
+
+/*This function is called by the host script if the autobalance function has swapped a 
+player’s team. The autobalance function should be called in StartGame function if you need 
+it. The player is the record in the “RacingPlayers” array in the host script that has been 
+swapped.*/
+function TeamSwap(player : int)
+{
 
 }

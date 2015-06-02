@@ -1,7 +1,13 @@
-# Yogscart Alpha V1.3 [Test Build 5]
+# Yogscart Alpha V1.3 [Test Build 13]
 
 ChangeLog
 ----------------------
+Commit #11
+.Added global Multiplayer functions
+.Added bouncy (broken) eggs
+.Ate Cake
+Commit #10
+.God knows what was in it
 Commit #9
 .Organised Sjin's Farm
 .Fixed Disconnected AI over networking (Wouldn't psawn for spectator)

@@ -25,6 +25,7 @@ var finalPlayers : DisplayName[];
 private var sendingPing : boolean;
 
 var currentSelection : int;
+var currentGamemode : int = -1;
 
 @HideInInspector
 var SpectatorCam : GameObject;
@@ -35,8 +36,10 @@ class GameMode
 {
 
 	var name : String;
-	var teamGame : boolean;
 	var logo : Texture2D;
+	
+	var teamGame : boolean;
+	var teams : String[];
 	
 	var hostScript : MonoBehaviour;
 	var baseScript : MonoBehaviour;
@@ -101,6 +104,7 @@ class DisplayName
 	var character : int;
 	var ping : int;
 	var networkPlayer : NetworkPlayer;
+	var team : int;
 	
 	function DisplayName(n : String, c : int, np : NetworkPlayer)
 	{
@@ -497,32 +501,72 @@ function OnGUI()
 				
 				GUI.DrawTexture(Rect(0,fontSize*1.5f,nameListRect.width - 10,fontSize*0.2f),Resources.Load("UI/Lobby/Line",Texture2D));
 				
-				for(i = 0; i < finalPlayers.Length;i++)
+				if(currentGamemode == -1 || !gd.onlineGameModes[currentGamemode].teamGame)
 				{
-				
-					startHeight = fontSize*2f + (i*fontSize*1.25f);
-				
-					textSize = Mathf.Clamp(fontSize / (finalPlayers[i].name.Length /10f),0,fontSize);	
-					GUI.skin.label.fontSize = textSize;
-					
-					GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),finalPlayers[i].name);
-
-					if(finalPlayers[i].networkPlayer != null && Network.isServer)
+					//Non Team Game GUI
+					for(i = 0; i < finalPlayers.Length;i++)
 					{
-						finalPlayers[i].ping = Network.GetAveragePing(finalPlayers[i].networkPlayer);		
-						
-						if(!sendingPing)
-							SendPing();	
-					}
-						
-					textSize = Mathf.Clamp(fontSize/2f,0,fontSize);
-					GUI.skin.label.fontSize = textSize;
-						
-					GUI.Label(Rect(nameListRect.width - (textSize*5f),startHeight + textSize*0.5f,textSize*10f,fontSize*1.5f),finalPlayers[i].ping.ToString() + " Ping");
-
-					GUI.skin.label.fontSize = fontSize;
 					
+						startHeight = fontSize*2f + (i*fontSize*1.25f);
+					
+						textSize = Mathf.Clamp(fontSize / (finalPlayers[i].name.Length /10f),0,fontSize);	
+						GUI.skin.label.fontSize = textSize;
+						
+						GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),finalPlayers[i].name);
+
+						if(finalPlayers[i].networkPlayer != null && Network.isServer)
+						{
+							finalPlayers[i].ping = Network.GetAveragePing(finalPlayers[i].networkPlayer);		
+							
+						}
+							
+						textSize = Mathf.Clamp(fontSize/2f,0,fontSize);
+						GUI.skin.label.fontSize = textSize;
+							
+						GUI.Label(Rect(nameListRect.width - (textSize*5f),startHeight + textSize*0.5f,textSize*10f,fontSize*1.5f),finalPlayers[i].ping.ToString() + " Ping");
+
+						GUI.skin.label.fontSize = fontSize;
+						
+					}
 				}
+				else
+				{
+					//Team Game GUI
+					var count : int = 0;
+					var gdTeams = gd.onlineGameModes[currentGamemode].teams;
+					
+					for(var t : int = 0; t < gdTeams.Length;t++)
+					{						
+						startHeight = fontSize*2f + (count*fontSize*1.25f);
+						textSize = Mathf.Clamp(fontSize / (gdTeams[t].Length /10f),0,fontSize);	
+						GUI.skin.label.fontSize = textSize;
+						
+						GUI.skin.label.normal.textColor = Color.blue;
+						
+						GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),gdTeams[t]);
+						
+						GUI.skin.label.normal.textColor = Color.white;
+						
+						count++;
+						
+						for(i = 0; i < finalPlayers.Length;i++)
+						{
+							if(finalPlayers[i].team == t)
+							{
+								startHeight = fontSize*2f + (count*fontSize*1.25f);
+								textSize = Mathf.Clamp(fontSize / (finalPlayers[i].name.Length /10f),0,fontSize);	
+								GUI.skin.label.fontSize = textSize;
+								GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),finalPlayers[i].name);
+								count++;
+							}
+						}
+					}
+					
+					GUI.skin.label.fontSize = fontSize;
+				}
+				
+				if(!sendingPing)
+					SendPing();	
 			
 			GUI.EndGroup();
 			
@@ -579,6 +623,11 @@ function OnGUI()
 						currentSelection = i;
 					
 			}
+			if(currentSelection != currentGamemode)
+			{
+				currentGamemode = currentSelection;
+				GetComponent.<NetworkView>().RPC("GamemodeUpdate",RPCMode.AllBuffered,currentGamemode);
+			}
 			
 			GUI.EndScrollView();
 			GUI.EndGroup();
@@ -633,6 +682,18 @@ function OnGUI()
 	}
 }
 
+@RPC
+function GamemodeUpdate(mode : int)
+{
+	currentGamemode = mode;
+}
+
+@RPC
+function RacerTeamSwap(player : int, teamInt : int)
+{
+	finalPlayers[player].team = teamInt;
+}
+
 function SendPing()
 {	
 
@@ -645,6 +706,9 @@ function SendPing()
 	}
 	
 	yield WaitForSeconds(3f);
+	
+	Debug.Log("Calling BalanceTeams");
+	transform.GetComponent(Host_Script).BalanceTeams();
 	
 	sendingPing = false;
 	

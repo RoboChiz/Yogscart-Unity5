@@ -1,10 +1,14 @@
-﻿#pragma strict
+﻿
+
+#pragma strict
 
 private var gd : CurrentGameData;
 private var ki : kartInfo;
 private var kaI : kartInput;
 private var pf : Position_Finding;
 private var im : InputManager;
+private var sm : Sound_Manager;
+private var ks : kartScript;
 
 var heldPowerUp : int = -1;//Used to reference the item in Current Game Data
 var iteming : boolean; //True is player is getting / has an item
@@ -12,18 +16,36 @@ var iteming : boolean; //True is player is getting / has an item
 private var shield : Transform;
 private var sheilding : boolean;
 
-private var renderItem : Texture2D;
-private var renderItemHeight : int;
+ var renderItem : Texture2D;
+ var renderItemHeight : int;
 private var GUIAlpha : float = 0;
+
+private var online : boolean;
+private var mine : boolean;
+
+private var spinning : boolean;
+var locked : boolean = true;
 
 function Awake()
 {
 	//Access the scripts needed for proper iteming
+	ks = transform.GetComponent(kartScript);
 	ki = transform.GetComponent(kartInfo);
 	kaI = transform.GetComponent(kartInput);
 	pf = transform.GetComponent(Position_Finding);
 	gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
 	im = GameObject.Find("GameData").GetComponent(InputManager);
+	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 	
+}
+
+function Start()
+{
+	if((Network.isClient || Network.isServer))
+		online = true;
+	else
+		online = false;
+		
+	mine = GetComponent.<NetworkView>().isMine;
 }
 
 //Informs all clients that this kart has recieved an item
@@ -71,6 +93,8 @@ function DropShield()
 		shield.GetComponent.<Rigidbody>().isKinematic = false;
 		shield = null;
 		
+		Debug.Log("Dropped Shield");
+		
 		EndItemUse();
 		
 	}
@@ -81,22 +105,30 @@ function EndItemUse()
 {
 	if(gd.PowerUps[heldPowerUp].MultipleUses)
 	{
-		heldPowerUp--;
 		
-		GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
-		GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.All,-1);
-		yield;
-		GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.AllBuffered,heldPowerUp);
-		GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+		var tempPowerUp = heldPowerUp - 1;
+		
+		if(!online)
+			RecieveItem(tempPowerUp);
+		else if(mine)
+		{
+			GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
+			GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.All,-1);
+			yield;
+			GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.AllBuffered,tempPowerUp);
+			GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+		}
+		
 	}
 	else
 	{
 		//Nothing left to do turn off items
 		heldPowerUp = -1;
+		Debug.Log("heldPowerUp -- : " + heldPowerUp);
 		iteming = false;
 		
 		//Clear the item for everyone else
-		if(GetComponent.<NetworkView>().isMine)
+		if(online && mine)
 			Network.RemoveRPCsInGroup(5); //Group 5 is used for Item RPCS
 			
 	}
@@ -104,8 +136,8 @@ function EndItemUse()
 }
 
 function OnTriggerEnter (other : Collider) {
-	if(other.tag == "Crate" && !iteming && GetComponent.<NetworkView>().isMine){
-		decidePowerUp();
+	if(other.tag == "Crate" && !iteming && (!online || mine)){
+		StartCoroutine("decidePowerUp");
 		iteming = true;
 	}
 }
@@ -146,27 +178,38 @@ function decidePowerUp()
 		nItem = Random.Range(0,gd.PowerUps.Length);
 	}
 	
+	yield RollItem(nItem);
 	
-	GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
-	GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.AllBuffered,nItem);
-	GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+	if(online)
+	{
+		GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
+		GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.AllBuffered,nItem);
+		GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+	}
+	else
+	{
+		RecieveItem(nItem);
+	}
 	
 }
 
 function FixedUpdate()
 {
-	if(GetComponent.<NetworkView>().isMine)
+	if(!online || mine)
 	{
 	
 		if(heldPowerUp != -1)
 		{
 			if(gd.PowerUps[heldPowerUp].type != ItemType.UsableAsShield)
 			{
-				var itemKey = im.c[kaI.InputNum].GetMenuInput("Use Item");
+				var itemKey = im.c[kaI.InputNum].GetMenuInput("Use Item") && !locked;
 				
 				if(itemKey)
 				{
-					GetComponent.<NetworkView>().RPC("UseItem",RPCMode.All);
+					if(online)
+						GetComponent.<NetworkView>().RPC("UseItem",RPCMode.All);
+					else
+						UseItem();
 				}
 			}
 			else
@@ -175,9 +218,16 @@ function FixedUpdate()
 				{
 					if(!sheilding)
 					{
-						GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
-						GetComponent.<NetworkView>().RPC("UseShield",RPCMode.AllBuffered);
-						GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+						if(online)
+						{
+							GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
+							GetComponent.<NetworkView>().RPC("UseShield",RPCMode.AllBuffered);
+							GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+						}
+						else
+						{
+							UseShield();
+						}
 						
 						sheilding = true;
 					}
@@ -186,7 +236,11 @@ function FixedUpdate()
 				{
 					if(sheilding)
 					{
-						GetComponent.<NetworkView>().RPC("DropShield",RPCMode.All);
+						if(online)
+							GetComponent.<NetworkView>().RPC("DropShield",RPCMode.All);
+						else
+							DropShield();
+							
 						sheilding = false;
 					}
 				}
@@ -194,16 +248,79 @@ function FixedUpdate()
 		}
 		
 		if(sheilding && shield == null)
-		{
-			GetComponent.<NetworkView>().RPC("EndItemUse",RPCMode.All);
+		{		
 			sheilding = false;
 		}
 	}
 }
 
+function RollItem(item : int)
+{
+
+	spinning = true;
+	Debug.Log("Starting Roll Item");	
+	
+	sm.PlaySFX(Resources.Load("Music & Sounds/SFX/Powerup",AudioClip));
+	
+	var size = Screen.width/8f;
+	renderItemHeight = -size ;
+
+	var counter : int = 0;
+	var startTime : float = Time.timeSinceLevelLoad;
+
+	while((Time.timeSinceLevelLoad-startTime) < 1.7){
+
+	renderItem = gd.PowerUps[counter].Icon;
+
+	yield Scroll();
+
+	if(counter+1<gd.PowerUps.Length)
+	counter += 1;
+	else
+	counter = 0;
+
+	}
+
+	renderItem = gd.PowerUps[item].Icon;
+	
+	sm.PlaySFX(Resources.Load("Music & Sounds/SFX/Powerup2",AudioClip));
+	yield Stop();
+	
+	spinning = false;	
+	Debug.Log("Finished Roll Item");	
+	
+}
+
+function Scroll(){
+	var size = Screen.width/8f;
+	var nstartTime : float = Time.timeSinceLevelLoad;
+	
+	while((Time.timeSinceLevelLoad-nstartTime) < 0.2 ){
+		renderItemHeight = Mathf.Lerp(-size,size,(Time.timeSinceLevelLoad-nstartTime)/0.2);
+	yield;
+	}
+	
+	renderItemHeight = size;
+	
+}
+
+function Stop(){
+	
+	var size = Screen.width/8f;
+	var nstartTime : float = Time.timeSinceLevelLoad;
+	while((Time.timeSinceLevelLoad-nstartTime) < 0.2 ){
+		renderItemHeight = Mathf.Lerp(-size,0,(Time.timeSinceLevelLoad-nstartTime)/0.2);
+	yield;
+	}
+	
+	renderItemHeight = 0;
+	
+}
+
+
 function OnGUI () 
 {
-	if(GetComponent.<NetworkView>().isMine)
+	if(!online || mine)
 	{
 		GUI.color = Color32(255,255,255,GUIAlpha);
 		
@@ -239,7 +356,7 @@ function OnGUI ()
 		
 		GUI.BeginGroup(FrameRect);
 
-		if(heldPowerUp != -1)
+		if(!spinning && heldPowerUp != -1)
 			renderItem = gd.PowerUps[heldPowerUp].Icon;
 
 		if(renderItem != null){
@@ -251,7 +368,7 @@ function OnGUI ()
 
 		GUI.DrawTexture(FrameRect,frame);
 		
-		if(iteming)
+		if(iteming && !locked)
 			GUIAlpha = Mathf.Lerp(GUIAlpha,256,Time.deltaTime*5f);
 		else
 			GUIAlpha = Mathf.Lerp(GUIAlpha,0,Time.deltaTime*5f);

@@ -10,9 +10,6 @@ Holds functions used by the Client, and Host during Races.
 var networkID : int = -1;
 var myRacer : Racer;
 
-
-var otherRacers : GameObject[];
-
 //Used to load and show the correct GUI
 enum GUIState{Blank,CutScene,RaceInfo,Countdown,RaceGUI,ScoreBoard,NextMenu};
 var currentGUI : GUIState = GUIState.Blank;
@@ -31,13 +28,14 @@ private var gd : CurrentGameData;
 private var im : InputManager;
 private var td : TrackData;
 private var sm : Sound_Manager;
-private var km : KartMaker;
 
 var finishedCharacters : DisplayName[];
 
 function Start()
 {
 	LoadLibaries();
+	
+	myRacer = transform.GetComponent(Client_Script).myRacer;
 }
 
 @RPC
@@ -51,7 +49,6 @@ function LoadLibaries () {
 		td = GameObject.Find("Track Manager").GetComponent(TrackData);
 		
 	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
-	km = transform.GetComponent(KartMaker);
 	
 }
 
@@ -84,12 +81,6 @@ networkID = -1;
 
 while(Application.loadedLevelName != "Lobby")
 	yield;
-	
-var objs = GameObject.FindObjectsOfType(kartScript);
-for(var i : int = 0; i < objs.Length; i++)
-{
-	DestroyImmediate(objs[i].gameObject);
-}
 
 this.enabled = false;
 
@@ -130,90 +121,6 @@ function YourID(id : int)
 }
 
 @RPC
-function SpawnMyKart()
-{
-
-	LoadLibaries();
-
-	//Find Spawn Position
-	var SpawnPosition : Vector3;
-	var rot : Quaternion = td.spawnPoint.rotation;
-	var i : int = myRacer.position;
-	
-	var startPos : Vector3 = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
-	var x2 : Vector3 = rot*(Vector3.forward*(i%3)*(3*1.5f)+(Vector3.forward*.75f*3));
-	var y2 : Vector3 = rot*(Vector3.right*(i + 1)* 3);
-	SpawnPosition = startPos + x2 + y2;  
-
-	myRacer.ingameObj = km.SpawnKart(KartType.Online,SpawnPosition,rot * Quaternion.Euler(0,-90,0),myRacer.kart,myRacer.wheel,myRacer.character,myRacer.hat);
-	
-	//Add Camera
-	var IngameCam = Instantiate(Resources.Load("Prefabs/Cameras",Transform),td.spawnPoint.position,Quaternion.identity);
-	IngameCam.name = "InGame Cams";
-	
-	myRacer.ingameObj.GetComponent(kartInput).InputNum = 0;
-	myRacer.ingameObj.GetComponent(kartInput).camLocked = true;
-	myRacer.ingameObj.GetComponent(kartInput).frontCamera = IngameCam.GetChild(1).GetComponent.<Camera>();
-	myRacer.ingameObj.GetComponent(kartInput).backCamera = IngameCam.GetChild(0).GetComponent.<Camera>();
-	
-	IngameCam.GetChild(1).tag = "MainCamera";
-
-	IngameCam.GetChild(0).transform.GetComponent(Kart_Camera).Target = myRacer.ingameObj;
-	IngameCam.GetChild(1).transform.GetComponent(Kart_Camera).Target = myRacer.ingameObj;
-	myRacer.cameras = IngameCam;
-	
-	var id = Network.AllocateViewID();
-	
-	myRacer.ingameObj.gameObject.AddComponent(NetworkView);
-	myRacer.ingameObj.GetComponent.<NetworkView>().viewID = id;
-	myRacer.ingameObj.GetComponent.<NetworkView>().stateSynchronization = NetworkStateSynchronization.Off;
-		//SetUpCameras
-	var copy = new Array();
-	copy.Push(IngameCam.GetChild(0).GetComponent.<Camera>());
-	copy.Push(IngameCam.GetChild(1).GetComponent.<Camera>());
-
-	myRacer.ingameObj.GetComponent(kartInfo).cameras = copy;
-	
-	myRacer.ingameObj.GetComponent(kartUpdate).sending = true;
-	
-	transform.GetComponent.<NetworkView>().RPC("SpawnMe",RPCMode.OthersBuffered,PlayerPrefs.GetString("playerName","Player"),myRacer.kart,myRacer.wheel,myRacer.character,myRacer.hat,id);
-	
-	StartCoroutine("SendUpdates");
-	
-}
-
-@RPC
-function SpawnMe(name : String, kart : int, wheel : int, character : int, hat : int,id : NetworkViewID)
-{
-
-	//while(GameObject.Find("Track Manager") == null)
-		//yield;
-
-	if(km == null)
-		LoadLibaries();
-	
-	var newKart = km.SpawnKart(KartType.Spectator,Vector3(0,1000,0),Quaternion.identity,kart,wheel,character,hat);
-	
-	newKart.FindChild("Canvas").GetChild(0).GetComponent(UI.Text).text = name;
-	
-	newKart.gameObject.AddComponent(NetworkView);
-	newKart.GetComponent.<NetworkView>().viewID = id;
-	newKart.GetComponent.<NetworkView>().stateSynchronization = NetworkStateSynchronization.Off;
-	newKart.tag = "Spectated";
-	Application.DontDestroyOnLoad(newKart);
-	
-	var copy = new Array();
-	
-	if(otherRacers != null)
-		copy = otherRacers;
-	
-	copy.Add(newKart.gameObject);
-	
-	otherRacers = copy;
-	
-}
-
-@RPC
 function SetPosition(pos : int)
 {
 	myRacer.position = pos;
@@ -229,6 +136,7 @@ function FixedUpdate ()
 			myRacer.finished = true;
 			ChangeState(GUIState.ScoreBoard);
 		}
+			
 	}
 }
 
@@ -251,6 +159,7 @@ function SendUpdates()
 	myRacer.ingameObj.gameObject.AddComponent(Racer_AI);
 	Destroy(myRacer.ingameObj.GetComponent(kartInput));
 	myRacer.ingameObj.GetComponent(kartInfo).hidden = true;
+	myRacer.ingameObj.GetComponent(kartItem).locked = true;
 	
 	myRacer.cameras.GetChild(0).GetComponent.<Camera>().enabled = false;
 	myRacer.cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
@@ -297,6 +206,7 @@ function UnlockKart()
 	if(myRacer.ingameObj)
 	{
 		myRacer.ingameObj.GetComponent(kartInput).camLocked = false;
+		myRacer.ingameObj.GetComponent(kartItem).locked = false;
 	}
 	
 	var racers = GameObject.FindObjectsOfType(kartScript);
@@ -349,6 +259,8 @@ function PlayCutscene()
 {
 
 	LoadLibaries();
+	
+	StartCoroutine("SendUpdates");
 
 	ChangeState(GUIState.CutScene);
 	var CutsceneCam = new GameObject();
@@ -587,7 +499,6 @@ function setStartBoost(val : int){
 	
 function StartGame()
 {
-<<<<<<< HEAD
 	//Don't do anything XD
 	LoadLibaries();
 	
@@ -596,18 +507,15 @@ function StartGame()
 	myRacer.kart = gd.currentChoices[0].kart;
 	myRacer.wheel = gd.currentChoices[0].wheel;
 	
-=======
- //Don't do anything XD
- LoadLibaries();
- 
- myRacer.character = gd.currentChoices[0].character;
- myRacer.hat = gd.currentChoices[0].hat;
- myRacer.kart = gd.currentChoices[0].kart;
- myRacer.wheel = gd.currentChoices[0].wheel;
- 
->>>>>>> ee0b2cb3705c56e99607cd7050b37b6b70808c2d
 }	
 	
-	
+@RPC
+function SetupGDTracks(cup : int, track : int)
+{
+
+	gd.currentCup = cup;
+	gd.currentTrack = track;
+
+}	
 	
 	

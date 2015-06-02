@@ -559,7 +559,7 @@ function HaveTheSameSign(first : float, second : float) : boolean
 
 function OnCollisionEnter(collision : Collision)
 {
-	if(collision.other.GetComponent(Rigidbody) == null)
+	if(collision.rigidbody == null)
 		Collided(collision);
 }
 
