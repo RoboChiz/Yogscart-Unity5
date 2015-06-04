@@ -11,6 +11,8 @@ var state : ServerState;
 var popupText : String;
 
 var maxServerCount : int = 10;
+var currentPlayerColour : Color;
+var teamColour : Color;
 
 var editServer : boolean;
 var servers : ServerInfo[];
@@ -20,6 +22,7 @@ private var checkingServer : boolean;
 
 private var hostPort : int = 25000;
 private var playerName : String;
+private var finalPlayersID : int = -1;
 
 var finalPlayers : DisplayName[];
 private var sendingPing : boolean;
@@ -37,6 +40,7 @@ class GameMode
 
 	var name : String;
 	var logo : Texture2D;
+	var Description : String;
 	
 	var teamGame : boolean;
 	var teams : String[];
@@ -127,13 +131,14 @@ class DisplayName
 }
 
 @RPC
-function NewPlayer(name : String, character : int)
+function NewPlayer(name : String, character : int, team : int)
 {
 	
 	var found : boolean;
 	
 	var nDisplayName : DisplayName = new DisplayName(name,character);
-
+	nDisplayName.team = team;
+	
 	var copy = new Array();
 	
 	if(finalPlayers != null)
@@ -511,6 +516,11 @@ function OnGUI()
 					
 						textSize = Mathf.Clamp(fontSize / (finalPlayers[i].name.Length /10f),0,fontSize);	
 						GUI.skin.label.fontSize = textSize;
+														
+						if(finalPlayersID == i)
+							GUI.skin.label.normal.textColor = currentPlayerColour;
+						else
+							GUI.skin.label.normal.textColor = Color.white;
 						
 						GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),finalPlayers[i].name);
 
@@ -524,8 +534,6 @@ function OnGUI()
 						GUI.skin.label.fontSize = textSize;
 							
 						GUI.Label(Rect(nameListRect.width - (textSize*5f),startHeight + textSize*0.5f,textSize*10f,fontSize*1.5f),finalPlayers[i].ping.ToString() + " Ping");
-
-						GUI.skin.label.fontSize = fontSize;
 						
 					}
 				}
@@ -541,11 +549,9 @@ function OnGUI()
 						textSize = Mathf.Clamp(fontSize / (gdTeams[t].Length /10f),0,fontSize);	
 						GUI.skin.label.fontSize = textSize;
 						
-						GUI.skin.label.normal.textColor = Color.blue;
+						GUI.skin.label.normal.textColor = teamColour;
 						
 						GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),gdTeams[t]);
-						
-						GUI.skin.label.normal.textColor = Color.white;
 						
 						count++;
 						
@@ -556,34 +562,57 @@ function OnGUI()
 								startHeight = fontSize*2f + (count*fontSize*1.25f);
 								textSize = Mathf.Clamp(fontSize / (finalPlayers[i].name.Length /10f),0,fontSize);	
 								GUI.skin.label.fontSize = textSize;
+								
+								if(finalPlayersID == i)
+									GUI.skin.label.normal.textColor = currentPlayerColour;
+								else
+									GUI.skin.label.normal.textColor = Color.white;
+									
 								GUI.Label(Rect(0,startHeight,nameListRect.width,fontSize*1.25f),finalPlayers[i].name);
 								count++;
 							}
 						}
 					}
 					
-					GUI.skin.label.fontSize = fontSize;
 				}
+				
+				GUI.skin.label.fontSize = fontSize;
+				GUI.skin.label.normal.textColor = Color.white;
 				
 				if(!sendingPing)
 					SendPing();	
 			
-			GUI.EndGroup();
-			
-			var quitText : String = "Quit";
-			if(xboxController)
-				quitText = "Quit   B";
-			
-			if(GUI.Button(Rect(chunkSize ,nameListRect.x + nameListRect.height,chunkSize,chunkSize/2f),quitText) || im.c[0].GetMenuInput("Cancel") != 0)
-				{
-					Network.Disconnect();	
-				}
+				GUI.EndGroup();
 				
-			if(xboxController)
-				GUI.DrawTexture(Rect(chunkSize * 1.6f,nameListRect.x + nameListRect.height + gapSize*0.2f,fontSize*1.5f,fontSize*1.5f),Resources.Load("UI/Main Menu/B",Texture2D));
+				var quitText : String = "Quit";
+				if(xboxController)
+					quitText = "Quit   B";
 				
+				if(GUI.Button(Rect(chunkSize ,nameListRect.x + nameListRect.height,chunkSize,chunkSize/2f),quitText) || im.c[0].GetMenuInput("Cancel") != 0)
+					{
+						Network.Disconnect();	
+					}
+					
+				if(xboxController)
+					GUI.DrawTexture(Rect(chunkSize * 1.6f,nameListRect.x + nameListRect.height + gapSize*0.2f,fontSize*1.5f,fontSize*1.5f),Resources.Load("UI/Main Menu/B",Texture2D));
+					
+				if(currentGamemode != -1)
+				{	
+					var gamemodeInfoRect = Rect(Screen.width - chunkSize * 6f,chunkSize/2f,chunkSize*5f,chunkSize * 1.5f);
+					serverInfo = Resources.Load("UI/Lobby/ServerInfo",Texture2D);
+					GUI.DrawTexture(gamemodeInfoRect,serverInfo);
+					
+					GUI.BeginGroup(gamemodeInfoRect);
+					
+						GUI.Label(Rect(20,10,gamemodeInfoRect.width-40,fontSize*2f),gd.onlineGameModes[currentGamemode].name);
+						GUI.DrawTexture(Rect(20,10 + fontSize*1.25f,gamemodeInfoRect.width - 40,fontSize*0.2f),Resources.Load("UI/Lobby/Line",Texture2D));
+						
+						GUI.Label(Rect(20,10 + fontSize*1.3f,gamemodeInfoRect.width-40,gamemodeInfoRect.height - 10 - fontSize*1.3f),gd.onlineGameModes[currentGamemode].Description);
+						
+					GUI.EndGroup();	
+				}		
 			}
-			
+		
 		if(Network.isServer)
 		{	
 		
@@ -600,7 +629,7 @@ function OnGUI()
 				GUI.DrawTexture(Rect(chunkSize * 2.65f,nameListRect.x + nameListRect.height + gapSize*0.2f,fontSize*1.5f,fontSize*1.5f),Resources.Load("UI/Main Menu/A",Texture2D));
 				
 				
-			var hostInfoRect = Rect(Screen.width - chunkSize * 6f,chunkSize/2f + gapSize*1.5f,chunkSize*5f,chunkSize * 2.5f);
+			var hostInfoRect = Rect(Screen.width - chunkSize * 6f,chunkSize/2f + gapSize*3f,chunkSize*5f,chunkSize * 2.5f);
 			serverInfo = Resources.Load("UI/Lobby/ServerInfo",Texture2D);
 			GUI.DrawTexture(hostInfoRect,serverInfo);
 			
@@ -619,7 +648,7 @@ function OnGUI()
 				if(i == currentSelection)
 					GUI.DrawTexture(Rect(0,i * fontSize * 1.25f,nameListRect.width,fontSize*1.25f),Resources.Load("UI/Lobby/Selected",Texture2D));
 					
-					if(Input.GetMouseButtonDown(0) && im.MouseIntersects(Rect(Screen.width - (chunkSize * 6f) + 20,chunkSize/2f + gapSize*1.5f + 10 + fontSize*2.6f + (i * fontSize * 1.25f),nameListRect.width,fontSize*1.25f)))
+					if(Input.GetMouseButtonDown(0) && im.MouseIntersects(Rect(hostInfoRect.x + 20,hostInfoRect.y + 10 + fontSize*2.6f + (i * fontSize * 1.25f),nameListRect.width,fontSize*1.25f)))
 						currentSelection = i;
 					
 			}
@@ -627,6 +656,8 @@ function OnGUI()
 			{
 				currentGamemode = currentSelection;
 				GetComponent.<NetworkView>().RPC("GamemodeUpdate",RPCMode.AllBuffered,currentGamemode);
+				transform.GetComponent(Host_Script).DoLobbyStuff();
+				
 			}
 			
 			GUI.EndScrollView();
@@ -682,16 +713,16 @@ function OnGUI()
 	}
 }
 
+@RPC 
+function finalPlayersIDUpdate(id : int)
+{
+	finalPlayersID = id;
+}
+
 @RPC
 function GamemodeUpdate(mode : int)
 {
 	currentGamemode = mode;
-}
-
-@RPC
-function RacerTeamSwap(player : int, teamInt : int)
-{
-	finalPlayers[player].team = teamInt;
 }
 
 function SendPing()
@@ -706,9 +737,6 @@ function SendPing()
 	}
 	
 	yield WaitForSeconds(3f);
-	
-	Debug.Log("Calling BalanceTeams");
-	transform.GetComponent(Host_Script).BalanceTeams();
 	
 	sendingPing = false;
 	
@@ -837,7 +865,8 @@ function ClearNames()
 @RPC
 function GetPing(ping : int, toChange : int)
 {
-	finalPlayers[toChange].ping = ping;
+	if(toChange >= finalPlayers.Length)
+		finalPlayers[toChange].ping = ping;
 }
 		
 

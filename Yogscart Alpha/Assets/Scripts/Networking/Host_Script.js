@@ -43,7 +43,7 @@ function OnPlayerConnected(player: NetworkPlayer)
 }
 
 @RPC
-function VersionUpdate(verText : String,info : NetworkMessageInfo)
+function VersionUpdate(verText : String, info : NetworkMessageInfo)
 {
 
 	Debug.Log("Version Update!");
@@ -95,7 +95,7 @@ function OnPlayerDisconnected(player: NetworkPlayer) {
 		}
 		
 		if(serverType == ServerState.Lobby)
-		CheckforLeavers();
+			CheckforLeavers();
 
 		}
 		
@@ -114,6 +114,7 @@ function OnPlayerDisconnected(player: NetworkPlayer) {
 		}
 		
 		workingProcesses --;
+		
 }
 
 function Update()
@@ -203,11 +204,13 @@ var copy = new Array();
 
 for(var i : int = 0; i < RacingPlayers.Length; i++)
 {
-if(RacingPlayers[i].connected)
-copy.Push(RacingPlayers[i]);
+	if(RacingPlayers[i].connected)
+		copy.Push(RacingPlayers[i]);
 }
 
 RacingPlayers = copy;
+
+DoLobbyStuff();
 
 workingProcesses --;
 
@@ -263,28 +266,37 @@ function RecievedNewRacer(name : String, character : int, hat : int, kart : int,
 
 function AddRacer(name : String, character : int, hat : int, kart : int, wheel : int, np : NetworkPlayer)
 {
-//Update Racing Player
-var copy = new Array();
+	//Update Racing Player
+	var copy = new Array();
 
-if(RacingPlayers != null)
-copy = RacingPlayers;
+	if(RacingPlayers != null)
+	copy = RacingPlayers;
 
-var nNetworkRacer = new NetworkedRacer(character,hat,kart,wheel,copy.length,name,np);
+	var nNetworkRacer = new NetworkedRacer(character,hat,kart,wheel,copy.length,name,np);
 
-copy.Push(nNetworkRacer);
+	copy.Push(nNetworkRacer);
 
-RacingPlayers = copy;
+	RacingPlayers = copy;
 
-GetComponent.<NetworkView>().group = RacingPlayers.Length;
+	GetComponent.<NetworkView>().group = RacingPlayers.Length + 1;
 
-GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,name,character);
+	yield;
 
-yield;
+	GetComponent.<NetworkView>().group = 0;
+	
+	DoLobbyStuff();
+	
+}
 
-transform.GetComponent(Network_Manager).finalPlayers[transform.GetComponent(Network_Manager).finalPlayers.Length-1].networkPlayer = np;
-
-GetComponent.<NetworkView>().group = 0;
-
+function DoLobbyStuff()
+{
+	StopCoroutine("BalanceTeams");
+	StartCoroutine("BalanceTeams");
+		
+	yield WaitForSeconds(0.5f);
+	
+	StopCoroutine("UpdateLobbyNames");
+	StartCoroutine("UpdateLobbyNames");
 }
 
 function OnGUI(){
@@ -325,88 +337,131 @@ class Team
 	}
 }
 
+function UpdateLobbyNames()
+{
+
+	Debug.Log("Starting UpdateLobbyNames");
+
+	Network.RemoveRPCsInGroup(14);
+	GetComponent.<NetworkView>().group = 14;
+
+	GetComponent.<NetworkView>().RPC("ClearNames",RPCMode.AllBuffered);
+	
+	yield WaitForSeconds(0.2f);
+	
+	for(var i : int = 0; i < RacingPlayers.Length; i++)
+	{
+		GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,RacingPlayers[i].name,RacingPlayers[i].character,RacingPlayers[i].team-1);
+		
+		if(RacingPlayers[i].networkplayer == GetComponent.<NetworkView>().owner)
+			nm.finalPlayersIDUpdate(i);
+		else
+			GetComponent.<NetworkView>().RPC("finalPlayersIDUpdate",RacingPlayers[i].networkplayer,i);	
+			
+		Debug.Log("Sent " + RacingPlayers[i].name);
+		yield;
+	}
+	
+	GetComponent.<NetworkView>().group = 0;
+	
+	yield;
+	
+	Debug.Log("Finished UpdateLobbyNames");
+}
+
 function BalanceTeams()
 {
+	
 	Debug.Log("Balancing Teams");
-
-	if(gd.onlineGameModes[nm.currentGamemode].teamGame && gd.onlineGameModes[nm.currentGamemode].teams != null)
+	if(nm.currentGamemode != -1)
 	{
-	
-		var gmT = gd.onlineGameModes[nm.currentGamemode].teams;
-		var teams : Team[] = new Team[gmT.Length + 1];
-		
-		teams[0] = new Team("No Team");
-		
-		for(var i : int = 0; i < gmT.Length; i++)
-		{
-			teams[i+1] = new Team(gmT[i]);
-		}
-		
-		for(i = 0; i < RacingPlayers.Length; i++)
+		if(gd.onlineGameModes[nm.currentGamemode].teamGame && gd.onlineGameModes[nm.currentGamemode].teams != null)
 		{
 		
-			var j : int = 0;
+			var gmT = gd.onlineGameModes[nm.currentGamemode].teams;
+			var teams : Team[] = new Team[gmT.Length + 1];
 			
-			if(RacingPlayers[i].team != null && RacingPlayers[i].team != "")
+			teams[0] = new Team("No Team");
+			
+			for(var i : int = 0; i < gmT.Length; i++)
 			{
-				for(j = 1; j < teams.Length; j++)
-				{
-					if(RacingPlayers[i].team == teams[j].name)
-						break;
-				}
+				teams[i+1] = new Team(gmT[i]);
 			}
 			
-			var copy = new Array();
-			if(teams[j].members != null)
-				copy = teams[j].members;
-			copy.Add(RacingPlayers[i]);
-			teams[j].members = copy;		
-
-		}
-		
-		//Sort Teams
-		
-		var avgAmount : int = Mathf.Clamp(RacingPlayers.Length,gmT.Length,12) / gmT.Length;
-		
-		for(i = 1; i < teams.Length; i++)
-		{
-			while(teams[0].members.Length > 0 && teams[i].members.Length < avgAmount)
+			for(i = 0; i < RacingPlayers.Length; i++)
 			{
-				copy = new Array();
-				if(teams[i].members != null)
+			
+				var j : int = RacingPlayers[i].team;
+				
+				var copy = new Array();
+				if(teams[j].members != null)
+					copy = teams[j].members;
+				copy.Add(RacingPlayers[i]);
+				teams[j].members = copy;		
+
+			}
+			
+			//Sort Teams
+			var gmtLength : float = gmT.Length;
+			var division : float = Mathf.Clamp(RacingPlayers.Length,gmT.Length,12f) / gmtLength;
+			var avgAmount : int = Mathf.RoundToInt(division + 0.4);
+			
+			for(i = 1; i < teams.Length; i++)
+			{
+			
+				Debug.Log("I:" + i);
+				var changed : boolean = false;
+			
+				//Check if Team has too many members
+				while(teams[i].members.Length > avgAmount)
+				{
+					var randomPlayer = Random.Range(0,teams[i].members.Length);
+					
+					var holder = teams[i].members[randomPlayer];
+					
+					//Remove random player from Team
+					copy = new Array();
 					copy = teams[i].members;
-				copy.Add(teams[0].members[0]);
-				teams[i].members = copy;
-				
-				teams[0].members[0].team = teams[i].name;
-				
-				Debug.Log(gd.Characters[teams[0].members[0].character].Name + " is now in " + teams[i].name);
-				
-				for(var rp : int = 0; rp < RacingPlayers.Length; rp++)
-				{
-					if(RacingPlayers[rp] == teams[0].members[0])
-					{
-						if(gd.onlineGameModes[nm.currentGamemode].hostScript != null && gd.onlineGameModes[nm.currentGamemode].hostScript.enabled == true)
-							gd.onlineGameModes[nm.currentGamemode].hostScript.StartCoroutine("TeamSwap",rp);
-						
-						Network.RemoveRPCsInGroup(12 + rp);
-						
-						GetComponent.<NetworkView>().group = 12 + rp;
-						GetComponent.<NetworkView>().RPC("RacerTeamSwap",RPCMode.AllBuffered,rp,i-1);	
-						GetComponent.<NetworkView>().group = 0;
-						break;
-					}
+					copy.RemoveAt(randomPlayer);
+					teams[i].members = copy;
+					
+					holder.team = 0; //0 represents No team
+					
+					//Add them to the NoTeam Array
+					copy = new Array();
+					if(teams[0].members != null)
+						copy = teams[0].members;
+					copy.Add(holder);
+					teams[0].members = copy;
+					
+					changed = true;
+					
 				}
-				
-				copy = teams[0].members;
-				copy.RemoveAt(0);
-				teams[0].members = copy;				
 			}
-		}
-	
+			for(i = 1; i < teams.Length; i++)
+			{
+				//Check if Team has enough members
+				while(teams[0].members.Length > 0 && teams[i].members.Length < avgAmount)
+				{
+					copy = new Array();
+					if(teams[i].members != null)
+						copy = teams[i].members;
+					copy.Add(teams[0].members[0]);
+					teams[i].members = copy;
+					
+					teams[0].members[0].team = i;
+					
+					Debug.Log(gd.Characters[teams[0].members[0].character].Name + " is now in " + teams[i].name);
+					
+					copy = teams[0].members;
+					copy.RemoveAt(0);
+					teams[0].members = copy;	
+				}			
+			}
+		}		
 	}
-
 }
+
 
 
 	

@@ -1,7 +1,10 @@
-# Yogscart Alpha V1.3 [Test Build 13]
+# Yogscart Alpha V1.3 [Test Build 14]
 
 ChangeLog
 ----------------------
+Commit #12
+.Fixed Team Balancing
+.Improved Lobby 
 Commit #11
 .Added global Multiplayer functions
 .Added bouncy (broken) eggs

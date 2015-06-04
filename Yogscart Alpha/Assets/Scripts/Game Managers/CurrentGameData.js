@@ -453,7 +453,7 @@ var NextDistance : float;
 
 //After Race Information
 var points : int;
-var team : String;
+var team : int;
 
 function Racer(Human : boolean, AiStupidity : int, Character : int, Hat : int, Kart : int, Wheel : int, Position : int)
 {

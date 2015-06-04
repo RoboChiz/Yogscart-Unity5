@@ -1,15 +1,11 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Power Ups\Egg.js">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Networking\Host_Script.js">
     <Files>
-      <File FileName="Assets\Scripts\Networking\Client_Script.js" Line="54" Column="144" />
-      <File FileName="Assets\Scripts\Networking\Host_Script.js" Line="360" Column="1" />
-      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="162" Column="1" />
-      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="467" Column="128" />
-      <File FileName="Assets\Scripts\Kart Scripts\kartItem.js" Line="27" Column="1" />
-      <File FileName="Assets\Scripts\Power Ups\Egg.js" Line="87" Column="63" />
+      <File FileName="Assets\Scripts\Networking\Host_Script.js" Line="406" Column="68" />
+      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="853" Column="1" />
+      <File FileName="Assets\Scripts\Networking\Client_Script.js" Line="1" Column="6" />
+      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="485" Column="19" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
