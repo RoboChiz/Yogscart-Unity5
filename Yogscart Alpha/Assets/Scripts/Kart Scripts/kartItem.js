@@ -22,6 +22,7 @@ private var GUIAlpha : float = 0;
 
 private var online : boolean;
 private var mine : boolean;
+private var aiControlled : boolean;
 
 private var spinning : boolean;
 var locked : boolean = true;
@@ -44,8 +45,10 @@ function Start()
 		online = true;
 	else
 		online = false;
+	
+	if(online)
+		mine = GetComponent.<NetworkView>().isMine;
 		
-	mine = GetComponent.<NetworkView>().isMine;
 }
 
 //Informs all clients that this kart has recieved an item
@@ -93,8 +96,6 @@ function DropShield()
 		shield.GetComponent.<Rigidbody>().isKinematic = false;
 		shield = null;
 		
-		Debug.Log("Dropped Shield");
-		
 		EndItemUse();
 		
 	}
@@ -124,7 +125,6 @@ function EndItemUse()
 	{
 		//Nothing left to do turn off items
 		heldPowerUp = -1;
-		Debug.Log("heldPowerUp -- : " + heldPowerUp);
 		iteming = false;
 		
 		//Clear the item for everyone else
@@ -169,8 +169,6 @@ function decidePowerUp()
 			
 		}
 		
-		Debug.Log("Generated " + gd.PowerUps[nItem].Name);
-		
 	}
 	else
 	{
@@ -195,7 +193,7 @@ function decidePowerUp()
 
 function FixedUpdate()
 {
-	if(!online || mine)
+	if((!online && ! aiControlled) || mine)
 	{
 	
 		if(heldPowerUp != -1)
@@ -258,7 +256,6 @@ function RollItem(item : int)
 {
 
 	spinning = true;
-	Debug.Log("Starting Roll Item");	
 	
 	sm.PlaySFX(Resources.Load("Music & Sounds/SFX/Powerup",AudioClip));
 	
@@ -320,7 +317,11 @@ function Stop(){
 
 function OnGUI () 
 {
-	if(!online || mine)
+
+	if(transform.GetComponent(Racer_AI) != null)
+		aiControlled = true;
+
+	if((!online && ! aiControlled) || mine)
 	{
 		GUI.color = Color32(255,255,255,GUIAlpha);
 		

@@ -221,14 +221,17 @@ function RemoveController(input : String)
 
 function RemoveOtherControllers()
 {
-	var holder = c[0];
-	
-	c = new InputController[1];
-	c[0] = holder;
-	
-	for(var i : int = 0; i < c.Length; i++)
-			ShowInput(i);
-	
+
+	if(c != null && c.Length > 1)
+	{
+		var holder = c[0];
+		
+		c = new InputController[1];
+		c[0] = holder;
+		
+		for(var i : int = 0; i < c.Length; i++)
+				ShowInput(i);
+	}
 }
 
 function MouseIntersects(Area : Rect){

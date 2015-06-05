@@ -215,14 +215,40 @@ function UnlockKart()
 		racers[i].locked = false;
 	}
 	
+	if(!Network.isServer && !Network.isClient)
+	{
+		var itemracers = GameObject.FindObjectsOfType(kartItem);
+		for(i = 0; i < itemracers.Length; i++)
+		{
+			itemracers[i].GetComponent(kartItem).locked = false;
+		}
+		
+		var kiracers = GameObject.FindObjectsOfType(kartInput);
+		for(i = 0; i < kiracers.Length; i++)
+		{
+			kiracers[i].GetComponent(kartInput).camLocked = false;
+		}
+	}
+	
 }
 
 @RPC
 function Countdown(){
 
 	if(networkID != -1)
+	{
 		if(Network.isClient || Network.isServer)
 			myRacer.ingameObj.GetComponent(kartInfo).hidden = false;
+	}
+	else
+	{
+		var kiracers = GameObject.FindObjectsOfType(kartInfo);
+		for(var j : int = 0; j < kiracers.Length; j++)
+		{
+			kiracers[j].GetComponent(kartInfo).hidden = false;
+		}
+	}
+
 
 	ChangeState(GUIState.Countdown);
 	
@@ -233,7 +259,7 @@ function Countdown(){
 	for(var i : int = 3; i >= 0; i--){
 		CountdownText = i;
 		
-		if(networkID != -1)
+		if(networkID != -1 || (!Network.isServer && !Network.isClient))
 			setStartBoost(i);
 			
 		CountdownRect = Rect(Screen.width/2 - (Screen.height/1.5f)/2f,Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/1.5f,Screen.height/1.5f);
@@ -292,13 +318,14 @@ function PlayCutscene()
 	Destroy(CutsceneCam);
 	sm.PlayMusic(td.backgroundMusic);
 	
-	if(networkID != -1)
+	if(networkID != -1 || (!Network.isClient && !Network.isServer))
 	{
 		if(Network.isClient)
 			transform.GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
-			
-		if(Network.isServer)
+		else if(Network.isServer)
 			transform.GetComponent(RaceLeader).LocalFinish(networkID);
+		else
+			transform.GetComponent(RaceLeader).SetFinished(true);//Single Player Check
 	}
 	else
 	{
@@ -379,8 +406,10 @@ function OnGUI ()
 			}
 			else
 			{
-			
-			
+				if(transform.GetComponent(RaceLeader).type == RaceStyle.TimeTrial)
+					raceTexture = Resources.Load("UI Textures/Level Selection/TimeTrial",Texture2D);
+				else
+					raceTexture = Resources.Load("UI Textures/Level Selection/" + transform.GetComponent(RaceLeader).race,Texture2D);
 			}
 
 			GUI.DrawTexture(Rect(10,10,Screen.width-20,Screen.height),raceTexture,ScaleMode.ScaleToFit);

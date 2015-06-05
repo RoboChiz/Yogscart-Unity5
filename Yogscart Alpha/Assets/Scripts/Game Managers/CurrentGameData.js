@@ -8,8 +8,9 @@ var lastoverallLapisCount : int;
 //Tracks 
 
 var currentCup : int = 0;
-
 var currentTrack : int = 0;
+
+var currentDifficulty : int = 0;
 
 var currentChoices : LoadOut[];
 

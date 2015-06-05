@@ -284,7 +284,6 @@ function Push(dir : Vector3, dist : float)
 		
 		GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
 		
-		Debug.Log("Push");
 		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
 		pushing = false;
 	}

@@ -2,6 +2,9 @@
 
 ChangeLog
 ----------------------
+Commit #13
+.Added Main Menu back in
+.Started single player
 Commit #12
 .Fixed Team Balancing
 .Improved Lobby 

@@ -27,6 +27,9 @@ Alpha = Mathf.Lerp(Alpha,0,Time.deltaTime*5);
 GUI.skin = Resources.Load("GUISkins/Main Menu", GUISkin);
 GUI.color = Color(256,256,256,Alpha);
 
+if(GrandPrixOnly)
+	TypeSelecion = false;
+
 var submitBool : boolean;
 var cancelBool : boolean;
 var vert : boolean;
@@ -46,7 +49,17 @@ TypeSelecion = !TypeSelecion;
 } 
 
 if(cancelBool){
-// Exit Stuff
+	// Exit Stuff
+	if(!Network.isServer && !Network.isClient)
+	{
+		var mm = GameObject.Find("Menu Holder").GetComponent(MainMenu);
+		
+		mm.CancelCharacterSelect();
+		mm.StartCoroutine("StartCharacterSelect");
+		
+		hidden = true;
+		this.enabled = false;
+	}
 }
 
 if(TypeSelecion){ //Track Selection
@@ -167,11 +180,22 @@ OutLineLabel(rankRect,rankText,2,Color.black);
 
 
 function Finished(){
-if(Network.isServer == true || Network.isClient == true){
-SendRPC();
-}else{
-//Single Player Stuff
-}
+	if(Network.isServer == true || Network.isClient == true){
+		SendRPC();
+	}else{
+		//Single Player Stuff
+		gd.currentCup = currentCup;
+		
+		if(!GrandPrixOnly)
+			gd.currentTrack = currentTrack;
+		else
+		{
+			gd.currentTrack = 0;
+		}
+		
+		this.enabled = false;
+		
+	}
 }
 
 function SendRPC(){

@@ -20,6 +20,9 @@ var ending : boolean;
 
 var OverallTimer : Timer;
 
+//Single Player Variables
+var race : int = 1; //Holds which race in a grand prix you are
+
 //Used in multiplayer
 private var Votes : Vector2[];
 
@@ -30,6 +33,7 @@ private var td : TrackData;
 private var sm : Sound_Manager;
 private var ss : SortingScript;
 private var km : KartMaker;
+private var rb : RaceBase;
 
 function Start()
 {
@@ -48,6 +52,7 @@ function LoadLibaries () {
 	sm = transform.gameObject.Find("Sound System").GetComponent(Sound_Manager); 
 	ss = transform.GetComponent(SortingScript);
 	km = transform.GetComponent(KartMaker);
+	rb = transform.GetComponent(RaceBase);
 	
 }
 
@@ -75,7 +80,90 @@ function StartGame()
 	
 }
 
-function StartRace () {
+function StartSinglePlayer()//true if in Time Trial Mode
+{
+	
+	LoadLibaries();
+	
+	if(type != RaceStyle.TimeTrial) //Setup a Grand Prix or VS Race
+	{
+		Racers = new Racer[12];
+
+		var diff : int = gd.currentDifficulty;
+		var minVal : int;
+		var maxVal : int;
+		
+		switch(diff)
+		{
+			case 0:
+				minVal = 10;
+				maxVal = 7;
+			break;
+			case 1:
+				minVal = 8;
+				maxVal = 4;
+			break;
+			case 2:
+				minVal = 5;
+				maxVal = 0;
+			break;
+			case 3:
+				minVal = 0;
+				maxVal = 0;
+			break;
+		}
+		
+		var counter : int = minVal;
+		
+		for(var i : int = 0; i < 12; i++)
+		{
+			if(i < 12 - im.c.Length)
+			{
+				Racers[i] = new Racer(false,counter,Random.Range(0,gd.Characters.Length),Random.Range(0,gd.Hats.Length),Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),i);
+				
+				counter++;
+				if(counter > maxVal)
+					counter = minVal;
+			}
+			else
+			{
+				var p : int = 12 - (12-im.c.Length)-1;
+				Racers[i] = new Racer(true,p,gd.currentChoices[p].character,gd.currentChoices[p].hat,gd.currentChoices[p].kart,gd.currentChoices[p].wheel,i);
+			}
+		}	
+		
+	}
+	else
+	{
+		Racers = new Racer[1];
+		Racers[0] = new Racer(true,-1,gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,-1);
+	}
+	
+	gd.BlackOut = true;
+	yield WaitForSeconds(0.5);
+	Application.LoadLevel(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].SceneID);
+	
+	Debug.Log("Level Loaded!");
+	
+	while(GameObject.Find("Track Manager") == null)
+	{
+		yield;
+	}
+	
+	OverallTimer = new Timer();
+	LoadLibaries();
+	
+	yield;
+	yield;
+	
+	StartRace();
+	
+}
+
+function StartRace () 
+{
+
+	Debug.Log("Starting StartRace");
 
 	cutsceneWait = false;
 	ending = false;
@@ -102,6 +190,16 @@ function StartRace () {
 		Debug.Log("Missing Racers! Something's gone horribly wrong!");
 	else
 	{
+	
+		var SpawnPosition : Vector3;
+		var rot : Quaternion;
+		var racepos : int;
+				
+		var startPos : Vector3;
+		var x2 : Vector3;
+		var y2 : Vector3;
+	
+	
 		if(type == RaceStyle.Online)
 		{
 			
@@ -111,13 +209,12 @@ function StartRace () {
 			{
 				
 				//Find Spawn Position
-				var SpawnPosition : Vector3;
-				var rot : Quaternion = td.spawnPoint.rotation;
-				var racepos : int = NetworkRacers[i].position;
+				rot  = td.spawnPoint.rotation;
+				racepos = NetworkRacers[i].position;
 				
-				var startPos : Vector3 = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
-				var x2 : Vector3 = rot*(Vector3.forward*(racepos%3)*(3*1.5f)+(Vector3.forward*.75f*3));
-				var y2 : Vector3 = rot*(Vector3.right*(racepos + 1)* 3);
+				startPos = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
+				x2 = rot*(Vector3.forward*(racepos%3)*(3*1.5f)+(Vector3.forward*.75f*3));
+				y2 = rot*(Vector3.right*(racepos + 1)* 3);
 				SpawnPosition = startPos + x2 + y2;  
 			
 				if(NetworkRacers[i].networkplayer.guid != GetComponent.<NetworkView>().owner.guid)
@@ -145,8 +242,91 @@ function StartRace () {
 		}
 		else
 		{ //GrandPrix, Custom Race & Time Trial
+			for(i = 0; i < Racers.Length;i++)
+			{
+				
+				//Find Spawn Position
+				rot = td.spawnPoint.rotation;
+				racepos = Racers[i].position;
+				
+				startPos = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
+				x2 = rot*(Vector3.forward*(racepos%3)*(3*1.5f)+(Vector3.forward*.75f*3));
+				y2 = rot*(Vector3.right*(racepos + 1)* 3);
+				SpawnPosition = startPos + x2 + y2;  
 			
-			//PORT LATER
+				Racers[i].ingameObj = km.SpawnKart(KartType.Local,SpawnPosition,rot * Quaternion.Euler(0,-90,0),Racers[i].kart,Racers[i].wheel,Racers[i].character,Racers[i].hat);
+			
+				if(Racers[i].human)
+				{
+					//Add Camera
+					var IngameCam = Instantiate(Resources.Load("Prefabs/Cameras",Transform),SpawnPosition,Quaternion.identity);
+					IngameCam.name = "InGame Cams";
+					
+					Racers[i].ingameObj.GetComponent(kartInput).InputNum = Racers[i].aiStupidity;
+					Racers[i].ingameObj.GetComponent(kartInput).camLocked = true;
+					Racers[i].ingameObj.GetComponent(kartInput).frontCamera = IngameCam.GetChild(1).GetComponent.<Camera>();
+					Racers[i].ingameObj.GetComponent(kartInput).backCamera = IngameCam.GetChild(0).GetComponent.<Camera>();
+					
+					IngameCam.GetChild(1).tag = "MainCamera";
+
+					IngameCam.GetChild(0).transform.GetComponent(Kart_Camera).Target = Racers[i].ingameObj;
+					IngameCam.GetChild(1).transform.GetComponent(Kart_Camera).Target = Racers[i].ingameObj;
+					Racers[i].cameras = IngameCam;
+					
+					//SetUpCameras
+					var copy = new Array();
+					copy.Push(IngameCam.GetChild(0).GetComponent.<Camera>());
+					copy.Push(IngameCam.GetChild(1).GetComponent.<Camera>());
+					Racers[i].ingameObj.GetComponent(kartInfo).cameras = copy;
+					
+					if(im.c.Length == 2)
+					{
+						if(Racers[i].aiStupidity == 0)
+							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.Top;
+						if(Racers[i].aiStupidity == 1)
+							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.Bottom;
+					}
+					if(im.c.Length > 2)
+					{
+						if(Racers[i].aiStupidity == 0)
+							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.TopLeft;
+						if(Racers[i].aiStupidity == 1)
+							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.TopLeft;
+						if(Racers[i].aiStupidity == 2)		
+							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.BottomLeft;
+						if(Racers[i].aiStupidity == 3)
+							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.BottomRight;
+					}
+					
+					Destroy(Racers[i].ingameObj.GetComponent(kartUpdate));			
+				}
+				else
+				{
+					Destroy(Racers[i].ingameObj.GetComponent(kartInput));
+					Destroy(Racers[i].ingameObj.GetComponent(kartInfo));
+					Racers[i].ingameObj.gameObject.AddComponent(Racer_AI);
+					Racers[i].ingameObj.GetComponent(Racer_AI).Difficulty = Racers[i].aiStupidity;
+				}
+				
+				
+			}
+			
+			rb.PlayCutscene();
+			
+			while(WaitForFinished())
+				yield WaitForSeconds(0.5f);
+			
+			SetFinished(false);
+			cutsceneWait = true;
+			
+			yield WaitForSeconds(3);
+			
+			rb.Countdown();
+			
+			yield WaitForSeconds(3.8f);
+			
+			rb.UnlockKart();	
+
 			
 		}
 		
@@ -156,10 +336,21 @@ function StartRace () {
 		
 		while(WaitForFinished())
 			{
+			
+				if(!Network.isServer)
+				{
+					for(var r : int = 0; r < Racers.Length; r++)
+					{
+						Racers[r].TotalDistance = Racers[r].ingameObj.GetComponent(Position_Finding).currentTotal;
+						Racers[r].NextDistance = Racers[r].ingameObj.GetComponent(Position_Finding).currentDistance;
+					}
+				}
 				ss.CalculatePositions(Racers); //Racers refers to the same Racers as the Network Racer Array.
 				
 				if(Network.isServer)
-				SendPositionUpdates();
+					SendPositionUpdates();
+				else
+					LocalSendPositionUpdates();
 				
 				yield WaitForSeconds(0.5);
 			}
@@ -182,6 +373,14 @@ function SendPositionUpdates()
 		}
 		else
 			transform.GetComponent(RaceBase).SetPosition(Racers[i].position);
+	}
+}
+
+function LocalSendPositionUpdates()
+{
+	for(var i : int = 0; i < Racers.Length; i++)
+	{
+		Racers[i].ingameObj.GetComponent(Position_Finding).position = Racers[i].position;
 	}
 }
 
@@ -390,7 +589,7 @@ function WaitForFinished() : boolean
 
 	for(var i : int = 0; i < Racers.Length; i++)
 	{
-		if(!Racers[i].finished && NetworkRacers[i].connected)
+		if(!Racers[i].finished && ((!Network.isServer && !Network.isClient) || NetworkRacers[i].connected))
 		{
 		returnVal = true;
 		break;

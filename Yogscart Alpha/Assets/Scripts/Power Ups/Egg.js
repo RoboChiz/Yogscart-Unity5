@@ -67,25 +67,14 @@ function FixedUpdate () {
 
 
 
-function OnCollisionEnter(collision : Collision) 
+function OnTriggerEnter(other : Collider) 
 {
-
-	if(collision.rigidbody != null || collision.transform.parent.parent.GetComponent.<Rigidbody>() != null)
+	if(transform.GetComponent(JR) == null || other.transform.parent.parent.transform != transform.GetComponent(JR).parent)
 	{
-		if(transform.GetComponent(JR) == null || collision.transform != transform.GetComponent(JR).parent)
-		{
-			if(collision.transform.parent.parent.GetComponent(kartScript) != null){
-				collision.transform.parent.parent.GetComponent(kartScript).SpinOut();
-			}
-
-			Destroy(this.gameObject);
+		if(other.transform.parent.parent.GetComponent(kartScript) != null){
+			other.transform.parent.parent.GetComponent(kartScript).SpinOut();
 		}
-	}
-	else
-	{
-	      var contact : ContactPoint = collision.contacts[0];
-          var reflection = contact.normal + transform.forward;
-          direction = transform.TransformDirection(reflection.normalized * 15.0);
-		
+
+		Destroy(this.gameObject);
 	}
 }

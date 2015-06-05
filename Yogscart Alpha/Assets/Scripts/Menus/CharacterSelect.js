@@ -721,11 +721,12 @@ function Cancel()
 				Destroy(loadedModels[i].gameObject);
 		}
 		
-	gd.transform.GetComponent(Network_Manager).CancelStartServer();
+	if(Network.isServer)
+		gd.transform.GetComponent(Network_Manager).CancelStartServer();
 	
-	if(Network.isClient)
+	if(!Network.isServer && !Network.isClient)
 	{
-	
+		transform.GetComponent(MainMenu).CancelCharacterSelect();
 	}
 	
 	hidden = true;
