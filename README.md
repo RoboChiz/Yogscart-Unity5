@@ -2,6 +2,8 @@
 
 ChangeLog
 ----------------------
+Commit #14
+.Added more single player
 Commit #13
 .Added Main Menu back in
 .Started single player

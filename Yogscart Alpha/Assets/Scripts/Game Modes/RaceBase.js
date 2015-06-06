@@ -28,8 +28,10 @@ private var gd : CurrentGameData;
 private var im : InputManager;
 private var td : TrackData;
 private var sm : Sound_Manager;
+private var rl : RaceLeader;
 
 var finishedCharacters : DisplayName[];
+var currentSelection : int = 0;
 
 function Start()
 {
@@ -49,6 +51,7 @@ function LoadLibaries () {
 		td = GameObject.Find("Track Manager").GetComponent(TrackData);
 		
 	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
+	rl = transform.GetComponent(RaceLeader);
 	
 }
 
@@ -168,7 +171,7 @@ function SendUpdates()
 		transform.GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
 		
 	if(Network.isServer)
-		transform.GetComponent(RaceLeader).LocalFinish(networkID);
+		rl.LocalFinish(networkID);
 
 	yield WaitForSeconds(2);
 
@@ -195,7 +198,7 @@ function CalculateSendUpdate()
 		if(Network.isClient)
 			transform.GetComponent.<NetworkView>().RPC("PositionUpdate",RPCMode.Server,networkID,myRacer.TotalDistance,myRacer.NextDistance);
 		else
-			transform.GetComponent(RaceLeader).LocalPositionUpdate(networkID,myRacer.TotalDistance,myRacer.NextDistance);
+			rl.LocalPositionUpdate(networkID,myRacer.TotalDistance,myRacer.NextDistance);
 	}
 }
 
@@ -323,9 +326,9 @@ function PlayCutscene()
 		if(Network.isClient)
 			transform.GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
 		else if(Network.isServer)
-			transform.GetComponent(RaceLeader).LocalFinish(networkID);
+			rl.LocalFinish(networkID);
 		else
-			transform.GetComponent(RaceLeader).SetFinished(true);//Single Player Check
+			rl.SetFinished(true);//Single Player Check
 	}
 	else
 	{
@@ -406,10 +409,10 @@ function OnGUI ()
 			}
 			else
 			{
-				if(transform.GetComponent(RaceLeader).type == RaceStyle.TimeTrial)
+				if(rl.type == RaceStyle.TimeTrial)
 					raceTexture = Resources.Load("UI Textures/Level Selection/TimeTrial",Texture2D);
 				else
-					raceTexture = Resources.Load("UI Textures/Level Selection/" + transform.GetComponent(RaceLeader).race,Texture2D);
+					raceTexture = Resources.Load("UI Textures/Level Selection/" + rl.race,Texture2D);
 			}
 
 			GUI.DrawTexture(Rect(10,10,Screen.width-20,Screen.height),raceTexture,ScaleMode.ScaleToFit);
@@ -455,37 +458,119 @@ function OnGUI ()
 					{
 						var PosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString(),Texture2D);
 						var SelPosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString() + "_Sel",Texture2D);
-						//var NameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name,Texture2D);
+						
 						//var SelNameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name + "_Sel",Texture2D);
 
 						var Ratio = (Screen.height/16f)/PosTexture.height;
-						//var Ratio2 = (Screen.height/16f)/NameTexture.height;
-
-						GUI.DrawTexture(Rect(10,(f+1)*Screen.height/16f,PosTexture.width * Ratio,Screen.height/16f),PosTexture);
-						//GUI.DrawTexture(Rect(20 + PosTexture.width * Ratio,(f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),SelNameTexture);
-						GUI.Label(Rect(10 + (PosTexture.width * Ratio) + Screen.height/16f,(f+1)*Screen.height/16f,BoardRect.width - (20 + (PosTexture.width * Ratio) + Screen.height/16f),Screen.height/16f),finishedCharacters[f].name);
 						
+
+						GUI.DrawTexture(Rect(20,(f+1)*Screen.height/16f,PosTexture.width * Ratio,Screen.height/16f),PosTexture);
+						//GUI.DrawTexture(Rect(20 + PosTexture.width * Ratio,(f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),SelNameTexture);
+						
+						if(finishedCharacters[f].name != null && finishedCharacters[f].name != "")
+						{
+							GUI.Label(Rect(20 + (PosTexture.width * Ratio) + Screen.height/16f,(f+1)*Screen.height/16f,BoardRect.width - (20 + (PosTexture.width * Ratio) + Screen.height/16f),Screen.height/16f),finishedCharacters[f].name);
+						}
+						else
+						{
+							var NameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name,Texture2D);
+							var Ratio2 = (Screen.height/16f)/NameTexture.height;
+							GUI.DrawTexture(Rect(50 + PosTexture.width * Ratio,(f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),NameTexture);
+						}
 						
 						if(finishedCharacters[f].character != -1)
 						{
 							var CharacterIcon = gd.Characters[finishedCharacters[f].character].Icon;
-							GUI.DrawTexture(Rect(10 + (PosTexture.width * Ratio),(f+1)*Screen.height/16f,Screen.height/16f,Screen.height/16f),CharacterIcon);
+							GUI.DrawTexture(Rect(20 + (PosTexture.width * Ratio),(f+1)*Screen.height/16f,Screen.height/16f,Screen.height/16f),CharacterIcon);
 						}
-						/*if(isEmpty(SPRacers[f].timer))
-							GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),"-N/A-");
+						/*
+						if(finishedCharacters[f].timer.Minute == 0 && finishedCharacters[f].timer.Second && finishedCharacters[f].timer.milliSecond == 0)
+							GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),"-N/A-");
 						else
-							GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),SPRacers[f].timer.ToString());
-
+							GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),finishedCharacters[f].timer.ToString());
 						GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.5f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),SPRacers[f].points.ToString());
 
 						GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.9f) ,3 + (f+1)*Screen.height/16f,NameTexture.width * Ratio2,Screen.height/16f),"+ " + (15 - f).ToString());*/
 					}
 				}
+				
+			if(!Network.isServer && !Network.isClient)
+			{
+				if(im.c[0].GetMenuInput("Submit"))
+					ChangeState(GUIState.NextMenu);
+			}
 
 			GUI.EndGroup();
 
 		break;
-	
+		case GUIState.NextMenu:
+			
+			BoardTexture = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
+			BoardRect = Rect(Screen.width/2f - Screen.height/16f,Screen.height/16f,Screen.width/2f ,(Screen.height/16f)*14f);
+
+			GUI.DrawTexture(BoardRect,BoardTexture);
+
+			var Options : String[];
+			if(rl.type == RaceStyle.GrandPrix || rl.type == RaceStyle.CustomRace){
+				if(rl.race + 1 < 4)
+					Options = ["Next Race","Replay","Quit"];
+				else
+					Options = ["Finish"];
+			}else
+				Options = ["Restart","Replay","Change Character","Change Course","Quit"];
+
+			var IdealHeight : float = Screen.height/8f;
+			var ratio = IdealHeight/100f;
+
+			var vert : int = im.c[0].GetMenuInput("Vertical");
+			
+			if(vert != 0)
+				currentSelection -= Mathf.Sign(vert);
+				
+			if(currentSelection < 0)
+				currentSelection = Options.Length - 1;
+				
+			if(currentSelection >= Options.Length)
+				currentSelection = 0;
+
+			for(var k : int = 0; k < Options.Length; k++){
+
+				var optionTexture : Texture2D = Resources.Load("UI Textures/Next Menu/" + Options[k],Texture2D);
+				var optionTextureSel : Texture2D = Resources.Load("UI Textures/Next Menu/" + Options[k] + "_Sel",Texture2D);
+				var optionRect : Rect = Rect(BoardRect.x + BoardRect.width/2f - ((300f*ratio)/2f),BoardRect.y + (IdealHeight*(k+1)),(300f*ratio),IdealHeight);
+
+				if(currentSelection == k)
+					GUI.DrawTexture(optionRect,optionTextureSel,ScaleMode.ScaleToFit);
+				else
+					GUI.DrawTexture(optionRect,optionTexture,ScaleMode.ScaleToFit);
+
+				if(im.MouseIntersects(optionRect))
+				currentSelection = k;
+
+			}
+			
+			var submitBool : boolean = (im.c[0].GetMenuInput("Submit") != 0);
+			
+			if(submitBool)
+			{
+				switch(Options[currentSelection])
+				{
+					case "Quit":
+						gd.Exit();
+					break;
+					case "Next Race":
+						gd.currentTrack ++;
+						rl.race ++;
+						rl.spStartRace();
+					break;
+					case "Restart":
+						rl.spStartRace();
+					break;
+				}
+			}
+			
+		break;
+		
 	}
 }	
 

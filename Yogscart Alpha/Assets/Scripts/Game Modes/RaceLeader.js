@@ -139,9 +139,18 @@ function StartSinglePlayer()//true if in Time Trial Mode
 		Racers[0] = new Racer(true,-1,gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,-1);
 	}
 	
+	spStartRace();
+	
+}
+
+function spStartRace()
+{
 	gd.BlackOut = true;
 	yield WaitForSeconds(0.5);
 	Application.LoadLevel(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].SceneID);
+	
+	yield;
+	yield;
 	
 	Debug.Log("Level Loaded!");
 	
@@ -381,7 +390,43 @@ function LocalSendPositionUpdates()
 	for(var i : int = 0; i < Racers.Length; i++)
 	{
 		Racers[i].ingameObj.GetComponent(Position_Finding).position = Racers[i].position;
+		
+		if(Racers[i].ingameObj.GetComponent(Position_Finding).Lap >= td.Laps && !Racers[i].finished)
+		{
+			Racers[i].finished = true;
+
+			Racers[i].timer.Minute = OverallTimer.Minute;
+			Racers[i].timer.Second = OverallTimer.Second;
+			Racers[i].timer.milliSecond = OverallTimer.milliSecond;
+			
+			if(Racers[i].human)
+				FinishRacer(i);
+				
+		}
+		
 	}
+}
+function FinishRacer(i : int)
+{
+	Racers[i].ingameObj.gameObject.AddComponent(Racer_AI);
+	Destroy(Racers[i].ingameObj.GetComponent(kartInput));
+	Racers[i].ingameObj.GetComponent(kartInfo).hidden = true;
+		
+	Racers[i].ingameObj.GetComponent(kartItem).locked = true;
+	
+	Racers[i].cameras.GetChild(0).GetComponent.<Camera>().enabled = false;
+	Racers[i].cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
+
+	yield WaitForSeconds(2);
+
+	while(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Distance > -6.5){
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Distance -= Time.fixedDeltaTime * 10;
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Height = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Height,1,Time.fixedDeltaTime);
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight,1,Time.fixedDeltaTime);
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
+	yield;
+	}
+	
 }
 
 function EndGame()
@@ -403,6 +448,25 @@ function EndGame()
 		transform.GetComponent(Network_Manager).EndGame();
 		
 		this.enabled = false;
+		
+	}
+	if(type == RaceStyle.TimeTrial)
+	{
+	
+	}
+	else
+	{
+		Debug.Log("Finished the Race");
+		
+		var fc = new DisplayName[12];
+		
+		for(var i : int = 0; i < fc.Length;i++)
+		{
+			fc[i] = new DisplayName(Racers[i].name,Racers[i].character,Racers[i].timer);
+		}
+		
+		rb.finishedCharacters = fc;
+		rb.ChangeState(GUIState.ScoreBoard);
 		
 	}
 }
@@ -589,10 +653,13 @@ function WaitForFinished() : boolean
 
 	for(var i : int = 0; i < Racers.Length; i++)
 	{
-		if(!Racers[i].finished && ((!Network.isServer && !Network.isClient) || NetworkRacers[i].connected))
+		if(Racers[i].human)
 		{
-		returnVal = true;
-		break;
+			if(!Racers[i].finished && ((!Network.isServer && !Network.isClient) || NetworkRacers[i].connected))
+			{
+				returnVal = true;
+				break;
+			}
 		}
 	}
 	
