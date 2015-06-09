@@ -46,9 +46,10 @@ function LoadLibraries()
 	nm = GameObject.Find("GameData").GetComponent(Network_Manager);
 }
 
-enum MenuState {Main,SinglePlayer,Difficulty,CharacterSelect,LevelSelect,Multiplayer,Online,Options};
+enum MenuState {Main,SinglePlayer,Difficulty,CharacterSelect,LevelSelect,Multiplayer,Online,Options,Popup};
 var state : MenuState[];
 
+var popupText : String;
 
 function OnGUI ()
 {
@@ -92,6 +93,8 @@ function OnGUI ()
 				
 			}
 		}
+		
+		var box : Rect = Rect(sideAmount,0,Screen.width/2f,Screen.height);
 		
 		//Setup Options for each Menu
 		switch(currentState)
@@ -198,13 +201,19 @@ function OnGUI ()
 			break;
 			case MenuState.Options:
 			
-				options = ["Back"];
+				options = ["Reset Everything","Back"];
 				
 				if(submitBool)
 				{
-					switch(currentSelection)
+					switch(options[currentSelection])
 					{
-						case 0:							
+						case "Reset Everything":
+							gd.ResetEverything();
+							popupText = "All data has been reset.";
+							ChangeMenu(MenuState.Popup);
+						break;
+						
+						case "Back":							
 							BackState();
 						break;
 					}
@@ -220,18 +229,22 @@ function OnGUI ()
 					switch(currentSelection)
 					{
 						case 0:
+							gd.Difficulty = 0;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
 						case 1:
+							gd.Difficulty = 1;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
 						case 2:
+							gd.Difficulty = 2;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
 						case 3:
+							gd.Difficulty = 3;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
@@ -240,6 +253,24 @@ function OnGUI ()
 						break;
 					}
 				}
+				
+			break;
+			case MenuState.Popup:
+			
+				options = [];
+				
+				var fontSize : float = (box.width / 13f);
+				var holder : float = GUI.skin.label.fontSize;
+				GUI.skin.label.fontSize = fontSize;
+				
+				GUI.Label(Rect(box.x + 40,20 + (box.height/4f),box.width - 20,box.height - 20 - (box.height/4f)),popupText);
+				
+				if(submitBool)
+				{
+					BackState();
+				}
+				
+				GUI.skin.label.fontSize = holder;
 				
 			break;
 		}
@@ -255,8 +286,6 @@ function OnGUI ()
 			if(currentSelection >= options.Length)
 				currentSelection = 0;
 		}
-		
-		var box : Rect = Rect(sideAmount,0,Screen.width/2f,Screen.height);
 		
 		if(!hidden)
 		{
@@ -297,8 +326,8 @@ function OnGUI ()
 			if(options != null && options.Length > 0)
 			{
 				//Single Player is the longest word in the menu and is 13 characters long
-				var fontSize : float = (box.width / 13f);
-				var holder : float = GUI.skin.label.fontSize;
+				fontSize = (box.width / 13f);
+				holder = GUI.skin.label.fontSize;
 				GUI.skin.label.fontSize = fontSize;
 				
 				for(var i : int = 0; i < options.Length; i++)

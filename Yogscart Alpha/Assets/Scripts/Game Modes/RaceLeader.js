@@ -18,8 +18,7 @@ var NetworkRacers : NetworkedRacer[];
 var cutsceneWait : boolean;
 var ending : boolean;
 
-var OverallTimer : Timer;
-
+var timer : Timer;
 //Single Player Variables
 var race : int = 1; //Holds which race in a grand prix you are
 
@@ -89,7 +88,7 @@ function StartSinglePlayer()//true if in Time Trial Mode
 	{
 		Racers = new Racer[12];
 
-		var diff : int = gd.currentDifficulty;
+		var diff : int = gd.Difficulty;
 		var minVal : int;
 		var maxVal : int;
 		
@@ -136,7 +135,7 @@ function StartSinglePlayer()//true if in Time Trial Mode
 	else
 	{
 		Racers = new Racer[1];
-		Racers[0] = new Racer(true,-1,gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,-1);
+		Racers[0] = new Racer(true,0,gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,-1);
 	}
 	
 	spStartRace();
@@ -159,7 +158,16 @@ function spStartRace()
 		yield;
 	}
 	
-	OverallTimer = new Timer();
+	if(type == RaceStyle.TimeTrial)
+	{
+		var itemCrates = GameObject.FindObjectsOfType(Item_Box);
+		
+		for(var i : int = 0; i < itemCrates.Length;i++)
+		{
+			Destroy(itemCrates[i].gameObject);
+		}
+	}
+
 	LoadLibaries();
 	
 	yield;
@@ -177,6 +185,7 @@ function StartRace ()
 	cutsceneWait = false;
 	ending = false;
 	SetFinished(false);
+	timer = new Timer();
 	
 	//Setup Racer if networked
 	if(type == RaceStyle.Online)
@@ -254,14 +263,28 @@ function StartRace ()
 			for(i = 0; i < Racers.Length;i++)
 			{
 				
-				//Find Spawn Position
-				rot = td.spawnPoint.rotation;
-				racepos = Racers[i].position;
-				
-				startPos = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
-				x2 = rot*(Vector3.forward*(racepos%3)*(3*1.5f)+(Vector3.forward*.75f*3));
-				y2 = rot*(Vector3.right*(racepos + 1)* 3);
-				SpawnPosition = startPos + x2 + y2;  
+				if(type == RaceStyle.TimeTrial)
+				{
+					//Find Spawn Position
+					rot = td.spawnPoint.rotation;
+					racepos = Racers[i].position;
+					
+					startPos = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
+					x2 = rot*(Vector3.forward*4.5f)+(Vector3.forward*.75f*3);
+					y2 = rot*(Vector3.right*6);
+					SpawnPosition = startPos + x2 + y2;  
+				}
+				else
+				{
+					//Find Spawn Position
+					rot = td.spawnPoint.rotation;
+					racepos = Racers[i].position;
+					
+					startPos = td.spawnPoint.position + (rot*Vector3.forward*(3*1.5f)*-1.5f);
+					x2 = rot*(Vector3.forward*(racepos%3)*(3*1.5f)+(Vector3.forward*.75f*3));
+					y2 = rot*(Vector3.right*(racepos + 1)* 3);
+					SpawnPosition = startPos + x2 + y2;  
+				}
 			
 				Racers[i].ingameObj = km.SpawnKart(KartType.Local,SpawnPosition,rot * Quaternion.Euler(0,-90,0),Racers[i].kart,Racers[i].wheel,Racers[i].character,Racers[i].hat);
 			
@@ -307,7 +330,11 @@ function StartRace ()
 							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.BottomRight;
 					}
 					
-					Destroy(Racers[i].ingameObj.GetComponent(kartUpdate));			
+					Destroy(Racers[i].ingameObj.GetComponent(kartUpdate));		
+					
+					if(type == RaceStyle.TimeTrial)
+							Racers[i].ingameObj.GetComponent(kartItem).RecieveItem(2);
+							
 				}
 				else
 				{
@@ -339,9 +366,9 @@ function StartRace ()
 			
 		}
 		
-		//During Race
+		gd.StartTick(timer);
 		
-		StartCoroutine("BeginTick");
+		//During Race
 		
 		while(WaitForFinished())
 			{
@@ -363,8 +390,6 @@ function StartRace ()
 				
 				yield WaitForSeconds(0.5);
 			}
-			
-		StopTick();
 		
 		EndGame();
 
@@ -395,9 +420,7 @@ function LocalSendPositionUpdates()
 		{
 			Racers[i].finished = true;
 
-			Racers[i].timer.Minute = OverallTimer.Minute;
-			Racers[i].timer.Second = OverallTimer.Second;
-			Racers[i].timer.milliSecond = OverallTimer.milliSecond;
+			Racers[i].timer = new Timer(timer);
 			
 			if(Racers[i].human)
 				FinishRacer(i);
@@ -432,6 +455,7 @@ function FinishRacer(i : int)
 function EndGame()
 {
 	Debug.Log("The Race has ended!");
+	gd.StopTick();
 	if(type == RaceStyle.Online)
 	{
 		//Send Timer
@@ -452,7 +476,17 @@ function EndGame()
 	}
 	if(type == RaceStyle.TimeTrial)
 	{
-	
+
+		var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
+		var racerTime = Racers[0].timer;		
+		
+		if(BestTimer.BiggerThan(racerTime))
+		{
+			PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].Name,racerTime.ToString());
+			gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = new Timer(racerTime);
+		}
+		
+		rb.ChangeState(GUIState.ScoreBoard);
 	}
 	else
 	{
@@ -462,14 +496,17 @@ function EndGame()
 		
 		for(var i : int = 0; i < fc.Length;i++)
 		{
-			fc[i] = new DisplayName(Racers[i].name,Racers[i].character,Racers[i].timer);
+			fc[i] = new DisplayName(Racers[i].name,Racers[i].character);
+			
+			Racers[i].points += 15 - i;
+			
 		}
 		
 		rb.finishedCharacters = fc;
 		rb.ChangeState(GUIState.ScoreBoard);
 		
 	}
-}
+}	
 
 function starttoendRace()
 {
@@ -485,38 +522,6 @@ function LevelSelectCountdown()
 	GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,30);
 	yield WaitForSeconds(30);
 	DetermineLevel();
-}
-
-function BeginTick(){
-var foo1 = OverallTimer.Minute;
-var foo2 = OverallTimer.Second;
-var foo3 = OverallTimer.milliSecond;
-
-while(true){
-
-foo3 += Time.deltaTime * 1000f;
-
-if(foo3 >= 1000){
-foo3 -= 1000;
-foo2 += 1;
-}
-
-if(foo2 >= 60){
-foo2 -= 60;
-foo1 += 1;
-}
-
-OverallTimer.Minute = foo1;
-OverallTimer.Second = foo2;
-OverallTimer.milliSecond = foo3;
-
-yield;
-
-}
-}
-
-function StopTick(){
-StopCoroutine("BeginTick");
 }
 
 function OnPlayerDisconnected(player: NetworkPlayer) 
@@ -728,7 +733,6 @@ function DetermineLevel(){
 		
 		NetworkRacers = transform.GetComponent(Host_Script).RacingPlayers;
 		type = RaceStyle.Online;
-		OverallTimer = new Timer();
 		LoadLibaries();
 		
 		yield;

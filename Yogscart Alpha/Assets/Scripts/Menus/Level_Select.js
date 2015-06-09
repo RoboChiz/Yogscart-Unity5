@@ -1,9 +1,10 @@
 ﻿#pragma strict
 
-private var currentCup : int;
-private var currentTrack : int;
+ var currentCup : int;
+ var currentTrack : int;
 private var gd : CurrentGameData;
 private var im : InputManager;
+private var mm : MainMenu;
 
 var TypeSelecion : boolean;
 
@@ -12,12 +13,22 @@ var hidden : boolean = true;
 var GrandPrixOnly : boolean;
 
 private var Alpha : float;
+
 function Awake(){
-gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
-im = GameObject.Find("GameData").GetComponent(InputManager);
+	gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
+	im = GameObject.Find("GameData").GetComponent(InputManager);
+
+	if(GameObject.Find("Menu Holder").GetComponent(MainMenu) != null)
+		mm = GameObject.Find("Menu Holder").GetComponent(MainMenu);
+		
 }
 
 function OnGUI () {
+
+	var canInput : boolean = true;
+	
+	if(mm != null && mm.transitioning)
+		canInput = false;
 
 if(hidden == false)
 Alpha = Mathf.Lerp(Alpha,1,Time.deltaTime*5);
@@ -35,7 +46,7 @@ var cancelBool : boolean;
 var vert : boolean;
 var hori : float;
 
-if(!hidden){
+if(!hidden && canInput){
 submitBool = im.c[0].GetMenuInput("Submit") != 0;
 cancelBool = im.c[0].GetMenuInput("Cancel") != 0;
 vert = im.c[0].GetMenuInput("Vertical") != 0;
@@ -107,7 +118,7 @@ var Width : float = Screen.width-150;
 var Ratio : float = Width/LevelHolder.width;
 var Height : int = LevelHolder.height * Ratio;
 
-if(!hidden)
+if(!hidden && canInput)
 	var click = im.GetClick();
 
 //Render Tracks
@@ -119,7 +130,7 @@ GUI.DrawTexture(OverallRect,gd.Tournaments[currentCup].Tracks[j].Logo);
 if(TypeSelecion && currentTrack == j)
 GUI.DrawTexture(OverallRect,Selected);
 
-if(!hidden && !GrandPrixOnly && im.MouseIntersects(OverallRect))
+if(!hidden && !GrandPrixOnly && im.MouseIntersects(OverallRect) && canInput)
 {
 currentTrack = j;
 TypeSelecion = true;
@@ -148,7 +159,7 @@ GUI.DrawTexture(TRect,Tab);
 
 GUI.DrawTexture(TRect,gd.Tournaments[i].Icon);
 
-if(!hidden && im.MouseIntersects(TRect))
+if(!hidden && im.MouseIntersects(TRect) && canInput)
 {
 currentCup = i;
 TypeSelecion = false;
@@ -166,15 +177,19 @@ GUI.DrawTexture(LHRect,LevelHolder);
 
 if(GrandPrixOnly){
 
-for(var a : int = 0; a < gd.Tournaments.Length; a++){
-
-var rankText : String = gd.Tournaments[a].LastRank[0];
+var rankText : String = gd.Tournaments[currentCup].LastRank[gd.Difficulty];
 var rankRect : Rect = Rect(75,Screen.height/2 + 10 + Height/1.5f,Width,Height);
 OutLineLabel(rankRect,rankText,2,Color.black);
 
-}
 
 }
+
+	if(transform.GetComponent(RaceLeader).type == RaceStyle.TimeTrial)
+	{
+		var timeRect : Rect = Rect(75,Screen.height/2 + 10 + Height/1.5f,Width,Height);
+		var timeString : String = gd.Tournaments[currentCup].Tracks[currentTrack].BestTrackTime.ToString();
+		OutLineLabel(timeRect,timeString,2,Color.black);
+	}
 
 }
 

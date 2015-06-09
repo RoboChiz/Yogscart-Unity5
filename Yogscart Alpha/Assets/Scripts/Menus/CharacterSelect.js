@@ -4,6 +4,7 @@ private var gd : CurrentGameData;
 private var im : InputManager;
 private var sm : Sound_Manager;
 private var km : KartMaker;
+private var mm : MainMenu;
 
 var hidden : boolean;
 var cancelled : boolean;
@@ -34,6 +35,8 @@ function Start () {
 	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
 	km = GameObject.Find("GameData").GetComponent(KartMaker);
 	
+	if(transform.GetComponent(MainMenu) != null)
+		mm = transform.GetComponent(MainMenu);
 	//state = csState.Off;
 	
 	cursorPosition = new Vector2[4];
@@ -58,7 +61,13 @@ function OnGUI()
 	
 	var nameListRect : Rect;
 	
-	var mouseClick = im.GetClick();
+	var canInput : boolean = true;
+	
+	if(mm != null && mm.transitioning)
+		canInput = false;
+		
+	if(canInput)
+		var mouseClick = im.GetClick();
 
 	switch(state)
 	{
@@ -88,7 +97,7 @@ function OnGUI()
 
 					GUI.DrawTexture(iconRect,icon);
 					
-					if(im.MouseIntersects(iconRect))
+					if(canInput && im.MouseIntersects(iconRect))
 					{
 						choice[im.keyboardPlayer].character = (i*5) + j;
 						mouseSelecting = true;
@@ -126,7 +135,7 @@ function OnGUI()
 						
 						GUI.DrawTexture(iconRect,icon);
 						
-						if(im.MouseIntersects(iconRect))
+						if(canInput && im.MouseIntersects(iconRect))
 						{
 							choice[im.keyboardPlayer].hat = (i*5) + j;
 							mouseSelecting = true;
@@ -336,11 +345,14 @@ function OnGUI()
 		
 		
 		//Get Inputs
-
-		var hori : float = im.c[s].GetMenuInput("Horizontal");
-		var vert : float = -im.c[s].GetMenuInput("Vertical");
-		var submit : boolean = (im.c[s].GetMenuInput("Submit") != 0);
-		var cancel : boolean = (im.c[s].GetMenuInput("Cancel") != 0);
+		if(canInput)
+		{
+			var hori : float = im.c[s].GetMenuInput("Horizontal");
+			var vert : float = -im.c[s].GetMenuInput("Vertical");
+		}
+		
+		var submit : boolean = canInput && (im.c[s].GetMenuInput("Submit") != 0);
+		var cancel : boolean = canInput && (im.c[s].GetMenuInput("Cancel") != 0);
 		
 		if(hori != 0)
 		{
@@ -576,7 +588,7 @@ function OnGUI()
 			GUI.DrawTexture(kartRect,kartIcon,ScaleMode.ScaleToFit);
 			GUI.DrawTexture(wheelRect,wheelIcon,ScaleMode.ScaleToFit);
 			
-			if(s == im.keyboardPlayer)
+			if(s == im.keyboardPlayer && canInput)
 			{
 				
 				if(im.MouseIntersects(Rect(kartgroup.x + kartListRect.x + kartRect.x,kartgroup.y + kartListRect.y + kartRect.y,kartRect.width,kartRect.height)) && !kartSelected[s] && mouseClick)
@@ -602,12 +614,12 @@ function OnGUI()
 				var kartDown = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
 				GUI.DrawTexture(kartDown,downArrowIcon,ScaleMode.ScaleToFit);
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + kartUp.x,kartgroup.y + kartUp.y,kartUp.width,kartUp.height)) && mouseClick)
+				if(im.MouseIntersects(Rect(kartgroup.x + kartUp.x,kartgroup.y + kartUp.y,kartUp.width,kartUp.height)) && mouseClick && canInput)
 				{
 						choice[s].kart ++;						
 				}
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + kartDown.x,kartgroup.y + kartDown.y,kartDown.width,kartDown.height)) && mouseClick)
+				if(im.MouseIntersects(Rect(kartgroup.x + kartDown.x,kartgroup.y + kartDown.y,kartDown.width,kartDown.height)) && mouseClick && canInput)
 				{
 						choice[s].kart --;
 				}
@@ -627,12 +639,12 @@ function OnGUI()
 				var wheelDown = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
 				GUI.DrawTexture(wheelDown,downArrowIcon,ScaleMode.ScaleToFit);
 			
-				if(im.MouseIntersects(Rect(kartgroup.x + wheelUp.x,kartgroup.y + wheelUp.y,wheelUp.width,wheelUp.height)) && mouseClick)
+				if(im.MouseIntersects(Rect(kartgroup.x + wheelUp.x,kartgroup.y + wheelUp.y,wheelUp.width,wheelUp.height)) && mouseClick && canInput)
 				{
 						choice[s].wheel ++;						
 				}
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + wheelDown.x,kartgroup.y + wheelDown.y,wheelDown.width,wheelDown.height)) && mouseClick)
+				if(im.MouseIntersects(Rect(kartgroup.x + wheelDown.x,kartgroup.y + wheelDown.y,wheelDown.width,wheelDown.height)) && mouseClick && canInput)
 				{
 						choice[s].wheel --;
 				}

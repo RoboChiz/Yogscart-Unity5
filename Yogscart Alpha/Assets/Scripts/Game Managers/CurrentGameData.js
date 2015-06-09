@@ -10,8 +10,6 @@ var lastoverallLapisCount : int;
 var currentCup : int = 0;
 var currentTrack : int = 0;
 
-var currentDifficulty : int = 0;
-
 var currentChoices : LoadOut[];
 
 @HideInInspector
@@ -163,22 +161,22 @@ private var ColourAlpha : Color = Color.white;
 		var unlockInsane : boolean = true;
 		
 		for(var n = 0; n < Tournaments.Length; n++){
-		Tournaments[n].LastRank = new String[4];
-		Tournaments[n].LastRank[0] = PlayerPrefs.GetString(Tournaments[n].Name+"[50cc]","No Rank");
-		Tournaments[n].LastRank[1] = PlayerPrefs.GetString(Tournaments[n].Name+"[100cc]","No Rank");
-		Tournaments[n].LastRank[2] = PlayerPrefs.GetString(Tournaments[n].Name+"[150cc]","No Rank");
-		Tournaments[n].LastRank[3] = PlayerPrefs.GetString(Tournaments[n].Name+"[Insane]","No Rank");
-		
-		if(Tournaments[n].LastRank[2] == "No Rank")
-		unlockInsane = false;
-		
-		for(var k = 0; k < Tournaments[n].Tracks.Length; k++){
-		var TimeString = PlayerPrefs.GetString(Tournaments[n].Tracks[k].Name,"0:0:0");
-		var words = TimeString.Split(":"[0]);
-		Tournaments[n].Tracks[k].BestTrackTime.Minute = System.Int32.Parse(words[0]);
-		Tournaments[n].Tracks[k].BestTrackTime.Second = System.Int32.Parse(words[1]);
-		Tournaments[n].Tracks[k].BestTrackTime.milliSecond = System.Int32.Parse(words[2]);
-		}
+			Tournaments[n].LastRank = new String[4];
+			Tournaments[n].LastRank[0] = PlayerPrefs.GetString(Tournaments[n].Name+"[50cc]","No Rank");
+			Tournaments[n].LastRank[1] = PlayerPrefs.GetString(Tournaments[n].Name+"[100cc]","No Rank");
+			Tournaments[n].LastRank[2] = PlayerPrefs.GetString(Tournaments[n].Name+"[150cc]","No Rank");
+			Tournaments[n].LastRank[3] = PlayerPrefs.GetString(Tournaments[n].Name+"[Insane]","No Rank");
+			
+			if(Tournaments[n].LastRank[2] == "No Rank")
+			unlockInsane = false;
+			
+			for(var k = 0; k < Tournaments[n].Tracks.Length; k++){
+			
+				var TimeString = PlayerPrefs.GetString(Tournaments[n].Tracks[k].Name,"0:0:0");
+				var words = TimeString.Split(":"[0]);
+				Tournaments[n].Tracks[k].BestTrackTime = new Timer(int.Parse(words[0]),int.Parse(words[1]),int.Parse(words[2]));
+				
+			}
 		}
 		
 		unlockedInsane = unlockInsane;
@@ -191,10 +189,8 @@ private var ColourAlpha : Color = Color.white;
 		foo = PlayerPrefs.GetInt(Characters[n].Name,0);
 		if(foo == 1){
 		Characters[n].Unlocked = UnlockedState.Unlocked;
-		Debug.Log(Characters[n].Name + " is unlocked!");
 		}else{
 		Characters[n].Unlocked = UnlockedState.Locked;
-		Debug.Log(Characters[n].Name + " is not unlocked!");
 		}
 		}
 		}
@@ -294,43 +290,46 @@ function UnlockNewHat()
 	}
 }
 		
-		function ResetEverything(){
+function ResetEverything()
+{
 		
-		for(var n = 0; n < Tournaments.Length; n++){
+	for(var n = 0; n < Tournaments.Length; n++){
+		
 		PlayerPrefs.SetString(Tournaments[n].Name+"[50cc]","No Rank");
 		PlayerPrefs.SetString(Tournaments[n].Name+"[100cc]","No Rank");
 		PlayerPrefs.SetString(Tournaments[n].Name+"[150cc]","No Rank");
 		PlayerPrefs.SetString(Tournaments[n].Name+"[Insane]","No Rank");
-		
-		for(var k = 0; k < Tournaments[n].Tracks.Length; k++){
+
+	for(var k = 0; k < Tournaments[n].Tracks.Length; k++){
 		PlayerPrefs.SetString(Tournaments[n].Tracks[k].Name,"0:0:0");
-		}
-		}
+	}
+
+	}
 		
-		unlockedInsane = false;
+	unlockedInsane = false;
+	
+	for(n = 1; n < Characters.Length; n++){
+	PlayerPrefs.SetInt(Characters[n].Name,0);
+	}
+	
+	for(n = 1; n < Hats.Length; n++){
+	PlayerPrefs.SetInt(Hats[n].Name,0);
+	}
+	
+	for(n = 1; n < Karts.Length; n++){
+	PlayerPrefs.SetInt(Karts[n].Name,0);
+	}
+	
+	for(n = 1; n < Wheels.Length; n++){
+	PlayerPrefs.SetInt(Wheels[n].Name,0);
+	}
+	
+	PlayerPrefs.SetInt("overallLapisCount",0);
+	PlayerPrefs.SetInt("lastoverallLapisCount",0);
+	
+	LoadEverything();
 		
-		for(n = 1; n < Characters.Length; n++){
-		PlayerPrefs.SetInt(Characters[n].Name,0);
-		}
-		
-		for(n = 1; n < Hats.Length; n++){
-		PlayerPrefs.SetInt(Hats[n].Name,0);
-		}
-		
-		for(n = 1; n < Karts.Length; n++){
-		PlayerPrefs.SetInt(Karts[n].Name,0);
-		}
-		
-		for(n = 1; n < Wheels.Length; n++){
-		PlayerPrefs.SetInt(Wheels[n].Name,0);
-		}
-		
-		PlayerPrefs.SetInt("overallLapisCount",0);
-		PlayerPrefs.SetInt("lastoverallLapisCount",0);
-		
-		LoadEverything();
-		
-		}
+}
 
 //Classes
 
@@ -366,7 +365,10 @@ public class Track
     var Name : String;
     var Logo : Texture2D;
     var Preview : Texture2D;
+    
+    @HideInInspector
     var BestTrackTime : Timer;
+    
     var SceneID : String;
  }
  
@@ -410,23 +412,6 @@ public class Wheel
     var Icon : Texture2D;
     var model : Transform;
     var Unlocked : boolean = false;
-}
- 
-public class Timer
-{ 	
-    var milliSecond : int;
-    var Second : int;
-    var Minute : int; 
-    
-    function ToString(){
-    var foo1 = Minute;
-	var foo2 = Second;
-	var foo3 = milliSecond;
-
-	var TimeString : String = foo1.ToString("00") + ":" + foo2.ToString("00") + ":" + (foo3/10).ToString("00");
-	return TimeString;
-    }
-  
 }
 
 //New Racer class which will be used in both Single Player and Multiplayer
@@ -474,7 +459,6 @@ hat = Hat;
 kart = Kart;
 wheel = Wheel;
 position = Position;
-timer = new Timer();
 }
 
 }
@@ -499,6 +483,69 @@ public class NetworkedRacer extends Racer
  
 }
 
+public class Timer
+{
+	var minutes : byte;
+	var seconds : byte;
+	var milliSeconds : int;
+	var ticking : boolean;
+	
+	function Timer()
+	{
+		minutes = 0;
+		seconds = 0;
+		milliSeconds = 0;
+	}
+	
+	function Timer(m : byte, s : byte, ms : int)
+	{
+		minutes = m;
+		seconds = s;
+		milliSeconds = ms;
+	}
+	
+	function Timer(t : Timer)
+	{
+		minutes = t.minutes;
+		seconds = t.seconds;
+		milliSeconds = t.milliSeconds;
+	}
+	
+	function isEmpty() : boolean
+	{
+		if(minutes == 0 && seconds == 0 && milliSeconds == 0)
+			return true;
+		else
+			return false;
+	}
+	
+	function BiggerThan(t : Timer)
+	{
+	
+		if(isEmpty())
+			return true;
+			
+		if(t.minutes < minutes)
+			return true;
+		
+		if(t.minutes <= minutes && t.seconds < seconds)
+			return true;
+			
+		if(t.minutes <= minutes && t.seconds <= seconds && t.milliSeconds <= milliSeconds)
+			return true;
+			
+		return false;		
+			
+	}
+	
+	function ToString() : String
+	{
+		var returnString : String = minutes.ToString("00") + ":" + seconds.ToString("00") + ":" + milliSeconds.ToString("000");
+		return returnString;
+	}
+	
+}
+
 function Exit(){
 Time.timeScale = 1f;
 BlackOut = true;
@@ -514,3 +561,35 @@ yield;
 
 }
  
+function StartTick(t : Timer)
+{
+	StartCoroutine("tick",t);
+}
+
+function StopTick()
+{
+	StopCoroutine("tick");
+}
+
+function tick(t : Timer)
+{
+	while(true)
+	{
+		t.milliSeconds += Time.deltaTime*1000f;
+		
+		if(t.milliSeconds >= 1000)
+		{
+			t.milliSeconds = 0;
+			t.seconds++;
+		}
+		
+		if(t.seconds >= 60)
+		{
+			t.minutes++;
+			t.seconds = 0;
+		}
+		
+		yield;
+	}
+}
+	 

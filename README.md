@@ -1,7 +1,10 @@
-# Yogscart Alpha V1.3 [Test Build 14]
+# Yogscart Alpha V1.3 [Test Build 16]
 
 ChangeLog
 ----------------------
+Commit #15
+.Fully Working Time Trial Mode
+.Added Reset Option to Options
 Commit #14
 .Added more single player
 Commit #13

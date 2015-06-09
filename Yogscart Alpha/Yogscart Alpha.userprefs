@@ -1,12 +1,14 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Modes\RaceLeader.js">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Menus\Level_Select.js">
     <Files>
-      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="131" Column="13" />
-      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="153" Column="8" />
-      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="563" Column="14" />
-      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="502" Column="14" />
-      <File FileName="Assets\Scripts\Game Managers\InputManager.js" Line="237" Column="25" />
+      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="188" Column="11" />
+      <File FileName="Assets\Scripts\Game Managers\CurrentGameData.js" Line="197" Column="3" />
+      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="527" Column="39" />
+      <File FileName="Assets\Scripts\Kart Scripts\kartInfo.js" Line="130" Column="162" />
+      <File FileName="Assets\Scripts\Menus\Level_Select.js" Line="162" Column="52" />
+      <File FileName="Assets\Scripts\Menus\Main Menu\MainMenu.js" Line="18" Column="18" />
+      <File FileName="Assets\Scripts\Menus\CharacterSelect.js" Line="64" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

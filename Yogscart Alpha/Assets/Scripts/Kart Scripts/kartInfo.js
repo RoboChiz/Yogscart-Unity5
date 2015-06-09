@@ -21,10 +21,12 @@ var lap : int = 0;
 var cameras : Camera[];
 
 private var td : TrackData;
+private var rl : RaceLeader;
 
 function Start () {
 
-td = GameObject.Find("Track Manager").GetComponent(TrackData);
+	td = GameObject.Find("Track Manager").GetComponent(TrackData);
+	rl = GameObject.Find("GameData").GetComponent(RaceLeader);
 }
 
 //Handles Fading in, and flashes on Position Change
@@ -95,29 +97,37 @@ cameras[i].rect = Rect(0,0,1,0.5);
 
 GUI.color = new Color32(255, 255, 255, raceGUIAlpha);
 
-//Render Position GUI
-if(position != -1){
-var postexture = Resources.Load("UI Textures/Positions/" + (lastPosition+1).ToString(),Texture2D);
+if(rl.type != RaceStyle.TimeTrial)
+{
+	//Render Position GUI
+	if(position != -1){
+	var postexture = Resources.Load("UI Textures/Positions/" + (lastPosition+1).ToString(),Texture2D);
 
-var renderArea : Rect;
+	var renderArea : Rect;
 
-if(screenPos == ScreenType.Full || screenPos == ScreenType.BottomRight || screenPos == ScreenType.Bottom )
-renderArea = Rect(Screen.width - 10 - PosGUISize,Screen.height - 10 - PosGUISize,PosGUISize,PosGUISize);
+	if(screenPos == ScreenType.Full || screenPos == ScreenType.BottomRight || screenPos == ScreenType.Bottom )
+	renderArea = Rect(Screen.width - 10 - PosGUISize,Screen.height - 10 - PosGUISize,PosGUISize,PosGUISize);
 
-if(screenPos == ScreenType.TopLeft)
-renderArea = Rect(Screen.width/2f - 10 - PosGUISize,Screen.height/2f - 10 - PosGUISize,PosGUISize,PosGUISize);
+	if(screenPos == ScreenType.TopLeft)
+	renderArea = Rect(Screen.width/2f - 10 - PosGUISize,Screen.height/2f - 10 - PosGUISize,PosGUISize,PosGUISize);
 
-if(screenPos == ScreenType.TopRight)
-renderArea = Rect(Screen.width - 10 - PosGUISize,Screen.height/2f - 10 - PosGUISize,PosGUISize,PosGUISize);
+	if(screenPos == ScreenType.TopRight)
+	renderArea = Rect(Screen.width - 10 - PosGUISize,Screen.height/2f - 10 - PosGUISize,PosGUISize,PosGUISize);
 
-if(screenPos == ScreenType.BottomLeft)
-renderArea = Rect(Screen.width/2f - 10 - PosGUISize,Screen.height - 10 - PosGUISize,PosGUISize,PosGUISize);
+	if(screenPos == ScreenType.BottomLeft)
+	renderArea = Rect(Screen.width/2f - 10 - PosGUISize,Screen.height - 10 - PosGUISize,PosGUISize,PosGUISize);
 
-if(screenPos == ScreenType.Top)
-renderArea = Rect(Screen.width - 10 - PosGUISize,Screen.height/2f - 10 - PosGUISize,PosGUISize,PosGUISize);
+	if(screenPos == ScreenType.Top)
+	renderArea = Rect(Screen.width - 10 - PosGUISize,Screen.height/2f - 10 - PosGUISize,PosGUISize,PosGUISize);
 
-if(postexture != null)
-GUI.DrawTexture(renderArea,postexture,ScaleMode.ScaleToFit);
+	if(postexture != null)
+	GUI.DrawTexture(renderArea,postexture,ScaleMode.ScaleToFit);
+	}
+}
+else
+{
+	//Draw Timer
+	GUI.Label(Rect(Screen.width - 10 - Screen.width/5f,Screen.height - 20 - GUI.skin.label.fontSize,Screen.width/5f,GUI.skin.label.fontSize + 5),rl.timer.ToString());
 }
 
 //Render Lap and Lapis

@@ -109,7 +109,6 @@ class DisplayName
 	var ping : int;
 	var networkPlayer : NetworkPlayer;
 	var team : int;
-	var timer : Timer;
 	
 	function DisplayName(n : String, c : int, np : NetworkPlayer)
 	{
@@ -122,13 +121,6 @@ class DisplayName
 	{
 		name = n;
 		character = c;
-	}
-	
-	function DisplayName(n : String,c : int, t : Timer)
-	{
-		name = n;
-		character = c;
-		timer = t;
 	}
 	
 	function DisplayName()
