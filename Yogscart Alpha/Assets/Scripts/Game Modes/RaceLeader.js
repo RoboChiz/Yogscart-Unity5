@@ -199,7 +199,15 @@ function StartRace ()
 		
 		for(var i : int = 0; i < Racers.Length; i++)
 		{
+			
 			Racers[i] = NetworkRacers[i];
+			
+			if(NetworkRacers[i].networkplayer == GetComponent.<NetworkView>().owner)
+			{
+				transform.GetComponent(RaceBase).myRacer = Racers[i];
+				transform.GetComponent(Client_Script).myRacer = Racers[i];
+			}
+			
 		}
 		
 	}
@@ -234,11 +242,13 @@ function StartRace ()
 				x2 = rot*(Vector3.forward*(racepos%3)*(3*1.5f)+(Vector3.forward*.75f*3));
 				y2 = rot*(Vector3.right*(racepos + 1)* 3);
 				SpawnPosition = startPos + x2 + y2;  
+				
+				//2 represents KartType.Online
 			
 				if(NetworkRacers[i].networkplayer.guid != GetComponent.<NetworkView>().owner.guid)
-				GetComponent.<NetworkView>().RPC("SpawnMyKart",NetworkRacers[i].networkplayer,KartType.Online,SpawnPosition,rot * Quaternion.Euler(0,-90,0));
+					GetComponent.<NetworkView>().RPC("SpawnMyKart",NetworkRacers[i].networkplayer,2,SpawnPosition,rot * Quaternion.Euler(0,-90,0));
 				else
-				transform.GetComponent(Client_Script).SpawnMyKart(KartType.Online,SpawnPosition,rot * Quaternion.Euler(0,-90,0));
+					transform.GetComponent(Client_Script).SpawnMyKart(2,SpawnPosition,rot * Quaternion.Euler(0,-90,0));
 			}
 			
 			GetComponent.<NetworkView>().RPC("PlayCutscene",RPCMode.All);
@@ -474,7 +484,7 @@ function EndGame()
 		this.enabled = false;
 		
 	}
-	if(type == RaceStyle.TimeTrial)
+	else if(type == RaceStyle.TimeTrial)
 	{
 
 		var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		

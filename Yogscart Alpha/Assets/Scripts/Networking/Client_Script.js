@@ -166,8 +166,10 @@ function SpawnMe(name : String, kart : int, wheel : int, character : int, hat : 
 }
 
 @RPC
-function SpawnMyKart(type : KartType, pos : Vector3, rot : Quaternion)
+function SpawnMyKart(typeInt : int, pos : Vector3, rot : Quaternion)
 {
+
+	var type : KartType = typeInt;
 
 	myRacer.ingameObj = km.SpawnKart(type,pos,rot,myRacer.kart,myRacer.wheel,myRacer.character,myRacer.hat);
 	

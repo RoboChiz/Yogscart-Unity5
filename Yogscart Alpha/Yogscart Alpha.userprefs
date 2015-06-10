@@ -1,8 +1,12 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Modes\RaceBase.js">
     <Files>
-      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="484" Column="1" />
+      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="503" Column="3" />
+      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="460" Column="6" />
+      <File FileName="Assets\Scripts\Networking\Client_Script.js" Line="165" Column="2" />
+      <File FileName="Assets\Scripts\KartMaker Scripts\KartMaker.js" Line="4" Column="14" />
+      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="846" Column="147" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

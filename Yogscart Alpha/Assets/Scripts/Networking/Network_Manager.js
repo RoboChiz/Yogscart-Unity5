@@ -843,7 +843,7 @@ function EndGame()
 	
 	for(var i : int = 0; i < hs.RacingPlayers.Length; i++)
 	{
-		GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,hs.RacingPlayers[i].name,hs.RacingPlayers[i].character);
+		GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,hs.RacingPlayers[i].name,hs.RacingPlayers[i].character,hs.RacingPlayers[i].team);
 	}
 	
 }

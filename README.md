@@ -1,7 +1,12 @@
-# Yogscart Alpha V1.3 [Test Build 16]
+# Yogscart Alpha V1.3 [Test Build 17]
 
 ChangeLog
 ----------------------
+Commit #17
+.Fixed Online bugs
+.Fixed bug where Host's character wouldn't spawn
+Commit #16
+.Ross did some stuff
 Commit #15
 .Fully Working Time Trial Mode
 .Added Reset Option to Options
