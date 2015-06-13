@@ -60,6 +60,7 @@
      <Compile Include="Assets\Scripts\Kart Scripts\NameRotate.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Position_Finding.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Racer_AI.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\Replayer.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartAnimation.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.js" />
@@ -92,7 +93,6 @@
      <Compile Include="Assets\Scripts\Track Editor\BoostPad.js" />
      <Compile Include="Assets\Scripts\Track Editor\DeathCatch.js" />
      <Compile Include="Assets\Scripts\Track Editor\DynamiCam\DynamiCamera.js" />
-     <Compile Include="Assets\Scripts\Track Editor\DynamiCam\TV_Controller.js" />
      <Compile Include="Assets\Scripts\Track Editor\Old Scripts - Delete Later\InEngineRender.js" />
      <Compile Include="Assets\Scripts\Track Editor\Old Scripts - Delete Later\LapPointHandler.js" />
      <Compile Include="Assets\Scripts\Track Editor\Old Scripts - Delete Later\PositionPointHandler.js" />

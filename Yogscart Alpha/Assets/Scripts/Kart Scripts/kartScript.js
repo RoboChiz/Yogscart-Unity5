@@ -68,9 +68,10 @@ private var actualSpeed : float;
 public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
-var pushing : boolean;
-var pushTime : float = 0.01f;
-var pushAmount : float = 0.05f;
+private var pushing : boolean;
+var pushAmount : float = 90f;
+private var touchingKart : Vector3;
+private var dir : Vector3;
 
 function Start()
 {
@@ -227,34 +228,58 @@ function FixedUpdate () {
 		SpinOut();
 		startBoostVal = -1;
 	}
+		
+	//The Not Efficent Kart Finding System 
+	//It's Greaaaa... Not efficent in the slightest
+	var otherKarts = GameObject.FindObjectsOfType(kartScript);
+	touchingKart = Vector3.zero;
 	
-	//Kart Collisions
-	var rayHit : RaycastHit[] = new RaycastHit[0];
-
-	rayHit = GetComponent.<Rigidbody>().SweepTestAll(GetComponent.<Rigidbody>().velocity,1f);
-	
-	for(var rh : int = 0; rh < rayHit.Length; rh++)
+	for(var e : int = 0; e < otherKarts.Length; e++)
 	{
-		if(rayHit[rh].transform.GetComponent(kartScript) != null)
+		if(otherKarts[e] != this)
 		{
-			var targetDir : Vector3 = rayHit[rh].transform.position - transform.position;
-			var ndir : Vector3;
-			if(Vector3.Angle(targetDir,transform.right) < 90)
-			ndir = -transform.right + transform.forward;
-			else
-			ndir = transform.right + transform.forward;
-			
-			Push(ndir,pushAmount);
-			
+		
+			var compareVect = otherKarts[e].transform.position - transform.position;
+		
+			if(compareVect.magnitude <= 2f)
+			{
+				//Debug.Log("Ahh a Kart is touching me!");
+				if(Vector3.Angle(compareVect,transform.right) > 90) //Decides where way will push us away from the kart
+					touchingKart = transform.right;
+				else
+					touchingKart = -transform.right;
+			}
 		}
 	}
+	
+	if(touchingKart != Vector3.zero)
+	{
+		dir = touchingKart;
+		Push(dir);
+	}
+	else
+	{
+		if(pushing)//Stop Forces from being added
+		{
+			//Remove the horizontal velocity
+			
+			relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
+			var stopA = -relativeVelocity.x / Time.fixedDeltaTime;
+			
+			GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
+			
+			GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
+			pushing = false;
+			touchingKart = Vector3.zero;
+		}
+		
+	}
+	
 }
 
-function Push(dir : Vector3, dist : float)
+function Push(pushDir : Vector3)
 {
 	
-	if(!pushing)
-	{
 		pushing = true;
 		//v = u+at
 		//s = ut + 0.5at^2
@@ -263,30 +288,9 @@ function Push(dir : Vector3, dist : float)
 		
 		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
 
-		var startTime = Time.realtimeSinceStartup;
-
-		while((Time.realtimeSinceStartup - startTime) < pushTime)
-		{
-
-		Debug.DrawRay(transform.position,dir * 10);
-
-		var requiredA = dist/((Time.fixedDeltaTime*Time.fixedDeltaTime)*0.5f);
-		GetComponent.<Rigidbody>().AddForce(dir * GetComponent.<Rigidbody>().mass * requiredA);	
+		GetComponent.<Rigidbody>().AddForce(pushDir * GetComponent.<Rigidbody>().mass * pushAmount);	
 		
 		yield;
-
-		}
-
-		//Remove the horizontal velocity
-		
-		var relativeVelocity : Vector3 = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
-		var stopA = -relativeVelocity.x / Time.fixedDeltaTime;
-		
-		GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
-		
-		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
-		pushing = false;
-	}
 	
 }
 
@@ -565,8 +569,8 @@ function OnCollisionEnter(collision : Collision)
 function Collided(collision : Collision)
 {
 	isColliding = true;
-	expectedSpeed /= 4f;
-	expectedSpeed = -expectedSpeed;
+	//expectedSpeed /= 4f;
+	//expectedSpeed = -expectedSpeed;
 	yield WaitForSeconds(0.2f);
 	isColliding = false;
 }

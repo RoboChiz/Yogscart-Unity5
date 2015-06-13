@@ -36,13 +36,13 @@ function FixedUpdate () {
 }
 
 @RPC
-function MyInput(t : float, s : float, d : boolean)
+function MyInput(t : byte, s : byte, d : boolean)
 {
 
 	var ks : kartScript = transform.GetComponent(kartScript);
 	
-	ks.throttle = t;
-	ks.steer = s;
+	ks.throttle = t/100f;
+	ks.steer = s/100f;
 	ks.drift = d;
 	
 }

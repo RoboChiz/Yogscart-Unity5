@@ -27,6 +27,8 @@ private var aiControlled : boolean;
 private var spinning : boolean;
 var locked : boolean = true;
 
+var input : boolean;
+
 function Awake()
 {
 	//Access the scripts needed for proper iteming
@@ -193,6 +195,10 @@ function decidePowerUp()
 
 function FixedUpdate()
 {
+	
+	if(transform.GetComponent(kartInput) != null)
+		input = im.c[kaI.InputNum].GetMenuInput("Use Item") != 0;
+
 	if((!online && ! aiControlled) || mine)
 	{
 	
@@ -200,7 +206,7 @@ function FixedUpdate()
 		{
 			if(gd.PowerUps[heldPowerUp].type != ItemType.UsableAsShield)
 			{
-				var itemKey = im.c[kaI.InputNum].GetMenuInput("Use Item") && !locked;
+				var itemKey = input && !locked;
 				
 				if(itemKey)
 				{
@@ -212,7 +218,7 @@ function FixedUpdate()
 			}
 			else
 			{
-				if(im.c[kaI.InputNum].GetInput("Use Item") != 0)
+				if(input)
 				{
 					if(!sheilding)
 					{
