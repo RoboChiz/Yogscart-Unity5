@@ -71,7 +71,12 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 
 	kb.AddComponent(AudioSource);
 	kartBody.FindChild("Kart Body").gameObject.AddComponent(AudioSource);
-	kb.GetComponent(AudioSource).playOnAwake = false;
+	kb.GetComponent.<AudioSource>().clip = kartSkel.engineSound;
+	kb.GetComponent.<AudioSource>().spatialBlend = 1;
+	kb.GetComponent.<AudioSource>().minDistance = 10;
+	kb.GetComponent.<AudioSource>().maxDistance = 100;
+	
+	kb.GetComponent.<AudioSource>().playOnAwake = false;
 	kartBody.GetComponent(AudioSource).playOnAwake = false;
 
 	kb.AddComponent(DeathCatch);

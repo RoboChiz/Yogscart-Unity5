@@ -35,6 +35,14 @@ var SpectatorCam : GameObject;
 
 private var connectRot : float;
 
+var Automatic : boolean = true;
+
+var maxPlayers : int = 30;
+
+private var waitTime : float;
+private var minPlayers : int = 2;
+private var loading : boolean;
+
 class GameMode
 {
 
@@ -57,6 +65,7 @@ class ServerInfo
 	var description : String;
 	var publicServer : boolean;
 	
+	var currentPlayers : int;
 	var maxPlayers : int;
 	var currentGameMode : int;
 	
@@ -68,6 +77,7 @@ class ServerInfo
 		name = "New Server";
 		description = "";
 		publicServer = false;
+		currentPlayers = 0;
 		maxPlayers = 12;
 		currentGameMode = 0;
 		ip = "127.0.0.1";
@@ -86,6 +96,18 @@ class ServerInfo
 		return returnString;
 		
 	}
+	
+	function ServerInfo (ipS : String,portS : int,n : String, d : String, cp : int)
+	{
+		name = n;
+		description = d;
+		publicServer = true;
+		currentPlayers = cp;
+		maxPlayers = 12;
+		currentGameMode = 0;
+		ip = ipS;
+		port = portS;
+ 	} 
 	
 	function LoadFromString(val : String)
 	{
@@ -177,8 +199,6 @@ function Awake()
 	
 	playerName = PlayerPrefs.GetString("playerName","Player");
 	
-	LoadServers();
-	
 }
 
 function SaveServers()
@@ -204,13 +224,19 @@ function SaveServers()
 
 function LoadServers()
 {
+	
+	loading = true;
+
 	var savedServers : String = PlayerPrefs.GetString("YogscartServers","");
+	
+	servers = new ServerInfo[0];
 	
 	try
 	{
 		var serverStrings = savedServers.Split(";"[0]);
 		
 		var arr = new Array();
+		arr = servers;
 		
 		for(var i : int = 0; i < serverStrings.Length; i++)
 		{
@@ -226,6 +252,33 @@ function LoadServers()
 	{
 	Debug.Log("Servers List string not in the correct format.");
 	}
+	
+	loading = false;
+	
+}
+
+function FixedUpdate()
+{
+			//Automatic Stuff
+		if(state == ServerState.Lobby && Network.isServer && Automatic)
+		{
+		
+			waitTime -= Time.fixedDeltaTime;
+			
+			if(finalPlayers.Length == 12)
+			{
+				StartGame();
+			}			
+			else if(waitTime <= 0 && finalPlayers.Length >= minPlayers)
+			{
+				StartGame();
+			}
+			else if(waitTime <= 0)
+			{
+				waitTime = 31f;
+				GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,30);
+			}
+		}
 }
 
 function OnGUI()
@@ -280,17 +333,8 @@ function OnGUI()
 	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*1.5f,chunkSize*4,chunkSize/2f),"Port: ");
 	int.TryParse(GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),hostPort.ToString()),hostPort);
 	
-	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*3.5f,chunkSize*4,chunkSize/2f),"Name (Temporary): ");
+	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*3.5f,chunkSize*4,chunkSize/2f),"Name: ");
 	playerName = GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),playerName);
-	
-	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*4.5f,chunkSize*4,chunkSize/2f),"Master Volume: ");
-	sm.MasterVolume = GUI.HorizontalSlider(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*5f,chunkSize*4,chunkSize/2f),sm.MasterVolume,0,100);
-	
-	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*5.5f,chunkSize*4,chunkSize/2f),"Music Volume: ");
-	sm.MusicVolume = GUI.HorizontalSlider(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*6f,chunkSize*4,chunkSize/2f),sm.MusicVolume,0,100);
-	
-	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*6.5f,chunkSize*4,chunkSize/2f),"SFX Volume: ");
-	sm.SFXVolume = GUI.HorizontalSlider(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*7f,chunkSize*4,chunkSize/2f),sm.SFXVolume,0,100);
 
 	var hostText : String = "Host Server";
 
@@ -392,11 +436,14 @@ function OnGUI()
 		{
 			servers[currentSelection].description = GUI.TextArea(Rect(20, 10 + fontSize*2f,serverInfoRect.width - 40, serverInfoRect.height - fontSize*4.5f),servers[currentSelection].description);
 			
-			GUI.Label(Rect(20, serverInfoRect.height - fontSize*1.5f,serverInfoRect.width/2f,fontSize),"IP: ");
-			servers[currentSelection].ip = GUI.TextField(Rect(20 + (textSize*1.5f), serverInfoRect.height - fontSize*1.5f,serverInfoRect.width/2f - textSize*1.5f,fontSize),servers[currentSelection].ip);
-			
-			GUI.Label(Rect(30 + serverInfoRect.width/2f, serverInfoRect.height - fontSize*1.5f,serverInfoRect.width/2f, fontSize),"Port: ");
-			int.TryParse(GUI.TextField(Rect(30+ (textSize*2.75f) + serverInfoRect.width/2f, serverInfoRect.height - fontSize*1.5f,textSize*8f, fontSize),servers[currentSelection].port.ToString()),servers[currentSelection].port);
+			if(!servers[currentSelection].publicServer)
+			{
+				GUI.Label(Rect(20, serverInfoRect.height - fontSize*1.5f,serverInfoRect.width/2f,fontSize),"IP: ");
+				servers[currentSelection].ip = GUI.TextField(Rect(20 + (textSize*1.5f), serverInfoRect.height - fontSize*1.5f,serverInfoRect.width/2f - textSize*1.5f,fontSize),servers[currentSelection].ip);
+				
+				GUI.Label(Rect(30 + serverInfoRect.width/2f, serverInfoRect.height - fontSize*1.5f,serverInfoRect.width/2f, fontSize),"Port: ");
+				int.TryParse(GUI.TextField(Rect(30+ (textSize*2.75f) + serverInfoRect.width/2f, serverInfoRect.height - fontSize*1.5f,textSize*8f, fontSize),servers[currentSelection].port.ToString()),servers[currentSelection].port);
+			}
 		}
 			
 		GUI.skin.label.fontSize = fontSize;
@@ -609,18 +656,20 @@ function OnGUI()
 	if(Network.isServer)
 	{	
 	
-		var startText : String = "Start";
-		if(xboxController)
-			startText = "Start   A";
-	
-		if(GUI.Button(Rect(chunkSize * 2f,nameListRect.x + nameListRect.height,chunkSize,chunkSize/2f),startText) || (im.c[0].GetMenuInput("Submit") != 0))
-			{
-				StartGame();
-			}
+		if(!Automatic)
+		{
+			var startText : String = "Start";
+			if(xboxController)
+				startText = "Start   A";
 		
-		if(xboxController)
-			GUI.DrawTexture(Rect(chunkSize * 2.65f,nameListRect.x + nameListRect.height + gapSize*0.2f,fontSize*1.5f,fontSize*1.5f),Resources.Load("UI/Main Menu/A",Texture2D));
+			if(GUI.Button(Rect(chunkSize * 2f,nameListRect.x + nameListRect.height,chunkSize,chunkSize/2f),startText) || (im.c[0].GetMenuInput("Submit") != 0))
+				{
+					StartGame();
+				}
 			
+			if(xboxController)
+				GUI.DrawTexture(Rect(chunkSize * 2.65f,nameListRect.x + nameListRect.height + gapSize*0.2f,fontSize*1.5f,fontSize*1.5f),Resources.Load("UI/Main Menu/A",Texture2D));
+		}
 			
 		var hostInfoRect = Rect(Screen.width - chunkSize * 6f,chunkSize/2f + gapSize*3f,chunkSize*5f,chunkSize * 2.5f);
 		serverInfo = Resources.Load("UI/Lobby/ServerInfo",Texture2D);
@@ -771,19 +820,27 @@ function StartServer()
 	
 	state = ServerState.Connecting;
 	
-	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
-	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).ResetEverything();
-	
-	while(GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled)
-		yield;
+	if(!Automatic)
+	{
+		
+		GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
+		GameObject.Find("Menu Holder").GetComponent(CharacterSelect).ResetEverything();
+		
+		while(GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled)
+			yield;
+			
+	}
 
-	Network.InitializeServer(25,hostPort,true);
+	Network.InitializeServer(maxPlayers,hostPort,true);
+	
 	transform.GetComponent(Host_Script).enabled = true;
 	
-	var test = new NetworkMessageInfo();
-	//test.sender = GetComponent.<NetworkView>().owner;
-	
-	transform.GetComponent(Host_Script).RecievedNewRacer(PlayerPrefs.GetString("playerName","Player"),gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,test);//Add support for Character Select
+	if(!Automatic)
+	{
+		var test = new NetworkMessageInfo();
+		//test.sender = GetComponent.<NetworkView>().owner;
+		transform.GetComponent(Host_Script).RecievedNewRacer(PlayerPrefs.GetString("playerName","Player"),gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,test);//Add support for Character Select
+	}
 	
 	GetComponent.<NetworkView>().RPC("LoadNetworkLevel",RPCMode.AllBuffered,"Lobby",0);
 	
@@ -839,18 +896,14 @@ function EndGame()
 	
 	GetComponent.<NetworkView>().RPC("ClearNames",RPCMode.All);
 	
-	yield WaitForSeconds(0.5f);
-	
-	for(var i : int = 0; i < hs.RacingPlayers.Length; i++)
-	{
-		GetComponent.<NetworkView>().RPC("NewPlayer",RPCMode.AllBuffered,hs.RacingPlayers[i].name,hs.RacingPlayers[i].character,hs.RacingPlayers[i].team);
-	}
-	
 }
 
 @RPC
 function ClearNames()
 {
+
+	Debug.Log("Cleared Names");
+	
 	finalPlayers = new DisplayName[0];
 }
 

@@ -5,6 +5,7 @@ import System.Collections.Generic;
 var data : List.<inputData>;
 var posData : List.<Vector3>;
 var rotData : List.<Quaternion>;
+var velData : List.<Vector3>;
 
 var locked : boolean = true;
 var reading : boolean;
@@ -16,6 +17,7 @@ var ki : kartItem;
 var dataCount : int = 0;
 var posCount : int = 0;
 var rotCount : int = 0;
+var velCount : int = 0;
 
 private var updateTime : float;
 
@@ -27,6 +29,10 @@ function Awake()
 	data = new List.<inputData>();
 	posData = new List.<Vector3>();
 	rotData = new List.<Quaternion>();
+	velData = new List.<Vector3>();
+	
+	LoadInputs();//Delete later
+	
 }
 
 function FixedUpdate ()
@@ -49,6 +55,7 @@ function FixedUpdate ()
 			{		
 				transform.position = posData[posCount];
 				transform.rotation = rotData[posCount];
+				GetComponent.<Rigidbody>().velocity = velData[posCount];
 				posCount++;
 				rotCount++;
 			}	
@@ -63,6 +70,7 @@ function FixedUpdate ()
 			{
 				posData.Add(transform.position);
 				rotData.Add(transform.rotation);
+				velData.Add(GetComponent.<Rigidbody>().velocity);
 				posCount++;
 				rotCount++;
 			}
@@ -81,6 +89,7 @@ function LoadInputs()
 	data = new List.<inputData>();
 	posData = new List.<Vector3>();
 	rotData = new List.<Quaternion>();
+	velData = new List.<Vector3>();
 	
 	dataCount = 0;
 	posCount = 0;
@@ -155,6 +164,18 @@ function LoadInputs()
 		        	rotData.Add(Quaternion.Euler(floatData[0],floatData[1],floatData[2]));
 	    			rotCount ++;
 				break;
+				case 'v':
+    				input = input.Substring(1);
+	    			words = input.Split(":"[0]);
+		        	floatData = new float[3];
+		        	
+		        	for(i = 0; i < words.Length; i++)
+		        	{
+		        		floatData[i] = float.Parse(words[i]);
+		        	}
+		        	
+		        	velData.Add(Vector3(floatData[0],floatData[1],floatData[2]));
+				break;
     		}
         }
     }
@@ -194,6 +215,7 @@ function SaveInputs()
 		{
 			sw.WriteLine("p" + posData[posCount].x + ":" + posData[posCount].y + ":" + posData[posCount].z);
 			sw.WriteLine("r" + rotData[posCount].eulerAngles.x + ":" + rotData[posCount].eulerAngles.y + ":" + rotData[posCount].eulerAngles.z);
+			sw.WriteLine("v" + velData[posCount].x + ":" + velData[posCount].y + ":" + velData[posCount].z);
 			posCount++;
 			rotCount++;
 		}

@@ -83,7 +83,6 @@ function Update()
 			if(Input.GetAxis("Key_Leave"))
 				RemoveController("Key_");
 			
-		
 			if(Input.GetAxis("C1_Leave"))
 				RemoveController("C1_");
 			
@@ -128,7 +127,10 @@ function OnGUI()
 		}else
 		GUI.Box(iconRect,"Player " + (i+1) + " has left!");
 		
-		}
+		if(i < c.Length &&  c[i].inputName == "Key_")
+			keyboardPlayer = i;
+		
+	}
 }
 
 function ShowInput(i : int)
@@ -244,14 +246,15 @@ function MouseIntersects(Area : Rect){
 
 function GetClick()
 {
-	if(Input.GetMouseButtonDown(0) && !mouseLock)
+	if(Input.GetAxis("Mouse_Click") != 0 && !mouseLock)
 	{
 		mouseLock = true;
 		return true;
 	}
 	else
 	{
-		if(Input.GetMouseButtonUp(0))
+		
+		if(Input.GetAxis("Mouse_Click") == 0)
 			mouseLock = false;
 		
 		return false;

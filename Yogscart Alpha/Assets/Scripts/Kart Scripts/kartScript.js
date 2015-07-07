@@ -73,6 +73,8 @@ var pushAmount : float = 90f;
 private var touchingKart : Vector3;
 private var dir : Vector3;
 
+private var sfxVolume : float;
+
 function Start()
 {
 
@@ -83,6 +85,7 @@ function Start()
 		wheelStart[i] = wheelMeshes[i].localPosition;
 	}
 	
+	sfxVolume = GameObject.Find("Sound System").transform.FindChild("SFX").GetComponent.<AudioSource>().volume;
 }
 
 function Update()
@@ -190,17 +193,15 @@ function FixedUpdate () {
 	//Play engine Audio
 	if(engineSound != null){
 		
-		if(!GetComponent.<AudioSource>().isPlaying){
+		if(!GetComponent.<AudioSource>().isPlaying ){
 			GetComponent.<AudioSource>().clip = engineSound;
 			GetComponent.<AudioSource>().Play();
 			GetComponent.<AudioSource>().loop = true;
 		}
-
-		var sm : Sound_Manager = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
-
-		var es = expectedSpeed/4f;
-		GetComponent.<AudioSource>().volume = (sm.MasterVolume/100f) * (sm.SFXVolume/150f) * Mathf.Lerp(GetComponent.<AudioSource>().volume,Mathf.Abs(expectedSpeed),Time.deltaTime);
-		GetComponent.<AudioSource>().pitch = Mathf.Lerp(GetComponent.<AudioSource>().pitch,1 + Mathf.Abs(es),Time.deltaTime);
+		
+		GetComponent.<AudioSource>().volume = Mathf.Lerp(0.01,0.075,expectedSpeed/maxSpeed) * sfxVolume;
+		
+		GetComponent.<AudioSource>().pitch = Mathf.Lerp(0.75,1.5,expectedSpeed/maxSpeed);
 
 	}
 	
@@ -229,6 +230,13 @@ function FixedUpdate () {
 		startBoostVal = -1;
 	}
 		
+	CheckForKartCollisions();
+	
+}
+
+
+function CheckForKartCollisions()
+{
 	//The Not Efficent Kart Finding System 
 	//It's Greaaaa... Not efficent in the slightest
 	var otherKarts = GameObject.FindObjectsOfType(kartScript);
@@ -241,7 +249,7 @@ function FixedUpdate () {
 		
 			var compareVect = otherKarts[e].transform.position - transform.position;
 		
-			if(compareVect.magnitude <= 2f)
+			if(touchingKart == Vector3.zero && compareVect.magnitude <= 2f)
 			{
 				//Debug.Log("Ahh a Kart is touching me!");
 				if(Vector3.Angle(compareVect,transform.right) > 90) //Decides where way will push us away from the kart
@@ -263,7 +271,7 @@ function FixedUpdate () {
 		{
 			//Remove the horizontal velocity
 			
-			relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
+			var relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
 			var stopA = -relativeVelocity.x / Time.fixedDeltaTime;
 			
 			GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
@@ -274,7 +282,6 @@ function FixedUpdate () {
 		}
 		
 	}
-	
 }
 
 function Push(pushDir : Vector3)
@@ -329,7 +336,12 @@ function ApplySteering()
 	if(!driftStarted){
 		
 		if(steer != 0)
+		{
 			steer = Mathf.Sign(steer);
+			
+			steer *= Mathf.Lerp(2.5,1,actualSpeed/maxSpeed);
+			
+		}
 		
 		wheelColliders[0].steerAngle = steer * turnSpeed;
 		wheelColliders[1].steerAngle = steer * turnSpeed;

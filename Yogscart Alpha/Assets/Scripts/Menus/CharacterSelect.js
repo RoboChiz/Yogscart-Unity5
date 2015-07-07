@@ -1,4 +1,5 @@
-﻿#pragma strict
+﻿
+#pragma strict
 
 private var gd : CurrentGameData;
 private var im : InputManager;
@@ -18,7 +19,7 @@ var rotateSpeed : float = 2.5;
 
 var Platforms : Transform[];
 
-private var ready : boolean[];
+var ready : boolean[];
 private var kartSelected : boolean[];
 
 private var loadedChoice : LoadOut[];
@@ -73,6 +74,8 @@ function OnGUI()
 	{
 		case(csState.Character):
 		
+		im.allowedToChange = true;
+		
 		nameListRect = Rect(10,chunkSize/2f,chunkSize*5f,Screen.height - chunkSize*1.5f);
 		GUI.DrawTexture(nameListRect,nameList);
 		
@@ -111,6 +114,8 @@ function OnGUI()
 		break;
 		
 		case(csState.Hat):
+			
+			im.allowedToChange = false;
 		
 			nameListRect = Rect(10,chunkSize/2f,chunkSize*5f,Screen.height - chunkSize*1.5f);
 			GUI.DrawTexture(nameListRect,nameList);
@@ -343,15 +348,17 @@ function OnGUI()
 		if(loadedModels[s] != null)
 			loadedModels[s].Rotate(Vector3.up,-im.c[s].GetInput("Rotate") * Time.deltaTime * rotateSpeed);
 		
-		
-		//Get Inputs
-		if(canInput)
+		if(!ready[s])
 		{
-			var hori : float = im.c[s].GetMenuInput("Horizontal");
-			var vert : float = -im.c[s].GetMenuInput("Vertical");
+			//Get Inputs
+			if(canInput)
+			{
+				var hori : float = im.c[s].GetMenuInput("Horizontal");
+				var vert : float = -im.c[s].GetMenuInput("Vertical");
+			}
+			
+			var submit : boolean = canInput && (im.c[s].GetMenuInput("Submit") != 0);
 		}
-		
-		var submit : boolean = canInput && (im.c[s].GetMenuInput("Submit") != 0);
 		var cancel : boolean = canInput && (im.c[s].GetMenuInput("Cancel") != 0);
 		
 		if(hori != 0)
@@ -525,17 +532,25 @@ function OnGUI()
 		
 		if(cancel)
 		{
-			if(state == csState.Character)
-				Cancel();
-				
-			if(state == csState.Hat)
-				state = csState.Character;
-				
-			if(state == csState.Kart)
-				if(kartSelected[s])
-					kartSelected[s] = false;
-				else
-					state = csState.Hat;
+			if(!ready[s])
+			{
+				if(state == csState.Character)
+					Cancel();
+					
+				if(state == csState.Hat)
+					state = csState.Character;
+					
+				if(state == csState.Kart)
+					if(kartSelected[s])
+						kartSelected[s] = false;
+					else
+						state = csState.Hat;
+			}
+			else
+			{
+				ready[s] = false;
+			}
+			
 		}
 			
 		
@@ -561,19 +576,42 @@ function OnGUI()
 		if(state == csState.Kart)
 		{
 		
-			var kartgroup : Rect;
 			var scaleAmount : float = 1f;
 			
-			kartgroup = Rect(10,10,Screen.width - 20, Screen.height - 20);
+			var areaRect : Rect;
 			
-			GUI.BeginGroup(kartgroup);
+			if(im.c.Length == 1)
+				areaRect = Rect(0,0,Screen.width,Screen.height);
+			
+			if(im.c.Length == 2)
+			{			
+				if(s == 0)
+					areaRect = Rect(0,0,Screen.width,Screen.height/2f);
+				else
+					areaRect = Rect(0,Screen.height/2f,Screen.width,Screen.height/2f);
+			}
+			
+			if(im.c.Length > 2)
+			{			
+				if(s == 0)
+					areaRect = Rect(0,0,Screen.width/2f,Screen.height/2f);
+				if(s == 1)
+					areaRect = Rect(Screen.width/2f,0,Screen.width/2f,Screen.height/2f);
+				if(s == 2)
+					areaRect = Rect(0,Screen.height/2f,Screen.width/2f,Screen.height/2f);
+				if(s == 3)
+					areaRect = Rect(Screen.width/2f,Screen.height/2f,Screen.width/2f,Screen.height/2f);
+			}
+			
+			
+			GUI.BeginGroup(areaRect);
 			
 			var scale : float = chunkSize / scaleAmount;
 		
-			nameListRect = Rect(0,kartgroup.height/2f - scale*1.25f,scale*5f,scale*2.5f);
+			nameListRect = Rect(0,areaRect.height/2f - scale*1.25f,scale*5f,scale*2.5f);
 			GUI.DrawTexture(nameListRect,nameList);
 			
-			var kartListRect = Rect(10,kartgroup.height/2f - scale*1.25f + 10,scale*5f - 20,scale*2.5f - 20);
+			var kartListRect = Rect(10,areaRect.height/2f - scale*1.25f + 10,scale*5f - 20,scale*2.5f - 20);
 			
 			GUI.BeginGroup(kartListRect);
 			
@@ -591,13 +629,13 @@ function OnGUI()
 			if(s == im.keyboardPlayer && canInput)
 			{
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + kartListRect.x + kartRect.x,kartgroup.y + kartListRect.y + kartRect.y,kartRect.width,kartRect.height)) && !kartSelected[s] && mouseClick)
+				if(im.MouseIntersects(Rect(areaRect.x + kartListRect.x + kartRect.x,areaRect.y + kartListRect.y + kartRect.y,kartRect.width,kartRect.height)) && !kartSelected[s] && mouseClick)
 				{
 					kartSelected[s] = true;
 					mouseSelecting = false;
 				}
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + kartListRect.x + wheelRect.x,kartgroup.y + kartListRect.y + wheelRect.y,wheelRect.width,wheelRect.height)) && kartSelected[s] && mouseClick)
+				if(im.MouseIntersects(Rect(areaRect.x + kartListRect.x + wheelRect.x,areaRect.y + kartListRect.y + wheelRect.y,wheelRect.width,wheelRect.height)) && kartSelected[s] && mouseClick)
 				{
 					ready[s] = true;
 				}
@@ -614,12 +652,12 @@ function OnGUI()
 				var kartDown = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
 				GUI.DrawTexture(kartDown,downArrowIcon,ScaleMode.ScaleToFit);
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + kartUp.x,kartgroup.y + kartUp.y,kartUp.width,kartUp.height)) && mouseClick && canInput)
+				if(im.MouseIntersects(Rect(areaRect.x + kartUp.x,areaRect.y + kartUp.y,kartUp.width,kartUp.height)) && mouseClick && canInput)
 				{
 						choice[s].kart ++;						
 				}
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + kartDown.x,kartgroup.y + kartDown.y,kartDown.width,kartDown.height)) && mouseClick && canInput)
+				if(im.MouseIntersects(Rect(areaRect.x + kartDown.x,areaRect.y + kartDown.y,kartDown.width,kartDown.height)) && mouseClick && canInput)
 				{
 						choice[s].kart --;
 				}
@@ -639,12 +677,12 @@ function OnGUI()
 				var wheelDown = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
 				GUI.DrawTexture(wheelDown,downArrowIcon,ScaleMode.ScaleToFit);
 			
-				if(im.MouseIntersects(Rect(kartgroup.x + wheelUp.x,kartgroup.y + wheelUp.y,wheelUp.width,wheelUp.height)) && mouseClick && canInput)
+				if(im.MouseIntersects(Rect(areaRect.x + wheelUp.x,areaRect.y + wheelUp.y,wheelUp.width,wheelUp.height)) && mouseClick && canInput)
 				{
 						choice[s].wheel ++;						
 				}
 				
-				if(im.MouseIntersects(Rect(kartgroup.x + wheelDown.x,kartgroup.y + wheelDown.y,wheelDown.width,wheelDown.height)) && mouseClick && canInput)
+				if(im.MouseIntersects(Rect(areaRect.x + wheelDown.x,areaRect.y + wheelDown.y,wheelDown.width,wheelDown.height)) && mouseClick && canInput)
 				{
 						choice[s].wheel --;
 				}

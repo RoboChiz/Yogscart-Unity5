@@ -9,7 +9,7 @@ private var gd : CurrentGameData;
 //0 - 50cc, 1 - 100cc, 2 - 150cc, 3 - Insane
 var Stupidity : int; //Bigger the number, stupider the AI.
 
-var angleRequired : float = 3f;
+var angleRequired : float = 1f;
 private var steering : int;
 
 private var nTarget : Vector3;
@@ -18,12 +18,17 @@ private var targestPos : int = -1;
 private var usedItem : boolean = false;
 private var lastAngle : float;
 
+private var adjusterFloat : float;
+
 function Awake(){
 td = GameObject.Find("Track Manager").GetComponent(TrackData);
 pf = transform.GetComponent(Position_Finding);
 ks = transform.GetComponent(kartScript);
 //ki = transform.GetComponent(kartItem);
 //gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
+
+adjusterFloat = Random.Range(-8f,8f);
+
 }
 
 function Update () {
@@ -58,7 +63,11 @@ nextChump = 0;
 
 var Target : Vector3 = td.PositionPoints[nextChump].position;
 var lastTarget : Vector3 = td.PositionPoints[pf.currentPos].position;
-var Adjuster = Vector3.Cross((Target-lastTarget).normalized,transform.up) * Random.Range(-1f,1f) * 3f;
+
+adjusterFloat += Random.Range(-3f,3f);
+adjusterFloat = Mathf.Clamp(adjusterFloat,-6f,6f);
+
+var Adjuster = Vector3.Cross((Target-lastTarget).normalized,transform.up) * adjusterFloat;
 
 nTarget = Target + Adjuster;
 
@@ -137,7 +146,7 @@ if(ks.startBoostVal != -1){
 if(Stupidity < 4 && ks.startBoostVal <= 2)
 ks.throttle = 1;
 
-if(Stupidity > 7 && ks.startBoostVal <= 3)
+if(Stupidity > 8 && ks.startBoostVal <= 3)
 ks.throttle = 1;
 }
 

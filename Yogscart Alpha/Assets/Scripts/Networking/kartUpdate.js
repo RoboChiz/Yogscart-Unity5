@@ -6,43 +6,38 @@ private var updateTime : float;
 private var posTime : float;
 
 var networkSendRate : float = 20;
-private var timeWait : float;
-
-function Awake()
-{
-	timeWait = 1f/networkSendRate;
-}
+var frameCount : int = 0;
 
 function FixedUpdate () {
 	if(sending)
 	{
-		updateTime += Time.fixedDeltaTime;
-		posTime += Time.fixedDeltaTime;
 	
-		if(updateTime > timeWait)
+		if(frameCount % 20 == 0)
 		{
 			var ks : kartScript = transform.GetComponent(kartScript);
 			transform.GetComponent.<NetworkView>().RPC("MyInput",RPCMode.Others,ks.throttle,ks.steer,ks.drift);
 			updateTime = 0;
 		}
 	
-		if(posTime > 10)
+		if(frameCount % 180 == 0)
 		{
 			transform.GetComponent.<NetworkView>().RPC("MyPosition",RPCMode.Others,transform.position,transform.rotation,GetComponent.<Rigidbody>().velocity);
 			posTime = 0;
 		}
 		
+		frameCount++;
+		
 	}
 }
 
 @RPC
-function MyInput(t : byte, s : byte, d : boolean)
+function MyInput(t : float, s : float, d : boolean)
 {
 
 	var ks : kartScript = transform.GetComponent(kartScript);
 	
-	ks.throttle = t/100f;
-	ks.steer = s/100f;
+	ks.throttle = t;
+	ks.steer = s;
 	ks.drift = d;
 	
 }

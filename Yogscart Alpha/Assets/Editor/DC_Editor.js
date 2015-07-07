@@ -14,6 +14,21 @@ class DC_Editor extends Editor {
     function OnInspectorGUI () {
      
      target.cameraType = EditorGUILayout.EnumPopup("Camera Type ",target.cameraType);
+     target.rotationClamped = EditorGUILayout.Toggle("Clamp Rotation",target.rotationClamped);
+     
+     if(target.rotationClamped)
+     {
+     	var min = EditorGUILayout.Vector3Field("Minimum",Vector3(target.rotationClampXmin,target.rotationClampYmin,target.rotationClampZmin));
+     	target.rotationClampXmin = min.x;
+     	target.rotationClampYmin = min.y;
+     	target.rotationClampZmin = min.z;
+     	
+     	var max = EditorGUILayout.Vector3Field("Maximum",Vector3(target.rotationClampXmax,target.rotationClampYmax,target.rotationClampZmax));
+     	target.rotationClampXmax = max.x;
+     	target.rotationClampYmax = max.y;
+     	target.rotationClampZmax = max.z;
+     	
+     }
      
      if(target.cameraType.ToString() == "Fixed"){
      
@@ -33,17 +48,7 @@ class DC_Editor extends Editor {
 	 
 	 }
 	 
-     }else if(target.cameraType.ToString() == "FreeCamera"){
-
-	target.TravelAreaCentre = EditorGUILayout.Vector3Field("Travel Area Centre",target.TravelAreaCentre);
-	target.TravelAreaScale = EditorGUILayout.Vector3Field("Travel Area Scale",target.TravelAreaScale);
-
-	target.RotationTypes = EditorGUILayout.EnumPopup("Rotation",target.RotationTypes);
-	
-	if(target.RotationTypes.ToString() == "Spinning")
-	target.RotateSpeed = EditorGUILayout.IntField("Rotate Speed",target.RotateSpeed);
-	
-	}
+     }
      
      //Get Camera Description
      if(target.cameraType.ToString() == "Fixed")
@@ -51,9 +56,7 @@ class DC_Editor extends Editor {
      CameraDescription = "This Camera will remain in a fixed position and rotation.";
      else
      CameraDescription = "This Camera will remain in a fixed position, but will look at objects of interest.";
-     
-     if(target.cameraType.ToString() == "Spectator")
-     CameraDescription = "This Camera will rotate around the target. Please ensure you add a 'Kart_Camera' script to this camera.";
+ 
      
      if(target.cameraType.ToString() == "PathCamera"){
      if(target.Automatic){
@@ -68,18 +71,6 @@ class DC_Editor extends Editor {
      CameraDescription = "This Camera will follow objects of interest along it's path with a fixed rotation.";
      }
      
-     if(target.cameraType.ToString() == "FreeCamera"){
-     
-     if(target.RotationTypes.ToString() == "Fixed"){
-	 CameraDescription = "This Camera will move freely in the travel area with a fixed rotation.";
-	 }else if(target.RotationTypes.ToString() == "Spinning"){
-	 CameraDescription = "This Camera will move freely in the travel area, but will rotate vertically at the specified speed.";
-	 }else if(target.RotationTypes.ToString() == "Follow"){
-	 CameraDescription = "This Camera will move freely in the travel area, and will look at objects of interest.";
-     }
-     
-     
-    }
      
      myLabelStyle.wordWrap = true;
      

@@ -1,10 +1,12 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Modes\RaceLeader.js">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Kart Scripts\kartScript.js">
     <Files>
-      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="62" Column="17" />
-      <File FileName="Assets\Scripts\KartMaker Scripts\KartMaker.js" Line="159" Column="84" />
-      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="479" Column="21" />
+      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="88" Column="109" />
+      <File FileName="Assets\Scripts\KartMaker Scripts\KartMaker.js" Line="77" Column="52" />
+      <File FileName="Assets\Scripts\KartMaker Scripts\KartSkeleton.js" Line="20" Column="16" />
+      <File FileName="Assets\Scripts\Menus\Main Menu\MainMenu.js" Line="357" Column="72" />
+      <File FileName="Assets\Scripts\Game Managers\Sound_Manager.js" Line="68" Column="17" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

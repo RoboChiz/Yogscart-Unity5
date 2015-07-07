@@ -79,6 +79,11 @@ function StartGame()
 		}
 	}
 	
+	if(transform.GetComponent(Network_Manager).Automatic)
+	{
+		gameObject.AddComponent(VotingScreen);
+	}
+	
 	StartCoroutine("LevelSelectCountdown");
 	
 }
@@ -117,6 +122,7 @@ function StartSinglePlayer()//true if in Time Trial Mode
 		}
 		
 		var counter : int = minVal;
+		var humanCount : int = im.c.Length - 1;
 		
 		for(var i : int = 0; i < 12; i++)
 		{
@@ -130,8 +136,8 @@ function StartSinglePlayer()//true if in Time Trial Mode
 			}
 			else
 			{
-				var p : int = 12 - (12-im.c.Length)-1;
-				Racers[i] = new Racer(true,p,gd.currentChoices[p].character,gd.currentChoices[p].hat,gd.currentChoices[p].kart,gd.currentChoices[p].wheel,i);
+				Racers[i] = new Racer(true,humanCount,gd.currentChoices[humanCount].character,gd.currentChoices[humanCount].hat,gd.currentChoices[humanCount].kart,gd.currentChoices[humanCount].wheel,i);
+				humanCount--;
 			}
 		}	
 		
@@ -368,8 +374,11 @@ function StartRace ()
 					Racers[i].ingameObj.GetComponent(Racer_AI).Stupidity = Racers[i].aiStupidity;
 				}
 				
-				Racers[i].ingameObj.gameObject.AddComponent(Replayer);
-				Racers[i].ingameObj.GetComponent(Replayer).reading = false;
+				if(type == RaceStyle.TimeTrial)
+				{
+					Racers[i].ingameObj.gameObject.AddComponent(Replayer);
+					Racers[i].ingameObj.GetComponent(Replayer).reading = false;
+				}
 				
 				if(replay)
 				{
@@ -378,7 +387,11 @@ function StartRace ()
 					
 					//Add Replayer
 					Racers[i].ingameObj.GetComponent(Replayer).LoadInputs();
-						
+					
+					var tv = GameObject.FindObjectOfType(TV_Controller);
+					
+					tv.enabled = true;	
+					tv.WakeUp(Racers[0].ingameObj);
 				}
 				
 				
@@ -396,11 +409,14 @@ function StartRace ()
 			
 			rb.Countdown();
 			
-			//Unlock the replayer
-			var Rracers = GameObject.FindObjectsOfType(Replayer);
-			for(i = 0; i < Rracers.Length; i++)
+			if(type == RaceStyle.TimeTrial)
 			{
-				Rracers[i].locked = false;
+				//Unlock the replayer
+				var Rracers = GameObject.FindObjectsOfType(Replayer);
+				for(i = 0; i < Rracers.Length; i++)
+				{
+					Rracers[i].locked = false;
+				}
 			}
 			
 			yield WaitForSeconds(3.8f);
@@ -466,7 +482,8 @@ function FixedUpdate()
 
 				Racers[i].timer = new Timer(timer);
 				
-				Racers[i].ingameObj.GetComponent(Replayer).locked = true;
+				if(Racers[i].ingameObj.GetComponent(Replayer) != null)
+					Racers[i].ingameObj.GetComponent(Replayer).locked = true;
 				
 				if(!replay)
 				{
@@ -529,7 +546,7 @@ function EndGame()
 		yield WaitForSeconds(10);	
 			
 		GetComponent.<NetworkView>().RPC("RaceEnded",RPCMode.AllBuffered);
-		transform.GetComponent(Network_Manager).EndGame();
+		transform.GetComponent(Network_Manager).StartCoroutine("EndGame");
 		
 		this.enabled = false;
 		
@@ -546,6 +563,11 @@ function EndGame()
 				PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].Name,racerTime.ToString());
 				gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = new Timer(racerTime);
 			}
+		}
+		else
+		{
+			var tv = GameObject.FindObjectOfType(TV_Controller);
+			tv.TurnOff();
 		}
 		
 		rb.WrapUp();

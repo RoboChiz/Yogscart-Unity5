@@ -579,14 +579,14 @@ function tick(t : Timer)
 		
 		if(t.milliSeconds >= 1000)
 		{
-			t.milliSeconds = 0;
+			t.milliSeconds -= 1000;
 			t.seconds++;
 		}
 		
 		if(t.seconds >= 60)
 		{
 			t.minutes++;
-			t.seconds = 0;
+			t.seconds -= 60;
 		}
 		
 		yield;

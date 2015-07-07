@@ -197,7 +197,9 @@ function FixedUpdate()
 {
 	
 	if(transform.GetComponent(kartInput) != null)
+	{
 		input = im.c[kaI.InputNum].GetMenuInput("Use Item") != 0;
+	}
 
 	if((!online && ! aiControlled) || mine)
 	{
@@ -263,31 +265,39 @@ function RollItem(item : int)
 
 	spinning = true;
 	
-	sm.PlaySFX(Resources.Load("Music & Sounds/SFX/Powerup",AudioClip));
+	if(!aiControlled)
+	{
+		sm.PlaySFX(Resources.Load("Music & Sounds/SFX/Powerup",AudioClip));
 	
-	var size = Screen.width/8f;
-	renderItemHeight = -size ;
+		var size = Screen.width/8f;
+		renderItemHeight = -size ;
 
-	var counter : int = 0;
-	var startTime : float = Time.timeSinceLevelLoad;
+		var counter : int = 0;
+		var startTime : float = Time.timeSinceLevelLoad;
 
-	while((Time.timeSinceLevelLoad-startTime) < 1.7){
+		while((Time.timeSinceLevelLoad-startTime) < 1.7){
 
-	renderItem = gd.PowerUps[counter].Icon;
+		renderItem = gd.PowerUps[counter].Icon;
 
-	yield Scroll();
+		yield Scroll();
 
-	if(counter+1<gd.PowerUps.Length)
-	counter += 1;
-	else
-	counter = 0;
+		if(counter+1<gd.PowerUps.Length)
+		counter += 1;
+		else
+		counter = 0;
 
+		}
+
+		renderItem = gd.PowerUps[item].Icon;
+		
+		sm.PlaySFX(Resources.Load("Music & Sounds/SFX/Powerup2",AudioClip));
+		yield Stop();
+		
 	}
-
-	renderItem = gd.PowerUps[item].Icon;
-	
-	sm.PlaySFX(Resources.Load("Music & Sounds/SFX/Powerup2",AudioClip));
-	yield Stop();
+	else
+	{
+		yield WaitForSeconds(2f);
+	}
 	
 	spinning = false;	
 	Debug.Log("Finished Roll Item");	

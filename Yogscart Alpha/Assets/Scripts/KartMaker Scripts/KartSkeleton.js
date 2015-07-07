@@ -17,7 +17,6 @@ var SeatPosition : Vector3; //Represented by a Grey Box
 
 var ItemDrop : float = 2f; //Represented by a Yellow Box
 
-
 var engineSound : AudioClip;
 
 	function OnDrawGizmos() {

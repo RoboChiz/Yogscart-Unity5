@@ -527,9 +527,12 @@ function OnGUI ()
 							}
 							else
 							{
-								var NameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name,Texture2D);
-								var Ratio2 = (optionSize)/NameTexture.height;
-								GUI.DrawTexture(Rect(50 + PosTexture.width * Ratio,(f+1)*optionSize,NameTexture.width * Ratio2,optionSize),NameTexture);
+								if(f < finishedCharacters.Length && finishedCharacters[f].character != -1)
+								{
+									var NameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name,Texture2D);
+									var Ratio2 = (optionSize)/NameTexture.height;
+									GUI.DrawTexture(Rect(50 + PosTexture.width * Ratio,(f+1)*optionSize,NameTexture.width * Ratio2,optionSize),NameTexture);
+								}
 							}
 							
 							if(finishedCharacters[f].character != -1)
