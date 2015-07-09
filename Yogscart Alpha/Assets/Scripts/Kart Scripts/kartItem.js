@@ -27,8 +27,6 @@ private var aiControlled : boolean;
 private var spinning : boolean;
 var locked : boolean = true;
 
-var input : boolean;
-
 function Awake()
 {
 	//Access the scripts needed for proper iteming
@@ -195,12 +193,15 @@ function decidePowerUp()
 
 function FixedUpdate()
 {
+<<<<<<< HEAD
 	
 	if(transform.GetComponent(kartInput) != null)
 	{
 		input = im.c[kaI.InputNum].GetMenuInput("Use Item") != 0;
 	}
 
+=======
+>>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
 	if((!online && ! aiControlled) || mine)
 	{
 	
@@ -208,7 +209,7 @@ function FixedUpdate()
 		{
 			if(gd.PowerUps[heldPowerUp].type != ItemType.UsableAsShield)
 			{
-				var itemKey = input && !locked;
+				var itemKey = im.c[kaI.InputNum].GetMenuInput("Use Item") && !locked;
 				
 				if(itemKey)
 				{
@@ -220,7 +221,7 @@ function FixedUpdate()
 			}
 			else
 			{
-				if(input)
+				if(im.c[kaI.InputNum].GetInput("Use Item") != 0)
 				{
 					if(!sheilding)
 					{

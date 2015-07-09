@@ -68,10 +68,9 @@ private var actualSpeed : float;
 public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
-private var pushing : boolean;
-var pushAmount : float = 90f;
-private var touchingKart : Vector3;
-private var dir : Vector3;
+var pushing : boolean;
+var pushTime : float = 0.01f;
+var pushAmount : float = 0.05f;
 
 private var sfxVolume : float;
 
@@ -229,6 +228,7 @@ function FixedUpdate () {
 		SpinOut();
 		startBoostVal = -1;
 	}
+<<<<<<< HEAD
 		
 	CheckForKartCollisions();
 	
@@ -259,34 +259,43 @@ function CheckForKartCollisions()
 			}
 		}
 	}
+=======
 	
-	if(touchingKart != Vector3.zero)
+	//Kart Collisions
+	var rayHit : RaycastHit[] = new RaycastHit[0];
+
+	rayHit = GetComponent.<Rigidbody>().SweepTestAll(GetComponent.<Rigidbody>().velocity,1f);
+>>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
+	
+	for(var rh : int = 0; rh < rayHit.Length; rh++)
 	{
-		dir = touchingKart;
-		Push(dir);
-	}
-	else
-	{
-		if(pushing)//Stop Forces from being added
+		if(rayHit[rh].transform.GetComponent(kartScript) != null)
 		{
+<<<<<<< HEAD
 			//Remove the horizontal velocity
 			
 			var relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
 			var stopA = -relativeVelocity.x / Time.fixedDeltaTime;
+=======
+			var targetDir : Vector3 = rayHit[rh].transform.position - transform.position;
+			var ndir : Vector3;
+			if(Vector3.Angle(targetDir,transform.right) < 90)
+			ndir = -transform.right + transform.forward;
+			else
+			ndir = transform.right + transform.forward;
+>>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
 			
-			GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
+			Push(ndir,pushAmount);
 			
-			GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
-			pushing = false;
-			touchingKart = Vector3.zero;
 		}
-		
 	}
 }
 
-function Push(pushDir : Vector3)
+function Push(dir : Vector3, dist : float)
 {
 	
+	if(!pushing)
+	{
 		pushing = true;
 		//v = u+at
 		//s = ut + 0.5at^2
@@ -295,9 +304,30 @@ function Push(pushDir : Vector3)
 		
 		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
 
-		GetComponent.<Rigidbody>().AddForce(pushDir * GetComponent.<Rigidbody>().mass * pushAmount);	
+		var startTime = Time.realtimeSinceStartup;
+
+		while((Time.realtimeSinceStartup - startTime) < pushTime)
+		{
+
+		Debug.DrawRay(transform.position,dir * 10);
+
+		var requiredA = dist/((Time.fixedDeltaTime*Time.fixedDeltaTime)*0.5f);
+		GetComponent.<Rigidbody>().AddForce(dir * GetComponent.<Rigidbody>().mass * requiredA);	
 		
 		yield;
+
+		}
+
+		//Remove the horizontal velocity
+		
+		var relativeVelocity : Vector3 = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
+		var stopA = -relativeVelocity.x / Time.fixedDeltaTime;
+		
+		GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
+		
+		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
+		pushing = false;
+	}
 	
 }
 
@@ -581,8 +611,8 @@ function OnCollisionEnter(collision : Collision)
 function Collided(collision : Collision)
 {
 	isColliding = true;
-	//expectedSpeed /= 4f;
-	//expectedSpeed = -expectedSpeed;
+	expectedSpeed /= 4f;
+	expectedSpeed = -expectedSpeed;
 	yield WaitForSeconds(0.2f);
 	isColliding = false;
 }

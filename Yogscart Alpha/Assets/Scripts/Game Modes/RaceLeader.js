@@ -10,8 +10,6 @@ Handles the loading and running of races in Single Player & Host.
 enum RaceStyle{GrandPrix,TimeTrial,CustomRace,Online};
 var type : RaceStyle;
 
-var replay : boolean = false;
-
 //Local
 var Racers : Racer[];
 
@@ -23,8 +21,6 @@ var ending : boolean;
 var timer : Timer;
 //Single Player Variables
 var race : int = 1; //Holds which race in a grand prix you are
-
-var replayAddress : String;
 
 //Used in multiplayer
 private var Votes : Vector2[];
@@ -104,20 +100,20 @@ function StartSinglePlayer()//true if in Time Trial Mode
 		switch(diff)
 		{
 			case 0:
-				maxVal = 10;
-				minVal = 7;
+				minVal = 10;
+				maxVal = 7;
 			break;
 			case 1:
-				maxVal = 8;
-				minVal = 4;
+				minVal = 8;
+				maxVal = 4;
 			break;
 			case 2:
-				maxVal = 5;
-				minVal = 0;
+				minVal = 5;
+				maxVal = 0;
 			break;
 			case 3:
-				maxVal = 3;
 				minVal = 0;
+				maxVal = 0;
 			break;
 		}
 		
@@ -154,16 +150,6 @@ function StartSinglePlayer()//true if in Time Trial Mode
 
 function spStartRace()
 {
-
-	if(type == RaceStyle.CustomRace && race > 1)
-	{
-		transform.GetComponent(Level_Select).enabled = true;
-		transform.GetComponent(Level_Select).hidden = false;
-		
-		while(transform.GetComponent(Level_Select).enabled)
-			yield;
-	}
-
 	gd.BlackOut = true;
 	yield WaitForSeconds(0.5);
 	Application.LoadLevel(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].SceneID);
@@ -371,6 +357,7 @@ function StartRace ()
 					Destroy(Racers[i].ingameObj.GetComponent(kartInput));
 					Destroy(Racers[i].ingameObj.GetComponent(kartInfo));
 					Racers[i].ingameObj.gameObject.AddComponent(Racer_AI);
+<<<<<<< HEAD
 					Racers[i].ingameObj.GetComponent(Racer_AI).Stupidity = Racers[i].aiStupidity;
 				}
 				
@@ -392,6 +379,9 @@ function StartRace ()
 					
 					tv.enabled = true;	
 					tv.WakeUp(Racers[0].ingameObj);
+=======
+					Racers[i].ingameObj.GetComponent(Racer_AI).Difficulty = Racers[i].aiStupidity;
+>>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
 				}
 				
 				
@@ -409,6 +399,7 @@ function StartRace ()
 			
 			rb.Countdown();
 			
+<<<<<<< HEAD
 			if(type == RaceStyle.TimeTrial)
 			{
 				//Unlock the replayer
@@ -419,6 +410,8 @@ function StartRace ()
 				}
 			}
 			
+=======
+>>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
 			yield WaitForSeconds(3.8f);
 			
 			rb.UnlockKart();	
@@ -430,7 +423,7 @@ function StartRace ()
 		
 		//During Race
 		
-		while(WaitForFinished() && timer.minutes < 60)
+		while(WaitForFinished())
 			{
 			
 				if(!Network.isServer)
@@ -470,16 +463,17 @@ function SendPositionUpdates()
 	}
 }
 
-function FixedUpdate()
+function LocalSendPositionUpdates()
 {
-
-	if(rb.currentGUI == GUIState.RaceGUI && !Network.isServer && !Network.isClient)
-		for(var i : int = 0; i < Racers.Length; i++)
+	for(var i : int = 0; i < Racers.Length; i++)
+	{
+		Racers[i].ingameObj.GetComponent(Position_Finding).position = Racers[i].position;
+		
+		if(Racers[i].ingameObj.GetComponent(Position_Finding).Lap >= td.Laps && !Racers[i].finished)
 		{
-			if(Racers[i].ingameObj.GetComponent(Position_Finding).Lap >= td.Laps && !Racers[i].finished)
-			{
-				Racers[i].finished = true;
+			Racers[i].finished = true;
 
+<<<<<<< HEAD
 				Racers[i].timer = new Timer(timer);
 				
 				if(Racers[i].ingameObj.GetComponent(Replayer) != null)
@@ -490,20 +484,15 @@ function FixedUpdate()
 					Racers[i].ingameObj.GetComponent(Replayer).SaveInputs();
 					rb.bestTimer = new Timer(timer);
 				}
+=======
+			Racers[i].timer = new Timer(timer);
+			
+			if(Racers[i].human)
+				FinishRacer(i);
+>>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
 				
-				if(Racers[i].human)
-				{
-					FinishRacer(i);
-				}	
-			}
 		}
-}
-
-function LocalSendPositionUpdates()
-{
-	for(var i : int = 0; i < Racers.Length; i++)
-	{
-		Racers[i].ingameObj.GetComponent(Position_Finding).position = Racers[i].position;	
+		
 	}
 }
 function FinishRacer(i : int)
@@ -553,16 +542,14 @@ function EndGame()
 	}
 	else if(type == RaceStyle.TimeTrial)
 	{
-		if(!replay)
+
+		var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
+		var racerTime = Racers[0].timer;		
+		
+		if(BestTimer.BiggerThan(racerTime))
 		{
-			var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
-			var racerTime = Racers[0].timer;		
-			
-			if(BestTimer.BiggerThan(racerTime))
-			{
-				PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].Name,racerTime.ToString());
-				gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = new Timer(racerTime);
-			}
+			PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].Name,racerTime.ToString());
+			gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = new Timer(racerTime);
 		}
 		else
 		{
@@ -570,7 +557,7 @@ function EndGame()
 			tv.TurnOff();
 		}
 		
-		rb.WrapUp();
+		rb.ChangeState(GUIState.ScoreBoard);
 	}
 	else
 	{
@@ -587,7 +574,7 @@ function EndGame()
 		}
 		
 		rb.finishedCharacters = fc;
-		rb.WrapUp();
+		rb.ChangeState(GUIState.ScoreBoard);
 		
 	}
 }	

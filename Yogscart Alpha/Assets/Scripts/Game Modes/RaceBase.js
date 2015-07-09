@@ -11,7 +11,7 @@ var networkID : int = -1;
 var myRacer : Racer;
 
 //Used to load and show the correct GUI
-enum GUIState{Blank,CutScene,RaceInfo,Countdown,RaceGUI,Finish,ScoreBoard,NextMenu,Win};
+enum GUIState{Blank,CutScene,RaceInfo,Countdown,RaceGUI,ScoreBoard,NextMenu,Win};
 var currentGUI : GUIState = GUIState.Blank;
 private var guiAlpha : float = 255;
 private var fading : boolean;
@@ -35,7 +35,6 @@ var finishedCharacters : DisplayName[];
 //Used for Single Player
 var currentSelection : int = 0;
 var bestRacer : int = -1;
-var bestTimer : Timer;
 
 function Start()
 {
@@ -118,7 +117,7 @@ function EndClient()
 		}
 	}
 	
-	WrapUp();
+	ChangeState(GUIState.ScoreBoard);
 }
 
 @RPC
@@ -141,27 +140,10 @@ function FixedUpdate ()
 		if(pf.Lap >= td.Laps && !myRacer.finished)
 		{
 			myRacer.finished = true;
-			WrapUp();
+			ChangeState(GUIState.ScoreBoard);
 		}
 			
 	}
-}
-
-function WrapUp()
-{
-	CountdownRect = Rect(Screen.width/2 - (Screen.height*(2f/3f)),Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/0.75f,Screen.height/1.5f);
-	
-	currentGUI = GUIState.Finish;
-	
-	CountdownShow = true;
-	
-	yield WaitForSeconds(1f);
-	
-	CountdownShow = false;
-	
-	yield WaitForSeconds(0.5f);
-	
-	ChangeState(GUIState.ScoreBoard);
 }
 
 function SendUpdates()
@@ -252,7 +234,6 @@ function UnlockKart()
 		{
 			kiracers[i].GetComponent(kartInput).camLocked = false;
 		}
-	
 	}
 	
 }
@@ -300,7 +281,7 @@ function Countdown(){
 	
 	if(networkID != -1)
 		setStartBoost(-1);
-
+	
 	ChangeState(GUIState.RaceGUI);
 
 }
@@ -465,34 +446,6 @@ function OnGUI ()
 				CountdownAlpha = Mathf.Lerp(CountdownAlpha,0,Time.deltaTime*10f);
 
 		break;
-		case GUIState.RaceGUI:
-		
-			if(rl.replay && im.c[0].GetMenuInput("Submit"))
-			{
-					ChangeState(GUIState.NextMenu);
-			}
-					
-		break;
-		case GUIState.Finish:
-		
-			GUI.color.a = CountdownAlpha;
-			
-			texture = Resources.Load("UI Textures/CountDown/Finish",Texture2D);
-
-			if(texture != null)
-				GUI.DrawTexture(CountdownRect,texture,ScaleMode.ScaleToFit);
-
-			CountdownRect.x = Mathf.Lerp(CountdownRect.x,Screen.width/2 - Screen.height/3f,Time.deltaTime);
-			CountdownRect.y = Mathf.Lerp(CountdownRect.y,Screen.height/2 - Screen.height/6f,Time.deltaTime);
-			CountdownRect.width = Mathf.Lerp(CountdownRect.width,Screen.height/1.5f,Time.deltaTime);
-			CountdownRect.height = Mathf.Lerp(CountdownRect.height,Screen.height/3f,Time.deltaTime);
-
-			if(CountdownShow)
-				CountdownAlpha = Mathf.Lerp(CountdownAlpha,256,Time.deltaTime*10f);
-			else
-				CountdownAlpha = Mathf.Lerp(CountdownAlpha,0,Time.deltaTime*10f);
-
-		break;
 		case GUIState.ScoreBoard:
 		
 			var BoardTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
@@ -554,7 +507,7 @@ function OnGUI ()
 				else
 				{
 					var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
-					var OverallTimer = bestTimer;
+					var OverallTimer = rl.Racers[0].timer;
 					
 					if(BestTimer.BiggerThan(OverallTimer)){
 					GUI.Label(Rect(10,10,BoardRect.width,BoardRect.height),"New Best Time!!!");
@@ -590,8 +543,8 @@ function OnGUI ()
 
 			var Options : String[];
 			if(rl.type == RaceStyle.GrandPrix || rl.type == RaceStyle.CustomRace){
-				if(rl.race + 1 <= 4)
-					Options = ["Next Race","Quit"];
+				if(rl.race + 1 < 4)
+					Options = ["Next Race","Replay","Quit"];
 				else
 					Options = ["Finish"];
 			}
@@ -641,17 +594,11 @@ function OnGUI ()
 						gd.Exit();
 					break;
 					case "Next Race":
-						rl.replay = false;
 						gd.currentTrack ++;
 						rl.race ++;
 						rl.spStartRace();
 					break;
 					case "Restart":
-						rl.replay = false;
-						rl.spStartRace();
-					break;
-					case "Replay":
-						rl.replay = true;
 						rl.spStartRace();
 					break;
 					case "Finish":

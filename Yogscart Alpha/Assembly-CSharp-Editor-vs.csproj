@@ -71,7 +71,11 @@
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Advanced.shader" />
      <None Include="Assets\Beardbotnik\Terrain Shader\TerrainBlendShader.shader" />
  <Reference Include="Assembly-UnityScript">
+<<<<<<< HEAD
  <HintPath>D:/Yogscart/Yogscart Alpha/Library/ScriptAssemblies/Assembly-UnityScript.dll</HintPath>
+=======
+ <HintPath>D:/Visual Studio Repos/Yogscart-Unity5/Yogscart Alpha/Library/ScriptAssemblies/Assembly-UnityScript.dll</HintPath>
+>>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
  </Reference>
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
