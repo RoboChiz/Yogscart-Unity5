@@ -46,18 +46,21 @@ public class TrackDataEditor extends Editor{
     
     @MenuItem ("Track Editor/Create Position Point after selection")
     static function CPPAS() {
-        if(GameObject.Find("Track Manager") != null && GameObject.Find("Track Manager").GetComponent(TrackData) != null){
-	        var td = GameObject.Find("Track Manager").GetComponent(TrackData);
-	        for(var i : int = 0; i < td.PositionPoints.Length; i++){
-		        if(td.PositionPoints[i] == Selection.activeTransform){
-			        td.AddPoint(i+1);
-			        break; 
-		        }	  
-	        }
-	        
-	        
-        }else
-        Debug.Log("Something's gone wrong! Make sure that you have setup a track in this scene."); 
+	    if(Selection.activeTransform != null)
+	    {
+	        if(GameObject.Find("Track Manager") != null && GameObject.Find("Track Manager").GetComponent(TrackData) != null){
+		        var td = GameObject.Find("Track Manager").GetComponent(TrackData);
+		        for(var i : int = 0; i < td.PositionPoints.Length; i++){
+			        if(td.PositionPoints[i] == Selection.activeTransform){
+				        td.AddPoint(i+1);
+				        break; 
+			        }	  
+		        }
+		        
+		        
+	        }else
+	        Debug.Log("Something's gone wrong! Make sure that you have setup a track in this scene."); 
+	    }
     }
     
     @MenuItem ("Track Editor/Create Short Cut")

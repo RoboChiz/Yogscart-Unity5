@@ -6,11 +6,10 @@ private var ks : kartScript;
 //private var ki : kartItem;
 private var gd : CurrentGameData;
 
-var Difficulty : int;
 //0 - 50cc, 1 - 100cc, 2 - 150cc, 3 - Insane
 var Stupidity : int; //Bigger the number, stupider the AI.
 
-var angleRequired : float = 1f;
+var angleRequired : float = 0f;
 private var steering : int;
 
 private var nTarget : Vector3;

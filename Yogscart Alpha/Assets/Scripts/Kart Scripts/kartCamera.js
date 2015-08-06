@@ -11,7 +11,7 @@ var sideAmount : float = 0f;
 var rotsmoothTime : float = 5;
 
 
-function Update () {
+function FixedUpdate () {
 
 	if(Target != null)
 	{

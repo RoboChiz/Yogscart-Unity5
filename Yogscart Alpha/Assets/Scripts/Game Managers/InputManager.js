@@ -41,7 +41,7 @@ public class InputController
 		if(buttonLock == "" && returnVal != 0)
 		{
 			buttonLock = axis;
-			return returnVal;
+			return Mathf.Sign(returnVal);
 		}
 		else
 		{
@@ -246,7 +246,7 @@ function MouseIntersects(Area : Rect){
 
 function GetClick()
 {
-	if(Input.GetAxis("Mouse_Click") != 0 && !mouseLock)
+	if(Input.GetAxisRaw("Mouse_Click") != 0 && !mouseLock)
 	{
 		mouseLock = true;
 		return true;
@@ -254,7 +254,7 @@ function GetClick()
 	else
 	{
 		
-		if(Input.GetAxis("Mouse_Click") == 0)
+		if(Input.GetAxisRaw("Mouse_Click") == 0)
 			mouseLock = false;
 		
 		return false;

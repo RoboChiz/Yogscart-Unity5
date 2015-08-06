@@ -372,7 +372,7 @@ public class Track
     var SceneID : String;
  }
  
-enum ItemType{UsableAsShield,AffectsPlayer,AffectsOther,Projectile}; 
+enum ItemType{AffectsPlayer,AffectsOther,Projectile}; 
  
 public class PowerUp
  {
@@ -382,6 +382,7 @@ public class PowerUp
     
     var type : ItemType;
     var MultipleUses : boolean;
+    var usableShield : boolean;
     
 	var likelihood : int[];
 

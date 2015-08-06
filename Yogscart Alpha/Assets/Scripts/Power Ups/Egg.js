@@ -9,6 +9,8 @@ var sheilding : boolean;
 
 var parent : Transform;
 
+private var bounces : int = 5;
+
 function Start()
 {
 
@@ -24,7 +26,9 @@ while(transform.parent != null)
 	yield;
 }
 
-direction = parent.forward;
+var inputDir : float = parent.GetComponent(kartItem).inputDirection;
+
+direction = Mathf.Sign(inputDir) * parent.forward;
 direction.y = 0;
 
 sheilding = false;
@@ -67,14 +71,21 @@ function FixedUpdate () {
 
 
 
-function OnTriggerEnter(other : Collider) 
-{
-	if(transform.GetComponent(JR) == null || other.transform.parent.parent.transform != transform.GetComponent(JR).parent)
-	{
-		if(other.transform.parent.parent.GetComponent(kartScript) != null){
-			other.transform.parent.parent.GetComponent(kartScript).SpinOut();
-		}
-
-		Destroy(this.gameObject);
-	}
-}
+ function OnCollisionEnter(collision : Collision) 
+ {
+ 	if(collision.transform.GetComponent(kartScript) != null)
+ 	{
+ 		collision.transform.GetComponent(kartScript).SpinOut();
+ 		Destroy(this.gameObject);
+ 	}
+ 	else
+ 	{
+ 		if(bounces > 0)
+ 		{
+ 			direction = Vector3.Reflect(direction,collision.contacts[0].normal);
+ 			bounces --;
+ 		} else {
+ 			Destroy(this.gameObject);
+ 		}
+ 	}
+ }

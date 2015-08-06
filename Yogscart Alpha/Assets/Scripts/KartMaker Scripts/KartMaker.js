@@ -14,8 +14,8 @@ function Start()
 gd = transform.GetComponent(CurrentGameData);
 im = transform.GetComponent(InputManager);
 
-if(DebugMode)
-SpawnKart(KartType.Local,Vector3.zero,Quaternion.identity,Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),Random.Range(0,gd.Characters.Length),Random.Range(0,gd.Hats.Length));
+	if(DebugMode)
+		SpawnKart(KartType.Local,Vector3.zero,Quaternion.identity,Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),Random.Range(0,gd.Characters.Length),Random.Range(0,gd.Hats.Length));
 
 }
 
@@ -160,7 +160,9 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 
 	kartBody.position = position;
 	kartBody.rotation = rotation;
-
+	
+	kartBody.gameObject.layer = 8;//Set the Kart's Layer to "Kart" for Kart Collisions 
+	
 	return kartBody.transform;
 
 }

@@ -131,18 +131,35 @@ class DisplayName
 	var ping : int;
 	var networkPlayer : NetworkPlayer;
 	var team : int;
+	var select : boolean;
 	
 	function DisplayName(n : String, c : int, np : NetworkPlayer)
 	{
-	name = n;
-	networkPlayer = np;
-	character = c;
+		name = n;
+		networkPlayer = np;
+		character = c;
+		select = false;
+	}
+	
+	function DisplayName(n : String, c : int, np : NetworkPlayer, s : boolean)
+	{
+		name = n;
+		networkPlayer = np;
+		character = c;
+		select = s;
 	}
 	
 	function DisplayName(n : String,c : int)
 	{
 		name = n;
 		character = c;
+	}
+	
+	function DisplayName(n : String,c : int,s : boolean)
+	{
+		name = n;
+		character = c;
+		select = s;
 	}
 	
 	function DisplayName()

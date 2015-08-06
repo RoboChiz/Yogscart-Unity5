@@ -70,6 +70,16 @@ public class CameraPoint{
 		for(var i : int = 0; i < PositionPoints.Length; i++){
 			if(PositionPoints[i] == null)
 				RemovePoint(i);
+				
+			if (!Application.isPlaying) {
+				if(PositionPoints[i].GetComponent(PointHandler).style == Point.Position)
+					PositionPoints[i].name = "Position Point " + i;
+				else if(PositionPoints[i].GetComponent(PointHandler).style == Point.Shortcut)
+					PositionPoints[i].name = "Shortcut Point " + i;
+				else
+					PositionPoints[i].name = "Lap Point " + i;
+			}
+			
 		}
 		
 		if(PositionPoints[0].GetComponent(PointHandler).style != Point.Lap)
@@ -157,7 +167,6 @@ public class CameraPoint{
 		 if(PositionPoints != null){
 			 var obj = new GameObject();
 			 obj.transform.parent = GameObject.Find("Track Manager").transform;
-			 obj.name = Point.Position.ToString(); 
 			 
 			 var nPoint : Transform = obj.transform;
 			 
@@ -255,7 +264,6 @@ public class CameraPoint{
  var obj = new GameObject();
  
  obj.transform.parent = GameObject.Find("Track Manager").transform;
- obj.name = "Point";
  
  var pos : Vector3;
  if(PositionPoints == null || PositionPoints.Length == 0)

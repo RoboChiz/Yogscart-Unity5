@@ -11,7 +11,7 @@ var networkID : int = -1;
 var myRacer : Racer;
 
 //Used to load and show the correct GUI
-enum GUIState{Blank,CutScene,RaceInfo,Countdown,RaceGUI,ScoreBoard,NextMenu,Win};
+enum GUIState{Blank,CutScene,RaceInfo,Countdown,RaceGUI,Finish,ScoreBoard,NextMenu,Win};
 var currentGUI : GUIState = GUIState.Blank;
 private var guiAlpha : float = 255;
 private var fading : boolean;
@@ -35,6 +35,10 @@ var finishedCharacters : DisplayName[];
 //Used for Single Player
 var currentSelection : int = 0;
 var bestRacer : int = -1;
+var bestTimer : Timer;
+
+var paused : int = -1;
+var selectedColor : Color = Color.yellow;
 
 function Start()
 {
@@ -117,7 +121,7 @@ function EndClient()
 		}
 	}
 	
-	ChangeState(GUIState.ScoreBoard);
+	WrapUp();
 }
 
 @RPC
@@ -132,6 +136,52 @@ function SetPosition(pos : int)
 	myRacer.position = pos;
 }
 
+function Update()
+{
+	if(currentGUI == GUIState.RaceGUI)
+	{
+		if(paused != -1) {
+			if(!Network.isClient && !Network.isServer)
+				Time.timeScale = 0;
+		} else {
+			Time.timeScale = 1;
+		}
+		
+		for(var cm : int = 0; cm < im.c.Length; cm++)
+		{
+			if(im.c[cm].GetMenuInput("Pause"))
+			{	
+				
+				if(paused == -1){
+				
+					paused = cm;
+					
+					var inputs = GameObject.FindObjectsOfType(kartInput);
+					
+					for(var i : int = 0; i < inputs.Length; i++)
+						inputs[i].enabled = false;
+					
+				} else if(paused == cm)
+					UnPause();
+				
+			}
+		}
+	}
+	
+}
+
+function UnPause()
+{
+	paused = -1;
+	
+	var inputs = GameObject.FindObjectsOfType(kartInput);
+	
+	for(var i : int = 0; i < inputs.Length; i++)
+		inputs[i].enabled = true;
+		
+	currentSelection = 0;
+}
+
 function FixedUpdate ()
 {
 	if(myRacer.ingameObj != null)
@@ -140,10 +190,28 @@ function FixedUpdate ()
 		if(pf.Lap >= td.Laps && !myRacer.finished)
 		{
 			myRacer.finished = true;
-			ChangeState(GUIState.ScoreBoard);
+			WrapUp();
 		}
 			
 	}
+	
+}
+
+function WrapUp()
+{
+	CountdownRect = Rect(Screen.width/2 - (Screen.height*(2f/3f)),Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/0.75f,Screen.height/1.5f);
+	
+	currentGUI = GUIState.Finish;
+	
+	CountdownShow = true;
+	
+	yield WaitForSeconds(1f);
+	
+	CountdownShow = false;
+	
+	yield WaitForSeconds(0.5f);
+	
+	ChangeState(GUIState.ScoreBoard);
 }
 
 function SendUpdates()
@@ -234,6 +302,7 @@ function UnlockKart()
 		{
 			kiracers[i].GetComponent(kartInput).camLocked = false;
 		}
+	
 	}
 	
 }
@@ -281,7 +350,7 @@ function Countdown(){
 	
 	if(networkID != -1)
 		setStartBoost(-1);
-	
+
 	ChangeState(GUIState.RaceGUI);
 
 }
@@ -446,6 +515,112 @@ function OnGUI ()
 				CountdownAlpha = Mathf.Lerp(CountdownAlpha,0,Time.deltaTime*10f);
 
 		break;
+		case GUIState.RaceGUI:			
+		
+					if(paused != - 1)
+					{
+						var pauseTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
+						
+						var pauseWidth : float = Screen.width/2f;
+						var pauseHeight : float = Screen.height/1.5f;
+						var box = Rect(Screen.width/2f - pauseWidth/2f,Screen.height/2f - pauseHeight/2f,pauseWidth,pauseHeight);
+						GUI.DrawTexture(box,pauseTexture);
+					
+						var Options : String[];
+						Options = ["Resume","Quit"];
+
+						var vertPause : int = im.c[paused].GetMenuInput("Vertical");
+						var submitPause: boolean = (im.c[paused].GetMenuInput("Submit") != 0);
+						
+						if(vertPause != 0)
+							currentSelection -= Mathf.Sign(vertPause);
+							
+						if(currentSelection < 0)
+							currentSelection = Options.Length - 1;
+							
+						if(currentSelection >= Options.Length)
+							currentSelection = 0;
+
+						GUI.BeginGroup(box);
+		
+						//If the current menu has options.
+						if(Options != null && Options.Length > 0)
+						{
+							//Single Player is the longest word in the menu and is 13 characters long
+							var fontSize = (box.width / 15f);
+							var holder = GUI.skin.label.fontSize;
+							GUI.skin.label.fontSize = fontSize;
+							
+							for(var i : int = 0; i < Options.Length; i++)
+							{	
+								if(currentSelection == i)
+									GUI.skin.label.normal.textColor = selectedColor;
+								else
+									GUI.skin.label.normal.textColor = Color.white;
+									
+									
+								var labelRect = Rect(10,10 + (box.height/4f) +(i * (10+fontSize)),box.width - 20,fontSize);
+								GUI.Label(labelRect,Options[i]);
+
+								labelRect.x += box.x;
+								labelRect.y += box.y;
+								
+								if(im.MouseIntersects(labelRect))
+								{
+										currentSelection = i;
+										
+										if(im.GetClick())
+										{
+											submitPause = true;
+										}
+										
+								}
+								
+							}
+							
+							GUI.skin.label.normal.textColor = Color.white;
+							GUI.skin.label.fontSize = holder;
+						}
+						
+					GUI.EndGroup();		
+						
+					if(submitPause)
+					{						
+						switch(Options[currentSelection])
+						{
+							case "Resume":
+								UnPause();
+							break;
+							case "Quit":
+								UnPause();
+								gd.Exit();
+							break;
+						}
+					}
+								
+					}
+					
+		break;
+		case GUIState.Finish:
+		
+			GUI.color.a = CountdownAlpha;
+			
+			texture = Resources.Load("UI Textures/CountDown/Finish",Texture2D);
+
+			if(texture != null)
+				GUI.DrawTexture(CountdownRect,texture,ScaleMode.ScaleToFit);
+
+			CountdownRect.x = Mathf.Lerp(CountdownRect.x,Screen.width/2 - Screen.height/3f,Time.deltaTime);
+			CountdownRect.y = Mathf.Lerp(CountdownRect.y,Screen.height/2 - Screen.height/6f,Time.deltaTime);
+			CountdownRect.width = Mathf.Lerp(CountdownRect.width,Screen.height/1.5f,Time.deltaTime);
+			CountdownRect.height = Mathf.Lerp(CountdownRect.height,Screen.height/3f,Time.deltaTime);
+
+			if(CountdownShow)
+				CountdownAlpha = Mathf.Lerp(CountdownAlpha,256,Time.deltaTime*10f);
+			else
+				CountdownAlpha = Mathf.Lerp(CountdownAlpha,0,Time.deltaTime*10f);
+
+		break;
 		case GUIState.ScoreBoard:
 		
 			var BoardTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
@@ -466,7 +641,7 @@ function OnGUI ()
 							var PosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString(),Texture2D);
 							var SelPosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString() + "_Sel",Texture2D);
 							
-							//var SelNameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name + "_Sel",Texture2D);
+							
 
 							var Ratio = (optionSize)/PosTexture.height;
 							
@@ -482,7 +657,12 @@ function OnGUI ()
 							{
 								if(f < finishedCharacters.Length && finishedCharacters[f].character != -1)
 								{
-									var NameTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name,Texture2D);
+									var NameTexture : Texture2D;
+									if(finishedCharacters[f].select)
+										NameTexture = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name + "_Sel",Texture2D);
+									else
+										NameTexture = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name,Texture2D);
+
 									var Ratio2 = (optionSize)/NameTexture.height;
 									GUI.DrawTexture(Rect(50 + PosTexture.width * Ratio,(f+1)*optionSize,NameTexture.width * Ratio2,optionSize),NameTexture);
 								}
@@ -507,7 +687,7 @@ function OnGUI ()
 				else
 				{
 					var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
-					var OverallTimer = rl.Racers[0].timer;
+					var OverallTimer = bestTimer;
 					
 					if(BestTimer.BiggerThan(OverallTimer)){
 					GUI.Label(Rect(10,10,BoardRect.width,BoardRect.height),"New Best Time!!!");
@@ -541,10 +721,10 @@ function OnGUI ()
 
 			GUI.DrawTexture(BoardRect,BoardTexture);
 
-			var Options : String[];
+			
 			if(rl.type == RaceStyle.GrandPrix || rl.type == RaceStyle.CustomRace){
-				if(rl.race + 1 < 4)
-					Options = ["Next Race","Replay","Quit"];
+				if(rl.race + 1 <= 4)
+					Options = ["Next Race","Quit"];
 				else
 					Options = ["Finish"];
 			}
@@ -600,6 +780,9 @@ function OnGUI ()
 					break;
 					case "Restart":
 						rl.spStartRace();
+					break;
+					case "Replay":
+
 					break;
 					case "Finish":
 						DetermineWinner();

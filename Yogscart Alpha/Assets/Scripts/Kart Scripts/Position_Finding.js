@@ -61,7 +61,7 @@ function Update () {
 				{
 					if(currentTotal >= CalculateAmount(Lap+1))
 					{
-						Lap += 1;
+						IncreaseLap();
 						Debug.Log("Lap from proper detection");
 					}
 				}
@@ -69,7 +69,7 @@ function Update () {
 				{
 					if(currentTotal >= (Lap+1)*tm.PositionPoints.Length)
 					{
-						Lap += 1;
+						IncreaseLap();
 						Debug.Log("Lap from proper detection");
 					}
 				}
@@ -82,7 +82,7 @@ function Update () {
 			//Lap Catch, used if for some reason the above code dosen't work. i.e. Lag going across the line
 			if(currentTotal > CalculateAmount(Lap+1) || Lap == -1)
 			{
-				Lap += 1;	
+				IncreaseLap();
 				Debug.Log("Lap from overlap detection, Lap : " + Lap.ToString());
 			}
 		}
@@ -91,7 +91,7 @@ function Update () {
 		//Lap Catch, used if for some reason the above code dosen't work. i.e. Lag going across the line
 			if((currentTotal > (Lap+1)*tm.PositionPoints.Length) || (currentTotal >= (Lap+1)*tm.PositionPoints.Length && currentPos > 0))
 			{
-				Lap += 1;
+				IncreaseLap();
 				Debug.Log("Lap from overlap detection, Lap : " + Lap.ToString());
 			}
 		}
@@ -100,6 +100,15 @@ function Update () {
 
 		Debug.DrawLine(transform.position, tm.PositionPoints[currentPos].position,Color.red);
 	}
+}
+
+function IncreaseLap()
+{
+	Lap += 1;
+	
+	if(transform.GetComponent(kartInfo) != null && Lap < tm.Laps && Lap > 0)
+		transform.GetComponent(kartInfo).NewLap();
+		
 }
 
 function CalculateAmount(lVal : int)

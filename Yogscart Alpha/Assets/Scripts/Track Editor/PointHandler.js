@@ -14,7 +14,4 @@ function OnDrawGizmos() {
 			
 	Gizmos.DrawSphere (transform.position, 0.75f);
 	
-	if(transform.name != style.ToString())
-		transform.name = style.ToString();
-	
 	}

@@ -1,22 +1,11 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-<<<<<<< HEAD
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Kart Scripts\kartScript.js">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Kart Scripts\NewAI.js">
     <Files>
-      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="88" Column="109" />
-      <File FileName="Assets\Scripts\KartMaker Scripts\KartMaker.js" Line="77" Column="52" />
-      <File FileName="Assets\Scripts\KartMaker Scripts\KartSkeleton.js" Line="20" Column="16" />
-      <File FileName="Assets\Scripts\Menus\Main Menu\MainMenu.js" Line="357" Column="72" />
-      <File FileName="Assets\Scripts\Game Managers\Sound_Manager.js" Line="68" Column="17" />
-=======
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Game Modes\RaceBase.js">
-    <Files>
-      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="503" Column="3" />
-      <File FileName="Assets\Scripts\Game Modes\RaceBase.js" Line="460" Column="6" />
-      <File FileName="Assets\Scripts\Networking\Client_Script.js" Line="165" Column="2" />
-      <File FileName="Assets\Scripts\KartMaker Scripts\KartMaker.js" Line="4" Column="14" />
-      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="846" Column="147" />
->>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
+      <File FileName="Assets\Scripts\Kart Scripts\NewAI.js" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Kart Scripts\Position_Finding.js" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Track Editor\TrackData.js" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

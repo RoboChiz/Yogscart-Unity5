@@ -16,6 +16,11 @@ function Start(){
 	pf.Lap = 0;
 	pf.currentPos = parent.GetComponent(Position_Finding).currentPos;
 
+	
+//Wait until you've been fire then choose a target
+	while(transform.parent != null)
+		yield;
+
 	var objs = GameObject.FindObjectsOfType(kartScript);
 	
 	for(var i : int; i < objs.Length; i++)

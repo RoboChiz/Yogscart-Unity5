@@ -128,7 +128,7 @@ function OnGUI ()
 			}
 		}
 		
-		if(!hidden)
+		if(!hidden && sidePicture != null)
 			GUI.DrawTexture(Rect(sidePictureAmount,10,Screen.width/2f - 10,Screen.height-20),sidePicture,ScaleMode.ScaleToFit);
 		
 		
@@ -144,24 +144,29 @@ function OnGUI ()
 				hidden = false;
 				nm.enabled = false;
 				
-				switch(currentSelection)
-				{	
-					case 1:
-					if(sidePicture.name != "Multiplayer")
-							ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Multiplayer",Texture2D));
-					break;
-					case 2:
-					if(sidePicture.name != "Online")
-							ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Online",Texture2D));
-					break;
-					case 3:
-					if(sidePicture.name != "Options")
-							ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Options",Texture2D));
-					break;
-					default:
-						if(sidePicture.name != "0")
-							ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/0",Texture2D));
-					break;
+				if(sidePicture != null)
+				{
+					switch(currentSelection)
+					{	
+						case 1:
+						if(sidePicture.name != "Multiplayer")
+								ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Multiplayer",Texture2D));
+						break;
+						case 2:
+						if(sidePicture.name != "Online")
+								ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Online",Texture2D));
+						break;
+						case 3:
+						if(sidePicture.name != "Options")
+								ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Options",Texture2D));
+						break;
+						default:
+							if(sidePicture.name != "0")
+								ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/0",Texture2D));
+						break;
+					}
+				}else{
+					ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/0",Texture2D));
 				}
 				
 			break;

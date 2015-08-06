@@ -27,6 +27,10 @@ private var aiControlled : boolean;
 private var spinning : boolean;
 var locked : boolean = true;
 
+var input : boolean;
+var inputLock : boolean;
+var inputDirection : float;
+
 function Awake()
 {
 	//Access the scripts needed for proper iteming
@@ -77,7 +81,7 @@ function UseItem()
 @RPC
 function UseShield()
 {
-	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].type == ItemType.UsableAsShield)
+	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].usableShield)
 	{
 		shield = Instantiate(gd.PowerUps[heldPowerUp].Model,transform.position - (transform.forward *2f),transform.rotation);
 		shield.parent = transform;
@@ -87,14 +91,17 @@ function UseShield()
 }
 
 @RPC
-function DropShield()
+function DropShield(dir : float)
 {
-	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].type == ItemType.UsableAsShield)
+	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].usableShield)
 	{
+	
+		inputDirection = dir;
 	
 		shield.parent = null;
 		shield.GetComponent.<Rigidbody>().isKinematic = false;
 		shield = null;
+		
 		
 		EndItemUse();
 		
@@ -193,23 +200,28 @@ function decidePowerUp()
 
 function FixedUpdate()
 {
-<<<<<<< HEAD
 	
 	if(transform.GetComponent(kartInput) != null)
 	{
-		input = im.c[kaI.InputNum].GetMenuInput("Use Item") != 0;
+		input = im.c[kaI.InputNum].GetInput("Use Item") != 0;
+		
+		if(im.c[kaI.InputNum].inputName != "Key_")
+		{
+			inputDirection = im.c[kaI.InputNum].GetInput("Vertical");
+		}
 	}
+	
+	if(input == false)
+		inputLock = false;
 
-=======
->>>>>>> parent of f5b6b47... Update #18 - The Robo fixed the kart collisions update!
 	if((!online && ! aiControlled) || mine)
 	{
 	
 		if(heldPowerUp != -1)
 		{
-			if(gd.PowerUps[heldPowerUp].type != ItemType.UsableAsShield)
+			if(!gd.PowerUps[heldPowerUp].usableShield)
 			{
-				var itemKey = im.c[kaI.InputNum].GetMenuInput("Use Item") && !locked;
+				var itemKey = input && !inputLock && !locked;
 				
 				if(itemKey)
 				{
@@ -217,11 +229,13 @@ function FixedUpdate()
 						GetComponent.<NetworkView>().RPC("UseItem",RPCMode.All);
 					else
 						UseItem();
+					
+					inputLock = true;
 				}
 			}
 			else
 			{
-				if(im.c[kaI.InputNum].GetInput("Use Item") != 0)
+				if(input)
 				{
 					if(!sheilding)
 					{
@@ -244,9 +258,9 @@ function FixedUpdate()
 					if(sheilding)
 					{
 						if(online)
-							GetComponent.<NetworkView>().RPC("DropShield",RPCMode.All);
+							GetComponent.<NetworkView>().RPC("DropShield",RPCMode.All,inputDirection);
 						else
-							DropShield();
+							DropShield(inputDirection);
 							
 						sheilding = false;
 					}
@@ -257,6 +271,7 @@ function FixedUpdate()
 		if(sheilding && shield == null)
 		{		
 			sheilding = false;
+			EndItemUse();
 		}
 	}
 }
@@ -300,8 +315,7 @@ function RollItem(item : int)
 		yield WaitForSeconds(2f);
 	}
 	
-	spinning = false;	
-	Debug.Log("Finished Roll Item");	
+	spinning = false;		
 	
 }
 

@@ -17,6 +17,54 @@ ModelImporter:
     100018: Cylinder_004
     100020: Cylinder_005
     100022: Cylinder_006
+    100024: Circle
+    100026: NurbsPath_001
+    100028: NurbsPath_002
+    100030: Plane_003
+    100032: Plane_004
+    100034: Plane_005
+    100036: Plane_006
+    100038: Cylinder001
+    100040: Cylinder002
+    100042: Leaf_005
+    100044: Leaf_006
+    100046: Leaf_007
+    100048: Leaf_008
+    100050: Line001
+    100052: NurbsPath_003
+    100054: Cylinder001_001
+    100056: Cylinder002_001
+    100058: Leaf_005_001
+    100060: Leaf_006_001
+    100062: Leaf_007_001
+    100064: Leaf_008_001
+    100066: NurbsPath_004
+    100068: Plane_008
+    100070: Cylinder_000
+    100072: FenceCurve
+    100074: Cylinder_007
+    100076: Cylinder_008
+    100078: Cylinder_009
+    100080: Cylinder_010
+    100082: FenceApplied
+    100084: Cylinder_011
+    100086: Cylinder_012
+    100088: Cylinder_013
+    100090: Cylinder_014
+    100092: FenceApplied_001
+    100094: FenceApplied_002
+    100096: FenceApplied_003
+    100098: FenceApplied_004
+    100100: FenceApplied_005
+    100102: FenceApplied_006
+    100104: Cube
+    100106: Cube_002
+    100108: Cube_003
+    100110: Cube_001
+    100112: Cube_004
+    100114: Cube_005
+    100116: Cube_006
+    100118: NurbsPath_005
     400000: //RootNode
     400002: NurbsPath
     400004: Plane
@@ -29,6 +77,54 @@ ModelImporter:
     400018: Cylinder_004
     400020: Cylinder_005
     400022: Cylinder_006
+    400024: Circle
+    400026: NurbsPath_001
+    400028: NurbsPath_002
+    400030: Plane_003
+    400032: Plane_004
+    400034: Plane_005
+    400036: Plane_006
+    400038: Cylinder001
+    400040: Cylinder002
+    400042: Leaf_005
+    400044: Leaf_006
+    400046: Leaf_007
+    400048: Leaf_008
+    400050: Line001
+    400052: NurbsPath_003
+    400054: Cylinder001_001
+    400056: Cylinder002_001
+    400058: Leaf_005_001
+    400060: Leaf_006_001
+    400062: Leaf_007_001
+    400064: Leaf_008_001
+    400066: NurbsPath_004
+    400068: Plane_008
+    400070: Cylinder_000
+    400072: FenceCurve
+    400074: Cylinder_007
+    400076: Cylinder_008
+    400078: Cylinder_009
+    400080: Cylinder_010
+    400082: FenceApplied
+    400084: Cylinder_011
+    400086: Cylinder_012
+    400088: Cylinder_013
+    400090: Cylinder_014
+    400092: FenceApplied_001
+    400094: FenceApplied_002
+    400096: FenceApplied_003
+    400098: FenceApplied_004
+    400100: FenceApplied_005
+    400102: FenceApplied_006
+    400104: Cube
+    400106: Cube_002
+    400108: Cube_003
+    400110: Cube_001
+    400112: Cube_004
+    400114: Cube_005
+    400116: Cube_006
+    400118: NurbsPath_005
     2300000: NurbsPath
     2300002: Plane
     2300004: Plane_001
@@ -40,6 +136,53 @@ ModelImporter:
     2300016: Cylinder_004
     2300018: Cylinder_005
     2300020: Cylinder_006
+    2300022: Circle
+    2300024: NurbsPath_001
+    2300026: NurbsPath_002
+    2300028: Plane_003
+    2300030: Plane_004
+    2300032: Plane_005
+    2300034: Plane_006
+    2300036: Cylinder001
+    2300038: Cylinder002
+    2300040: Leaf_005
+    2300042: Leaf_006
+    2300044: Leaf_007
+    2300046: Leaf_008
+    2300048: NurbsPath_003
+    2300050: Cylinder001_001
+    2300052: Cylinder002_001
+    2300054: Leaf_005_001
+    2300056: Leaf_006_001
+    2300058: Leaf_007_001
+    2300060: Leaf_008_001
+    2300062: NurbsPath_004
+    2300064: Plane_008
+    2300066: Cylinder_000
+    2300068: FenceCurve
+    2300070: Cylinder_007
+    2300072: Cylinder_008
+    2300074: Cylinder_009
+    2300076: Cylinder_010
+    2300078: FenceApplied
+    2300080: Cylinder_011
+    2300082: Cylinder_012
+    2300084: Cylinder_013
+    2300086: Cylinder_014
+    2300088: FenceApplied_001
+    2300090: FenceApplied_002
+    2300092: FenceApplied_003
+    2300094: FenceApplied_004
+    2300096: FenceApplied_005
+    2300098: FenceApplied_006
+    2300100: Cube
+    2300102: Cube_002
+    2300104: Cube_003
+    2300106: Cube_001
+    2300108: Cube_004
+    2300110: Cube_005
+    2300112: Cube_006
+    2300114: NurbsPath_005
     3300000: NurbsPath
     3300002: Plane
     3300004: Plane_001
@@ -51,6 +194,53 @@ ModelImporter:
     3300016: Cylinder_004
     3300018: Cylinder_005
     3300020: Cylinder_006
+    3300022: Circle
+    3300024: NurbsPath_001
+    3300026: NurbsPath_002
+    3300028: Plane_003
+    3300030: Plane_004
+    3300032: Plane_005
+    3300034: Plane_006
+    3300036: Cylinder001
+    3300038: Cylinder002
+    3300040: Leaf_005
+    3300042: Leaf_006
+    3300044: Leaf_007
+    3300046: Leaf_008
+    3300048: NurbsPath_003
+    3300050: Cylinder001_001
+    3300052: Cylinder002_001
+    3300054: Leaf_005_001
+    3300056: Leaf_006_001
+    3300058: Leaf_007_001
+    3300060: Leaf_008_001
+    3300062: NurbsPath_004
+    3300064: Plane_008
+    3300066: Cylinder_000
+    3300068: FenceCurve
+    3300070: Cylinder_007
+    3300072: Cylinder_008
+    3300074: Cylinder_009
+    3300076: Cylinder_010
+    3300078: FenceApplied
+    3300080: Cylinder_011
+    3300082: Cylinder_012
+    3300084: Cylinder_013
+    3300086: Cylinder_014
+    3300088: FenceApplied_001
+    3300090: FenceApplied_002
+    3300092: FenceApplied_003
+    3300094: FenceApplied_004
+    3300096: FenceApplied_005
+    3300098: FenceApplied_006
+    3300100: Cube
+    3300102: Cube_002
+    3300104: Cube_003
+    3300106: Cube_001
+    3300108: Cube_004
+    3300110: Cube_005
+    3300112: Cube_006
+    3300114: NurbsPath_005
     4300000: NurbsPath
     4300002: Plane
     4300004: Plane_002
@@ -62,6 +252,53 @@ ModelImporter:
     4300016: Cylinder_004
     4300018: Cylinder_005
     4300020: Cylinder_006
+    4300022: Circle
+    4300024: NurbsPath_001
+    4300026: Plane_004
+    4300028: Plane_003
+    4300030: NurbsPath_002
+    4300032: Plane_006
+    4300034: Plane_005
+    4300036: NurbsPath_003
+    4300038: Cylinder001
+    4300040: Leaf_006
+    4300042: Leaf_008
+    4300044: Leaf_007
+    4300046: Cylinder002
+    4300048: Leaf_005
+    4300050: NurbsPath_004
+    4300052: Cylinder001_001
+    4300054: Cylinder002_001
+    4300056: Leaf_005_001
+    4300058: Leaf_006_001
+    4300060: Leaf_007_001
+    4300062: Leaf_008_001
+    4300064: Plane_008
+    4300066: FenceCurve
+    4300068: Cylinder_000
+    4300070: Cylinder_007
+    4300072: Cylinder_008
+    4300074: Cylinder_009
+    4300076: Cylinder_010
+    4300078: FenceApplied
+    4300080: FenceApplied_001
+    4300082: Cylinder_011
+    4300084: FenceApplied_002
+    4300086: Cylinder_012
+    4300088: FenceApplied_003
+    4300090: Cylinder_013
+    4300092: FenceApplied_004
+    4300094: Cylinder_014
+    4300096: FenceApplied_005
+    4300098: FenceApplied_006
+    4300100: Cube
+    4300102: Cube_003
+    4300104: Cube_002
+    4300106: Cube_001
+    4300108: Cube_004
+    4300110: Cube_006
+    4300112: Cube_005
+    4300114: NurbsPath_005
     7400000: Default Take
     9500000: //RootNode
   materials:
@@ -73,6 +310,10 @@ ModelImporter:
     bakeSimulation: 0
     optimizeGameObjects: 0
     motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
     animationCompression: 1
     animationRotationError: .5
     animationPositionError: .5

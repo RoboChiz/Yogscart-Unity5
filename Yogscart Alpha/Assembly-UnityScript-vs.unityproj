@@ -58,8 +58,10 @@
      <Compile Include="Assets\Scripts\Game Modes\SortingScript.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Kart_Camera.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\NameRotate.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\NewAI.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Position_Finding.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Racer_AI.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\Replayer.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartAnimation.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.js" />

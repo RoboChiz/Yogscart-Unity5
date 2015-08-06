@@ -2,8 +2,13 @@
 
 function OnTriggerEnter (other : Collider) {
 
-	if(other.transform.parent.parent.GetComponent(kartScript) != null){
-		other.transform.parent.parent.GetComponent(kartScript).Boost(2,"Boost");
+	var parent : Transform = other.transform;
+
+	while(parent.parent != null)
+		parent = parent.parent;
+
+	if(parent.GetComponent(kartScript) != null){
+		parent.GetComponent(kartScript).Boost(2,"Boost");
 	}
 	
 }

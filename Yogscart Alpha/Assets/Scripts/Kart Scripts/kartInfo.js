@@ -22,11 +22,14 @@ var cameras : Camera[];
 
 private var td : TrackData;
 private var rl : RaceLeader;
+private var sm : Sound_Manager;
 
 function Start () {
 
 	td = GameObject.Find("Track Manager").GetComponent(TrackData);
 	rl = GameObject.Find("GameData").GetComponent(RaceLeader);
+	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
+		
 }
 
 //Handles Fading in, and flashes on Position Change
@@ -168,6 +171,11 @@ var LapisTexture : Texture2D = Resources.Load("UI Textures/Power Ups/Lapis",Text
 GUI.Box(Rect(10 + renderArea.x + BoxWidth,renderArea.y,BoxWidth*0.75f,BoxHeight),"    " + lapisCount,style);
 GUI.DrawTexture(Rect(10 + renderArea.x + BoxWidth,renderArea.y,(BoxHeight/LapisTexture.height)*LapisTexture.width,BoxHeight),LapisTexture,ScaleMode.ScaleToFit);
 
+}
+
+function NewLap()
+{
+	sm.PlaySFX(Resources.Load("Music & Sounds/SFX/newlap",AudioClip));
 }
 
 function FlashPos(){
