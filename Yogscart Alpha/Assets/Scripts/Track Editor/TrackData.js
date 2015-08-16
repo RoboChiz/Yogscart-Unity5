@@ -12,6 +12,7 @@ var backgroundMusic : AudioClip;
 var LoopedTrack : boolean = true;
 var Laps : int = 3;
 
+@HideInInspector
 var pointsNeededToLap : int[];
 
 @HideInInspector
@@ -67,6 +68,7 @@ public class CameraPoint{
  //Check for empty objects in Position Points
 	if(PositionPoints != null)
 	{
+	
 		for(var i : int = 0; i < PositionPoints.Length; i++){
 			if(PositionPoints[i] == null)
 				RemovePoint(i);
@@ -78,6 +80,7 @@ public class CameraPoint{
 					PositionPoints[i].name = "Shortcut Point " + i;
 				else
 					PositionPoints[i].name = "Lap Point " + i;
+					
 			}
 			
 		}

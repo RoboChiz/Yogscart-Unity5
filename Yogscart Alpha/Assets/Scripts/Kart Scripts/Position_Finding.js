@@ -28,7 +28,7 @@ function Update () {
 		CheckForward(closestDistance);
 		CheckBackwards(closestDistance);
 
-		if(Lap == -1)
+		if(Lap == -1 && currentPos > 2)
 		{
 		currentPos = 0;
 		currentTotal = 0;

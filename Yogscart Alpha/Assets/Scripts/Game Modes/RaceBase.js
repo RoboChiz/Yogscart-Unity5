@@ -105,7 +105,7 @@ function EndClient()
 	
 	if(myRacer != null && !myRacer.finished)
 	{
-		myRacer.ingameObj.gameObject.AddComponent(Racer_AI);
+		myRacer.ingameObj.gameObject.AddComponent(NewAI);
 		Destroy(myRacer.ingameObj.GetComponent(kartInput));
 		myRacer.ingameObj.GetComponent(kartInfo).hidden = true;
 		
@@ -230,7 +230,7 @@ function SendUpdates()
 		yield WaitForSeconds(0.5f);
 	}
 	
-	myRacer.ingameObj.gameObject.AddComponent(Racer_AI);
+	myRacer.ingameObj.gameObject.AddComponent(NewAI);
 	Destroy(myRacer.ingameObj.GetComponent(kartInput));
 	myRacer.ingameObj.GetComponent(kartInfo).hidden = true;
 	myRacer.ingameObj.GetComponent(kartItem).locked = true;

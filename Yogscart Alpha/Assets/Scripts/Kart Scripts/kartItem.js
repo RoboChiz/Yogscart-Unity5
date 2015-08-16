@@ -214,7 +214,7 @@ function FixedUpdate()
 	if(input == false)
 		inputLock = false;
 
-	if((!online && ! aiControlled) || mine)
+	if((!online) || mine)
 	{
 	
 		if(heldPowerUp != -1)
@@ -349,7 +349,7 @@ function Stop(){
 function OnGUI () 
 {
 
-	if(transform.GetComponent(Racer_AI) != null)
+	if(transform.GetComponent(NewAI) != null)
 		aiControlled = true;
 
 	if((!online && ! aiControlled) || mine)

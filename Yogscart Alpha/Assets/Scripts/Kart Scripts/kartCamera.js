@@ -28,7 +28,7 @@ function FixedUpdate () {
 
 		var lookDir : Vector3 = Target.position - (transform.position-(Vector3.up*PlayerHeight) + (transform.right * sideAmount));
 
-		transform.rotation = Quaternion.Lerp(transform.rotation,Quaternion.LookRotation(lookDir),Time.deltaTime*rotsmoothTime);
+		transform.rotation = Quaternion.Lerp(transform.rotation,Quaternion.LookRotation(lookDir),Time.fixedDeltaTime*rotsmoothTime);
 
 	}
 

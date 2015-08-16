@@ -366,8 +366,8 @@ function StartRace ()
 				{
 					Destroy(Racers[i].ingameObj.GetComponent(kartInput));
 					Destroy(Racers[i].ingameObj.GetComponent(kartInfo));
-					Racers[i].ingameObj.gameObject.AddComponent(Racer_AI);
-					Racers[i].ingameObj.GetComponent(Racer_AI).Stupidity = Racers[i].aiStupidity;
+					Racers[i].ingameObj.gameObject.AddComponent(NewAI);
+					Racers[i].ingameObj.GetComponent(NewAI).Stupidity = Racers[i].aiStupidity;
 				}
 				
 			}
@@ -475,7 +475,7 @@ function FinishRacer(i : int)
 
 	Debug.Log("Player " + i + " has finished");
 
-	Racers[i].ingameObj.gameObject.AddComponent(Racer_AI);
+	Racers[i].ingameObj.gameObject.AddComponent(NewAI);
 	Destroy(Racers[i].ingameObj.GetComponent(kartInput));
 	Racers[i].ingameObj.GetComponent(kartInfo).hidden = true;
 		
@@ -577,7 +577,7 @@ function OnPlayerDisconnected(player: NetworkPlayer)
 		{
 			if(racers[j].transform.GetComponent(NetworkView).owner == player)
 			{
-				racers[j].gameObject.AddComponent(Racer_AI);
+				racers[j].gameObject.AddComponent(NewAI);
 				racers[j].gameObject.GetComponent(kartUpdate).sending = true;
 				NetworkRacers[i].ingameObj = racers[j].gameObject.transform;	
 				break;

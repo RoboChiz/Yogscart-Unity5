@@ -41,8 +41,6 @@ yield WaitForSeconds(0.5f);
 
 transform.GetComponent(SphereCollider).enabled = true;
 
-yield WaitForSeconds(45);
-Destroy(this.gameObject);
 
 }
 
@@ -76,6 +74,10 @@ function FixedUpdate () {
  	if(collision.transform.GetComponent(kartScript) != null)
  	{
  		collision.transform.GetComponent(kartScript).SpinOut();
+ 		Destroy(this.gameObject);
+ 	}
+ 	else if(collision.transform.GetComponent(Egg) != null || collision.transform.GetComponent(DirtBlock) != null)
+ 	{
  		Destroy(this.gameObject);
  	}
  	else
