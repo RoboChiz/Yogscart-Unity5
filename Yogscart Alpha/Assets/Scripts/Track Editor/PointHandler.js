@@ -1,6 +1,7 @@
 ﻿#pragma strict
 
 var style : Point = Point.Position;
+var roadWidth : float = 5f;
 
 function OnDrawGizmos() {
 	if(style == Point.Position)

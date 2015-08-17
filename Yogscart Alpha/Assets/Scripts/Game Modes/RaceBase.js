@@ -40,6 +40,11 @@ var bestTimer : Timer;
 var paused : int = -1;
 var selectedColor : Color = Color.yellow;
 
+private var sentTransform : boolean = false;
+
+private var secondCount : float;
+private var pointCount : float;
+
 function Start()
 {
 	LoadLibaries();
@@ -60,6 +65,9 @@ function LoadLibaries () {
 	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
 	rl = transform.GetComponent(RaceLeader);
 	
+	sentTransform = false;
+	secondCount = 0;
+	pointCount = 0;
 }
 
 @RPC
@@ -103,7 +111,7 @@ function EndClient()
 	
 	Debug.Log("Ahahaha");
 	
-	if(myRacer != null && !myRacer.finished)
+	if(myRacer != null && myRacer.ingameObj.GetComponent(NewAI) == null)
 	{
 		myRacer.ingameObj.gameObject.AddComponent(NewAI);
 		Destroy(myRacer.ingameObj.GetComponent(kartInput));
@@ -134,6 +142,24 @@ function YourID(id : int)
 function SetPosition(pos : int)
 {
 	myRacer.position = pos;
+}
+
+@RPC
+function SetKartPos(id : NetworkViewID, pos : int)
+{
+	
+	var targetKart : Transform = NetworkView.Find(id).transform;
+	
+	if(targetKart != null)
+	{
+	
+		targetKart.GetComponent(Position_Finding).position = pos;
+	
+		if(id.isMine)
+			myRacer.position = pos;
+	
+	}
+
 }
 
 function Update()
@@ -191,6 +217,11 @@ function FixedUpdate ()
 		{
 			myRacer.finished = true;
 			WrapUp();
+		}
+		
+		if(!sentTransform && Network.isClient)
+		{
+			transform.GetComponent.<NetworkView>().RPC("myIngame",RPCMode.Server,myRacer.ingameObj.GetComponent(NetworkView).viewID,networkID);	
 		}
 			
 	}
@@ -673,16 +704,33 @@ function OnGUI ()
 								var CharacterIcon = gd.Characters[finishedCharacters[f].character].Icon;
 								GUI.DrawTexture(Rect(20 + (PosTexture.width * Ratio),(f+1)*optionSize,optionSize,optionSize),CharacterIcon);
 							}
-							/*
-							if(finishedCharacters[f].timer.Minute == 0 && finishedCharacters[f].timer.Second && finishedCharacters[f].timer.milliSecond == 0)
+							
+							/*if(finishedCharacters[f].timer.Minute == 0 && finishedCharacters[f].timer.Second && finishedCharacters[f].timer.milliSecond == 0)
 								GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),"-N/A-");
 							else
-								GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),finishedCharacters[f].timer.ToString());
-							GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),SPRacers[f].points.ToString());
-
-							GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.9f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),"+ " + (15 - f).ToString());*/
+								GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),finishedCharacters[f].timer.ToString());*/
+							if(!Network.isClient && !Network.isServer)
+							{	
+								GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),(finishedCharacters[f].points + Mathf.Clamp(pointCount,0,15 - f)).ToString());
+			
+								if(15 - f - pointCount > 0)
+									GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.9f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),"+ " + ((15 - f) - pointCount).ToString());
+							}
 						}
 					}
+					
+					if(pointCount < 15)
+					{
+						secondCount += Time.deltaTime;
+						
+						if(secondCount >= 0.5f)
+						{
+							pointCount += 1;
+							secondCount -= 0.5f;
+						}
+						
+					}
+					
 				}
 				else
 				{
@@ -882,7 +930,7 @@ function DetermineWinner()
 }
 
 @RPC
-function ScoreBoardAdd(character : int, name : String, i : int, size : int)
+function ScoreBoardAdd(character : int, name : String,points : int, i : int, size : int)
 {
 
 	if(finishedCharacters.Length != size)
@@ -900,6 +948,7 @@ function ScoreBoardAdd(character : int, name : String, i : int, size : int)
 		
 	finishedCharacters[i].character = character;	
 	finishedCharacters[i].name = name;	
+	finishedCharacters[i].points = points;
 	
 	if(networkID == -1)
 	{

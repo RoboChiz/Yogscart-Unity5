@@ -1,12 +1,15 @@
 ﻿#pragma strict
 
 private var gd : CurrentGameData;
+private var sm : Sound_Manager;
+
 var Votes : Vector2[];
 
 var hidden : boolean = true;
 
 function Awake(){
 gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
+sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
 Votes = new Vector2[0];
 }
 
@@ -60,17 +63,15 @@ transform.GetComponent(Level_Select).hidden = true;
 gd.currentCup = Votes[i].x;
 gd.currentTrack = Votes[i].y;
 
-gameObject.AddComponent(AudioSource);
-transform.GetComponent(AudioSource).GetComponent.<AudioSource>().clip = Resources.Load("Music & Sounds/Ting",AudioClip);
 var t : float;
 
 while (t < 3f){
 selected += 1;
 
+sm.PlaySFX(Resources.Load("Music & Sounds/Ting",AudioClip));
+
 if(selected >= Votes.Length)
 selected = 0; 
-
-transform.GetComponent(AudioSource).GetComponent.<AudioSource>().Play ();
 
 yield WaitForSeconds(0.2);
 t +=0.2f;
@@ -86,7 +87,5 @@ yield WaitForSeconds(0.2);
 t +=0.2f;
 
 }
-
-Destroy(transform.GetComponent(AudioSource));
 
 }

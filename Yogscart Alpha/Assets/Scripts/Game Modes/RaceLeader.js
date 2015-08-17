@@ -433,13 +433,37 @@ function SendPositionUpdates()
 {
 	for(var i : int = 0; i < NetworkRacers.Length; i++)
 	{
-		if(NetworkRacers[i].networkplayer.guid != GetComponent.<NetworkView>().owner.guid)
+		/*if(NetworkRacers[i].networkplayer.guid != GetComponent.<NetworkView>().owner.guid)
 		{
 			if(NetworkRacers[i].connected)
 				GetComponent.<NetworkView>().RPC("SetPosition",NetworkRacers[i].networkplayer,Racers[i].position);	
 		}
 		else
-			transform.GetComponent(RaceBase).SetPosition(Racers[i].position);
+			transform.GetComponent(RaceBase).SetPosition(Racers[i].position);*/	
+			
+			
+		if(Racers[i].ingameObj != null)
+		{
+			GetComponent.<NetworkView>().RPC("SetKartPos",RPCMode.All,Racers[i].ingameObj.GetComponent.<NetworkView>().viewID,Racers[i].position);	
+		}
+		
+	}
+}
+
+@RPC
+function myIngame(id : NetworkViewID, toChange : int, info : NetworkMessageInfo)
+{
+	if(toChange == -1 || NetworkRacers[toChange].networkplayer.guid != info.sender.guid)
+	{
+		Debug.Log("Cheating detected! " + info.sender.externalIP + " is sending myIngame for someone else.");
+		GetComponent.<NetworkView>().RPC("CancelReason",info.sender,"You have been kicked for Cheating!");
+		Network.CloseConnection(info.sender,true);
+	}
+	else
+	{
+	
+		Racers[toChange].ingameObj = NetworkView.Find(id).transform;
+	
 	}
 }
 
@@ -470,6 +494,7 @@ function LocalSendPositionUpdates()
 		Racers[i].ingameObj.GetComponent(Position_Finding).position = Racers[i].position;	
 	}
 }
+
 function FinishRacer(i : int)
 {
 
@@ -531,7 +556,7 @@ function EndGame()
 		for(var i : int = 0; i < fc.Length;i++)
 		{
 		
-			fc[Racers[i].position] = new DisplayName(Racers[i].name,Racers[i].character,Racers[i].human);
+			fc[Racers[i].position] = new DisplayName(Racers[i].name,Racers[i].character,Racers[i].points,Racers[i].human);
 			
 			Racers[i].points += 15 - i;
 			
@@ -671,11 +696,8 @@ function Finished(toChange : int, info : NetworkMessageInfo)
 }
 function ScoreboardAdd(toChange : int)
 {
-		if(cutsceneWait && ending)
-		{
 			Debug.Log(NetworkRacers[toChange].character + " has come " + NetworkRacers[toChange].position + "th");
-			GetComponent.<NetworkView>().RPC("ScoreBoardAdd",RPCMode.AllBuffered,NetworkRacers[toChange].character,NetworkRacers[toChange].name,NetworkRacers[toChange].position,NetworkRacers.Length);
-		}
+			GetComponent.<NetworkView>().RPC("ScoreBoardAdd",RPCMode.AllBuffered,NetworkRacers[toChange].character,NetworkRacers[toChange].name,NetworkRacers[toChange].points,NetworkRacers[toChange].position,NetworkRacers.Length);
 }
 
 function SetFinished(val : boolean)

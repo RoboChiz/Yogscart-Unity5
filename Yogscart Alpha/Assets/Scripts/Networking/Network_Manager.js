@@ -132,12 +132,14 @@ class DisplayName
 	var networkPlayer : NetworkPlayer;
 	var team : int;
 	var select : boolean;
+	var points : int;
 	
-	function DisplayName(n : String, c : int, np : NetworkPlayer)
+	function DisplayName(n : String, c : int, p : int, np : NetworkPlayer)
 	{
 		name = n;
 		networkPlayer = np;
 		character = c;
+		points = p;
 		select = false;
 	}
 	
@@ -155,11 +157,12 @@ class DisplayName
 		character = c;
 	}
 	
-	function DisplayName(n : String,c : int,s : boolean)
+	function DisplayName(n : String,c : int,p : int,s : boolean)
 	{
 		name = n;
 		character = c;
 		select = s;
+		points = p;
 	}
 	
 	function DisplayName()

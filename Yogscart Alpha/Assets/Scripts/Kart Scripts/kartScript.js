@@ -235,6 +235,8 @@ function CheckForKartCollisions()
 		{
 			dir = touchingKart;
 			Push(dir);
+			//Do effects and Shit
+			KartCollision();
 		}
 		else
 		{
@@ -254,6 +256,11 @@ function CheckForKartCollisions()
 			
 		}
 	}
+}
+
+function KartCollision()
+{
+	//Put kart collisions effects here
 }
 
 function Push(pushDir : Vector3)

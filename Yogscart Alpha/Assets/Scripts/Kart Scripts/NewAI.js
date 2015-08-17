@@ -18,9 +18,9 @@ private var reverseDistance : float = 10f;
 var turnPoint : Transform;
 
 private var reversing : boolean = false;
- var startDrive : boolean;
+private var startDrive : boolean = true;
 
-var adjusterFloat : float = -90f;
+var adjusterFloat : float = -999;
 
 function Awake() {
 
@@ -29,12 +29,15 @@ function Awake() {
 	td = GameObject.Find("Track Manager").GetComponent(TrackData);
 	pf = transform.GetComponent(Position_Finding);
 	gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
+	
+	if(pf.position < 0)
+		startDrive = false;
 }
 
 function FixedUpdate () {
 
 	//Wait till positions are set to create Adjuster
-	if(adjusterFloat < -5f && pf.position != -1)
+	if(adjusterFloat <= -999 && pf.position != -1)
 	{
 		adjusterFloat = 5 - ((pf.position % 3)*5);
 	}
@@ -70,12 +73,16 @@ function FixedUpdate () {
 	
 	if(turnPoint == null)
 	{
+	
 		turnPoint = td.PositionPoints[NumClamp(currentPos+1,0,pointTotal)];	
 		
-		if(adjusterFloat >= -5)
+		if(adjusterFloat > -999)
 		{
 			adjusterFloat += Random.Range(-1f,1f);
-			adjusterFloat = Mathf.Clamp(adjusterFloat,-5f,5f);
+			
+			var limit : float = turnPoint.GetComponent(PointHandler).roadWidth;
+			
+			adjusterFloat = Mathf.Clamp(adjusterFloat,-limit,limit);
 		}
 		
 	}
