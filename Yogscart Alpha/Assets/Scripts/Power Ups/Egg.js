@@ -74,6 +74,10 @@ function FixedUpdate () {
  	if(collision.transform.GetComponent(kartScript) != null)
  	{
  		collision.transform.GetComponent(kartScript).SpinOut();
+ 		
+ 		if(collision.transform.GetComponent(kartInfo) != null)
+			collision.transform.GetComponent(kartInfo).itemFlashing = false;
+			
  		Destroy(this.gameObject);
  	}
  	else if(collision.transform.GetComponent(Egg) != null || collision.transform.GetComponent(DirtBlock) != null)

@@ -64,7 +64,6 @@
      <Compile Include="Assets\Scripts\Kart Scripts\RacerAI.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Replayer.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartAnimation.js" />
-     <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartItem.js" />
@@ -75,14 +74,12 @@
      <Compile Include="Assets\Scripts\Menus\CharacterSelect.js" />
      <Compile Include="Assets\Scripts\Menus\Level_Select.js" />
      <Compile Include="Assets\Scripts\Menus\Main Menu\MainMenu.js" />
-     <Compile Include="Assets\Scripts\Menus\Main_Menu.js" />
      <Compile Include="Assets\Scripts\Networking\Client_Script.js" />
      <Compile Include="Assets\Scripts\Networking\Countdown.js" />
      <Compile Include="Assets\Scripts\Networking\Host_Script.js" />
      <Compile Include="Assets\Scripts\Networking\Network_Manager.js" />
      <Compile Include="Assets\Scripts\Networking\SpectatorCamera.js" />
      <Compile Include="Assets\Scripts\Networking\VotingScreen.js" />
-     <Compile Include="Assets\Scripts\Networking\Yogball.js" />
      <Compile Include="Assets\Scripts\Networking\kartUpdate.js" />
      <Compile Include="Assets\Scripts\Power Ups\DirtBlock.js" />
      <Compile Include="Assets\Scripts\Power Ups\Egg.js" />

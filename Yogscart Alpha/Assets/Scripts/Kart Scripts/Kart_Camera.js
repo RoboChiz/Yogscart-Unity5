@@ -1,42 +1,43 @@
 ﻿#pragma strict
 
-var Target : Transform;
+var target : Transform;
 
-var Distance : float = 6f;
-var Height : float = 2f;
-var PlayerHeight : float = 2f;
-var Angle : float = 0f;
+var distance : float = 6f;
+var height : float = 2f;
+var playerHeight : float = 2f;
+var angle : float = 0f;
 var sideAmount : float = 0f;
 
 var smoothTime : float = 0.1;
 var rotsmoothTime : float = 5;
 private var velocity = Vector3.zero;
 
-function Update () {
+function FixedUpdate () 
+{
 
-	if(Target != null)
+	if(target != null)
 	{
 	
 		var quat : Quaternion;
-		quat = Quaternion.AngleAxis(Angle,Vector3.up);
+		quat = Quaternion.AngleAxis(angle,Vector3.up);
 
 		var For : Vector3;
-		For = quat * (-Target.forward * Distance);
+		For = quat * (-target.forward * distance);
 		
-		var pos = Target.position + For + (Vector3.up * Height);
+		var pos = target.position + For + (Vector3.up * height);
 		
-		if(Target.GetComponent.<Rigidbody>() != null)
+		if(target.GetComponent.<Rigidbody>() != null)
 		{
-			velocity = Target.GetComponent.<Rigidbody>().velocity;
+			velocity = target.GetComponent.<Rigidbody>().velocity;
 			transform.position = Vector3.SmoothDamp(transform.position, pos,velocity, smoothTime);
-			GetComponent.<Camera>().fieldOfView = Mathf.Lerp(GetComponent.<Camera>().fieldOfView,60 + Target.GetComponent.<Rigidbody>().velocity.magnitude/4,Time.deltaTime/50f);
+			GetComponent.<Camera>().fieldOfView = Mathf.Lerp(GetComponent.<Camera>().fieldOfView,60 + target.GetComponent.<Rigidbody>().velocity.magnitude/4,Time.deltaTime/50f);
 		}
 		else
 		{
 			transform.position = Vector3.Lerp(transform.position,pos,smoothTime * Time.deltaTime);
 		}
 
-		var lookDir : Vector3 = Target.position - (transform.position-(Vector3.up*PlayerHeight) + (transform.right * sideAmount));
+		var lookDir : Vector3 = target.position - (transform.position-(Vector3.up*playerHeight) + (transform.right * sideAmount));
 
 		transform.rotation = Quaternion.Lerp(transform.rotation,Quaternion.LookRotation(lookDir),Time.deltaTime*rotsmoothTime);
 

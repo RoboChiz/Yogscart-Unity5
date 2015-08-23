@@ -60,7 +60,7 @@ function LoadLibraries()
 	nm = GameObject.Find("GameData").GetComponent(Network_Manager);
 	
 	for(var i : int = 0; i < Screen.resolutions.Length; i++)
-		if(Screen.resolutions[i] == Screen.currentResolution)
+		if(Screen.resolutions[i].width == Screen.width && Screen.resolutions[i].height == Screen.height)
 		{
 			currentResolution = i;
 			currentFS = Screen.fullScreen;

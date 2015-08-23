@@ -20,6 +20,11 @@ var lap : int = 0;
 
 var cameras : Camera[];
 
+var itemFlashing : boolean;
+var itemFlashSpeed : float = 5f;
+private var itemFlashAlpha : float = 0f;
+private var itemFlashDirection : boolean;
+
 private var td : TrackData;
 private var rl : RaceLeader;
 private var sm : Sound_Manager;
@@ -170,7 +175,37 @@ GUI.Box(renderArea,"Lap : " + Mathf.Clamp(lap+1,1,td.Laps).ToString() + " / " + 
 var LapisTexture : Texture2D = Resources.Load("UI Textures/Power Ups/Lapis",Texture2D);
 GUI.Box(Rect(10 + renderArea.x + BoxWidth,renderArea.y,BoxWidth*0.75f,BoxHeight),"    " + lapisCount,style);
 GUI.DrawTexture(Rect(10 + renderArea.x + BoxWidth,renderArea.y,(BoxHeight/LapisTexture.height)*LapisTexture.width,BoxHeight),LapisTexture,ScaleMode.ScaleToFit);
+	
+	GUI.color = new Color32(255, 255, 255, itemFlashAlpha);
+	
+	var itemIncoming : Texture = Resources.Load("UI Textures/Race/incoming",Texture2D);
+	var iconSize : float = Screen.width/6f;
+	GUI.DrawTexture(Rect(Screen.width/2f - (iconSize/2f),Screen.height - 10 - iconSize,iconSize,iconSize),itemIncoming);
 
+}
+
+function Update()
+{
+	//Item Incoming
+	if(itemFlashing)
+	{
+		if(itemFlashDirection)
+			itemFlashAlpha = Mathf.Lerp(itemFlashAlpha,255,Time.deltaTime*itemFlashSpeed);
+		else
+			itemFlashAlpha = Mathf.Lerp(itemFlashAlpha,0,Time.deltaTime*itemFlashSpeed);
+		
+		if(itemFlashAlpha > 250)
+			itemFlashDirection = false;
+			
+		if(itemFlashAlpha < 5)
+			itemFlashDirection = true;
+		
+	}
+	else
+	{
+		if(itemFlashAlpha > 2f)
+			itemFlashAlpha = Mathf.Lerp(itemFlashAlpha,0,Time.deltaTime*itemFlashSpeed);
+	}
 }
 
 function NewLap()

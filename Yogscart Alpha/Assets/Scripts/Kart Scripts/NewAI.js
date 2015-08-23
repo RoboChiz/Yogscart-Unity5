@@ -15,12 +15,15 @@ private var turnAngle : float = 30f;
 
 private var reverseDistance : float = 10f;
 
-var turnPoint : Transform;
+private var turnPoint : Transform;
+private var turnPointInt : int;
 
 private var reversing : boolean = false;
 private var startDrive : boolean = true;
 
 var adjusterFloat : float = -999;
+
+private var iteming : boolean;
 
 function Awake() {
 
@@ -30,7 +33,7 @@ function Awake() {
 	pf = transform.GetComponent(Position_Finding);
 	gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
 	
-	if(pf.position < 0)
+	if(ks.locked)
 		startDrive = false;
 }
 
@@ -71,10 +74,16 @@ function FixedUpdate () {
 	else
 		ks.throttle = 0f;
 	
+	if(turnPointInt == currentPos)
+	{
+		turnPoint = null;
+	}
+	
 	if(turnPoint == null)
 	{
 	
 		turnPoint = td.PositionPoints[NumClamp(currentPos+1,0,pointTotal)];	
+		turnPointInt = NumClamp(currentPos+1,0,pointTotal);
 		
 		if(adjusterFloat > -999)
 		{
@@ -97,11 +106,6 @@ function FixedUpdate () {
 		{
 		
 			SlowDownCar(Vector3.Angle(transform.forward,desiredDirection));
-				
-			if(turnPoint == td.PositionPoints[currentPos])
-			{
-				turnPoint = null;
-			}
 			
 			Debug.DrawRay(transform.position,desiredDirection,Color.green);	
 				
@@ -149,7 +153,7 @@ function FixedUpdate () {
 		if((Stupidity < 4 && ks.startBoostVal <= 2)||(Stupidity > 8 && ks.startBoostVal <= 3))
 			ks.throttle = 1;
 			
-		if(ks.startBoostVal <= 2)
+		if(ks.startBoostVal <= 1)
 			startDrive = true;	
 			
 	}
@@ -157,7 +161,10 @@ function FixedUpdate () {
 	ks.steer = turnRequired;
 	
 	if(ki.heldPowerUp != -1)
-		DoItems();
+	{
+		if(!iteming)
+			DoItems();
+	}
 	else
 		ki.input = false;
 	
@@ -165,6 +172,9 @@ function FixedUpdate () {
 
 function DoItems()
 {
+
+	iteming = true;
+	
 	if(gd.PowerUps[ki.heldPowerUp].type == ItemType.AffectsOther)
 	{
 		if(pf.position > 0) //Only use items that effects others if you aren't in 1st
@@ -174,7 +184,12 @@ function DoItems()
 	}	
 	else if(gd.PowerUps[ki.heldPowerUp].type == ItemType.AffectsPlayer)
 	{
+		//Wait till kart is on a straight
+		while(ks.steer != 0)
+			yield;
+			
 		UseRandomItem(5f);
+		
 	}
 	else if(gd.PowerUps[ki.heldPowerUp].type == ItemType.Projectile)
 	{
@@ -202,6 +217,9 @@ function DoItems()
 		
 		}
 	}
+	
+	iteming = false;
+	
 }
 
 function UseRandomItem(maxVal : float)

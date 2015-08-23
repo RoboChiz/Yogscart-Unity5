@@ -13,7 +13,7 @@ private var ks : kartScript;
 var heldPowerUp : int = -1;//Used to reference the item in Current Game Data
 var iteming : boolean; //True is player is getting / has an item
 
-private var shield : Transform;
+var shield : Transform;
 private var sheilding : boolean;
 
  var renderItem : Texture2D;
@@ -45,7 +45,7 @@ function Awake()
 
 function Start()
 {
-	if((Network.isClient || Network.isServer))
+	if(Network.isClient || Network.isServer)
 		online = true;
 	else
 		online = false;
@@ -67,6 +67,7 @@ function RecieveItem(item : int)
 @RPC
 function UseItem()
 {
+	
 	if(heldPowerUp != -1)
 	{
 	
@@ -81,27 +82,28 @@ function UseItem()
 @RPC
 function UseShield()
 {
+	
 	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].usableShield)
 	{
 		shield = Instantiate(gd.PowerUps[heldPowerUp].Model,transform.position - (transform.forward *2f),transform.rotation);
 		shield.parent = transform;
 		shield.GetComponent.<Rigidbody>().isKinematic = true;
-		
+		Debug.Log("Making Shield");
 	}
+	
 }
 
 @RPC
 function DropShield(dir : float)
 {
-	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].usableShield)
+	if(shield != null)
 	{
 	
 		inputDirection = dir;
-	
+		
 		shield.parent = null;
 		shield.GetComponent.<Rigidbody>().isKinematic = false;
 		shield = null;
-		
 		
 		EndItemUse();
 		
@@ -111,7 +113,7 @@ function DropShield(dir : float)
 @RPC
 function EndItemUse()
 {
-	if(gd.PowerUps[heldPowerUp].MultipleUses)
+	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].MultipleUses)
 	{
 		
 		var tempPowerUp = heldPowerUp - 1;
@@ -187,9 +189,7 @@ function decidePowerUp()
 	
 	if(online)
 	{
-		GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
-		GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.AllBuffered,nItem);
-		GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+		GetComponent.<NetworkView>().RPC("RecieveItem",RPCMode.All,nItem);
 	}
 	else
 	{
@@ -205,10 +205,18 @@ function FixedUpdate()
 	{
 		input = im.c[kaI.InputNum].GetInput("Use Item") != 0;
 		
-		if(im.c[kaI.InputNum].inputName != "Key_")
+		if(im.c[kaI.InputNum].GetInput("Look Behind") != 0)
+			inputDirection = -1;
+		else
 		{
-			inputDirection = im.c[kaI.InputNum].GetInput("Vertical");
+				inputDirection = 1;
+			
+			if(im.c[kaI.InputNum].inputName != "Key_")
+			{
+				inputDirection = im.c[kaI.InputNum].GetInput("Vertical");
+			}
 		}
+			
 	}
 	
 	if(input == false)
@@ -241,9 +249,7 @@ function FixedUpdate()
 					{
 						if(online)
 						{
-							GetComponent.<NetworkView>().group = 5; //Set RPC Group to item group
-							GetComponent.<NetworkView>().RPC("UseShield",RPCMode.AllBuffered);
-							GetComponent.<NetworkView>().group = 0; //Set RPC Group back to default group
+							GetComponent.<NetworkView>().RPC("UseShield",RPCMode.All);
 						}
 						else
 						{

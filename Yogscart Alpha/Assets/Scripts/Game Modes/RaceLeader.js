@@ -327,8 +327,8 @@ function StartRace ()
 					
 					IngameCam.GetChild(1).tag = "MainCamera";
 
-					IngameCam.GetChild(0).transform.GetComponent(Kart_Camera).Target = Racers[i].ingameObj;
-					IngameCam.GetChild(1).transform.GetComponent(Kart_Camera).Target = Racers[i].ingameObj;
+					IngameCam.GetChild(0).transform.GetComponent(Kart_Camera).target = Racers[i].ingameObj;
+					IngameCam.GetChild(1).transform.GetComponent(Kart_Camera).target = Racers[i].ingameObj;
 					Racers[i].cameras = IngameCam;
 					
 					//SetUpCameras
@@ -511,10 +511,10 @@ function FinishRacer(i : int)
 
 	yield WaitForSeconds(2);
 
-	while(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Distance > -6.5){
-	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Distance -= Time.fixedDeltaTime * 10;
-	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Height = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).Height,1,Time.fixedDeltaTime);
-	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight,1,Time.fixedDeltaTime);
+	while(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).distance > -6.5){
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).distance -= Time.fixedDeltaTime * 10;
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
 	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
 	yield;
 	}
@@ -556,9 +556,8 @@ function EndGame()
 		for(var i : int = 0; i < fc.Length;i++)
 		{
 		
+			Racers[i].points += 15 - Racers[i].position;
 			fc[Racers[i].position] = new DisplayName(Racers[i].name,Racers[i].character,Racers[i].points,Racers[i].human);
-			
-			Racers[i].points += 15 - i;
 			
 		}
 		

@@ -1,5 +1,4 @@
-﻿
-#pragma strict
+﻿#pragma strict
 
 private var gd : CurrentGameData;
 private var im : InputManager;
@@ -43,6 +42,7 @@ private var waitTime : float;
 private var minPlayers : int = 2;
 private var loading : boolean;
 
+
 class GameMode
 {
 
@@ -66,7 +66,6 @@ class ServerInfo
 	var publicServer : boolean;
 	
 	var currentPlayers : int;
-	var maxPlayers : int;
 	var currentGameMode : int;
 	
 	var ip : String;
@@ -78,7 +77,6 @@ class ServerInfo
 		description = "";
 		publicServer = false;
 		currentPlayers = 0;
-		maxPlayers = 12;
 		currentGameMode = 0;
 		ip = "127.0.0.1";
 		port = 25000;
@@ -103,7 +101,6 @@ class ServerInfo
 		description = d;
 		publicServer = true;
 		currentPlayers = cp;
-		maxPlayers = 12;
 		currentGameMode = 0;
 		ip = ipS;
 		port = portS;
@@ -985,7 +982,7 @@ function SpectatePlease()
 		SpectatorCam.AddComponent(SpectatorCamera);
 		SpectatorCam.AddComponent(Kart_Camera);
 		
-		SpectatorCam.GetComponent(Kart_Camera).Height = 3f;
+		SpectatorCam.GetComponent(Kart_Camera).height = 3f;
 		
 		SpectatorCam.tag = "MainCamera";
 		DontDestroyOnLoad(SpectatorCam);

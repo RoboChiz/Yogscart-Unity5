@@ -25,8 +25,11 @@ function FixedUpdate () {
 			ks.drift = true;
 		else
 			ks.drift = false;
-
-		if(im.c[InputNum].GetInput("Look Behind") != 0 && !camLocked){
+			
+			
+		var lookBehind : float = im.c[InputNum].GetInput("Look Behind");
+		
+		if((lookBehind != 0) && !camLocked){
 			backCamera.enabled = true;
 			frontCamera.enabled = false;
 		}else{

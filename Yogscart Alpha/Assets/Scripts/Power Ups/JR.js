@@ -1,7 +1,6 @@
 ﻿#pragma strict
 
 var target : Transform;
-@HideInInspector
 var parent : Transform;
 
 private var td : TrackData;
@@ -11,15 +10,14 @@ function Start(){
 
 	td = GameObject.Find("Track Manager").transform.GetComponent(TrackData);
 	pf = transform.GetComponent(Position_Finding);
-	
-	parent = transform.parent;
 	pf.Lap = 0;
-	pf.currentPos = parent.GetComponent(Position_Finding).currentPos;
-
 	
-//Wait until you've been fire then choose a target
-	while(transform.parent != null)
-		yield;
+}
+
+function FindTarget()
+{
+	
+	pf.currentPos = parent.GetComponent(Position_Finding).currentPos;
 
 	var objs = GameObject.FindObjectsOfType(kartScript);
 	
@@ -31,13 +29,16 @@ function Start(){
 			break;
 		}
 	}
-
 }
 
-function FixedUpdate ()
+function Update ()
 {
 	if(target != null)
 	{
+	
+		if(target.GetComponent(kartInfo) != null)
+			target.GetComponent(kartInfo).itemFlashing = true;
+	
 		var egg : Egg = transform.GetComponent(Egg);
 
 		var dir : Vector3 = target.position - transform.position;
@@ -59,5 +60,15 @@ function FixedUpdate ()
 
 			egg.direction = (Target - transform.position).normalized;
 		}
+	}
+	else
+	{
+		if(transform.parent != null)	
+		{
+			parent = transform.parent;		
+		}
+		
+		if(transform.parent == null && parent != null)
+			FindTarget();
 	}
 }

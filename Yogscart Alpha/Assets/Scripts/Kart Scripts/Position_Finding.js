@@ -22,13 +22,14 @@ function Start(){
 function Update () {
 	if(tm != null)
 	{
+	
 		var closestDistance : float = Mathf.Infinity;
 		closestDistance = Vector3.Distance(transform.position,tm.PositionPoints[NumClamp(currentPos,0,tm.PositionPoints.Length)].position);
 
 		CheckForward(closestDistance);
 		CheckBackwards(closestDistance);
 
-		if(Lap == -1 && currentPos > 2)
+		if(Lap == -1 && currentPos > 1)
 		{
 		currentPos = 0;
 		currentTotal = 0;
@@ -137,7 +138,6 @@ closestDistance = newdistance;
 currentPos += i;
 if(tm.LoopedTrack)
 {
-	if(currentPos == (currentTotal + i)-((tm.PositionPoints.Length)*Lap))
 		currentTotal += i;
 }
 else

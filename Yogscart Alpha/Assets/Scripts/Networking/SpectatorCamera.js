@@ -36,7 +36,7 @@ transform.GetComponent(Kart_Camera).enabled = true;
 
 var Target = specObjects[currentSpec].transform;
 
-transform.GetComponent(Kart_Camera).Target = Target;
+transform.GetComponent(Kart_Camera).target = Target;
 
 if(!locked){
 if(im.c[0].GetMenuInput("Submit") != 0){
@@ -49,10 +49,10 @@ currentSpec = 0;
 
 }
 
-transform.GetComponent(Kart_Camera).Angle += Time.deltaTime*20;
+transform.GetComponent(Kart_Camera).angle += Time.deltaTime*20;
 
-if(transform.GetComponent(Kart_Camera).Angle >360)
-transform.GetComponent(Kart_Camera).Angle = 0;
+if(transform.GetComponent(Kart_Camera).angle >360)
+transform.GetComponent(Kart_Camera).angle = 0;
 
 }
 }

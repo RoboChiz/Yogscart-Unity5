@@ -29,8 +29,10 @@ private var im : InputManager;
 private var td : TrackData;
 private var sm : Sound_Manager;
 private var rl : RaceLeader;
+private var ss : SortingScript;
 
 var finishedCharacters : DisplayName[];
+var sorted : boolean;
 
 //Used for Single Player
 var currentSelection : int = 0;
@@ -64,10 +66,12 @@ function LoadLibaries () {
 		
 	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
 	rl = transform.GetComponent(RaceLeader);
+	ss = transform.GetComponent(SortingScript);
 	
 	sentTransform = false;
 	secondCount = 0;
 	pointCount = 0;
+	sorted = false;
 }
 
 @RPC
@@ -120,10 +124,10 @@ function EndClient()
 		myRacer.cameras.GetChild(0).GetComponent.<Camera>().enabled = false;
 		myRacer.cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
 
-		while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Distance > -6.5){
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Distance -= Time.fixedDeltaTime * 10;
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Height,1,Time.fixedDeltaTime);
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight,1,Time.fixedDeltaTime);
+		while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance > -6.5){
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance -= Time.fixedDeltaTime * 10;
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
 		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
 		yield;
 		}
@@ -277,10 +281,10 @@ function SendUpdates()
 
 	yield WaitForSeconds(2);
 
-	while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Distance > -6.5){
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Distance -= Time.fixedDeltaTime * 10;
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).Height,1,Time.fixedDeltaTime);
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).PlayerHeight,1,Time.fixedDeltaTime);
+	while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance > -6.5){
+	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance -= Time.fixedDeltaTime * 10;
+	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
+	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
 	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
 	yield;
 	}
@@ -711,7 +715,16 @@ function OnGUI ()
 								GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),finishedCharacters[f].timer.ToString());*/
 							if(!Network.isClient && !Network.isServer)
 							{	
-								GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),(finishedCharacters[f].points + Mathf.Clamp(pointCount,0,15 - f)).ToString());
+								
+								var points : int = finishedCharacters[f].points;
+							
+								if(!sorted)
+								{
+									points -= (15-f);
+									points = Mathf.Clamp(points + pointCount,0f,finishedCharacters[f].points);
+								}
+								
+								GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),points.ToString());
 			
 								if(15 - f - pointCount > 0)
 									GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.9f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),"+ " + ((15 - f) - pointCount).ToString());
@@ -729,6 +742,14 @@ function OnGUI ()
 							secondCount -= 0.5f;
 						}
 						
+					}
+					else
+					{
+						if(!sorted)
+						{
+							sorted = true;
+							finishedCharacters = ss.CalculatePoints(finishedCharacters);
+						}
 					}
 					
 				}
@@ -897,9 +918,6 @@ function DetermineWinner()
 				bestRacer = i;
 		}
 	}
-	
-	
-	transform.GetComponent(SortingScript).CalculatePoints(rl.Racers); //Racers refers to the same Racers as the Network Racer Array.
 	
 	var bestPlayer = rl.Racers[bestRacer];
 	

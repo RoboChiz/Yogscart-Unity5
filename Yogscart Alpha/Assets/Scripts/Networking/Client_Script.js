@@ -184,8 +184,8 @@ function SpawnMyKart(typeInt : int, pos : Vector3, rot : Quaternion)
 	
 	IngameCam.GetChild(1).tag = "MainCamera";
 
-	IngameCam.GetChild(0).transform.GetComponent(Kart_Camera).Target = myRacer.ingameObj;
-	IngameCam.GetChild(1).transform.GetComponent(Kart_Camera).Target = myRacer.ingameObj;
+	IngameCam.GetChild(0).transform.GetComponent(Kart_Camera).target = myRacer.ingameObj;
+	IngameCam.GetChild(1).transform.GetComponent(Kart_Camera).target = myRacer.ingameObj;
 	myRacer.cameras = IngameCam;
 	
 	var id = Network.AllocateViewID();
