@@ -167,8 +167,6 @@ function spStartRace()
 	yield;
 	yield;
 	
-	Debug.Log("Level Loaded!");
-	
 	while(GameObject.Find("Track Manager") == null)
 	{
 		yield;
@@ -195,8 +193,6 @@ function spStartRace()
 
 function StartRace () 
 {
-
-	Debug.Log("Starting StartRace");
 
 	cutsceneWait = false;
 	ending = false;
@@ -381,14 +377,6 @@ function StartRace ()
 			cutsceneWait = true;
 			
 			yield WaitForSeconds(3);
-			
-			//Assign each kart an id to improve efficenty of Collisions
-			var otherKarts = GameObject.FindObjectsOfType(kartScript);
-			
-			for(var e : int = 0; e < otherKarts.Length; e++)
-			{
-				otherKarts[e].collideID = e;
-			}
 			
 			rb.Countdown();
 			

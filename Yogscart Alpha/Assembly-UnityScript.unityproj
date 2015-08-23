@@ -57,6 +57,7 @@
      <Compile Include="Assets\Scripts\Game Modes\RaceLeader.js" />
      <Compile Include="Assets\Scripts\Game Modes\SinglePlayer.js" />
      <Compile Include="Assets\Scripts\Game Modes\SortingScript.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\CollisionHandler.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Kart_Camera.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\NameRotate.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\NewAI.js" />

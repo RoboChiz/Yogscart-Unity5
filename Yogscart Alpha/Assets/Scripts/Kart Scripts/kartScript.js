@@ -68,14 +68,12 @@ var actualSpeed : float;
 public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
-private var pushing : boolean;
-var pushAmount : float = 90f;
+var pushSpeed : float = 10f;
 private var touchingKart : Vector3;
-private var dir : Vector3;
 
 private var sfxVolume : float;
 
-var collideID : int = -1;
+var relativeVelocity : Vector3;
 
 function Start()
 {
@@ -93,7 +91,7 @@ function Start()
 function Update()
 {
 	lapisAmount = Mathf.Clamp(lapisAmount,0,10);
-	CheckForKartCollisions();
+	relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
 }	
 
 function FixedUpdate () {
@@ -110,7 +108,7 @@ function FixedUpdate () {
 	
 	CalculateExpectedSpeed();
 	
-	if(!isFalling && !pushing)
+	if(!isFalling)
 	{
 		ApplySteering();
 	}
@@ -132,7 +130,6 @@ function FixedUpdate () {
 		expectedSpeed = maxSpeed + BoostAddition;
 	}
 	
-	var relativeVelocity : Vector3 = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
 	actualSpeed = relativeVelocity.z;
 	
 	var nExpectedSpeed = expectedSpeed;
@@ -159,7 +156,7 @@ function FixedUpdate () {
 			wheelMeshes[i].rotation = wheelRot * Quaternion.Euler(0,180,0);
 			
 			if(!tricking && !isFalling && !spunOut)
-				wheelMeshes[i].position = wheelPos;
+				wheelMeshes[i].position.y = wheelPos.y;
 			else
 				wheelMeshes[i].localPosition = wheelStart[i];
 	}
@@ -206,78 +203,39 @@ function FixedUpdate () {
 	
 }
 
-function CheckForKartCollisions()
-{
-	//The Not Efficent Kart Finding System 
-	//It's Greaaaa... Not efficent in the slightest
-	var otherKarts = GameObject.FindObjectsOfType(kartScript);
-	touchingKart = Vector3.zero;
-	
-	if(collideID != -1)
-	{
-		for(var e : int = collideID + 1; e < otherKarts.Length; e++)
-		{
-				var compareVect = otherKarts[e].transform.position - transform.position;
-			
-				if(touchingKart == Vector3.zero && compareVect.magnitude <= 2f)
-				{
-					//Debug.Log("Ahh a Kart is touching me!");
-					if(Vector3.Angle(compareVect,transform.right) > 90) //Decides where way will push us away from the kart
-						touchingKart = transform.right;
-					else
-						touchingKart = -transform.right;
-						
-					break;
-				}
-		}
-		
-		if(touchingKart != Vector3.zero)
-		{
-			dir = touchingKart;
-			Push(dir);
-			//Do effects and Shit
-			KartCollision();
-		}
-		else
-		{
-			if(pushing)//Stop Forces from being added
-			{
-				//Remove the horizontal velocity
-				
-				var relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
-				var stopA = -relativeVelocity.x / Time.fixedDeltaTime;
-				
-				GetComponent.<Rigidbody>().AddForce(stopA * dir * GetComponent.<Rigidbody>().mass);	
-				
-				GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
-				pushing = false;
-				touchingKart = Vector3.zero;
-			}
-			
-		}
-	}
-}
-
-function KartCollision()
+function KartCollision(otherKart : Transform)
 {
 	//Put kart collisions effects here
+	var compareVect = otherKart.transform.position - transform.position;
+	
+	if(touchingKart == Vector3.zero)
+	{
+		if(Vector3.Angle(compareVect,transform.right) > 90) //Decides where way will push us away from the kart
+			touchingKart = transform.right;
+		else
+			touchingKart = -transform.right;
+	}
+	
+	//Remove the horizontal velocity
+	var stopA = (pushSpeed-relativeVelocity.x) / 0.0333f;
+	
+	GetComponent.<Rigidbody>().AddForce(stopA * touchingKart * GetComponent.<Rigidbody>().mass);	
+	
+	GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
+	
 }
 
-function Push(pushDir : Vector3)
+function CancelCollision()
 {
+	touchingKart = Vector3.zero;
 	
-		pushing = true;
-		//v = u+at
-		//s = ut + 0.5at^2
-		//s/(t^2*0.5) = a;
-		//f = ma
-		
-		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
+	//Remove the horizontal velocity
+	var stopA = -relativeVelocity.x / 0.0333f;
+	
+	GetComponent.<Rigidbody>().AddForce(stopA * transform.right * GetComponent.<Rigidbody>().mass);	
+	
+	GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
 
-		GetComponent.<Rigidbody>().AddForce(pushDir * GetComponent.<Rigidbody>().mass * pushAmount);	
-		
-		yield;
-	
 }
 
 function DoTrick()

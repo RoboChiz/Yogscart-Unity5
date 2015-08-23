@@ -179,7 +179,7 @@ function DoItems()
 	{
 		if(pf.position > 0) //Only use items that effects others if you aren't in 1st
 		{
-			UseRandomItem(10f);
+			yield UseRandomItem(10f);
 		}
 	}	
 	else if(gd.PowerUps[ki.heldPowerUp].type == ItemType.AffectsPlayer)
@@ -188,7 +188,7 @@ function DoItems()
 		while(ks.steer != 0)
 			yield;
 			
-		UseRandomItem(5f);
+		yield UseRandomItem(5f);
 		
 	}
 	else if(gd.PowerUps[ki.heldPowerUp].type == ItemType.Projectile)
@@ -196,7 +196,7 @@ function DoItems()
 	
 		if(Stupidity > 8f)
 		{
-			UseRandomItem(10f);
+			yield UseRandomItem(10f);
 		}
 		else if(Stupidity > 4f)
 		{
@@ -207,12 +207,12 @@ function DoItems()
 			{
 				if(rh.transform.GetComponent(kartScript) != null)
 				{
-					UseRandomItem(0f);
+					yield UseRandomItem(0f);
 				}
 			
 			}
 			
-			if(gd.PowerUps[ki.heldPowerUp].usableShield && Stupidity <= 4f) //Use item as shield
+			if(ki.heldPowerUp != -1 && gd.PowerUps[ki.heldPowerUp].usableShield && Stupidity <= 4f) //Use item as shield
 				ki.input = true;
 		
 		}

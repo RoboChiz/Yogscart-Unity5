@@ -25,6 +25,10 @@ var itemFlashSpeed : float = 5f;
 private var itemFlashAlpha : float = 0f;
 private var itemFlashDirection : boolean;
 
+var turnAroundFlashing : boolean;
+private var turnAroundFlashAlpha : float = 0f;
+private var turnAroundFlashDirection : boolean;
+
 private var td : TrackData;
 private var rl : RaceLeader;
 private var sm : Sound_Manager;
@@ -181,7 +185,11 @@ GUI.DrawTexture(Rect(10 + renderArea.x + BoxWidth,renderArea.y,(BoxHeight/LapisT
 	var itemIncoming : Texture = Resources.Load("UI Textures/Race/incoming",Texture2D);
 	var iconSize : float = Screen.width/6f;
 	GUI.DrawTexture(Rect(Screen.width/2f - (iconSize/2f),Screen.height - 10 - iconSize,iconSize,iconSize),itemIncoming);
-
+	
+	GUI.color = new Color32(255, 255, 255, turnAroundFlashAlpha);
+	itemIncoming = Resources.Load("UI Textures/Race/turn around",Texture2D);
+	GUI.DrawTexture(Rect(Screen.width/2f - (iconSize/2f),10,iconSize,iconSize),itemIncoming);
+	
 }
 
 function Update()
@@ -205,6 +213,27 @@ function Update()
 	{
 		if(itemFlashAlpha > 2f)
 			itemFlashAlpha = Mathf.Lerp(itemFlashAlpha,0,Time.deltaTime*itemFlashSpeed);
+	}
+	
+	//Turn Around
+	if(turnAroundFlashing)
+	{
+		if(turnAroundFlashDirection)
+			turnAroundFlashAlpha = Mathf.Lerp(turnAroundFlashAlpha,255,Time.deltaTime*itemFlashSpeed);
+		else
+			turnAroundFlashAlpha = Mathf.Lerp(turnAroundFlashAlpha,0,Time.deltaTime*itemFlashSpeed);
+		
+		if(turnAroundFlashAlpha > 250)
+			turnAroundFlashDirection = false;
+			
+		if(turnAroundFlashAlpha < 5)
+			turnAroundFlashDirection = true;
+		
+	}
+	else
+	{
+		if(turnAroundFlashAlpha > 2f)
+			turnAroundFlashAlpha = Mathf.Lerp(turnAroundFlashAlpha,0,Time.deltaTime*itemFlashSpeed);
 	}
 }
 

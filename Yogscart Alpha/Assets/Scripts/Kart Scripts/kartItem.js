@@ -88,7 +88,6 @@ function UseShield()
 		shield = Instantiate(gd.PowerUps[heldPowerUp].Model,transform.position - (transform.forward *2f),transform.rotation);
 		shield.parent = transform;
 		shield.GetComponent.<Rigidbody>().isKinematic = true;
-		Debug.Log("Making Shield");
 	}
 	
 }

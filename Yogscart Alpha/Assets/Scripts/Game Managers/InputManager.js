@@ -138,7 +138,7 @@ function ShowInput(i : int)
 
 showIcon[i] = true;
 
-yield WaitForSeconds(1);
+yield WaitForSeconds(1.5f);
 
 showIcon[i] = false;
 

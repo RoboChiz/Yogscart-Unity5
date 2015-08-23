@@ -34,11 +34,11 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 	frontrWheel.parent = kartBody.FindChild("Kart Body");
 	frontrWheel.name = "FrontR Wheel";
 
-	var backlWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackLPosition,Quaternion.Euler(0,0,0));
+	var backlWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackLPosition,Quaternion.Euler(0,180,0));
 	backlWheel.parent = kartBody.FindChild("Kart Body");
 	backlWheel.name = "BackL Wheel";
 
-	var backrWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackRPosition,Quaternion.Euler(0,180,0));
+	var backrWheel : Transform = Instantiate(gd.Wheels[wheel].model,kartSkel.BackRPosition,Quaternion.Euler(0,0,0));
 	backrWheel.parent = kartBody.FindChild("Kart Body");
 	backrWheel.name = "BackR Wheel";
 

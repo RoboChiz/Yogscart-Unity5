@@ -12,7 +12,7 @@ var smoothTime : float = 0.1;
 var rotsmoothTime : float = 5;
 private var velocity = Vector3.zero;
 
-function FixedUpdate () 
+function Update () 
 {
 
 	if(target != null)
@@ -29,7 +29,7 @@ function FixedUpdate ()
 		if(target.GetComponent.<Rigidbody>() != null)
 		{
 			velocity = target.GetComponent.<Rigidbody>().velocity;
-			transform.position = Vector3.SmoothDamp(transform.position, pos,velocity, smoothTime);
+			transform.position = Vector3.SmoothDamp(transform.position, pos,velocity, smoothTime,float.MaxValue,0.0333f);
 			GetComponent.<Camera>().fieldOfView = Mathf.Lerp(GetComponent.<Camera>().fieldOfView,60 + target.GetComponent.<Rigidbody>().velocity.magnitude/4,Time.deltaTime/50f);
 		}
 		else

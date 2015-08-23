@@ -2,12 +2,13 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Kart Scripts\Kart_Camera.js">
     <Files>
-      <File FileName="Assets\Scripts\Kart Scripts\kartItem.js" Line="116" Column="25" />
-      <File FileName="Assets\Scripts\Power Ups\JR.js" Line="58" Column="1" />
-      <File FileName="Assets\Scripts\Kart Scripts\NewAI.js" Line="156" Column="27" />
-      <File FileName="Assets\Scripts\Menus\CharacterSelect.js" Line="775" Column="63" />
-      <File FileName="Assets\Scripts\Networking\Network_Manager.js" Line="820" Column="23" />
-      <File FileName="Assets\Scripts\Kart Scripts\Kart_Camera.js" Line="32" Column="88" />
+      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="220" Column="54" />
+      <File FileName="Assets\Scripts\Kart Scripts\CollisionHandler.js" Line="33" Column="59" />
+      <File FileName="Assets\Scripts\Kart Scripts\Kart_Camera.js" Line="32" Column="108" />
+      <File FileName="Assets\Scripts\Kart Scripts\kartItem.js" Line="90" Column="56" />
+      <File FileName="Assets\Scripts\Kart Scripts\Position_Finding.js" Line="74" Column="9" />
+      <File FileName="Assets\Scripts\Game Modes\RaceLeader.js" Line="379" Column="28" />
+      <File FileName="Assets\Scripts\Kart Scripts\NewAI.js" Line="215" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
