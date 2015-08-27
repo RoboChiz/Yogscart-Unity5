@@ -815,10 +815,10 @@ function ConnectToServer()
 
 function CancelStartServer()
 {
+	
 	StopCoroutine("StartServer");
 	
-	if(!Network.isClient)
-		state = ServerState.ServerList;
+	state = ServerState.ServerList;
 	
 }
 
@@ -840,11 +840,14 @@ function StartServer()
 	if(!Automatic)
 	{
 		
+		GameObject.Find("Menu Holder").GetComponent(CharacterSelect).online = true;
 		GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
 		GameObject.Find("Menu Holder").GetComponent(CharacterSelect).ResetEverything();
 		
 		while(GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled)
 			yield;
+			
+		GameObject.Find("Menu Holder").GetComponent(CharacterSelect).online = false;	
 			
 	}
 

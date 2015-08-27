@@ -30,6 +30,8 @@ private var nameList : Texture2D;
 
 private var mouseSelecting : boolean;
 
+var online : boolean;
+
 function Start () {
 	gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
 	im = GameObject.Find("GameData").GetComponent(InputManager);
@@ -771,10 +773,12 @@ function Cancel()
 				Destroy(loadedModels[i].gameObject);
 		}
 		
-	if(Network.isServer)
-		gd.transform.GetComponent(Network_Manager).CancelStartServer();
-	
-	if(!Network.isServer && !Network.isClient)
+	if(online)
+	{ 
+		if(!Network.isClient)
+			gd.transform.GetComponent(Network_Manager).CancelStartServer();
+	}
+	else
 	{
 		transform.GetComponent(MainMenu).CancelCharacterSelect();
 	}

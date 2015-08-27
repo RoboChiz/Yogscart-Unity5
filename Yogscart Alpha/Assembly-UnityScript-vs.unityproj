@@ -19,7 +19,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_5_1_1;UNITY_5_1;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_2D_PHYSICS;ENABLE_4_6_FEATURES;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PHYSICS_PHYSX3;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_LICENSE;ENABLE_AUDIOMIXER_SUSPEND;ENABLE_EDITOR_METRICS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_LOCALIZATION;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;66;CROSS_PLATFORM_INPUT</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_5_1_2;UNITY_5_1;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_2D_PHYSICS;ENABLE_4_6_FEATURES;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PHYSICS_PHYSX3;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_LICENSE;ENABLE_AUDIOMIXER_SUSPEND;ENABLE_EDITOR_METRICS;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_LOCALIZATION;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;66;CROSS_PLATFORM_INPUT</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -63,8 +63,10 @@
      <Compile Include="Assets\Scripts\Kart Scripts\NewAI.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Position_Finding.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\RacerAI.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\Racer_AI.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\Replayer.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartAnimation.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartItem.js" />
@@ -75,12 +77,15 @@
      <Compile Include="Assets\Scripts\Menus\CharacterSelect.js" />
      <Compile Include="Assets\Scripts\Menus\Level_Select.js" />
      <Compile Include="Assets\Scripts\Menus\Main Menu\MainMenu.js" />
+     <Compile Include="Assets\Scripts\Menus\Main_Menu.js" />
      <Compile Include="Assets\Scripts\Networking\Client_Script.js" />
      <Compile Include="Assets\Scripts\Networking\Countdown.js" />
      <Compile Include="Assets\Scripts\Networking\Host_Script.js" />
+     <Compile Include="Assets\Scripts\Networking\NetworkExtras.js" />
      <Compile Include="Assets\Scripts\Networking\Network_Manager.js" />
      <Compile Include="Assets\Scripts\Networking\SpectatorCamera.js" />
      <Compile Include="Assets\Scripts\Networking\VotingScreen.js" />
+     <Compile Include="Assets\Scripts\Networking\Yogball.js" />
      <Compile Include="Assets\Scripts\Networking\kartUpdate.js" />
      <Compile Include="Assets\Scripts\Power Ups\DirtBlock.js" />
      <Compile Include="Assets\Scripts\Power Ups\Egg.js" />
@@ -99,6 +104,7 @@
      <Compile Include="Assets\Scripts\Track Editor\Old Scripts - Delete Later\PositionPointHandler.js" />
      <Compile Include="Assets\Scripts\Track Editor\PointHandler.js" />
      <Compile Include="Assets\Scripts\Track Editor\TrackData.js" />
+     <Compile Include="Assets\Scripts\Unet Online\UnetManager.js" />
      <None Include="Assets\Resources\Karts\Dyne\Carts\Monowheel\readme-monowheel.txt" />
      <None Include="Assets\Shaders\TerrainBlendShaderSplat.shader" />
      <None Include="Assets\Resources\Confetti Particles\Confetti - Readme.txt" />

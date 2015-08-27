@@ -68,7 +68,7 @@ var actualSpeed : float;
 public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
-var pushSpeed : float = 10f;
+var pushSpeed : float = 20f;
 private var touchingKart : Vector3;
 
 private var sfxVolume : float;
@@ -214,25 +214,27 @@ function KartCollision(otherKart : Transform)
 			touchingKart = transform.right;
 		else
 			touchingKart = -transform.right;
+
+		//Add the horizontal velocity
+		var stopA = (pushSpeed-relativeVelocity.x) / 0.0333f;
+		GetComponent.<Rigidbody>().AddForce(stopA * touchingKart, ForceMode.Acceleration);	
+		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
+		
+		yield;
+		
+		relativeVelocity.x = pushSpeed * touchingKart.x;	
+		GetComponent.<Rigidbody>().velocity = transform.TransformDirection(relativeVelocity);
 	}
-	
-	//Remove the horizontal velocity
-	var stopA = (pushSpeed-relativeVelocity.x) / 0.0333f;
-	
-	GetComponent.<Rigidbody>().AddForce(stopA * touchingKart * GetComponent.<Rigidbody>().mass);	
-	
-	GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
-	
 }
 
 function CancelCollision()
 {
+
 	touchingKart = Vector3.zero;
 	
 	//Remove the horizontal velocity
-	var stopA = -relativeVelocity.x / 0.0333f;
-	
-	GetComponent.<Rigidbody>().AddForce(stopA * transform.right * GetComponent.<Rigidbody>().mass);	
+	relativeVelocity.x = 0;	
+	GetComponent.<Rigidbody>().velocity = transform.TransformDirection(relativeVelocity);
 	
 	GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
 
@@ -310,7 +312,7 @@ function ApplySteering()
 		{
 			steer = Mathf.Sign(steer);
 			
-			steer *= Mathf.Lerp(2.5,1,actualSpeed/maxSpeed);
+			steer *= Mathf.Lerp(3,1,actualSpeed/maxSpeed);
 			
 		}
 		

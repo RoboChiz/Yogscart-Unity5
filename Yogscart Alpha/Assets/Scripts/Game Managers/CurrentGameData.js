@@ -265,7 +265,7 @@ function UnlockNewCharacter()
 	}
 	
 	if(copy.length > 0){
-		var unlockedCharacter = Random.Range(0,copy.length);
+		var unlockedCharacter : int = Random.Range(0,copy.length);
 		PlayerPrefs.SetInt(Characters[copy[unlockedCharacter]].Name,1);
 		
 	//Popup("You have unlocked a new Character!");
@@ -283,7 +283,7 @@ function UnlockNewHat()
 	}
 	
 	if(copy.length > 0){
-		var unlockedHat = Random.Range(0,copy.length);
+		var unlockedHat : int = Random.Range(0,copy.length);
 		PlayerPrefs.SetInt(Hats[copy[unlockedHat]].Name,1);
 		
 	//Popup("You have unlocked a new Hat!");

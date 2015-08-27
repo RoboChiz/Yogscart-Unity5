@@ -120,11 +120,32 @@ function StartSinglePlayer()//true if in Time Trial Mode
 		var counter : int = minVal;
 		var humanCount : int = im.c.Length - 1;
 		
-		for(var i : int = 0; i < 12; i++)
+		var charactersShuffle : Array = new Array();
+		
+		if(gd.Characters.Length <= 12 - im.c.Length)
+		{
+			for(var i : int = 0; i < 12 - im.c.Length; i++)
+			{
+				charactersShuffle.Push(i%gd.Characters.Length);
+				Debug.Log(i + ": " + charactersShuffle[i].ToString());
+			}
+		}
+		else
+		{
+			for(i = 0; i < gd.Characters.Length; i++)
+				charactersShuffle.Push(i);
+		}
+		
+		charactersShuffle = ShuffleArray(charactersShuffle);
+		
+		for(i = 0; i < 12; i++)
 		{
 			if(i < 12 - im.c.Length)
 			{
-				Racers[i] = new Racer(false,counter,Random.Range(0,gd.Characters.Length),Random.Range(0,gd.Hats.Length),Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),i);
+			
+				Debug.Log(i + ": " + charactersShuffle[i].ToString());
+				
+				Racers[i] = new Racer(false,counter,charactersShuffle[i],Random.Range(0,gd.Hats.Length),Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),i);
 				
 				counter++;
 				if(counter > maxVal)
@@ -146,6 +167,25 @@ function StartSinglePlayer()//true if in Time Trial Mode
 	
 	spStartRace();
 	
+}
+
+function ShuffleArray(arr : Array)
+{
+	var i1 : int;
+	var i2 : int;
+	
+	for(var i : int = 0; i < arr.length*2; i++)
+	{
+		 i1 = Random.Range(0, arr.length);
+         i2 = Random.Range(0, arr.length);
+         
+         var holder : int = arr[i1];
+         arr[i1] = arr[i2];
+         arr[i2] = holder;
+	}
+
+	return arr;
+
 }
 
 function spStartRace()
@@ -499,8 +539,8 @@ function FinishRacer(i : int)
 
 	yield WaitForSeconds(2);
 
-	while(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).distance > -6.5){
-	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).distance -= Time.fixedDeltaTime * 10;
+	while(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).angle < 180){
+	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).angle += Time.fixedDeltaTime * 30;
 	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
 	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
 	Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(Racers[i].cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
@@ -533,6 +573,18 @@ function EndGame()
 	}
 	else if(type == RaceStyle.TimeTrial)
 	{
+	
+		//Do Timer Stuff I guess
+		var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
+		var racerTime = Racers[0].timer;		
+		
+		if(BestTimer.BiggerThan(racerTime))
+		{
+			PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].Name,racerTime.ToString());
+			gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = new Timer(racerTime);
+		}
+		
+		rb.bestTimer = racerTime;
 		rb.WrapUp();
 	}
 	else
@@ -681,10 +733,11 @@ function Finished(toChange : int, info : NetworkMessageInfo)
 	}
 
 }
+
 function ScoreboardAdd(toChange : int)
 {
 			Debug.Log(NetworkRacers[toChange].character + " has come " + NetworkRacers[toChange].position + "th");
-			GetComponent.<NetworkView>().RPC("ScoreBoardAdd",RPCMode.AllBuffered,NetworkRacers[toChange].character,NetworkRacers[toChange].name,NetworkRacers[toChange].points,NetworkRacers[toChange].position,NetworkRacers.Length);
+			GetComponent.<NetworkView>().RPC("ScoreBoardAdd",RPCMode.AllBuffered,Racers[toChange].character,Racers[toChange].name,Racers[toChange].points,Racers[toChange].position,Racers.Length);
 }
 
 function SetFinished(val : boolean)

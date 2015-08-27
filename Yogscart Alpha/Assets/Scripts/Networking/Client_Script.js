@@ -28,7 +28,8 @@ function QuizNewRacer ()
 		timeout ++;
 		yield WaitForSeconds(0.5f);
 	}
-
+	
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).online = true;
 	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
 
 	while(true)
@@ -46,6 +47,8 @@ function QuizNewRacer ()
 
 		yield;
 	}
+	
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).online = false;
 
 	if(!GameObject.Find("Menu Holder").GetComponent(CharacterSelect).cancelled)
 	{
@@ -111,6 +114,8 @@ if(level == "Lobby"){
 	
 	var sm = transform.GetChild(0).GetComponent(Sound_Manager);
 	sm.PlayMusic(Resources.Load("Music & Sounds/YC Main Theme",AudioClip));
+	
+	myRacer.finished = false;
 
 }
 

@@ -115,6 +115,8 @@ function EndClient()
 	
 	Debug.Log("Ahahaha");
 	
+	WrapUp();
+	
 	if(myRacer != null && myRacer.ingameObj.GetComponent(NewAI) == null)
 	{
 		myRacer.ingameObj.gameObject.AddComponent(NewAI);
@@ -124,8 +126,8 @@ function EndClient()
 		myRacer.cameras.GetChild(0).GetComponent.<Camera>().enabled = false;
 		myRacer.cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
 
-		while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance > -6.5){
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance -= Time.fixedDeltaTime * 10;
+		while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle < 180){
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle += Time.fixedDeltaTime * 30;
 		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
 		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
 		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
@@ -133,7 +135,6 @@ function EndClient()
 		}
 	}
 	
-	WrapUp();
 }
 
 @RPC
@@ -214,6 +215,8 @@ function UnPause()
 
 function FixedUpdate ()
 {
+	myRacer = transform.GetComponent(Client_Script).myRacer;
+
 	if(myRacer.ingameObj != null)
 	{
 		var pf : Position_Finding = myRacer.ingameObj.GetComponent(Position_Finding);
@@ -234,19 +237,22 @@ function FixedUpdate ()
 
 function WrapUp()
 {
-	CountdownRect = Rect(Screen.width/2 - (Screen.height*(2f/3f)),Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/0.75f,Screen.height/1.5f);
-	
-	currentGUI = GUIState.Finish;
-	
-	CountdownShow = true;
-	
-	yield WaitForSeconds(1f);
-	
-	CountdownShow = false;
-	
-	yield WaitForSeconds(0.5f);
-	
-	ChangeState(GUIState.ScoreBoard);
+	if(currentGUI == GUIState.RaceGUI)
+	{
+		CountdownRect = Rect(Screen.width/2 - (Screen.height*(2f/3f)),Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/0.75f,Screen.height/1.5f);
+		
+		currentGUI = GUIState.Finish;
+		
+		CountdownShow = true;
+		
+		yield WaitForSeconds(1f);
+		
+		CountdownShow = false;
+		
+		yield WaitForSeconds(0.5f);
+		
+		ChangeState(GUIState.ScoreBoard);
+	}
 }
 
 function SendUpdates()
@@ -281,8 +287,8 @@ function SendUpdates()
 
 	yield WaitForSeconds(2);
 
-	while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance > -6.5){
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).distance -= Time.fixedDeltaTime * 10;
+	while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle < 180){
+	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle += Time.fixedDeltaTime * 10;
 	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
 	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
 	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
@@ -344,6 +350,8 @@ function UnlockKart()
 
 @RPC
 function Countdown(){
+
+	Debug.Log("Start the countdown!");
 
 	if(networkID != -1)
 	{
@@ -954,15 +962,10 @@ function ScoreBoardAdd(character : int, name : String,points : int, i : int, siz
 	if(finishedCharacters.Length != size)
 	{
 		finishedCharacters = new DisplayName[size];
-		
-		for(var j : int = 0; j <  finishedCharacters.Length; j++)
-		{
-			finishedCharacters[j] = new DisplayName();
-		}
-		
 	}
 	
 	Debug.Log(name + " has come " + (i) + "th");
+	finishedCharacters[i] = new DisplayName();
 		
 	finishedCharacters[i].character = character;	
 	finishedCharacters[i].name = name;	

@@ -1,11 +1,6 @@
 ﻿#pragma strict
 
 var sending : boolean;
-
-private var updateTime : float;
-private var posTime : float;
-
-var networkSendRate : float = 20;
 var frameCount : int = 0;
 
 function FixedUpdate () {
@@ -16,13 +11,12 @@ function FixedUpdate () {
 		{
 			var ks : kartScript = transform.GetComponent(kartScript);
 			transform.GetComponent.<NetworkView>().RPC("MyInput",RPCMode.Others,ks.throttle,ks.steer,ks.drift);
-			updateTime = 0;
 		}
 	
-		if(frameCount % 180 == 0)
+		if(frameCount % 360 == 0)
 		{
 			transform.GetComponent.<NetworkView>().RPC("MyPosition",RPCMode.Others,transform.position,transform.rotation,GetComponent.<Rigidbody>().velocity);
-			posTime = 0;
+			frameCount = 0;
 		}
 		
 		frameCount++;
