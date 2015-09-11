@@ -9,7 +9,7 @@ var drift : boolean;
 private var isFalling : boolean;
 private var isColliding : boolean;
 
-var maxSpeed : float = 20f;
+public var maxSpeed : float = 20f;
 var maxGrassSpeed : float = 7.5f;
 private var lastMaxSpeed : float;
 private var offRoad : boolean;

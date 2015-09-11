@@ -1,10 +1,12 @@
 ﻿#pragma strict
-
 /*
 Race Base
 V1.0
 Holds functions used by the Client, and Host during Races.
 */
+
+import System.Collections.Generic; //Cause lazy
+import System.Linq; //Cause lazy
 
 //Used in multiplayer to give server updates
 var networkID : int = -1;
@@ -31,7 +33,7 @@ private var sm : Sound_Manager;
 private var rl : RaceLeader;
 private var ss : SortingScript;
 
-var finishedCharacters : DisplayName[];
+var finishedCharacters : List.<DisplayName>;
 var sorted : boolean;
 
 //Used for Single Player
@@ -93,16 +95,17 @@ Network.RemoveRPCs(transform.GetComponent.<NetworkView>().owner);
 
 var kartHolder = myRacer.ingameObj;
 
-var nRacer = new Racer(true,-1,myRacer.character,myRacer.hat,myRacer.kart,myRacer.wheel,0);
-myRacer = nRacer;
-
-finishedCharacters = new DisplayName[0];
-
 ChangeState(GUIState.Blank);
-networkID = -1;
+
+finishedCharacters = null;
 
 while(Application.loadedLevelName != "Lobby")
 	yield;
+	
+var nRacer = new Racer(true,-1,myRacer.character,myRacer.hat,myRacer.kart,myRacer.wheel,0);
+myRacer = nRacer;	
+	
+networkID = -1;	
 
 this.enabled = false;
 
@@ -111,7 +114,7 @@ this.enabled = false;
 @RPC
 function EndClient()
 {
-	StopCoroutine("SendUpdates");
+	//StopCoroutine("SendUpdates");
 	
 	Debug.Log("Ahahaha");
 	
@@ -119,20 +122,7 @@ function EndClient()
 	
 	if(myRacer != null && myRacer.ingameObj.GetComponent(NewAI) == null)
 	{
-		myRacer.ingameObj.gameObject.AddComponent(NewAI);
-		Destroy(myRacer.ingameObj.GetComponent(kartInput));
-		myRacer.ingameObj.GetComponent(kartInfo).hidden = true;
-		
-		myRacer.cameras.GetChild(0).GetComponent.<Camera>().enabled = false;
-		myRacer.cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
-
-		while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle < 180){
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle += Time.fixedDeltaTime * 30;
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
-		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
-		yield;
-		}
+		WrapUpRacer();
 	}
 	
 }
@@ -237,7 +227,7 @@ function FixedUpdate ()
 
 function WrapUp()
 {
-	if(currentGUI == GUIState.RaceGUI)
+	if(currentGUI <= GUIState.RaceGUI)
 	{
 		CountdownRect = Rect(Screen.width/2 - (Screen.height*(2f/3f)),Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/0.75f,Screen.height/1.5f);
 		
@@ -252,6 +242,30 @@ function WrapUp()
 		yield WaitForSeconds(0.5f);
 		
 		ChangeState(GUIState.ScoreBoard);
+	}
+}
+
+function WrapUpRacer()
+{
+	myRacer.ingameObj.gameObject.AddComponent(NewAI);
+	Destroy(myRacer.ingameObj.GetComponent(kartInput));
+	myRacer.ingameObj.GetComponent(kartInfo).hidden = true;
+	myRacer.ingameObj.GetComponent(kartItem).locked = true;
+	
+	myRacer.cameras.GetChild(0).GetComponent.<Camera>().enabled = false;
+	myRacer.cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
+	
+	yield WaitForSeconds(2);
+
+	if(myRacer != null)
+	{
+		while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle < 180){
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle += Time.deltaTime * 30;
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
+		myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
+		yield;
+		}
 	}
 }
 
@@ -271,29 +285,13 @@ function SendUpdates()
 		yield WaitForSeconds(0.5f);
 	}
 	
-	myRacer.ingameObj.gameObject.AddComponent(NewAI);
-	Destroy(myRacer.ingameObj.GetComponent(kartInput));
-	myRacer.ingameObj.GetComponent(kartInfo).hidden = true;
-	myRacer.ingameObj.GetComponent(kartItem).locked = true;
-	
-	myRacer.cameras.GetChild(0).GetComponent.<Camera>().enabled = false;
-	myRacer.cameras.GetChild(1).GetComponent.<Camera>().enabled = true;
-	
 	if(Network.isClient)
-		transform.GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);
-		
-	if(Network.isServer)
+		transform.GetComponent.<NetworkView>().RPC("Finished",RPCMode.Server,networkID);		
+	else if(Network.isServer)
 		rl.LocalFinish(networkID);
-
-	yield WaitForSeconds(2);
-
-	while(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle < 180){
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).angle += Time.fixedDeltaTime * 10;
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).height,1,Time.fixedDeltaTime);
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).playerHeight,1,Time.fixedDeltaTime);
-	myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount = Mathf.Lerp(myRacer.cameras.GetChild(1).GetComponent(Kart_Camera).sideAmount,-1.9,Time.fixedDeltaTime);
-	yield;
-	}
+		
+	WrapUp();
+	WrapUpRacer();
 	
 }
 
@@ -676,16 +674,14 @@ function OnGUI ()
 
 				if(rl.type != RaceStyle.TimeTrial)
 				{
-					for(var f : int = 0; f < finishedCharacters.Length; f++)
+					if(finishedCharacters != null)
 					{
-					
-						if(finishedCharacters[f] != -1)
+						for(var f : int = 0; f < finishedCharacters.Count; f++)
 						{
+						
 							var PosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString(),Texture2D);
 							var SelPosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString() + "_Sel",Texture2D);
-							
-							
-
+											
 							var Ratio = (optionSize)/PosTexture.height;
 							
 
@@ -698,7 +694,7 @@ function OnGUI ()
 							}
 							else
 							{
-								if(f < finishedCharacters.Length && finishedCharacters[f].character != -1)
+								if(f < finishedCharacters.Count && finishedCharacters[f].character != -1)
 								{
 									var NameTexture : Texture2D;
 									if(finishedCharacters[f].select)
@@ -736,30 +732,31 @@ function OnGUI ()
 			
 								if(15 - f - pointCount > 0)
 									GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.9f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),"+ " + ((15 - f) - pointCount).ToString());
+							}					
+						}
+						
+						if(pointCount < 15)
+						{
+							secondCount += Time.deltaTime;
+							
+							if(secondCount >= 0.5f)
+							{
+								pointCount += 1;
+								secondCount -= 0.5f;
+							}
+							
+						}
+						else
+						{
+							if(!sorted)
+							{
+								sorted = true;
+								var arrayHolder = ss.CalculatePoints(finishedCharacters.ToArray());
+								finishedCharacters = arrayHolder.ToList();
 							}
 						}
 					}
-					
-					if(pointCount < 15)
-					{
-						secondCount += Time.deltaTime;
 						
-						if(secondCount >= 0.5f)
-						{
-							pointCount += 1;
-							secondCount -= 0.5f;
-						}
-						
-					}
-					else
-					{
-						if(!sorted)
-						{
-							sorted = true;
-							finishedCharacters = ss.CalculatePoints(finishedCharacters);
-						}
-					}
-					
 				}
 				else
 				{
@@ -956,20 +953,20 @@ function DetermineWinner()
 }
 
 @RPC
-function ScoreBoardAdd(character : int, name : String,points : int, i : int, size : int)
+function AddPlayer(name : String,character : int, points : int)
 {
 
-	if(finishedCharacters.Length != size)
-	{
-		finishedCharacters = new DisplayName[size];
-	}
+	Debug.Log("Recieved new finisher");
+
+	if(finishedCharacters == null)
+		finishedCharacters = new List.<DisplayName>();
 	
-	Debug.Log(name + " has come " + (i) + "th");
-	finishedCharacters[i] = new DisplayName();
-		
-	finishedCharacters[i].character = character;	
-	finishedCharacters[i].name = name;	
-	finishedCharacters[i].points = points;
+	var nDisplayName : DisplayName = new DisplayName(name,character);	
+	nDisplayName.points = points;
+
+	finishedCharacters.Add(nDisplayName);
+	
+	Debug.Log("finishedCharacters is now " + finishedCharacters.Count + " big");
 	
 	if(networkID == -1)
 	{

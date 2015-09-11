@@ -1,4 +1,5 @@
 ﻿#pragma strict
+import System.Collections.Generic;
 
 private var gd : CurrentGameData;
 private var im : InputManager;
@@ -167,6 +168,7 @@ class DisplayName
 		name = "";
 		character = -1;
 	}
+	
 }
 
 @RPC
@@ -899,17 +901,21 @@ function StartGamemode(i : int)
 
 function EndGame()
 {
-
+	
+	
+	Network.RemoveRPCs(GetComponent.<NetworkView>().owner);	
+	
+	gd.onlineGameModes[currentSelection].hostScript.enabled = false;
+	gd.onlineGameModes[currentSelection].baseScript.enabled = false;
+	
 	GetComponent.<NetworkView>().RPC("LoadNetworkLevel",RPCMode.AllBuffered,"Lobby",0);
 	
 	while(Application.loadedLevelName != "Lobby")
 		yield;	
-	
-	Network.RemoveRPCs(GetComponent.<NetworkView>().owner);	
 				
 	state = ServerState.Lobby;
 	sendingPing = false;
-	
+
 	var hs = transform.GetComponent(Host_Script);
 	
 	hs.CheckforLeavers();

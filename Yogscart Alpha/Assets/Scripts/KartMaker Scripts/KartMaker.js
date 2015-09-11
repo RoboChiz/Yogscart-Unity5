@@ -176,10 +176,18 @@ var wheelCollider = collider.GetComponent(WheelCollider);
 
 //Setup Collider Settings
 wheelCollider.mass = 20;
-wheelCollider.radius = 0.15;
+
+if(collider.GetComponent(WheelSkeleton) != null)
+{
+	wheelCollider.radius = collider.GetComponent(WheelSkeleton).wheelRadius;
+	Destroy(collider.GetComponent(WheelSkeleton));
+}
+else
+	wheelCollider.radius = 0.15;
+
 wheelCollider.wheelDampingRate = 0.05;
 wheelCollider.suspensionDistance = 0.25;
-wheelCollider.forceAppPointDistance = 1;
+wheelCollider.forceAppPointDistance = 1f;
 
 wheelCollider.suspensionSpring.spring = 25000;
 wheelCollider.suspensionSpring.damper = 25000;

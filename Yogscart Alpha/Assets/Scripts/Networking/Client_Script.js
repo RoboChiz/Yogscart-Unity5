@@ -18,10 +18,15 @@ function Awake()
 function QuizNewRacer () 
 {
 
-	var timeout : int;
+	var timeout : int = 0;
+	
+	Debug.Log("Recieved QuizNewRacer");
 
 	while(Application.loadedLevelName != "Lobby")
 	{
+	
+	Debug.Log("timeout is " + timeout);
+	
 		if(timeout >= 10)
 			return;
 			
@@ -29,8 +34,12 @@ function QuizNewRacer ()
 		yield WaitForSeconds(0.5f);
 	}
 	
+	Debug.Log("I'm in the Lobby");
+
 	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).online = true;
 	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
+
+	Debug.Log("I've enabled the Character Select");
 
 	while(true)
 	{
