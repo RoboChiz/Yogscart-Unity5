@@ -1,4 +1,6 @@
 ﻿#pragma strict
+import System.Collections.Generic; //Cause lazy
+import System.Linq; //Cause lazy
 
 function CalculatePositions(array : Racer[])
 {
@@ -126,4 +128,39 @@ function CalculatePoints(array : DisplayName[])
 	
 	return array;
 	
+}
+
+static function CalculatePoints(toChangeArray : List.<DisplayRacer>)
+{
+
+	var array = new List.<DisplayRacer>();
+	
+	for(var j : int = 0; j < toChangeArray.Count; j++)
+		array.Add(toChangeArray[j]);
+
+	var sorted : boolean = false;
+	var endInt : int = 0;
+
+	while(!sorted)
+	{
+	
+		sorted = true;
+					
+		for(var i : int = 1; i < array.Count - endInt; i++)
+		{
+			if(array[i-1].points < array[i].points)
+			{
+				
+				var holder = array[i-1];
+				array[i-1] = array[i];
+				array[i] = holder;
+				sorted = false;
+			}
+		}
+		
+		endInt++;
+	}
+	
+	return array;
+
 }

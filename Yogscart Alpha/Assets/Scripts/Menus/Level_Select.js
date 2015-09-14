@@ -187,7 +187,7 @@ OutLineLabel(rankRect,rankText,2,Color.black);
 	if(transform.GetComponent(RaceLeader).type == RaceStyle.TimeTrial)
 	{
 		var timeRect : Rect = Rect(75,Screen.height/2 + 10 + Height/1.5f,Width,Height);
-		var timeString : String = gd.Tournaments[currentCup].Tracks[currentTrack].BestTrackTime.ToString();
+		var timeString : String = TimeManager.TimerToString(gd.Tournaments[currentCup].Tracks[currentTrack].BestTrackTime);
 		OutLineLabel(timeRect,timeString,2,Color.black);
 	}
 

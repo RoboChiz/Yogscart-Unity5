@@ -43,7 +43,6 @@ private var waitTime : float;
 private var minPlayers : int = 2;
 private var loading : boolean;
 
-
 class GameMode
 {
 
@@ -217,7 +216,7 @@ function Awake()
 	sm = transform.GetChild(0).GetComponent(Sound_Manager);
 	
 	playerName = PlayerPrefs.GetString("playerName","Player");
-	
+
 }
 
 function SaveServers()
@@ -353,7 +352,7 @@ function OnGUI()
 	int.TryParse(GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),hostPort.ToString()),hostPort);
 	
 	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*3.5f,chunkSize*4,chunkSize/2f),"Name: ");
-	playerName = GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),playerName);
+	playerName = GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),playerName,14);
 
 	var hostText : String = "Host Server";
 
@@ -773,6 +772,30 @@ function OnGUI()
 	}
 }
 
+function CheckName()
+{
+
+	var nReturn : boolean = true;
+	
+	if(playerName.Length == 0 || playerName.Length > 14)
+		nReturn = false;
+	
+	var letters : String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+	
+	for(var i : int = 0; i < playerName.Length; i++)
+	{
+		if(!letters.Contains(playerName[i]))
+		{
+			nReturn = false;
+			break;
+		}
+	}
+	
+	
+	return nReturn;
+
+}
+
 @RPC 
 function finalPlayersIDUpdate(id : int)
 {
@@ -806,6 +829,12 @@ function SendPing()
 function ConnectToServer()
 {
 
+	if(!CheckName())
+	{
+		popupText = "Valid Usernames must contain 14 or less, Letters or   _   Only!";
+		return;
+	}
+
 	im.allowedToChange = false;
 	im.RemoveOtherControllers();
 
@@ -826,6 +855,12 @@ function CancelStartServer()
 
 function StartServer()
 {
+
+	if(!CheckName())
+	{
+		popupText = "Valid Usernames must contain 14 or less, Letters or   _   Only!";
+		return;
+	}
 
 	im.allowedToChange = false;
 	im.RemoveOtherControllers();

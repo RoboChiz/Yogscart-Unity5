@@ -170,12 +170,9 @@ private var ColourAlpha : Color = Color.white;
 			if(Tournaments[n].LastRank[2] == "No Rank")
 			unlockInsane = false;
 			
-			for(var k = 0; k < Tournaments[n].Tracks.Length; k++){
-			
-				var TimeString = PlayerPrefs.GetString(Tournaments[n].Tracks[k].Name,"0:0:0");
-				var words = TimeString.Split(":"[0]);
-				Tournaments[n].Tracks[k].BestTrackTime = new Timer(int.Parse(words[0]),int.Parse(words[1]),int.Parse(words[2]));
-				
+			for(var k = 0; k < Tournaments[n].Tracks.Length; k++)
+			{
+				Tournaments[n].Tracks[k].BestTrackTime = PlayerPrefs.GetFloat(Tournaments[n].Tracks[k].Name,0f);	
 			}
 		}
 		
@@ -252,8 +249,8 @@ function CheckforNewStuff()
 		}	
 		
 		LoadEverything();
-}
-		
+}		
+				
 function UnlockNewCharacter()
 {
 	//Unlock Character
@@ -301,7 +298,7 @@ function ResetEverything()
 		PlayerPrefs.SetString(Tournaments[n].Name+"[Insane]","No Rank");
 
 	for(var k = 0; k < Tournaments[n].Tracks.Length; k++){
-		PlayerPrefs.SetString(Tournaments[n].Tracks[k].Name,"0:0:0");
+		PlayerPrefs.SetFloat(Tournaments[n].Tracks[k].Name,0f);
 	}
 
 	}
@@ -367,7 +364,7 @@ public class Track
     var Preview : Texture2D;
     
     @HideInInspector
-    var BestTrackTime : Timer;
+    var BestTrackTime : float;
     
     var SceneID : String;
  }
@@ -434,7 +431,7 @@ var finished : boolean;
 var position : int;
 var ingameObj : Transform;
 var cameras : Transform;
-var timer : Timer;
+var timer : float;
 var TotalDistance : int;
 var NextDistance : float;
 
@@ -460,6 +457,7 @@ hat = Hat;
 kart = Kart;
 wheel = Wheel;
 position = Position;
+
 }
 
 }
@@ -484,69 +482,6 @@ public class NetworkedRacer extends Racer
  
 }
 
-public class Timer
-{
-	var minutes : byte;
-	var seconds : byte;
-	var milliSeconds : int;
-	var ticking : boolean;
-	
-	function Timer()
-	{
-		minutes = 0;
-		seconds = 0;
-		milliSeconds = 0;
-	}
-	
-	function Timer(m : byte, s : byte, ms : int)
-	{
-		minutes = m;
-		seconds = s;
-		milliSeconds = ms;
-	}
-	
-	function Timer(t : Timer)
-	{
-		minutes = t.minutes;
-		seconds = t.seconds;
-		milliSeconds = t.milliSeconds;
-	}
-	
-	function isEmpty() : boolean
-	{
-		if(minutes == 0 && seconds == 0 && milliSeconds == 0)
-			return true;
-		else
-			return false;
-	}
-	
-	function BiggerThan(t : Timer)
-	{
-	
-		if(isEmpty())
-			return true;
-			
-		if(t.minutes < minutes)
-			return true;
-		
-		if(t.minutes <= minutes && t.seconds < seconds)
-			return true;
-			
-		if(t.minutes <= minutes && t.seconds <= seconds && t.milliSeconds <= milliSeconds)
-			return true;
-			
-		return false;		
-			
-	}
-	
-	function ToString() : String
-	{
-		var returnString : String = minutes.ToString("00") + ":" + seconds.ToString("00") + ":" + milliSeconds.ToString("000");
-		return returnString;
-	}
-	
-}
-
 function Exit(){
 Time.timeScale = 1f;
 BlackOut = true;
@@ -560,37 +495,5 @@ Application.LoadLevel("Main_Menu");
 
 yield;
 
-}
- 
-function StartTick(t : Timer)
-{
-	StartCoroutine("tick",t);
-}
-
-function StopTick()
-{
-	StopCoroutine("tick");
-}
-
-function tick(t : Timer)
-{
-	while(true)
-	{
-		t.milliSeconds += Time.deltaTime*1000f;
-		
-		if(t.milliSeconds >= 1000)
-		{
-			t.milliSeconds -= 1000;
-			t.seconds++;
-		}
-		
-		if(t.seconds >= 60)
-		{
-			t.minutes++;
-			t.seconds -= 60;
-		}
-		
-		yield;
-	}
 }
 	 

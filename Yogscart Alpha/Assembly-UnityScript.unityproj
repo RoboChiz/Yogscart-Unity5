@@ -52,6 +52,8 @@
      <Compile Include="Assets\Scripts\Game Managers\CurrentGameData.js" />
      <Compile Include="Assets\Scripts\Game Managers\InputManager.js" />
      <Compile Include="Assets\Scripts\Game Managers\Sound_Manager.js" />
+     <Compile Include="Assets\Scripts\Game Managers\TimeManager.js" />
+     <Compile Include="Assets\Scripts\Game Modes\LeaderBoard.js" />
      <Compile Include="Assets\Scripts\Game Modes\RaceBase.js" />
      <Compile Include="Assets\Scripts\Game Modes\RaceLeader.js" />
      <Compile Include="Assets\Scripts\Game Modes\SinglePlayer.js" />

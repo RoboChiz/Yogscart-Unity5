@@ -33,13 +33,11 @@ private var sm : Sound_Manager;
 private var rl : RaceLeader;
 private var ss : SortingScript;
 
-var finishedCharacters : List.<DisplayName>;
-var sorted : boolean;
+@HideInInspector
+var lb : LeaderBoard;
 
 //Used for Single Player
 var currentSelection : int = 0;
-var bestRacer : int = -1;
-var bestTimer : Timer;
 
 var paused : int = -1;
 var selectedColor : Color = Color.yellow;
@@ -48,6 +46,8 @@ private var sentTransform : boolean = false;
 
 private var secondCount : float;
 private var pointCount : float;
+
+var numberofRaces : int;
 
 function Start()
 {
@@ -69,11 +69,11 @@ function LoadLibaries () {
 	sm = GameObject.Find("Sound System").GetComponent(Sound_Manager); 
 	rl = transform.GetComponent(RaceLeader);
 	ss = transform.GetComponent(SortingScript);
+	lb = transform.GetComponent(LeaderBoard);
 	
 	sentTransform = false;
 	secondCount = 0;
 	pointCount = 0;
-	sorted = false;
 }
 
 @RPC
@@ -97,13 +97,12 @@ var kartHolder = myRacer.ingameObj;
 
 ChangeState(GUIState.Blank);
 
-finishedCharacters = null;
-
 while(Application.loadedLevelName != "Lobby")
 	yield;
-	
-var nRacer = new Racer(true,-1,myRacer.character,myRacer.hat,myRacer.kart,myRacer.wheel,0);
-myRacer = nRacer;	
+
+//Don't know if I need this or not		
+//var nRacer = new Racer(true,-1,myRacer.character,myRacer.hat,myRacer.kart,myRacer.wheel,0);
+//myRacer = nRacer;	
 	
 networkID = -1;	
 
@@ -189,23 +188,8 @@ function Update()
 		}
 	}
 	
-}
-
-function UnPause()
-{
-	paused = -1;
-	
-	var inputs = GameObject.FindObjectsOfType(kartInput);
-	
-	for(var i : int = 0; i < inputs.Length; i++)
-		inputs[i].enabled = true;
-		
-	currentSelection = 0;
-}
-
-function FixedUpdate ()
-{
-	myRacer = transform.GetComponent(Client_Script).myRacer;
+	if(Network.isClient)
+		myRacer = transform.GetComponent(Client_Script).myRacer;
 
 	if(myRacer.ingameObj != null)
 	{
@@ -225,6 +209,18 @@ function FixedUpdate ()
 	
 }
 
+function UnPause()
+{
+	paused = -1;
+	
+	var inputs = GameObject.FindObjectsOfType(kartInput);
+	
+	for(var i : int = 0; i < inputs.Length; i++)
+		inputs[i].enabled = true;
+		
+	currentSelection = 0;
+}
+
 function WrapUp()
 {
 	if(currentGUI <= GUIState.RaceGUI)
@@ -242,6 +238,15 @@ function WrapUp()
 		yield WaitForSeconds(0.5f);
 		
 		ChangeState(GUIState.ScoreBoard);
+		
+		lb.enabled = true;
+		if(rl.type == RaceStyle.TimeTrial)
+			lb.StartTimeTrial();
+		else if(rl.type == RaceStyle.Online)
+			lb.StartOnline();
+		else
+			lb.StartLeaderBoard();
+
 	}
 }
 
@@ -274,7 +279,7 @@ function SendUpdates()
 
 	CalculateSendUpdate();
 	
-	while(currentGUI != GUIState.RaceGUI)
+	while(currentGUI != GUIState.Countdown)
 	{
 		yield;
 	}
@@ -664,102 +669,8 @@ function OnGUI ()
 		break;
 		case GUIState.ScoreBoard:
 		
-			var BoardTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
-			var optionSize = Screen.height/16f;
-			var BoardRect : Rect = Rect(Screen.width/2f - optionSize,optionSize,Screen.width/2f ,(optionSize)*14f);
-			
-			GUI.DrawTexture(BoardRect,BoardTexture);
-
-			GUI.BeginGroup(BoardRect);
-
-				if(rl.type != RaceStyle.TimeTrial)
-				{
-					if(finishedCharacters != null)
-					{
-						for(var f : int = 0; f < finishedCharacters.Count; f++)
-						{
-						
-							var PosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString(),Texture2D);
-							var SelPosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (f+1).ToString() + "_Sel",Texture2D);
-											
-							var Ratio = (optionSize)/PosTexture.height;
-							
-
-							GUI.DrawTexture(Rect(20,(f+1)*optionSize,PosTexture.width * Ratio,optionSize),PosTexture);
-							//GUI.DrawTexture(Rect(20 + PosTexture.width * Ratio,(f+1)*optionSize,NameTexture.width * Ratio2,optionSize),SelNameTexture);
-							
-							if(finishedCharacters[f].name != null && finishedCharacters[f].name != "")
-							{
-								GUI.Label(Rect(20 + (PosTexture.width * Ratio) + optionSize,(f+1)*optionSize,BoardRect.width - (20 + (PosTexture.width * Ratio) + optionSize),optionSize),finishedCharacters[f].name);
-							}
-							else
-							{
-								if(f < finishedCharacters.Count && finishedCharacters[f].character != -1)
-								{
-									var NameTexture : Texture2D;
-									if(finishedCharacters[f].select)
-										NameTexture = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name + "_Sel",Texture2D);
-									else
-										NameTexture = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[finishedCharacters[f].character].Name,Texture2D);
-
-									var Ratio2 = (optionSize)/NameTexture.height;
-									GUI.DrawTexture(Rect(50 + PosTexture.width * Ratio,(f+1)*optionSize,NameTexture.width * Ratio2,optionSize),NameTexture);
-								}
-							}
-							
-							if(finishedCharacters[f].character != -1)
-							{
-								var CharacterIcon = gd.Characters[finishedCharacters[f].character].Icon;
-								GUI.DrawTexture(Rect(20 + (PosTexture.width * Ratio),(f+1)*optionSize,optionSize,optionSize),CharacterIcon);
-							}
-							
-							/*if(finishedCharacters[f].timer.Minute == 0 && finishedCharacters[f].timer.Second && finishedCharacters[f].timer.milliSecond == 0)
-								GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),"-N/A-");
-							else
-								GUI.Label(Rect(30 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 1.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),finishedCharacters[f].timer.ToString());*/
-							if(!Network.isClient && !Network.isServer)
-							{	
-								
-								var points : int = finishedCharacters[f].points;
-							
-								if(!sorted)
-								{
-									points -= (15-f);
-									points = Mathf.Clamp(points + pointCount,0f,finishedCharacters[f].points);
-								}
-								
-								GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.5f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),points.ToString());
-			
-								if(15 - f - pointCount > 0)
-									GUI.Label(Rect(20 + (PosTexture.width * Ratio) + (NameTexture.width * Ratio2 * 2.9f) ,3 + (f+1)*optionSize,NameTexture.width * Ratio2,optionSize),"+ " + ((15 - f) - pointCount).ToString());
-							}					
-						}
-						
-						if(pointCount < 15)
-						{
-							secondCount += Time.deltaTime;
-							
-							if(secondCount >= 0.5f)
-							{
-								pointCount += 1;
-								secondCount -= 0.5f;
-							}
-							
-						}
-						else
-						{
-							if(!sorted)
-							{
-								sorted = true;
-								var arrayHolder = ss.CalculatePoints(finishedCharacters.ToArray());
-								finishedCharacters = arrayHolder.ToList();
-							}
-						}
-					}
-						
-				}
-				else
-				{
+				
+				/*
 					var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
 					var OverallTimer = bestTimer;
 					
@@ -777,27 +688,41 @@ function OnGUI ()
 					GUI.Label(Rect(10,10 + 3*(optionSize),BoardRect.width,optionSize),"Your Time");
 					GUI.Label(Rect(10,10 + 4*(optionSize),BoardRect.width,optionSize),OverallTimer.ToString());
 
-				}
+				}*/
 				
 			if(!Network.isServer && !Network.isClient)
 			{
 				if(im.c[0].GetMenuInput("Submit"))
-					ChangeState(GUIState.NextMenu);
+				{
+					if(lb.state != LBType.Points || numberofRaces == 1)
+					{
+						ChangeState(GUIState.NextMenu);
+						lb.hidden = true;
+					}
+					else
+					{
+						lb.SecondStep();	
+					}			
+				}
 			}
-
-			GUI.EndGroup();
 
 		break;
 		case GUIState.NextMenu:
 			
-			BoardTexture = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
-			BoardRect = Rect(Screen.width/2f - Screen.height/16f,Screen.height/16f,Screen.width/2f ,(Screen.height/16f)*14f);
+			if(lb.Racers.Count > 0)
+			{
+				lb.ResetRacers();
+				lb.enabled = false;
+			}
+			
+			var BoardTexture = Resources.Load("UI Textures/GrandPrix Positions/Backing",Texture2D);
+			var BoardRect = Rect(Screen.width/2f - Screen.height/16f,Screen.height/16f,Screen.width/2f ,(Screen.height/16f)*14f);
 
 			GUI.DrawTexture(BoardRect,BoardTexture);
 
 			
 			if(rl.type == RaceStyle.GrandPrix || rl.type == RaceStyle.CustomRace){
-				if(rl.race + 1 <= 4)
+				if(numberofRaces + 1 <= 4)
 					Options = ["Next Race","Quit"];
 				else
 					Options = ["Finish"];
@@ -859,7 +784,8 @@ function OnGUI ()
 
 					break;
 					case "Finish":
-						DetermineWinner();
+						//DetermineWinner();
+						ChangeState(GUIState.Win);
 					break;
 				}
 			}
@@ -878,24 +804,7 @@ function OnGUI ()
 			
 			GUI.Label(Rect(10,lineSize,BoardRect.width,lineSize),"Congratulations!");
 			
-			var bestPlayer = rl.Racers[bestRacer];
-			
-			var posString : String = "1st";
-			
-			switch(bestPlayer.position)
-			{
-				case(1):
-					posString = "2nd";
-				break;
-				case(2):
-					posString = "3rd";
-				break;
-				default:
-					posString = bestPlayer.position.ToString() + "th";
-				break;
-			}
-			
-			GUI.Label(Rect(10,lineSize * 2,BoardRect.width,lineSize),"You came " + posString + "!");
+			GUI.Label(Rect(10,lineSize * 2,BoardRect.width,lineSize),"This menu is under Construction!");
 			
 			GUI.EndGroup();
 			
@@ -910,7 +819,7 @@ function OnGUI ()
 	}
 }	
 
-function DetermineWinner()
+/*function DetermineWinner()
 {
 
 	 bestRacer = -1;
@@ -950,30 +859,7 @@ function DetermineWinner()
 
 	ChangeState(GUIState.Win);
 	
-}
-
-@RPC
-function AddPlayer(name : String,character : int, points : int)
-{
-
-	Debug.Log("Recieved new finisher");
-
-	if(finishedCharacters == null)
-		finishedCharacters = new List.<DisplayName>();
-	
-	var nDisplayName : DisplayName = new DisplayName(name,character);	
-	nDisplayName.points = points;
-
-	finishedCharacters.Add(nDisplayName);
-	
-	Debug.Log("finishedCharacters is now " + finishedCharacters.Count + " big");
-	
-	if(networkID == -1)
-	{
-		ChangeState(GUIState.ScoreBoard);
-	}
-
-}
+}*/
 
 function setStartBoost(val : int){
 	

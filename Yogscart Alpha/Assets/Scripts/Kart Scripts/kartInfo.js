@@ -139,7 +139,7 @@ if(rl.type != RaceStyle.TimeTrial)
 else
 {
 	//Draw Timer
-	GUI.Label(Rect(Screen.width - 10 - Screen.width/5f,Screen.height - 20 - GUI.skin.label.fontSize,Screen.width/5f,GUI.skin.label.fontSize + 5),rl.timer.ToString());
+	GUI.Label(Rect(Screen.width - 10 - Screen.width/5f,Screen.height - 20 - GUI.skin.label.fontSize,Screen.width/5f,GUI.skin.label.fontSize + 5),TimeManager.TimerToString(rl.raceTimer));
 }
 
 //Render Lap and Lapis

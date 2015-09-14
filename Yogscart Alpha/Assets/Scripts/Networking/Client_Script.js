@@ -3,6 +3,7 @@
 private var gd : CurrentGameData;
 private var im : InputManager;
 private var km : KartMaker;
+private var lb : LeaderBoard;
 
 var otherRacers : GameObject[];
 var myRacer : Racer;
@@ -12,6 +13,7 @@ function Awake()
 	gd = transform.GetComponent(CurrentGameData);
 	im = GameObject.Find("GameData").GetComponent(InputManager);
 	km = transform.GetComponent(KartMaker);
+	lb = transform.GetComponent(LeaderBoard);
 }
 
 @RPC
@@ -88,6 +90,12 @@ Destroy(transform.GetComponent(VotingScreen));
 if(transform.GetComponent(Level_Select) != null){
 Debug.Log("BURN IT!");
 Destroy(transform.GetComponent(Level_Select));
+}
+
+if(lb.Racers.Count > 0)
+{
+	lb.ResetRacers();
+	lb.enabled = false;
 }
 
 if(transform.GetComponent(Network_Manager).SpectatorCam != null)

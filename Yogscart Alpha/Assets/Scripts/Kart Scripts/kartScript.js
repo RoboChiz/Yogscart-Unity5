@@ -92,10 +92,11 @@ function Update()
 {
 	lapisAmount = Mathf.Clamp(lapisAmount,0,10);
 	relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
-}	
+		
+}
 
-function FixedUpdate () {
-	
+function FixedUpdate()
+{
 	isFalling = CheckGravity();
 	
 	var hit : RaycastHit;
@@ -132,12 +133,11 @@ function FixedUpdate () {
 	
 	actualSpeed = relativeVelocity.z;
 	
-	var nExpectedSpeed = expectedSpeed;
-	var nA  = (nExpectedSpeed-actualSpeed)/Time.fixedDeltaTime;
+	var nA  = (expectedSpeed-actualSpeed)/Time.fixedDeltaTime;
 
 	if(!isFalling && !isColliding)
 	{	
-		GetComponent.<Rigidbody>().AddRelativeForce(Vector3.forward * GetComponent.<Rigidbody>().mass * nA);
+		GetComponent.<Rigidbody>().AddForce(transform.forward * GetComponent.<Rigidbody>().mass * nA);
 	}
 	
 	lastMaxSpeed = nMaxSpeed;
@@ -189,7 +189,7 @@ function FixedUpdate () {
 	}
 
 	if(allowedBoost && throttle > 0)
-		boostAmount += Time.deltaTime * 0.1f;
+		boostAmount += Time.fixedDeltaTime * 0.1f;
 
 	if(startBoostVal == 0 && allowedBoost){
 		Boost(boostAmount,"Trick");
@@ -199,8 +199,7 @@ function FixedUpdate () {
 	if(startBoostVal == 0 && spinOut){
 		SpinOut();
 		startBoostVal = -1;
-	}
-	
+	}	
 }
 
 function KartCollision(otherKart : Transform)
@@ -473,7 +472,7 @@ function SpinKartBody(dir : Vector3, time : float)
 	
 	while(Time.realtimeSinceStartup - startTime < time)
 	{
-		transform.FindChild("Kart Body").Rotate((dir * 360f * Time.deltaTime)/time);
+		transform.FindChild("Kart Body").Rotate((dir * 360f * Time.fixedDeltaTime)/time);
 		yield;
 	}
 	

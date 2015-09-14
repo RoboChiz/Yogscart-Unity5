@@ -160,13 +160,16 @@ function FixedUpdate () {
 	
 	ks.steer = turnRequired;
 	
-	if(ki.heldPowerUp != -1)
+	if(ki != null)
 	{
-		if(!iteming)
-			DoItems();
+		if(ki.heldPowerUp != -1)
+		{
+			if(!iteming)
+				DoItems();
+		}
+		else
+			ki.input = false;
 	}
-	else
-		ki.input = false;
 	
 }
 

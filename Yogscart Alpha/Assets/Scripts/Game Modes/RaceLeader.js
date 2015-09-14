@@ -1,5 +1,4 @@
 ﻿#pragma strict
-
 /*
 Race Leader
 V1.0
@@ -21,11 +20,14 @@ var NetworkRacers : NetworkedRacer[];
 var cutsceneWait : boolean;
 var ending : boolean;
 
-var timer : Timer;
+var startTimer : float = -1;
+var raceTimer : float;
 //Single Player Variables
 var race : int = 1; //Holds which race in a grand prix you are
 
 var inRace : boolean = false;
+
+var waitFinished : boolean = true;
 
 //Used in multiplayer
 private var Votes : Vector2[];
@@ -94,6 +96,8 @@ function StartSinglePlayer()//true if in Time Trial Mode
 	
 	LoadLibaries();
 	
+	race = 1;
+	
 	if(type != RaceStyle.TimeTrial) //Setup a Grand Prix or VS Race
 	{
 		Racers = new Racer[12];
@@ -132,7 +136,6 @@ function StartSinglePlayer()//true if in Time Trial Mode
 			for(var i : int = 0; i < 12 - im.c.Length; i++)
 			{
 				charactersShuffle.Push(i%gd.Characters.Length);
-				Debug.Log(i + ": " + charactersShuffle[i].ToString());
 			}
 		}
 		else
@@ -147,8 +150,6 @@ function StartSinglePlayer()//true if in Time Trial Mode
 		{
 			if(i < 12 - im.c.Length)
 			{
-			
-				Debug.Log(i + ": " + charactersShuffle[i].ToString());
 				
 				Racers[i] = new Racer(false,counter,charactersShuffle[i],Random.Range(0,gd.Hats.Length),Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),i);
 				
@@ -196,6 +197,8 @@ function ShuffleArray(arr : Array)
 function spStartRace()
 {
 
+	raceTimer = 0;
+
 	if(type == RaceStyle.CustomRace && race > 1)
 	{
 		transform.GetComponent(Level_Select).enabled = true;
@@ -242,7 +245,9 @@ function StartRace ()
 	cutsceneWait = false;
 	ending = false;
 	SetFinished(false);
-	timer = new Timer();
+	
+	rb.numberofRaces = race;
+	waitFinished = true;
 	
 	//Setup Racer if networked
 	if(type == RaceStyle.Online)
@@ -449,34 +454,31 @@ function StartRace ()
 			
 		}
 		
-		gd.StartTick(timer);
+		startTimer = Time.time;
 		inRace = true;
 		
 		//During Race
 		
-		while(WaitForFinished() && timer.minutes < 60)
-			{
+		while(waitFinished && raceTimer < 3600) //If race has been going on elss than an hour
+		{
 			
-				if(!Network.isServer)
+			if(!Network.isServer)
+			{
+				for(var r : int = 0; r < Racers.Length; r++)
 				{
-					for(var r : int = 0; r < Racers.Length; r++)
-					{
-						Racers[r].TotalDistance = Racers[r].ingameObj.GetComponent(Position_Finding).currentTotal;
-						Racers[r].NextDistance = Racers[r].ingameObj.GetComponent(Position_Finding).currentDistance;
-					}
+					Racers[r].TotalDistance = Racers[r].ingameObj.GetComponent(Position_Finding).currentTotal;
+					Racers[r].NextDistance = Racers[r].ingameObj.GetComponent(Position_Finding).currentDistance;
 				}
-				ss.CalculatePositions(Racers); //Racers refers to the same Racers as the Network Racer Array.
-				
-				if(Network.isServer)
-					SendPositionUpdates();
-				else
-					LocalSendPositionUpdates();
-				
-				yield WaitForSeconds(0.25);
 			}
-		
-		EndGame();
-
+			ss.CalculatePositions(Racers); //Racers refers to the same Racers as the Network Racer Array.
+			
+			if(Network.isServer)
+				SendPositionUpdates();
+			else
+				LocalSendPositionUpdates();
+			
+			yield WaitForSeconds(0.25);
+		}
 	}
 }
 
@@ -521,6 +523,21 @@ function myIngame(id : NetworkViewID, toChange : int, info : NetworkMessageInfo)
 	}
 }
 
+function Update()
+{
+	if(startTimer != -1)
+	{
+		raceTimer = Time.time - startTimer;
+		waitFinished = WaitForFinished();
+		
+		if(!waitFinished || raceTimer >= 3600f)
+		{			
+			startTimer = -1;				
+			EndGame();
+		}
+	}
+}
+
 function FixedUpdate()
 {
 
@@ -531,7 +548,7 @@ function FixedUpdate()
 			{
 				Racers[i].finished = true;
 
-				Racers[i].timer = new Timer(timer);
+				Racers[i].timer = raceTimer;
 				
 				if(!Network.isClient && !Network.isServer && Racers[i].human)
 				{
@@ -578,12 +595,11 @@ function FinishLocalRacer(i : int)
 function EndGame()
 {
 	Debug.Log("The Race has ended!");
-	gd.StopTick();
+	rb.numberofRaces = race;
 
 	if(type == RaceStyle.Online)
 	{
 		//Send Timer
-		
 		StopCoroutine("starttoendRace");
 		
 		var allFinished : boolean = true;
@@ -619,29 +635,30 @@ function EndGame()
 		var BestTimer = gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime; 		
 		var racerTime = Racers[0].timer;		
 		
-		if(BestTimer.BiggerThan(racerTime))
+		if(racerTime < BestTimer || BestTimer <= 0f)
 		{
-			PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].Name,racerTime.ToString());
-			gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = new Timer(racerTime);
+			PlayerPrefs.SetFloat(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].Name,racerTime);
+			gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = racerTime;
 		}
 		
-		rb.bestTimer = racerTime;
+		rb.lb.AddLBRacer(true, Racers[0].character, Racers[0].points, Racers[0].timer);
+				
 		rb.WrapUp();
 	}
 	else
 	{
 		Debug.Log("Finished the Race");
 		
-		var fc = new DisplayName[Racers.Length];
+		var holderList : DisplayRacer[] = new DisplayRacer[Racers.Length];
 		
 		for(var i : int = 0; i < Racers.Length;i++)
 		{
-		
 			Racers[i].points += 15 - Racers[i].position;
-			fc[Racers[i].position] = new DisplayName(Racers[i].name,Racers[i].character,Racers[i].points,Racers[i].human);
+			holderList[Racers[i].position] = new DisplayRacer(Racers[i].position,Racers[i].human, Racers[i].character, Racers[i].points, Racers[i].timer);
 		}
 		
-		rb.finishedCharacters = fc.ToList();
+		rb.lb.Racers = holderList.ToList();
+		
 		rb.WrapUp();
 		
 	}
@@ -652,11 +669,12 @@ function EndGame()
 
 function starttoendRace()
 {
-
-	GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,30);
-	yield WaitForSeconds(30);
-	SetFinished(true);
-		
+	if(waitFinished)
+	{
+		GetComponent.<NetworkView>().RPC("Countdowner",RPCMode.All,30);
+		yield WaitForSeconds(30);
+		SetFinished(true);
+	}	
 }
 
 function LevelSelectCountdown()
@@ -738,13 +756,28 @@ function PositionUpdate(toChange : int, total : int, next : float, info : Networ
 function LocalFinish(toChange : int)
 {
 	Racers[toChange].finished = true;
-	Debug.Log("LOCAL FINISH!");
 	
 	if(inRace)
 	{
-		Debug.Log("Sending RPC");
-		GetComponent.<NetworkView>().RPC("AddPlayer",RPCMode.All,NetworkRacers[toChange].name,NetworkRacers[toChange].character,NetworkRacers[toChange].points);
-		Debug.Log("RPC SENT");
+		GetComponent.<NetworkView>().RPC("AddLBRacer",RPCMode.All,NetworkRacers[toChange].name,NetworkRacers[toChange].character,NetworkRacers[toChange].points,NetworkRacers[toChange].timer);
+		
+		var uniquePosition : boolean = false;
+			
+		while(!uniquePosition)
+		{
+		
+			uniquePosition = true;
+		
+			for(var i : int = 0; i < Racers.Length; i++)
+			{
+				if(i != toChange && Racers[i].position == Racers[toChange].position)
+				{
+					Racers[toChange].position++;
+					uniquePosition = false;
+					continue;
+				}
+			}
+		}		
 	}
 	
 	if(cutsceneWait && !ending)
@@ -766,11 +799,32 @@ function Finished(toChange : int, info : NetworkMessageInfo)
 		Network.CloseConnection(info.sender,true);
 	}
 	else
-	{
+	{		
+		
 		Racers[toChange].finished = true;
 		
 		if(inRace)
-			GetComponent.<NetworkView>().RPC("AddPlayer",RPCMode.All,NetworkRacers[toChange].name,NetworkRacers[toChange].character,NetworkRacers[toChange].points);
+		{
+			GetComponent.<NetworkView>().RPC("AddLBRacer",RPCMode.All,NetworkRacers[toChange].name,NetworkRacers[toChange].character,NetworkRacers[toChange].points,NetworkRacers[toChange].timer);
+			
+			var uniquePosition : boolean = false;
+			
+			while(!uniquePosition)
+			{
+			
+				uniquePosition = true;
+			
+				for(var i : int = 0; i < Racers.Length; i++)
+				{
+					if(i != toChange && Racers[i].position == Racers[toChange].position)
+					{
+						Racers[toChange].position++;
+						uniquePosition = false;
+						continue;
+					}
+				}
+			}			
+		}
 		
 		if(cutsceneWait && !ending)
 		{
