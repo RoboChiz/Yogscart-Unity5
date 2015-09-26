@@ -98,8 +98,13 @@ function Swap(array : Racer[], a : int, b : int)
 
 }
 
-function CalculatePoints(array : DisplayName[])
+static function SortRacersPoints(toChangeArray : Racer[])
 {
+
+	var array = new List.<Racer>();
+	
+	for(var j : int = 0; j < toChangeArray.Length; j++)
+		array.Add(toChangeArray[j]);
 
 	var sorted : boolean = false;
 	var endInt : int = 0;
@@ -109,7 +114,7 @@ function CalculatePoints(array : DisplayName[])
 	
 		sorted = true;
 					
-		for(var i : int = 1; i < array.Length - endInt; i++)
+		for(var i : int = 1; i < array.Count - endInt; i++)
 		{
 			if(array[i-1].points < array[i].points)
 			{
@@ -118,17 +123,16 @@ function CalculatePoints(array : DisplayName[])
 				array[i-1] = array[i];
 				array[i] = holder;
 				sorted = false;
-				
 			}
 		}
 		
 		endInt++;
 	}
 	
-	
 	return array;
-	
+
 }
+
 
 static function CalculatePoints(toChangeArray : List.<DisplayRacer>)
 {

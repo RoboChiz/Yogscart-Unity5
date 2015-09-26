@@ -1,7 +1,7 @@
 ﻿#pragma strict
 
 var allowedToChange : boolean;
-var c : InputController[]; //Holds controllers connected
+static var c : InputController[]; //Holds controllers connected
 
 var keyboardPlayer : int;
 var mouseLock : boolean;
@@ -11,9 +11,12 @@ var changingController : boolean;
 private var showIcon : boolean[];
 private var iconHeights : int[];
 
+static var mouseAsleep : boolean;
+
 function Awake(){
 	showIcon = new boolean[4];
 	iconHeights = new int[4];
+	c = new InputController[0];
 }
 
 public class InputController
@@ -41,6 +44,12 @@ public class InputController
 		if(buttonLock == "" && returnVal != 0)
 		{
 			buttonLock = axis;
+			
+			if(!InputManager.mouseAsleep)
+			{
+				InputManager.mouseAsleep = true;
+			}
+				
 			return Mathf.Sign(returnVal);
 		}
 		else
@@ -64,9 +73,10 @@ function Update()
 		if((c == null || c.Length < 4)){
 			if(Input.GetAxis("Key_Submit"))
 				AddController("Key_");
-		
+				
 			if(Input.GetAxis("C1_Submit"))
 				AddController("C1_");
+
 		
 			if(Input.GetAxis("C2_Submit"))
 				AddController("C2_");
@@ -154,7 +164,7 @@ function AddController(input : String)
 	changingController = true;
 	
 	var alreadyIn : boolean;
-	
+
 	for(var i : int = 0; i < c.Length; i++)
 	{
 		if(c[i].inputName == input)
@@ -237,18 +247,27 @@ function RemoveOtherControllers()
 }
 
 function MouseIntersects(Area : Rect){
-	if(Input.mousePosition.x >= Area.x && Input.mousePosition.x <= Area.x + Area.width 
+
+	//Check for if Mouse is needed
+	if(Input.GetAxisRaw("Mouse_Click") != 0 && mouseAsleep)
+		mouseAsleep = false;
+		
+	if(!mouseAsleep && Input.mousePosition.x >= Area.x && Input.mousePosition.x <= Area.x + Area.width 
 	&&  Screen.height-Input.mousePosition.y >= Area.y &&  Screen.height-Input.mousePosition.y <= Area.y + Area.height)
 		return true;
 	else
 		return false;
 }
 
-function GetClick()
+function GetClick() //Must always be called before Mouse Intersects to wake up mouse
 {
 	if(Input.GetAxisRaw("Mouse_Click") != 0 && !mouseLock)
 	{
 		mouseLock = true;
+		
+		if(mouseAsleep)
+			mouseAsleep = false;
+		
 		return true;
 	}
 	else

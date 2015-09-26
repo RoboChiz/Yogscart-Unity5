@@ -300,45 +300,45 @@ function OnGUI()
 
 
 
-			if(im.c.Length == 3){
-				cam = Platforms[0].FindChild("Camera").GetComponent.<Camera>();
-				oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
-				newRect = Vector4(0.5,0.5,0.25,0.5);
-				nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
-				cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
+			if(im.c.Length >= 3){
+				if(state != csState.Kart)
+				{
+					cam = Platforms[0].FindChild("Camera").GetComponent.<Camera>();
+					oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
+					newRect = Vector4(0.5,0.5,0.25,0.5);
+					nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
+					cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
+					
+					cam = Platforms[2].FindChild("Camera").GetComponent.<Camera>();
+					oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
+					newRect = Vector4(0.5,0,0.25,0.5);
+					nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
+					cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
+				}
+				else
+				{
+					cam = Platforms[0].FindChild("Camera").GetComponent.<Camera>();
+					oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
+					newRect = Vector4(0.25,0.5,0.25,0.5);
+					nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
+					cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
 
+					cam = Platforms[2].FindChild("Camera").GetComponent.<Camera>();
+					oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
+					newRect = Vector4(0.25,0,0.25,0.5);
+					nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
+					cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
+				}
+				
 				cam = Platforms[1].FindChild("Camera").GetComponent.<Camera>();
-				oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
-				newRect = Vector4(0.75,0.5,0.25,0.5);
-				nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
-				cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
-
-				cam = Platforms[2].FindChild("Camera").GetComponent.<Camera>();
-				oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
-				newRect = Vector4(0.5,0,0.25,0.5);
-				nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
-				cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
+					oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
+					newRect = Vector4(0.75,0.5,0.25,0.5);
+					nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
+					cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
+								
 			}
 
 			if(im.c.Length == 4){
-				cam = Platforms[0].FindChild("Camera").GetComponent.<Camera>();
-				oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
-				newRect = Vector4(0.5,0.5,0.25,0.5);
-				nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
-				cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
-
-				cam = Platforms[1].FindChild("Camera").GetComponent.<Camera>();
-				oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
-				newRect = Vector4(0.75,0.5,0.25,0.5);
-				nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
-				cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
-
-				cam = Platforms[2].FindChild("Camera").GetComponent.<Camera>();
-				oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
-				newRect = Vector4(0.5,0,0.25,0.5);
-				nRect = Vector4.Lerp(oldRect,newRect,Time.deltaTime*5f);
-				cam.rect = Rect(nRect.x,nRect.y,nRect.z,nRect.w);
-
 				cam = Platforms[3].FindChild("Camera").GetComponent.<Camera>();
 				oldRect = Vector4(cam.rect.x,cam.rect.y,cam.rect.width,cam.rect.height);
 				newRect = Vector4(0.75,0,0.25,0.5);
@@ -532,7 +532,12 @@ function OnGUI()
 			
 		}
 		
-		if(cancel)
+		var backTexture : Texture2D = Resources.Load("UI Textures/New Main Menu/backnew",Texture2D);	
+		var backRatio : float = (Screen.width/6f)/backTexture.width;	
+		var backRect : Rect = Rect(MainMenu.xAmount,Screen.height - 10 - (backTexture.height*backRatio),Screen.width/6f,backTexture.height*backRatio);	
+		GUI.DrawTexture(backRect,backTexture);
+		
+		if((!MainMenu.transitioning && im.MouseIntersects(backRect) && mouseClick) || cancel)
 		{
 			if(!ready[s])
 			{
@@ -574,129 +579,123 @@ function OnGUI()
 			GUI.DrawTexture(CursorRect,CursorTexture);
 		}
 		
+		var screenHeight : float = Screen.height - 10 - (backTexture.height*backRatio);
+		
 		//Render Kart And Wheel
 		if(state == csState.Kart)
-		{
-		
-			var scaleAmount : float = 1f;
-			
+		{	
 			var areaRect : Rect;
 			
 			if(im.c.Length == 1)
-				areaRect = Rect(0,0,Screen.width,Screen.height);
+				areaRect = Rect(0,0,Screen.width,screenHeight);
 			
 			if(im.c.Length == 2)
 			{			
 				if(s == 0)
-					areaRect = Rect(0,0,Screen.width,Screen.height/2f);
+					areaRect = Rect(0,0,Screen.width,screenHeight/2f);
 				else
-					areaRect = Rect(0,Screen.height/2f,Screen.width,Screen.height/2f);
+					areaRect = Rect(0,screenHeight/2f,Screen.width,screenHeight/2f);
 			}
 			
 			if(im.c.Length > 2)
 			{			
 				if(s == 0)
-					areaRect = Rect(0,0,Screen.width/2f,Screen.height/2f);
+					areaRect = Rect(0,0,Screen.width/2f,screenHeight/2f);
 				if(s == 1)
-					areaRect = Rect(Screen.width/2f,0,Screen.width/2f,Screen.height/2f);
+					areaRect = Rect(Screen.width/2f,0,Screen.width/2f,screenHeight/2f);
 				if(s == 2)
-					areaRect = Rect(0,Screen.height/2f,Screen.width/2f,Screen.height/2f);
+					areaRect = Rect(0,screenHeight/2f,Screen.width/2f,screenHeight/2f);
 				if(s == 3)
-					areaRect = Rect(Screen.width/2f,Screen.height/2f,Screen.width/2f,Screen.height/2f);
+					areaRect = Rect(Screen.width/2f,screenHeight/2f,Screen.width/2f,screenHeight/2f);
 			}
 			
+			var heightChunk : float = areaRect.height / 6f;
 			
 			GUI.BeginGroup(areaRect);
 			
-			var scale : float = chunkSize / scaleAmount;
-		
-			nameListRect = Rect(0,areaRect.height/2f - scale*1.25f,scale*5f,scale*2.5f);
-			GUI.DrawTexture(nameListRect,nameList);
+				var selectionRect : Rect = Rect(10,heightChunk,(areaRect.width/2f) - 10,heightChunk*4f);
+				GUI.DrawTexture(selectionRect,nameList);
 			
-			var kartListRect = Rect(10,areaRect.height/2f - scale*1.25f + 10,scale*5f - 20,scale*2.5f - 20);
-			
-			GUI.BeginGroup(kartListRect);
-			
-			var kartIcon : Texture2D = gd.Karts[choice[s].kart].Icon;
-			var wheelIcon : Texture2D = gd.Wheels[choice[s].wheel].Icon;
-			var arrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow",Texture2D);
-			var downArrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow_Down",Texture2D);
-			
-			var kartRect : Rect = Rect(scale/4f, kartListRect.height/2f - scale*1.125, scale*2.5f,((scale*2.5f)/kartIcon.width) * kartIcon.height); 
-			var wheelRect : Rect = Rect(kartListRect.x + ((kartListRect.width/5f)*3) - (kartListRect.height *0.35f), kartListRect.height/2f - scale*1.125, kartRect.width,kartRect.height);
-			
-			GUI.DrawTexture(kartRect,kartIcon,ScaleMode.ScaleToFit);
-			GUI.DrawTexture(wheelRect,wheelIcon,ScaleMode.ScaleToFit);
-			
-			if(s == im.keyboardPlayer && canInput)
-			{
+				var kartIcon : Texture2D = gd.Karts[choice[s].kart].Icon;
+				var wheelIcon : Texture2D = gd.Wheels[choice[s].wheel].Icon;
+				var arrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow",Texture2D);
+				var downArrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow_Down",Texture2D);
 				
-				if(im.MouseIntersects(Rect(areaRect.x + kartListRect.x + kartRect.x,areaRect.y + kartListRect.y + kartRect.y,kartRect.width,kartRect.height)) && !kartSelected[s] && mouseClick)
+				var kartRect : Rect = Rect(20, heightChunk + 10, (selectionRect.width/2f) - 10,(heightChunk*4f) - 20); 
+				var wheelRect : Rect = Rect(20 + (selectionRect.width/2f), heightChunk + 10, (selectionRect.width/2f) - 10,(heightChunk*4f) - 20); 
+				
+				GUI.DrawTexture(kartRect,kartIcon,ScaleMode.ScaleToFit);
+				GUI.DrawTexture(wheelRect,wheelIcon,ScaleMode.ScaleToFit);	
+				
+				var upArrowRect : Rect;
+				var downArrowRect : Rect;
+				
+				if(!kartSelected[s])
 				{
-					kartSelected[s] = true;
-					mouseSelecting = false;
-				}
 				
-				if(im.MouseIntersects(Rect(areaRect.x + kartListRect.x + wheelRect.x,areaRect.y + kartListRect.y + wheelRect.y,wheelRect.width,wheelRect.height)) && kartSelected[s] && mouseClick)
-				{
-					ready[s] = true;
-				}
-			}
-			
-			GUI.EndGroup();
-			
-			if(!kartSelected[s])
-			{
-			
-				var kartUp = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y - scale*0.8f, scale*0.75f, scale*0.75f);
-				GUI.DrawTexture(kartUp,arrowIcon,ScaleMode.ScaleToFit);
-				
-				var kartDown = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
-				GUI.DrawTexture(kartDown,downArrowIcon,ScaleMode.ScaleToFit);
-				
-				if(im.MouseIntersects(Rect(areaRect.x + kartUp.x,areaRect.y + kartUp.y,kartUp.width,kartUp.height)) && mouseClick && canInput)
-				{
-						choice[s].kart ++;						
-				}
-				
-				if(im.MouseIntersects(Rect(areaRect.x + kartDown.x,areaRect.y + kartDown.y,kartDown.width,kartDown.height)) && mouseClick && canInput)
-				{
-						choice[s].kart --;
-				}
-				
-				if(choice[s].kart >= gd.Karts.Length)
-					choice[s].kart = 0;
-						
-				if(choice[s].kart < 0)
-					choice[s].kart = gd.Karts.Length -1;
+					/* kartUp = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y - scale*0.8f, scale*0.75f, scale*0.75f);
+					GUI.DrawTexture(kartUp,arrowIcon,ScaleMode.ScaleToFit);
 					
-			}
-			else
-			{
-				var wheelUp = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y - scale*0.8f, scale*0.75f, scale*0.75f);
-				GUI.DrawTexture(wheelUp,arrowIcon,ScaleMode.ScaleToFit);
-				
-				var wheelDown = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
-				GUI.DrawTexture(wheelDown,downArrowIcon,ScaleMode.ScaleToFit);
-			
-				if(im.MouseIntersects(Rect(areaRect.x + wheelUp.x,areaRect.y + wheelUp.y,wheelUp.width,wheelUp.height)) && mouseClick && canInput)
-				{
-						choice[s].wheel ++;						
-				}
-				
-				if(im.MouseIntersects(Rect(areaRect.x + wheelDown.x,areaRect.y + wheelDown.y,wheelDown.width,wheelDown.height)) && mouseClick && canInput)
-				{
-						choice[s].wheel --;
-				}
-				
-				if(choice[s].wheel >= gd.Wheels.Length)
-					choice[s].wheel = 0;
-						
-				if(choice[s].wheel < 0)
-					choice[s].wheel = gd.Wheels.Length -1;
+					var kartDown = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
+					GUI.DrawTexture(kartDown,downArrowIcon,ScaleMode.ScaleToFit);
 					
-			}
-			
+					if(im.MouseIntersects(Rect(areaRect.x + kartUp.x,areaRect.y + kartUp.y,kartUp.width,kartUp.height)) && mouseClick && canInput)
+					{
+							choice[s].kart ++;						
+					}
+					
+					if(im.MouseIntersects(Rect(areaRect.x + kartDown.x,areaRect.y + kartDown.y,kartDown.width,kartDown.height)) && mouseClick && canInput)
+					{
+							choice[s].kart --;
+					}*/
+					
+					upArrowRect =  Rect(20,10,(selectionRect.width/2f) - 10,heightChunk - 10);
+					downArrowRect =  Rect(20, heightChunk*5f, (selectionRect.width/2f) - 10,heightChunk - 10);
+					
+					if(choice[s].kart >= gd.Karts.Length)
+						choice[s].kart = 0;
+							
+					if(choice[s].kart < 0)
+						choice[s].kart = gd.Karts.Length -1;
+						
+				}
+				else
+				{
+					/*var wheelUp = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y - scale*0.8f, scale*0.75f, scale*0.75f);
+					GUI.DrawTexture(wheelUp,arrowIcon,ScaleMode.ScaleToFit);
+					
+					var wheelDown = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
+					GUI.DrawTexture(wheelDown,downArrowIcon,ScaleMode.ScaleToFit);
+				
+					if(im.MouseIntersects(Rect(areaRect.x + wheelUp.x,areaRect.y + wheelUp.y,wheelUp.width,wheelUp.height)) && mouseClick && canInput)
+					{
+							choice[s].wheel ++;						
+					}
+					
+					if(im.MouseIntersects(Rect(areaRect.x + wheelDown.x,areaRect.y + wheelDown.y,wheelDown.width,wheelDown.height)) && mouseClick && canInput)
+					{
+							choice[s].wheel --;
+					}*/
+					
+					upArrowRect =  Rect(20 + (selectionRect.width/2f), 10, (selectionRect.width/2f) - 10, heightChunk - 10);
+					downArrowRect =  Rect(20 + (selectionRect.width/2f), heightChunk*5f, (selectionRect.width/2f) - 10, heightChunk - 10);
+					
+					if(choice[s].wheel >= gd.Wheels.Length)
+						choice[s].wheel = 0;
+							
+					if(choice[s].wheel < 0)
+						choice[s].wheel = gd.Wheels.Length -1;
+						
+					if(ready[s])
+					{
+						var readyTexture : Texture2D = Resources.Load("UI Textures/New Main Menu/Ready",Texture2D);	
+						GUI.DrawTexture(selectionRect,readyTexture,ScaleMode.ScaleToFit);
+					}
+						
+				}
+				
+				GUI.DrawTexture(upArrowRect,arrowIcon,ScaleMode.ScaleToFit);
+				GUI.DrawTexture(downArrowRect,downArrowIcon,ScaleMode.ScaleToFit);
 			
 			GUI.EndGroup();
 			

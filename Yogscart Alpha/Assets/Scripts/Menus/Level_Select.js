@@ -59,9 +59,14 @@ if(vert && !GrandPrixOnly){
 TypeSelecion = !TypeSelecion;
 } 
 
-if(cancelBool){
-	// Exit Stuff
-	if(!Network.isServer && !Network.isClient)
+if(!Network.isServer && !Network.isClient)
+{
+	var backTexture : Texture2D = Resources.Load("UI Textures/New Main Menu/backnew",Texture2D);	
+	var backRatio : float = (Screen.width/6f)/backTexture.width;	
+	var backRect : Rect = Rect(MainMenu.xAmount,Screen.height - 10 - (backTexture.height*backRatio),Screen.width/6f,backTexture.height*backRatio);	
+	GUI.DrawTexture(backRect,backTexture);
+			
+	if((!MainMenu.transitioning && im.MouseIntersects(backRect) && im.GetClick()) || cancelBool)
 	{
 		var mm = GameObject.Find("Menu Holder").GetComponent(MainMenu);
 		
@@ -177,8 +182,8 @@ GUI.DrawTexture(LHRect,LevelHolder);
 
 if(GrandPrixOnly){
 
-var rankText : String = gd.Tournaments[currentCup].LastRank[gd.Difficulty];
-var rankRect : Rect = Rect(75,Screen.height/2 + 10 + Height/1.5f,Width,Height);
+var rankText : String = gd.Tournaments[currentCup].LastRank[gd.difficulty];
+var rankRect : Rect = Rect(75,Screen.height/2f + 10 + Height,Width,Screen.height/2f - Height - 20);
 OutLineLabel(rankRect,rankText,2,Color.black);
 
 
@@ -186,7 +191,7 @@ OutLineLabel(rankRect,rankText,2,Color.black);
 
 	if(transform.GetComponent(RaceLeader).type == RaceStyle.TimeTrial)
 	{
-		var timeRect : Rect = Rect(75,Screen.height/2 + 10 + Height/1.5f,Width,Height);
+		var timeRect : Rect = Rect(75,Screen.height/2f + 10 + Height,Width,Screen.height/2f - Height - 20);
 		var timeString : String = TimeManager.TimerToString(gd.Tournaments[currentCup].Tracks[currentTrack].BestTrackTime);
 		OutLineLabel(timeRect,timeString,2,Color.black);
 	}

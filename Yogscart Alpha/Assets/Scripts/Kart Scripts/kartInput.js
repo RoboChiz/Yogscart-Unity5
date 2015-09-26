@@ -2,6 +2,7 @@
 private var im : InputManager;
 
 var InputNum : int;
+var inputOveride : String = "";
 
 var camLocked : boolean = false;
 var frontCamera : Camera;
@@ -10,13 +11,14 @@ var backCamera : Camera;
 function FixedUpdate () {
 
 	var go = GameObject.Find("GameData");
+	var lookBehind : float = 0;
+	
+	if(ks == null && transform.GetComponent(kartScript))
+			ks = transform.GetComponent(kartScript);
 
 	if(go != null)
 	{
 		im = go.GetComponent(InputManager);
-
-		if(ks == null && transform.GetComponent(kartScript))
-			ks = transform.GetComponent(kartScript);
 
 		ks.throttle = im.c[InputNum].GetInput("Throttle");
 		ks.steer = im.c[InputNum].GetInput("Horizontal");
@@ -27,16 +29,30 @@ function FixedUpdate () {
 			ks.drift = false;
 			
 			
-		var lookBehind : float = im.c[InputNum].GetInput("Look Behind");
-		
-		if((lookBehind != 0) && !camLocked){
-			backCamera.enabled = true;
-			frontCamera.enabled = false;
-		}else{
-			backCamera.enabled = false;
-			frontCamera.enabled = true;
-		}
+		lookBehind = im.c[InputNum].GetInput("Look Behind");
 	}
-
+	
+	if(inputOveride != "")
+	{
+		ks.throttle = Input.GetAxis(inputOveride + "Throttle");
+		ks.steer = Input.GetAxis(inputOveride + "Horizontal");
+		
+		if(Input.GetAxis(inputOveride + "Drift")!=0)
+			ks.drift = true;
+		else
+			ks.drift = false;
+			
+		lookBehind =  Input.GetAxis(inputOveride + "Look Behind"); 
+	}
+	
+	if((lookBehind != 0) && !camLocked){
+		backCamera.enabled = true;
+		frontCamera.enabled = false;
+	}else{
+		backCamera.enabled = false;
+		frontCamera.enabled = true;
+	}
+	
 }
+
 

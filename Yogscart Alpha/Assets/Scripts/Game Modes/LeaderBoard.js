@@ -126,30 +126,47 @@ function OnGUI ()
 			}
 		break;
 		default:
+			//Render Bars showing what place you came
 			for(var i : int = 0; i < Racers.Count; i++)
 			{
+				var nRacer = Racers[i];
+				if(nRacer.human != -1)
+				{
+					var humanTexture : Texture2D;
+
+					humanTexture = Resources.Load("UI Textures/GrandPrix Positions/Winner_P" + (nRacer.human+1).ToString(),Texture2D);	
+					var humanTextureRect : Rect = Rect(0,((nRacer.position+1)*optionSize) - 7,BoardRect.width,optionSize + 14);
+					GUI.DrawTexture(humanTextureRect,humanTexture);		
+				}
+			}
+			
+			for(i = 0; i < Racers.Count; i++)
+			{
+				nRacer = Racers[i];
+				
 				//Render the position Number
-				var PosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (i+1).ToString(),Texture2D);						
+				var PosTexture : Texture2D = Resources.Load("UI Textures/GrandPrix Positions/" + (i+1).ToString(),Texture2D);																		
+																																																										
 				var Ratio = (optionSize)/PosTexture.height;
 				GUI.DrawTexture(Rect(20,(i+1)*optionSize,PosTexture.width * Ratio,optionSize),PosTexture);
-				
-				var nRacer = Racers[i];
-				
+
 				var CharacterIcon = gd.Characters[nRacer.character].Icon;
 				GUI.DrawTexture(Rect(20 + (PosTexture.width * Ratio),(nRacer.position+1)*optionSize,(PosTexture.width * Ratio),optionSize),CharacterIcon,ScaleMode.ScaleToFit);
 				
 				var nameWidth : float = BoardRect.width - 20 -((PosTexture.width * Ratio * 2f));
 				var nameRect : Rect = Rect(10 + (PosTexture.width * Ratio * 2f),(nRacer.position+1)*optionSize,nameWidth,optionSize);
 				
-				if(nRacer.human && nRacer.name != null && nRacer.name != "")
+				if(nRacer.human != -1 && nRacer.name != null && nRacer.name != "")
 				{
 					GUI.Label(nameRect,nRacer.name);
 				}
 				else
 				{
 						var NameTexture : Texture2D;
-						if(nRacer.human)
-							NameTexture = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[nRacer.character].Name + "_Sel",Texture2D);
+						if(nRacer.human != -1)
+						{
+							NameTexture = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[nRacer.character].Name + "_Sel",Texture2D);							
+						}
 						else
 							NameTexture = Resources.Load("UI Textures/GrandPrix Positions/" + gd.Characters[nRacer.character].Name,Texture2D);
 							
@@ -175,6 +192,7 @@ function OnGUI ()
 					GUI.Label(Rect(BoardRect.width - (PosTexture.width * Ratio) - 20,(nRacer.position+1)*optionSize,PosTexture.width * Ratio,optionSize),points.ToString());
 				}
 			}
+			
 		break;
 	}
 	GUI.EndGroup();
@@ -269,7 +287,7 @@ function AddLBRacer(name : String, character : int, points : int, timer : float)
 	Racers.Add(nRacer);
 }
 
-function AddLBRacer(human : boolean, character : int, points : int, timer : float)
+function AddLBRacer(human : int, character : int, points : int, timer : float)
 {
 	var nRacer : DisplayRacer;
 	
@@ -304,7 +322,7 @@ class DisplayRacer
 	var character : int;
 	var points : int;
 	var timer : float;
-	var human : boolean;	
+	var human : int;	
 	
 	var position : float;
 	private static var slideTime : float = 0.5f;
@@ -316,12 +334,12 @@ class DisplayRacer
 		character = c;
 		points = p;
 		timer = t;
-		human = true;	
+		human = 0;	
 		position = po;
 	}
 	
 	//All Human Players should have a name
-	function DisplayRacer(po : int, h : boolean, c : int, p : int, t : float)
+	function DisplayRacer(po : int, h : int, c : int, p : int, t : float)
 	{
 		human = h;
 		character = c;
@@ -337,7 +355,7 @@ class DisplayRacer
 		character = c;
 		points = p;
 		timer = t;
-		human = false;	
+		human = -1;	
 		position = po;
 	}
 		

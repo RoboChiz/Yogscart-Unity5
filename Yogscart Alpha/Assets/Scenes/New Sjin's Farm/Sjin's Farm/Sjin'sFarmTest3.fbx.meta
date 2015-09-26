@@ -1,0 +1,142 @@
+fileFormatVersion: 2
+guid: d6e77518f9289eb4b955523edfc3f609
+timeCreated: 1429210374
+licenseType: Free
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: Cliff
+    100002: Line002
+    100004: Mesh001
+    100006: Railing
+    100008: Railing2
+    100010: Railing_Collider
+    100012: Railing_Collider2
+    100014: Road
+    100016: Shape001
+    100018: //RootNode
+    100020: Box001
+    100022: Box002
+    100024: Cliff2
+    100026: Ramp
+    100028: Ramp2
+    100030: Terrain
+    400000: Cliff
+    400002: Line002
+    400004: Mesh001
+    400006: Railing
+    400008: Railing2
+    400010: Railing_Collider
+    400012: Railing_Collider2
+    400014: Road
+    400016: Shape001
+    400018: //RootNode
+    400020: Box001
+    400022: Box002
+    400024: Cliff2
+    400026: Ramp
+    400028: Ramp2
+    400030: Terrain
+    2300000: Cliff
+    2300002: Mesh001
+    2300004: Railing
+    2300006: Railing2
+    2300008: Railing_Collider
+    2300010: Railing_Collider2
+    2300012: Road
+    2300014: Box001
+    2300016: Box002
+    2300018: Cliff2
+    2300020: Ramp
+    2300022: Ramp2
+    2300024: Terrain
+    3300000: Cliff
+    3300002: Mesh001
+    3300004: Railing
+    3300006: Railing2
+    3300008: Railing_Collider
+    3300010: Railing_Collider2
+    3300012: Road
+    3300014: Box001
+    3300016: Box002
+    3300018: Cliff2
+    3300020: Ramp
+    3300022: Ramp2
+    3300024: Terrain
+    4300000: Road
+    4300002: Cliff
+    4300004: Mesh001
+    4300006: Railing
+    4300008: Railing_Collider
+    4300010: Railing2
+    4300012: Railing_Collider2
+    4300014: Box001
+    4300016: Box002
+    4300018: Terrain
+    4300020: Cliff2
+    4300022: Ramp
+    4300024: Ramp2
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 2.75
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

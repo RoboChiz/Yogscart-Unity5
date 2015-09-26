@@ -7,8 +7,8 @@ var lastoverallLapisCount : int;
 
 //Tracks 
 
-var currentCup : int = 0;
-var currentTrack : int = 0;
+static var currentCup : int = 0;
+static var currentTrack : int = 0;
 
 var currentChoices : LoadOut[];
 
@@ -43,7 +43,7 @@ var RaceState : int = -1;
 //2 - Time Trial
 //3 - Multiplayer
 
-var Difficulty : int;
+var difficulty : int;
 
 var onlineGameModes : GameMode[];
 
@@ -429,6 +429,7 @@ var wheel : int;
 //During Race Information
 var finished : boolean;
 var position : int;
+var overallPosition : int;
 var ingameObj : Transform;
 var cameras : Transform;
 var timer : float;

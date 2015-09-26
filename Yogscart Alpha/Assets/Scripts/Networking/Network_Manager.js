@@ -365,8 +365,13 @@ function OnGUI()
 		{
 			StartCoroutine("StartServer");
 		}
-		
-	if(im.c[0].GetMenuInput("Cancel")!= 0)
+	//Copied over from the main menu script cause Lazy
+	var backTexture : Texture2D = Resources.Load("UI Textures/New Main Menu/backnew",Texture2D);	
+	var backRatio : float = (Screen.width/6f)/backTexture.width;	
+	var backRect : Rect = Rect(MainMenu.xAmount,Screen.height - 10 - (backTexture.height*backRatio),Screen.width/6f,backTexture.height*backRatio);	
+	GUI.DrawTexture(backRect,backTexture);
+				
+	if((!MainMenu.transitioning && im.MouseIntersects(backRect) && im.GetClick()) || im.c[0].GetMenuInput("Cancel")!= 0)
 	{
 		GameObject.Find("Menu Holder").GetComponent(MainMenu).hidden = false;
 		GameObject.Find("Menu Holder").GetComponent(MainMenu).BackState();

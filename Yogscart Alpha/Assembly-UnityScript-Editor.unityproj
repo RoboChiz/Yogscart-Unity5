@@ -50,6 +50,7 @@
      <None Include="Assets\Resources\Karts\Dyne\Carts\Monowheel\readme-monowheel.txt" />
      <None Include="Assets\Shaders\TerrainBlendShaderSplat.shader" />
      <None Include="Assets\Resources\Confetti Particles\Confetti - Readme.txt" />
+     <None Include="Assets\Scenes\New Sjin&apos;s Farm\Sjin&apos;s Farm\Materials\Plants\Plant_Shader.shader" />
      <None Include="Assets\Resources\Prefabs\Power Ups\Shaders\ExplosionHigh.shader" />
      <None Include="Assets\Resources\Karts\Dyne\Carts\Astley\readme-astley.txt" />
      <None Include="Assets\Resources\Prefabs\Power Ups\Shaders\ExplosionLow.shader" />
@@ -59,6 +60,7 @@
      <None Include="Assets\Resources\DO NOT REMOVE ANYTHING IN THIS FOLDER.txt" />
      <None Include="Assets\Placeholder Extras\Confetti Particles\Confetti - Readme.txt" />
      <None Include="Assets\PrimitivePlus\Documentation\ReadMe.txt" />
+     <None Include="Assets\Shaders\Standard_TwoSided.shader" />
      <None Include="Assets\Fantasy Skybox FREE\Readme\Readme.txt" />
      <None Include="Assets\Standard Assets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />
      <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />

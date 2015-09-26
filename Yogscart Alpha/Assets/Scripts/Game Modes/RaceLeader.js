@@ -102,7 +102,7 @@ function StartSinglePlayer()//true if in Time Trial Mode
 	{
 		Racers = new Racer[12];
 
-		var diff : int = gd.Difficulty;
+		var diff : int = gd.difficulty;
 		var minVal : int;
 		var maxVal : int;
 		
@@ -360,7 +360,7 @@ function StartRace ()
 			
 				Racers[i].ingameObj = km.SpawnKart(KartType.Local,SpawnPosition,rot * Quaternion.Euler(0,-90,0),Racers[i].kart,Racers[i].wheel,Racers[i].character,Racers[i].hat);
 			
-				switch(gd.Difficulty)
+				switch(gd.difficulty)
 				{
 					case 0:
 					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 18;
@@ -570,7 +570,9 @@ function FinishLocalRacer(i : int)
 {
 
 	Debug.Log("Player " + i + " has finished");
-
+	
+	Racers[i].ingameObj.GetComponent(kartInfo).Finish();
+	
 	Racers[i].ingameObj.gameObject.AddComponent(NewAI);
 	Destroy(Racers[i].ingameObj.GetComponent(kartInput));
 	Racers[i].ingameObj.GetComponent(kartInfo).hidden = true;
@@ -641,7 +643,7 @@ function EndGame()
 			gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].BestTrackTime = racerTime;
 		}
 		
-		rb.lb.AddLBRacer(true, Racers[0].character, Racers[0].points, Racers[0].timer);
+		rb.lb.AddLBRacer(0, Racers[0].character, Racers[0].points, Racers[0].timer);
 				
 		rb.WrapUp();
 	}
@@ -654,12 +656,78 @@ function EndGame()
 		for(var i : int = 0; i < Racers.Length;i++)
 		{
 			Racers[i].points += 15 - Racers[i].position;
-			holderList[Racers[i].position] = new DisplayRacer(Racers[i].position,Racers[i].human, Racers[i].character, Racers[i].points, Racers[i].timer);
+			if(Racers[i].human)
+				holderList[Racers[i].position] = new DisplayRacer(Racers[i].position,Racers.Length-1-i, Racers[i].character, Racers[i].points, Racers[i].timer);
+			else
+				holderList[Racers[i].position] = new DisplayRacer(Racers[i].position,-1, Racers[i].character, Racers[i].points, Racers[i].timer);
 		}
 		
 		rb.lb.Racers = holderList.ToList();
 		
+		var holder = SortingScript.SortRacersPoints(Racers);
+		for(i = 0; i < holder.Count; i++)
+		{
+			holder[i].overallPosition = i;
+		}
+		
 		rb.WrapUp();
+		
+		if(race == 4 && type == RaceStyle.GrandPrix)
+		{
+			var bestHuman : int = -1;
+			//Determine the Winner and stuff
+			if(Racers != null)
+			{
+				for(i = 0; i < Racers.Length; i++)
+				{
+					if(Racers[i].human && (bestHuman == -1 || (Racers[i].points > Racers[bestHuman].points)))
+					{
+						bestHuman = i;
+					}
+				}
+				
+				rb.bestPosition = Racers[bestHuman].overallPosition;
+				
+				var rankString : String = gd.Tournaments[gd.currentCup].LastRank[gd.difficulty];
+				
+				if(Racers[bestHuman].points == 60)
+					rankString = "Perfect";
+				else if(Racers[bestHuman].overallPosition == 0)
+				{
+					if(rankString != "Perfect")
+						rankString = "Gold";
+				}
+				else if(Racers[bestHuman].overallPosition == 1)
+				{
+					if(rankString != "Perfect" && rankString != "Gold")
+						rankString = "Silver";
+				}
+				else if(Racers[bestHuman].overallPosition == 2)
+					if(rankString != "Perfect" && rankString != "Gold" && rankString != "Silver")
+						rankString = "Bronze";
+				else
+				{
+					if(rankString != "Perfect" && rankString != "Gold" && rankString != "Silver" && rankString != "Bronze")
+						rankString = "No Rank";
+				}
+				
+				switch(gd.difficulty)
+				{
+					case 0:
+						PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Name+"[50cc]",rankString);
+					break;
+					case 1:
+						PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Name+"[100cc]",rankString);
+					break;
+					case 2:
+						PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Name+"[150cc]",rankString);
+					break;
+					case 3:
+						PlayerPrefs.SetString(gd.Tournaments[gd.currentCup].Name+"[Insane]",rankString);
+					break;
+				}
+			}	
+		}
 		
 	}
 	

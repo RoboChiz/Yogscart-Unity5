@@ -15,7 +15,8 @@ var selectedColor : Color = Color.yellow;
 private var currentSelection : int = 0;
 
 var hidden : boolean;
-var transitioning : boolean;
+static var transitioning : boolean;
+static var sliding : boolean;
 var pictureTransitioning : boolean;
 
 private var freezeBack : boolean;
@@ -24,7 +25,7 @@ enum NextState{Hidden,Sliding,Fixed};
 private var hideNext : NextState = NextState.Fixed; //Literally used to animate the next button, which disappears on the options menu
 
 var transitionTime : float = 0.5f;
-private var sideAmount : float = 0;
+var sideAmount : float = 0;
 
 private var sidePicture : Texture2D;
 private var sidePictureAmount : float = 0;
@@ -35,8 +36,9 @@ private var currentResolution : int;
 private var currentQuality : int;
 private var currentVSync : int = 0;
 
- var changesMade : boolean;
-
+var changesMade : boolean;
+static var xAmount : float;
+				
 function Start ()
 {
 
@@ -260,6 +262,11 @@ function OnGUI ()
 				currentSelection = 0;
 		}
 		
+		if(!freezeBack )
+			xAmount = sideAmount;
+		else
+			xAmount = 0;
+		
 		if(!hidden)
 		{
 			//Render the Game Logo
@@ -271,17 +278,13 @@ function OnGUI ()
 			
 			if(currentState != MenuState.Main)
 			{
-				var backTexture : Texture2D = Resources.Load("UI Textures/New Main Menu/backnew",Texture2D);
-				var xAmount : float;
-				
-				if(!freezeBack )
-					xAmount = sideAmount;
-				else
-					xAmount = 0;
+				var backTexture : Texture2D = Resources.Load("UI Textures/New Main Menu/backnew",Texture2D);				
+				var backRatio : float = (Screen.width/6f)/backTexture.width;
 					
-				GUI.DrawTexture(Rect(xAmount,Screen.height - 10 - height,box.width/3f,height),backTexture);
+				var backRect : Rect = Rect(xAmount,Screen.height - 10 - (backTexture.height*backRatio),Screen.width/6f,backTexture.height*backRatio);	
+				GUI.DrawTexture(backRect,backTexture);
 				
-				if(!transitioning && im.MouseIntersects(Rect(xAmount,Screen.height - 10 - height,box.width/3f,height)) && im.GetClick())
+				if(!transitioning && im.MouseIntersects(backRect) && im.GetClick())
 				{
 				
 					if(currentState != MenuState.Difficulty && currentState != MenuState.CharacterSelect )
@@ -374,9 +377,10 @@ function OnGUI ()
 							im.RemoveOtherControllers();
 						break;
 						case 1:
-							ChangeMenu(MenuState.Multiplayer);
+							ChangeMenu(MenuState.Multiplayer);						
 						break;
 						case 2:
+							gd.difficulty = 1;
 							ChangeMenu(MenuState.Online);
 							nm.LoadServers();
 							im.RemoveOtherControllers();
@@ -412,6 +416,7 @@ function OnGUI ()
 							freezeBack = true;
 							gd.GetComponent(Level_Select).GrandPrixOnly = false;
 							gd.GetComponent(RaceLeader).type = RaceStyle.TimeTrial;
+							gd.difficulty = 1;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
@@ -554,22 +559,22 @@ function OnGUI ()
 					switch(options[currentSelection])
 					{
 						case "50cc":
-							gd.Difficulty = 0;
+							gd.difficulty = 0;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
 						case "100cc":
-							gd.Difficulty = 1;
+							gd.difficulty = 1;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
 						case "150cc":
-							gd.Difficulty = 2;
+							gd.difficulty = 2;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
 						case "Insane":
-							gd.Difficulty = 3;
+							gd.difficulty = 3;
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
@@ -674,6 +679,8 @@ function BackState()
 
 function Slide(start : float, end : float)
 {
+	sliding = true;
+	
 	var startTime : float = Time.realtimeSinceStartup;
 	
 	while(Time.realtimeSinceStartup - startTime < transitionTime)
@@ -682,6 +689,8 @@ function Slide(start : float, end : float)
 		yield;
 	}
 	sideAmount = end;
+	
+	sliding = false;
 }
 
 function PictureSlide(start : float, end : float)

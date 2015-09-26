@@ -85,121 +85,123 @@ function Start()
 		wheelStart[i] = wheelMeshes[i].localPosition;
 	}
 	
-	sfxVolume = GameObject.Find("Sound System").transform.FindChild("SFX").GetComponent.<AudioSource>().volume;
+	if(GameObject.Find("Sound System") != null)
+		sfxVolume = GameObject.Find("Sound System").transform.FindChild("SFX").GetComponent.<AudioSource>().volume;
+	
+	InvokeRepeating("CustomUpdate",0f,0.0222f);
 }
 
-function Update()
+function CustomUpdate()//A special Update function that will run at 45fps
 {
 	lapisAmount = Mathf.Clamp(lapisAmount,0,10);
 	relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
-		
-}
-
-function FixedUpdate()
-{
-	isFalling = CheckGravity();
 	
-	var hit : RaycastHit;
-	if(Physics.Raycast(transform.position,-transform.up,hit,1) && hit.collider.tag == "OffRoad")
-		offRoad = true;
-	else
-		offRoad = false;
-		
-	DoTrick();
-	
-	CalculateExpectedSpeed();
-	
-	if(!isFalling)
+	if(Time.timeScale != 0)
 	{
-		ApplySteering();
-	}
-	else
-	{
-		wheelColliders[0].steerAngle = 0;
-		wheelColliders[1].steerAngle = 0;
-	}
-	
-	ApplyDrift();
-	
-	var nMaxSpeed : float = Mathf.Lerp(lastMaxSpeed,maxSpeed-(1f-lapisAmount/10f),Time.fixedDeltaTime);
-	
-	expectedSpeed = Mathf.Clamp(expectedSpeed,-nMaxSpeed,nMaxSpeed);
-	
-	if(isBoosting != "")
-	{
-		nMaxSpeed = maxSpeed + BoostAddition;
-		expectedSpeed = maxSpeed + BoostAddition;
-	}
-	
-	actualSpeed = relativeVelocity.z;
-	
-	var nA  = (expectedSpeed-actualSpeed)/Time.fixedDeltaTime;
-
-	if(!isFalling && !isColliding)
-	{	
-		GetComponent.<Rigidbody>().AddForce(transform.forward * GetComponent.<Rigidbody>().mass * nA);
-	}
-	
-	lastMaxSpeed = nMaxSpeed;
-	
-	for(var i : int; i < wheelMeshes.Length; i++)
-	{
-	
-		var wheelPos : Vector3;
-		var wheelRot : Quaternion;
+		isFalling = CheckGravity();
 		
-		wheelColliders[i].GetWorldPose(wheelPos,wheelRot);
-		
-		if(i == 3 || i == 0)
-			wheelMeshes[i].rotation = wheelRot;
+		var hit : RaycastHit;
+		if(Physics.Raycast(transform.position,-transform.up,hit,1) && hit.collider.tag == "OffRoad")
+			offRoad = true;
 		else
-			wheelMeshes[i].rotation = wheelRot * Quaternion.Euler(0,180,0);
+			offRoad = false;
 			
-			if(!tricking && !isFalling && !spunOut)
-				wheelMeshes[i].position.y = wheelPos.y;
-			else
-				wheelMeshes[i].localPosition = wheelStart[i];
-	}
-	
-	//Play engine Audio
-	if(engineSound != null){
+		DoTrick();
 		
-		if(!GetComponent.<AudioSource>().isPlaying ){
-			GetComponent.<AudioSource>().clip = engineSound;
-			GetComponent.<AudioSource>().Play();
-			GetComponent.<AudioSource>().loop = true;
+		CalculateExpectedSpeed();
+		
+		if(!isFalling)
+		{
+			ApplySteering();
+		}
+		else
+		{
+			wheelColliders[0].steerAngle = 0;
+			wheelColliders[1].steerAngle = 0;
 		}
 		
-		GetComponent.<AudioSource>().volume = Mathf.Lerp(0.01,0.075,expectedSpeed/maxSpeed) * sfxVolume;
+		ApplyDrift();
 		
-		GetComponent.<AudioSource>().pitch = Mathf.Lerp(0.75,1.5,expectedSpeed/maxSpeed);
+		var nMaxSpeed : float = Mathf.Lerp(lastMaxSpeed,maxSpeed-(1f-lapisAmount/10f),Time.fixedDeltaTime);
+		
+		expectedSpeed = Mathf.Clamp(expectedSpeed,-nMaxSpeed,nMaxSpeed);
+		
+		if(isBoosting != "")
+		{
+			nMaxSpeed = maxSpeed + BoostAddition;
+			expectedSpeed = maxSpeed + BoostAddition;
+		}
+		
+		actualSpeed = relativeVelocity.z;
+		
+		var nA  = (expectedSpeed-actualSpeed)/Time.fixedDeltaTime;
 
-	}
-	
-	//Calculate Start Boost
-	if(startBoostVal == 3 && throttle > 0){
-		spinOut = true;
-	}
-	if(startBoostVal == 2 && throttle > 0 && spinOut == false){
-		allowedBoost = true;
-	}
+		if(!isFalling && !isColliding && Mathf.Abs(nA) > 0.1f)
+		{	
+			GetComponent.<Rigidbody>().AddForce(transform.forward * nA,ForceMode.Acceleration);
+		}
+		
+		lastMaxSpeed = nMaxSpeed;
+		
+		for(var i : int; i < wheelMeshes.Length; i++)
+		{
+		
+			var wheelPos : Vector3;
+			var wheelRot : Quaternion;
+			
+			wheelColliders[i].GetWorldPose(wheelPos,wheelRot);
+			
+			if(i == 3 || i == 0)
+				wheelMeshes[i].rotation = wheelRot;
+			else
+				wheelMeshes[i].rotation = wheelRot * Quaternion.Euler(0,180,0);
+				
+				if(!tricking && !isFalling && !spunOut)
+					wheelMeshes[i].position.y = wheelPos.y;
+				else
+					wheelMeshes[i].localPosition = wheelStart[i];
+		}
+		
+		//Play engine Audio
+		if(engineSound != null){
+			
+			if(!GetComponent.<AudioSource>().isPlaying ){
+				GetComponent.<AudioSource>().clip = engineSound;
+				GetComponent.<AudioSource>().Play();
+				GetComponent.<AudioSource>().loop = true;
+			}
+			
+			GetComponent.<AudioSource>().volume = Mathf.Lerp(0.01,0.075,expectedSpeed/maxSpeed) * sfxVolume;
+			
+			GetComponent.<AudioSource>().pitch = Mathf.Lerp(0.75,1.5,expectedSpeed/maxSpeed);
 
-	if(startBoostVal < 2 && startBoostVal != 0 && throttle == 0){
-		allowedBoost = false;
+		}
+		
+		//Calculate Start Boost
+		if(startBoostVal == 3 && throttle > 0){
+			spinOut = true;
+		}
+		if(startBoostVal == 2 && throttle > 0 && spinOut == false){
+			allowedBoost = true;
+		}
+
+		if(startBoostVal < 2 && startBoostVal != 0 && throttle == 0){
+			allowedBoost = false;
+		}
+
+		if(allowedBoost && throttle > 0)
+			boostAmount += Time.fixedDeltaTime * 0.1f;
+
+		if(startBoostVal == 0 && allowedBoost){
+			Boost(boostAmount,"Trick");
+			startBoostVal = -1;
+		}
+
+		if(startBoostVal == 0 && spinOut){
+			SpinOut();
+			startBoostVal = -1;
+		}	
 	}
-
-	if(allowedBoost && throttle > 0)
-		boostAmount += Time.fixedDeltaTime * 0.1f;
-
-	if(startBoostVal == 0 && allowedBoost){
-		Boost(boostAmount,"Trick");
-		startBoostVal = -1;
-	}
-
-	if(startBoostVal == 0 && spinOut){
-		SpinOut();
-		startBoostVal = -1;
-	}	
 }
 
 function KartCollision(otherKart : Transform)
@@ -472,7 +474,7 @@ function SpinKartBody(dir : Vector3, time : float)
 	
 	while(Time.realtimeSinceStartup - startTime < time)
 	{
-		transform.FindChild("Kart Body").Rotate((dir * 360f * Time.fixedDeltaTime)/time);
+		transform.FindChild("Kart Body").Rotate((dir * 360f * Time.deltaTime)/time);
 		yield;
 	}
 	

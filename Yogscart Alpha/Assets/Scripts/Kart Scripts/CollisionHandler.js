@@ -20,6 +20,7 @@ function Update ()
 	}
 	
 	if(kartCount > 1)
+	{
 		for(var i : int = 0; i < kartCount; i++)//For every kart on Screen
 		{
 			for(var j : int = i + 1; j < kartCount; j++)// Checks against every kart after the current kart
@@ -42,5 +43,5 @@ function Update ()
 				
 			}
 		}
-	
+	}
 }

@@ -33,6 +33,11 @@ private var td : TrackData;
 private var rl : RaceLeader;
 private var sm : Sound_Manager;
 
+var finishShow : boolean;
+var finishAlpha : float = 0f;
+var finishRect : Rect;
+var screenRect : Rect;
+
 function Start () {
 
 	td = GameObject.Find("Track Manager").GetComponent(TrackData);
@@ -113,10 +118,9 @@ if(rl.type != RaceStyle.TimeTrial)
 {
 	//Render Position GUI
 	if(position != -1){
-	var postexture = Resources.Load("UI Textures/Positions/" + (lastPosition+1).ToString(),Texture2D);
-
+	var postexture = Resources.Load("UI Textures/Positions/" + (lastPosition+1).ToString(),Texture2D);	
 	var renderArea : Rect;
-
+	
 	if(screenPos == ScreenType.Full || screenPos == ScreenType.BottomRight || screenPos == ScreenType.Bottom )
 	renderArea = Rect(Screen.width - 10 - PosGUISize,Screen.height - 10 - PosGUISize,PosGUISize,PosGUISize);
 
@@ -189,7 +193,60 @@ GUI.DrawTexture(Rect(10 + renderArea.x + BoxWidth,renderArea.y,(BoxHeight/LapisT
 	GUI.color = new Color32(255, 255, 255, turnAroundFlashAlpha);
 	itemIncoming = Resources.Load("UI Textures/Race/turn around",Texture2D);
 	GUI.DrawTexture(Rect(Screen.width/2f - (iconSize/2f),10,iconSize,iconSize),itemIncoming);
+
+	//Finish
+	switch(screenPos)
+	{
+		case ScreenType.Full:
+			screenRect = Rect(0,0,Screen.width,Screen.height);
+		break;
+		case ScreenType.TopLeft:
+			screenRect = Rect(0,0,Screen.width/2f,Screen.height/2f);
+		break;
+		case ScreenType.TopRight:
+			screenRect = Rect(Screen.width/2f,0,Screen.width/2f,Screen.height/2f);
+		break;
+		case ScreenType.BottomLeft:
+			screenRect = Rect(0,Screen.height/2f,Screen.width/2f,Screen.height/2f);
+		break;
+		case ScreenType.BottomRight:
+			screenRect = Rect(Screen.width/2f,Screen.height/2f,Screen.width/2f,Screen.height/2f);
+		break;
+		case ScreenType.Top:
+			screenRect = Rect(0,0,Screen.width,Screen.height/2f);
+		break;
+		case ScreenType.Bottom:
+			screenRect = Rect(0,Screen.height/2f,Screen.width,Screen.height/2f);
+		break;
+	}
 	
+	
+	GUI.color.a = finishAlpha;		
+	var finishTexture = Resources.Load("UI Textures/CountDown/Finish",Texture2D);
+
+	if(finishTexture != null)
+		GUI.DrawTexture(finishRect,finishTexture,ScaleMode.ScaleToFit);
+
+	finishRect.y = Mathf.Lerp(finishRect.y,screenRect.y + (screenRect.height*0.25),Time.deltaTime);
+	finishRect.height = Mathf.Lerp(finishRect.height,screenRect.height/2f,Time.deltaTime);
+
+	if(finishShow)
+		finishAlpha = Mathf.Lerp(finishAlpha,256,Time.deltaTime*10f);
+	else
+		finishAlpha = Mathf.Lerp(finishAlpha,0,Time.deltaTime*10f);
+			
+}
+
+//
+
+function Finish()
+{
+	finishRect = Rect(screenRect.x,screenRect.y + (screenRect.height/2f) - ((screenRect.height/3f)/2f),screenRect.width,screenRect.height/3f);
+	finishShow = true;
+	
+	yield WaitForSeconds(1f);
+	
+	finishShow = false;
 }
 
 function Update()

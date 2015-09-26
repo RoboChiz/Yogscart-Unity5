@@ -47,6 +47,8 @@ private var sentTransform : boolean = false;
 private var secondCount : float;
 private var pointCount : float;
 
+var bestPosition : int;
+
 var numberofRaces : int;
 
 function Start()
@@ -225,17 +227,13 @@ function WrapUp()
 {
 	if(currentGUI <= GUIState.RaceGUI)
 	{
-		CountdownRect = Rect(Screen.width/2 - (Screen.height*(2f/3f)),Screen.height/2 - (Screen.height/1.5f)/2f,Screen.height/0.75f,Screen.height/1.5f);
+
+		currentGUI = GUIState.Finish;	
 		
-		currentGUI = GUIState.Finish;
+		if(myRacer != null && myRacer.ingameObj != null)
+			myRacer.ingameObj.GetComponent(kartInfo).Finish();
 		
-		CountdownShow = true;
-		
-		yield WaitForSeconds(1f);
-		
-		CountdownShow = false;
-		
-		yield WaitForSeconds(0.5f);
+		yield WaitForSeconds(1.5f);
 		
 		ChangeState(GUIState.ScoreBoard);
 		
@@ -648,23 +646,6 @@ function OnGUI ()
 					
 		break;
 		case GUIState.Finish:
-		
-			GUI.color.a = CountdownAlpha;
-			
-			texture = Resources.Load("UI Textures/CountDown/Finish",Texture2D);
-
-			if(texture != null)
-				GUI.DrawTexture(CountdownRect,texture,ScaleMode.ScaleToFit);
-
-			CountdownRect.x = Mathf.Lerp(CountdownRect.x,Screen.width/2 - Screen.height/3f,Time.deltaTime);
-			CountdownRect.y = Mathf.Lerp(CountdownRect.y,Screen.height/2 - Screen.height/6f,Time.deltaTime);
-			CountdownRect.width = Mathf.Lerp(CountdownRect.width,Screen.height/1.5f,Time.deltaTime);
-			CountdownRect.height = Mathf.Lerp(CountdownRect.height,Screen.height/3f,Time.deltaTime);
-
-			if(CountdownShow)
-				CountdownAlpha = Mathf.Lerp(CountdownAlpha,256,Time.deltaTime*10f);
-			else
-				CountdownAlpha = Mathf.Lerp(CountdownAlpha,0,Time.deltaTime*10f);
 
 		break;
 		case GUIState.ScoreBoard:
@@ -692,7 +673,7 @@ function OnGUI ()
 				
 			if(!Network.isServer && !Network.isClient)
 			{
-				if(im.c[0].GetMenuInput("Submit"))
+				if(im.c[0].GetMenuInput("Submit") || im.GetClick())
 				{
 					if(lb.state != LBType.Points || numberofRaces == 1)
 					{
@@ -728,7 +709,7 @@ function OnGUI ()
 					Options = ["Finish"];
 			}
 			else
-				Options = ["Restart","Replay","Quit"];
+				Options = ["Restart","Quit"];
 
 			var IdealHeight : float = Screen.height/8f;
 			var ratio = IdealHeight/100f;
@@ -743,6 +724,8 @@ function OnGUI ()
 				
 			if(currentSelection >= Options.Length)
 				currentSelection = 0;
+				
+			var mouseSelecting : boolean = false;
 
 			for(var k : int = 0; k < Options.Length; k++){
 
@@ -756,13 +739,15 @@ function OnGUI ()
 					GUI.DrawTexture(optionRect,optionTexture,ScaleMode.ScaleToFit);
 
 				if(im.MouseIntersects(optionRect))
-				currentSelection = k;
-
+				{
+					currentSelection = k;
+					mouseSelecting = true;
+				}
 			}
 			
 			var submitBool : boolean = (im.c[0].GetMenuInput("Submit") != 0);
-			
-			if(submitBool)
+
+			if(submitBool || (mouseSelecting && im.GetClick()))
 			{
 			
 				ChangeState(GUIState.Blank);
@@ -804,7 +789,20 @@ function OnGUI ()
 			
 			GUI.Label(Rect(10,lineSize,BoardRect.width,lineSize),"Congratulations!");
 			
-			GUI.Label(Rect(10,lineSize * 2,BoardRect.width,lineSize),"This menu is under Construction!");
+			var positionString : String = "You came ";
+			positionString += (bestPosition+1).ToString();
+			
+			if(bestPosition == 0)
+				positionString += "st!";
+			else if(bestPosition == 1)
+				positionString += "nd!";
+			else if(bestPosition == 2)
+				positionString += "rd!";
+			else
+				positionString += "th!";
+			
+			GUI.Label(Rect(10,lineSize * 2,BoardRect.width,lineSize),positionString);
+			GUI.Label(Rect(10,lineSize * 3,BoardRect.width,lineSize),"This menu is under Construction!");
 			
 			GUI.EndGroup();
 			

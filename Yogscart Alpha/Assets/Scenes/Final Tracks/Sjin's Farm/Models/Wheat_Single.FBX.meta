@@ -1,0 +1,135 @@
+fileFormatVersion: 2
+guid: 3f86fe7619f65534eaa624487bcf8c8d
+timeCreated: 1442951725
+licenseType: Free
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: Cliff
+    100002: Cliff2
+    100004: Island
+    100006: Plane001
+    100008: Railing
+    100010: Railing2
+    100012: Railing_Collider
+    100014: Railing_Collider2
+    100016: Ramp
+    100018: Ramp2
+    100020: Road
+    100022: Terrain
+    100024: //RootNode
+    400000: Cliff
+    400002: Cliff2
+    400004: Island
+    400006: Plane001
+    400008: Railing
+    400010: Railing2
+    400012: Railing_Collider
+    400014: Railing_Collider2
+    400016: Ramp
+    400018: Ramp2
+    400020: Road
+    400022: Terrain
+    400024: //RootNode
+    2300000: Cliff
+    2300002: Cliff2
+    2300004: Island
+    2300006: Plane001
+    2300008: Railing
+    2300010: Railing2
+    2300012: Railing_Collider
+    2300014: Railing_Collider2
+    2300016: Ramp
+    2300018: Ramp2
+    2300020: Road
+    2300022: Terrain
+    2300024: //RootNode
+    3300000: Cliff
+    3300002: Cliff2
+    3300004: Island
+    3300006: Plane001
+    3300008: Railing
+    3300010: Railing2
+    3300012: Railing_Collider
+    3300014: Railing_Collider2
+    3300016: Ramp
+    3300018: Ramp2
+    3300020: Road
+    3300022: Terrain
+    3300024: //RootNode
+    4300000: Terrain
+    4300002: Cliff
+    4300004: Cliff2
+    4300006: Railing
+    4300008: Railing_Collider
+    4300010: Railing2
+    4300012: Railing_Collider2
+    4300014: Ramp
+    4300016: Ramp2
+    4300018: Road
+    4300020: Island
+    4300022: Plane001
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 10
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
