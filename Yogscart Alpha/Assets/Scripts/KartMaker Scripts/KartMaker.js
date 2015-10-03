@@ -151,6 +151,8 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 		}
 		//Apply to Spectators
 		kb.AddComponent(kartItem);
+		kb.GetComponent(kartItem).itemDistance = kartSkel.ItemDrop;
+		
 		}
 	}
 
@@ -187,7 +189,7 @@ else
 
 wheelCollider.wheelDampingRate = 0.05;
 wheelCollider.suspensionDistance = 0.25;
-wheelCollider.forceAppPointDistance = 1f;
+wheelCollider.forceAppPointDistance = 1.25f;
 
 wheelCollider.suspensionSpring.spring = 25000;
 wheelCollider.suspensionSpring.damper = 25000;

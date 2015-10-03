@@ -6,10 +6,54 @@ ModelImporter:
   serializedVersion: 18
   fileIDToRecycleName:
     100000: //RootNode
+    100002: Barn
+    100004: Box001
+    100006: Box002
+    100008: Box003
+    100010: Box004
+    100012: Door1
+    100014: Door2
+    100016: Door3
+    100018: Door4
     400000: //RootNode
+    400002: Barn
+    400004: Box001
+    400006: Box002
+    400008: Box003
+    400010: Box004
+    400012: Door1
+    400014: Door2
+    400016: Door3
+    400018: Door4
     2300000: //RootNode
+    2300002: Barn
+    2300004: Box001
+    2300006: Box002
+    2300008: Box003
+    2300010: Box004
+    2300012: Door1
+    2300014: Door2
+    2300016: Door3
+    2300018: Door4
     3300000: //RootNode
+    3300002: Barn
+    3300004: Box001
+    3300006: Box002
+    3300008: Box003
+    3300010: Box004
+    3300012: Door1
+    3300014: Door2
+    3300016: Door3
+    3300018: Door4
     4300000: Barn
+    4300002: Box001
+    4300004: Box002
+    4300006: Box003
+    4300008: Box004
+    4300010: Door1
+    4300012: Door2
+    4300014: Door3
+    4300016: Door4
   materials:
     importMaterials: 1
     materialName: 0

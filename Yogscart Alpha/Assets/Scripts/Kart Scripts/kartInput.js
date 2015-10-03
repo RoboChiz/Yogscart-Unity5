@@ -15,8 +15,20 @@ function FixedUpdate () {
 	
 	if(ks == null && transform.GetComponent(kartScript))
 			ks = transform.GetComponent(kartScript);
-
-	if(go != null)
+	
+	if(inputOveride != "")
+	{
+		ks.throttle = Input.GetAxis(inputOveride + "Throttle");
+		ks.steer = Input.GetAxis(inputOveride + "Horizontal");
+		
+		if(Input.GetAxis(inputOveride + "Drift")!=0)
+			ks.drift = true;
+		else
+			ks.drift = false;
+			
+		lookBehind =  Input.GetAxis(inputOveride + "Look Behind"); 
+	}
+	else if(go != null)
 	{
 		im = go.GetComponent(InputManager);
 
@@ -32,18 +44,7 @@ function FixedUpdate () {
 		lookBehind = im.c[InputNum].GetInput("Look Behind");
 	}
 	
-	if(inputOveride != "")
-	{
-		ks.throttle = Input.GetAxis(inputOveride + "Throttle");
-		ks.steer = Input.GetAxis(inputOveride + "Horizontal");
-		
-		if(Input.GetAxis(inputOveride + "Drift")!=0)
-			ks.drift = true;
-		else
-			ks.drift = false;
-			
-		lookBehind =  Input.GetAxis(inputOveride + "Look Behind"); 
-	}
+	
 	
 	if((lookBehind != 0) && !camLocked){
 		backCamera.enabled = true;

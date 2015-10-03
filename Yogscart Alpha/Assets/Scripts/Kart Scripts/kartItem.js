@@ -31,6 +31,8 @@ var input : boolean;
 var inputLock : boolean;
 var inputDirection : float;
 
+var itemDistance : float = 2f;
+
 function Awake()
 {
 	//Access the scripts needed for proper iteming
@@ -71,7 +73,7 @@ function UseItem()
 	if(heldPowerUp != -1)
 	{
 	
-		var item : Transform = Instantiate(gd.PowerUps[heldPowerUp].Model,transform.position - (transform.forward *2f),transform.rotation);
+		var item : Transform = Instantiate(gd.PowerUps[heldPowerUp].Model,transform.position - (transform.forward * itemDistance),transform.rotation);
 		item.parent = transform;
 		
 		EndItemUse();
@@ -85,7 +87,7 @@ function UseShield()
 	
 	if(heldPowerUp != -1 && gd.PowerUps[heldPowerUp].usableShield)
 	{
-		shield = Instantiate(gd.PowerUps[heldPowerUp].Model,transform.position - (transform.forward *2f),transform.rotation);
+		shield = Instantiate(gd.PowerUps[heldPowerUp].Model,transform.position - (transform.forward * itemDistance),transform.rotation);
 		shield.parent = transform;
 		shield.GetComponent.<Rigidbody>().isKinematic = true;
 	}

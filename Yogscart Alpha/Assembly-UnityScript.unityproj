@@ -47,6 +47,7 @@
   <ItemGroup>
      <Compile Include="Assets\Resources\Karts\Dyne\Scripts\Pulse.js" />
      <Compile Include="Assets\Resources\Music &amp; Sounds\Event_Cannon.js" />
+     <Compile Include="Assets\Scenes\Final Tracks\Sjin&apos;s Farm\Custom Scripts\PigScript.js" />
      <Compile Include="Assets\Scenes\Hole Diggers\LaserScript.js" />
      <Compile Include="Assets\Scripts\CharacterScripts\StandingCharacter.js" />
      <Compile Include="Assets\Scripts\Game Managers\CurrentGameData.js" />
@@ -68,6 +69,7 @@
      <Compile Include="Assets\Scripts\Kart Scripts\Replayer.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartAnimation.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.js" />
+     <Compile Include="Assets\Scripts\Kart Scripts\kartCollider.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.js" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartItem.js" />
@@ -88,6 +90,7 @@
      <Compile Include="Assets\Scripts\Networking\VotingScreen.js" />
      <Compile Include="Assets\Scripts\Networking\Yogball.js" />
      <Compile Include="Assets\Scripts\Networking\kartUpdate.js" />
+     <Compile Include="Assets\Scripts\Others\HayScript.js" />
      <Compile Include="Assets\Scripts\Power Ups\DirtBlock.js" />
      <Compile Include="Assets\Scripts\Power Ups\Egg.js" />
      <Compile Include="Assets\Scripts\Power Ups\Item_Box.js" />
@@ -131,11 +134,17 @@
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\WaterInclude.cginc" />
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Advanced.shader" />
      <None Include="Assets\Beardbotnik\Terrain Shader\TerrainBlendShader.shader" />
+ <Reference Include="UnityEngine.Advertisements">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/UnityEngine.Advertisements.dll</HintPath>
+ </Reference>
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Analytics">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
  </Reference>
  <Reference Include="Mono.Cecil">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/Mono.Cecil.dll</HintPath>

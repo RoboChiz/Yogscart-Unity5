@@ -412,7 +412,7 @@ function StartRace ()
 						if(Racers[i].aiStupidity == 0)
 							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.TopLeft;
 						if(Racers[i].aiStupidity == 1)
-							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.TopLeft;
+							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.TopRight;
 						if(Racers[i].aiStupidity == 2)		
 							Racers[i].ingameObj.GetComponent(kartInfo).screenPos = ScreenType.BottomLeft;
 						if(Racers[i].aiStupidity == 3)

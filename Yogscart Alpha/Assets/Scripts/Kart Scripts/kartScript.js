@@ -69,7 +69,7 @@ public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
 var pushSpeed : float = 20f;
-private var touchingKart : Vector3;
+var touchingKart : Vector3;
 
 private var sfxVolume : float;
 
