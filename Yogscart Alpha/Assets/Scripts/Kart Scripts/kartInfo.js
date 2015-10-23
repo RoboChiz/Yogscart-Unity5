@@ -187,12 +187,12 @@ GUI.DrawTexture(Rect(10 + renderArea.x + BoxWidth,renderArea.y,(BoxHeight/LapisT
 	GUI.color = new Color32(255, 255, 255, itemFlashAlpha);
 	
 	var itemIncoming : Texture = Resources.Load("UI Textures/Race/incoming",Texture2D);
-	var iconSize : float = Screen.width/6f;
-	GUI.DrawTexture(Rect(Screen.width/2f - (iconSize/2f),Screen.height - 10 - iconSize,iconSize,iconSize),itemIncoming);
+	var iconSize : float = screenRect.width/6f;
+	GUI.DrawTexture(Rect(screenRect.x + screenRect.width/2f - (iconSize/2f),screenRect.y + screenRect.height - 10 - iconSize,iconSize,iconSize),itemIncoming);
 	
 	GUI.color = new Color32(255, 255, 255, turnAroundFlashAlpha);
 	itemIncoming = Resources.Load("UI Textures/Race/turn around",Texture2D);
-	GUI.DrawTexture(Rect(Screen.width/2f - (iconSize/2f),10,iconSize,iconSize),itemIncoming);
+	GUI.DrawTexture(Rect(screenRect.x + screenRect.width/2f - (iconSize/2f),screenRect.y + 10,iconSize,iconSize),itemIncoming);
 
 	//Finish
 	switch(screenPos)

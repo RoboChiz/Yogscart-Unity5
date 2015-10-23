@@ -879,6 +879,8 @@ function StartGame()
 	myRacer.kart = gd.currentChoices[0].kart;
 	myRacer.wheel = gd.currentChoices[0].wheel;
 	
+	Random.seed = Time.realtimeSinceStartup;
+	
 }	
 	
 @RPC

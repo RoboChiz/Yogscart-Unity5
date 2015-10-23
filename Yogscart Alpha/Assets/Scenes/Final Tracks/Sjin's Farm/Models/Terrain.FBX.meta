@@ -36,6 +36,8 @@ ModelImporter:
     100056: Dirt_Mound010
     100058: Line001
     100060: Taint_Vine007
+    100062: ChilliPlants
+    100064: ChilliPlants3
     400000: Cliff
     400002: Cliff2
     400004: Island
@@ -67,6 +69,8 @@ ModelImporter:
     400056: Dirt_Mound010
     400058: Line001
     400060: Taint_Vine007
+    400062: ChilliPlants
+    400064: ChilliPlants3
     2300000: Cliff
     2300002: Cliff2
     2300004: Island
@@ -96,6 +100,8 @@ ModelImporter:
     2300052: Taint_Vine006
     2300054: Dirt_Mound010
     2300056: Taint_Vine007
+    2300058: ChilliPlants
+    2300060: ChilliPlants3
     3300000: Cliff
     3300002: Cliff2
     3300004: Island
@@ -125,6 +131,8 @@ ModelImporter:
     3300052: Taint_Vine006
     3300054: Dirt_Mound010
     3300056: Taint_Vine007
+    3300058: ChilliPlants
+    3300060: ChilliPlants3
     4300000: Terrain
     4300002: Cliff
     4300004: Cliff2
@@ -154,6 +162,8 @@ ModelImporter:
     4300052: Dirt_Mound009
     4300054: Taint_Vine007
     4300056: Dirt_Mound010
+    4300058: ChilliPlants
+    4300060: ChilliPlants3
   materials:
     importMaterials: 1
     materialName: 0

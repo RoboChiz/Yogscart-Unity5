@@ -352,7 +352,7 @@ function OnGUI()
 	int.TryParse(GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),hostPort.ToString()),hostPort);
 	
 	GUI.Label(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *2.5f + gapSize*3.5f,chunkSize*4,chunkSize/2f),"Name: ");
-	playerName = GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),playerName,14);
+	playerName = GUI.TextField(Rect(10 + Screen.width - chunkSize * 6f,chunkSize *3.75f + gapSize*1.5f,chunkSize*4,chunkSize/4f),playerName,16);
 
 	var hostText : String = "Host Server";
 
@@ -782,7 +782,7 @@ function CheckName()
 
 	var nReturn : boolean = true;
 	
-	if(playerName.Length == 0 || playerName.Length > 14)
+	if(playerName.Length == 0 || playerName.Length > 16)
 		nReturn = false;
 	
 	var letters : String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
@@ -836,7 +836,7 @@ function ConnectToServer()
 
 	if(!CheckName())
 	{
-		popupText = "Valid Usernames must contain 14 or less, Letters or   _   Only!";
+		popupText = "Valid Usernames must contain 16 or less, Letters or   _   Only!";
 		return;
 	}
 
@@ -863,7 +863,7 @@ function StartServer()
 
 	if(!CheckName())
 	{
-		popupText = "Valid Usernames must contain 14 or less, Letters or   _   Only!";
+		popupText = "Valid Usernames must contain 16 or less, Letters or   _   Only!";
 		return;
 	}
 

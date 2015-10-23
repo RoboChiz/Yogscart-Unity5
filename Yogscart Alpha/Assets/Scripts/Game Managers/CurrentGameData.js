@@ -196,8 +196,6 @@ private var ColourAlpha : Color = Color.white;
 		foo = PlayerPrefs.GetInt(Hats[n].Name,0);
 		if(foo == 1){
 		Hats[n].Unlocked = true;
-		}else{
-		Hats[n].Unlocked = false;
 		}
 		}
 		

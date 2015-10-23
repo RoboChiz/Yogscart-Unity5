@@ -313,7 +313,7 @@ function ApplySteering()
 		{
 			steer = Mathf.Sign(steer);
 			
-			steer *= Mathf.Lerp(3,1,actualSpeed/maxSpeed);
+			steer *= Mathf.Lerp(3,0.8,Mathf.Abs(actualSpeed)/(maxSpeed+BoostAddition));
 			
 		}
 		

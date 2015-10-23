@@ -64,7 +64,7 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 	var kb : GameObject = kartBody.gameObject;
 
 	kb.AddComponent(Rigidbody);
-	kb.GetComponent.<Rigidbody>().mass = 1500;
+	kb.GetComponent.<Rigidbody>().mass = 2000;
 	kb.GetComponent.<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 	kb.GetComponent.<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
 	kb.GetComponent.<Rigidbody>().angularDrag = 0;

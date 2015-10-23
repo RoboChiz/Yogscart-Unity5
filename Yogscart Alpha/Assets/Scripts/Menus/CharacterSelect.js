@@ -350,18 +350,23 @@ function OnGUI()
 		if(loadedModels[s] != null)
 			loadedModels[s].Rotate(Vector3.up,-im.c[s].GetInput("Rotate") * Time.deltaTime * rotateSpeed);
 		
+		var hori : float = 0;
+		var vert : float = 0;
+		var submit : boolean = false;
+		var cancel : boolean = false;
+		
 		if(!ready[s])
 		{
 			//Get Inputs
 			if(canInput)
 			{
-				var hori : float = im.c[s].GetMenuInput("Horizontal");
-				var vert : float = -im.c[s].GetMenuInput("Vertical");
+				hori = im.c[s].GetMenuInput("Horizontal");
+				vert = -im.c[s].GetMenuInput("Vertical");
 			}
 			
-			var submit : boolean = canInput && (im.c[s].GetMenuInput("Submit") != 0);
+			submit = canInput && (im.c[s].GetMenuInput("Submit") != 0);
 		}
-		var cancel : boolean = canInput && (im.c[s].GetMenuInput("Cancel") != 0);
+		cancel  = canInput && (im.c[s].GetMenuInput("Cancel") != 0);
 		
 		if(hori != 0)
 		{
@@ -709,7 +714,14 @@ function OnGUI()
 	if(readyCheck)
 	{
 		if(state == csState.Character)
-			state = csState.Hat;		
+		{
+			state = csState.Hat;
+			//Reset the hats
+			loadedChoice[0].hat	= -1;	
+			loadedChoice[1].hat	= -1;	
+			loadedChoice[2].hat	= -1;	
+			loadedChoice[3].hat	= -1;	
+		}
 		else if(state == csState.Hat)
 			state = csState.Kart;		
 		else if(state == csState.Kart)

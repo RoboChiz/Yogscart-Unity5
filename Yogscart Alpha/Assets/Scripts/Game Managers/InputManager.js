@@ -1,7 +1,7 @@
 ﻿#pragma strict
 
 var allowedToChange : boolean;
-static var c : InputController[]; //Holds controllers connected
+var c : InputController[]; //Holds controllers connected
 
 var keyboardPlayer : int;
 var mouseLock : boolean;

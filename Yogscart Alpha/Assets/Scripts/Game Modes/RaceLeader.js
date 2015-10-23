@@ -169,6 +169,7 @@ function StartSinglePlayer()//true if in Time Trial Mode
 	{
 		Racers = new Racer[1];
 		Racers[0] = new Racer(true,0,gd.currentChoices[0].character,gd.currentChoices[0].hat,gd.currentChoices[0].kart,gd.currentChoices[0].wheel,-1);
+		Random.seed = 01264646231;
 	}
 	
 	spStartRace();

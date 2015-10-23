@@ -1,14 +1,9 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\KartMaker Scripts\KartMaker.js">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Menus\OptionMenu.js">
     <Files>
-      <File FileName="Assets\Scripts\Kart Scripts\CollisionHandler.js" Line="68" Column="9" />
-      <File FileName="Assets\Scripts\Kart Scripts\kartScript.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Kart Scripts\kartCollider.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Kart Scripts\kartInput.js" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Kart Scripts\kartItem.js" Line="364" Column="28" />
-      <File FileName="Assets\Scripts\KartMaker Scripts\KartSkeleton.js" Line="18" Column="13" />
-      <File FileName="Assets\Scripts\KartMaker Scripts\KartMaker.js" Line="155" Column="3" />
+      <File FileName="Assets\Scripts\Game Managers\NewInputManager.js" Line="5" Column="24" />
+      <File FileName="Assets\Scripts\Menus\OptionMenu.js" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
