@@ -4,6 +4,7 @@ var position : int = -1;
 
 var Lap : int = -1;
 var currentPos : int;
+var currentShortcut : int = -1;
 var currentTotal : int;
 var currentDistance : float;
 

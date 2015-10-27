@@ -34,6 +34,10 @@ public class ShortCut
 	var endPoint : Transform;
 	var PositionPoints : Transform[];
 	
+	enum ShortCutType{BoostRequired,NeedSmarts,SplitPath};
+	//In SplitPath AI has 50% chance of taking path, in Needs Smarts only Smart AI will take it, in Boost required an ai won't take it unless they have a jaffa
+	var sct : ShortCutType = ShortCutType.NeedSmarts;
+	
 	public function ShortCut(StartPoint : Transform)
 	{
 		startPoint = StartPoint;
@@ -99,6 +103,8 @@ public class CameraPoint{
 				for(var k : int = 0; k < ShortCuts[j].PositionPoints.Length; k++){
 					if(ShortCuts[j].PositionPoints[k] == null)
 						RemoveShortCutPoint(j,k);
+					else
+						ShortCuts[j].PositionPoints[k].name = "ShortCut Point " + k;
 				}
 			}
 			
@@ -240,7 +246,7 @@ public class CameraPoint{
  	{
  		copy = ShortCuts[shortcut].PositionPoints;
  		
- 		var addat : Transform = ShortCuts[shortcut].PositionPoints[copy.length -1];
+ 		var addat : Transform = ShortCuts[shortcut].PositionPoints[copy.length -1].parent;
 	
 		var obj = new GameObject();
 		obj.transform.parent = addat;

@@ -179,9 +179,22 @@ if(GameObject.Find("Track Manager") != null && GameObject.Find("Track Manager").
 					
 					for(var j : int = 0; j < sc.PositionPoints.Length; j++)
 					{
+						
 						if(j+1 < sc.PositionPoints.Length)
 						{
 							Debug.DrawLine(sc.PositionPoints[j].position,sc.PositionPoints[j+1].position,Color.red);
+							
+							//Draw Road Width
+							adjusterFloat = sc.PositionPoints[j+1].GetComponent(PointHandler).roadWidth;
+							adjustOne = Vector3.Cross((sc.PositionPoints[j+1].position-sc.PositionPoints[j].position).normalized,transform.up) * adjusterFloat;
+							adjustTwo = Vector3.Cross((sc.PositionPoints[j+1].position-sc.PositionPoints[j].position).normalized,transform.up) * -adjusterFloat;
+							
+							Debug.DrawLine(sc.PositionPoints[j].position + lastAdjustOne,sc.PositionPoints[j+1].position + adjustOne,Color.cyan);
+							Debug.DrawLine(sc.PositionPoints[j].position + lastAdjustTwo,sc.PositionPoints[j+1].position + adjustTwo,Color.cyan);
+							
+							
+							lastAdjustOne = adjustOne;
+							lastAdjustTwo = adjustTwo;
 
 						}
 					}

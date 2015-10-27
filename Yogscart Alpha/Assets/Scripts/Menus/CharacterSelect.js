@@ -1,5 +1,4 @@
-﻿
-#pragma strict
+﻿#pragma strict
 
 private var gd : CurrentGameData;
 private var im : InputManager;
@@ -32,6 +31,8 @@ private var mouseSelecting : boolean;
 
 var online : boolean;
 
+private var kartHeight : float;
+
 function Start () {
 	gd = GameObject.Find("GameData").GetComponent(CurrentGameData);
 	im = GameObject.Find("GameData").GetComponent(InputManager);
@@ -53,8 +54,9 @@ function Start () {
 
 function OnGUI()
 {
-	
+	var fontSize = Mathf.Min(Screen.width, Screen.height) / 40f; 
 	GUI.skin = Resources.Load("Font/Menu",GUISkin);
+	GUI.skin.label.fontSize = fontSize;
 	
 	GUI.depth = -5;
 
@@ -80,6 +82,8 @@ function OnGUI()
 		
 		nameListRect = Rect(10,chunkSize/2f,chunkSize*5f,Screen.height - chunkSize*1.5f);
 		GUI.DrawTexture(nameListRect,nameList);
+		
+		GUI.Label(Rect(10,10,Screen.width,chunkSize/2f),"Select A Character");
 		
 		//Draw Character Heads		
 		mouseSelecting = false;
@@ -121,6 +125,7 @@ function OnGUI()
 		
 			nameListRect = Rect(10,chunkSize/2f,chunkSize*5f,Screen.height - chunkSize*1.5f);
 			GUI.DrawTexture(nameListRect,nameList);
+			GUI.Label(Rect(10,10,Screen.width,chunkSize/2f),"Select A Hat");
 			
 			//Draw Character Heads		
 			mouseSelecting = false;
@@ -155,6 +160,9 @@ function OnGUI()
 				}
 			}
 				
+		break;
+		case(csState.Kart):
+			GUI.Label(Rect(10,10,Screen.width,chunkSize/2f),"Select A Kart");
 		break;
 		
 	}
@@ -471,28 +479,25 @@ function OnGUI()
 					choice[s].hat += amount;
 			}
 			
-			if(state == csState.Kart)
+			if(state == csState.Kart && !choice[s].scrolling)
 			{
 				if(!kartSelected[s])
 				{
-					choice[s].kart += amount;
-					
-					if(choice[s].kart >= gd.Karts.Length)
-						choice[s].kart = 0;
-					if(choice[s].kart < 0)
-						choice[s].kart = gd.Karts.Length -1;
+					if(amount > 0)
+						ScrollKart(choice[s],kartHeight);
+					else
+						ScrollKart(choice[s],-kartHeight);
+										
 				}
 				else
 				{
-					choice[s].wheel += amount;
-					
-					if(choice[s].wheel >= gd.Wheels.Length)
-						choice[s].wheel = 0;
-					if(choice[s].wheel < 0)
-						choice[s].wheel = gd.Wheels.Length -1;
+					if(amount > 0)
+						ScrollWheel(choice[s], kartHeight);
+					else
+						ScrollWheel(choice[s],-kartHeight);
 				}
 			}
-		}
+		}	
 		
 		if(submit || (mouseClick && mouseSelecting)){
 		
@@ -621,38 +626,64 @@ function OnGUI()
 				var selectionRect : Rect = Rect(10,heightChunk,(areaRect.width/2f) - 10,heightChunk*4f);
 				GUI.DrawTexture(selectionRect,nameList);
 			
-				var kartIcon : Texture2D = gd.Karts[choice[s].kart].Icon;
-				var wheelIcon : Texture2D = gd.Wheels[choice[s].wheel].Icon;
-				var arrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow",Texture2D);
-				var downArrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow_Down",Texture2D);
+				GUI.BeginGroup(selectionRect);
 				
-				var kartRect : Rect = Rect(20, heightChunk + 10, (selectionRect.width/2f) - 10,(heightChunk*4f) - 20); 
-				var wheelRect : Rect = Rect(20 + (selectionRect.width/2f), heightChunk + 10, (selectionRect.width/2f) - 10,(heightChunk*4f) - 20); 
-				
-				GUI.DrawTexture(kartRect,kartIcon,ScaleMode.ScaleToFit);
-				GUI.DrawTexture(wheelRect,wheelIcon,ScaleMode.ScaleToFit);	
+					var kartIcon : Texture2D = gd.Karts[choice[s].kart].Icon;	
+					var arrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow",Texture2D);
+					var downArrowIcon : Texture2D = Resources.Load("UI Textures/New Character Select/Arrow_Down",Texture2D);
+					
+					var kartWidth : float;
+					
+					kartWidth = (selectionRect.width/2f) - 10;
+					kartHeight = selectionRect.height/3f;
+					
+					for(var kartI = -2; kartI <= 2; kartI++)
+					{
+						kartIcon = gd.Karts[ClampRound(choice[s].kart + kartI,0,gd.Karts.Length)].Icon;
+						var kartRect : Rect = Rect(20, selectionRect.height/2f - (kartHeight * (kartI+0.5)) - choice[s].kartChangeHeight,kartWidth,kartHeight); 
+						
+						var nAlpha : float = choice[s].kartAlpha;
+						if(kartI == 0)
+							nAlpha = 1.4 - nAlpha;
+						if(kartI == -2 || kartI == 2)
+							nAlpha = 0.4f;
+						if(kartI == 1 && choice[s].kartChangeHeight > 0)
+							nAlpha = 0.4f;
+						if(kartI == -1 && choice[s].kartChangeHeight < 0)
+							nAlpha = 0.4f;
+							
+						GUI.color.a = nAlpha;
+						
+						GUI.DrawTexture(kartRect,kartIcon,ScaleMode.ScaleToFit);
+						
+						var wheelIcon : Texture2D = gd.Wheels[ClampRound(choice[s].wheel + kartI,0,gd.Wheels.Length)].Icon;
+						var wheelRect : Rect = Rect(30 + kartWidth, selectionRect.height/2f - (kartHeight * (kartI+0.5)) - choice[s].wheelChangeHeight,kartWidth,kartHeight); 
+						
+						nAlpha = choice[s].wheelAlpha;
+						if(kartI == 0)
+							nAlpha = 1.4 - nAlpha;
+						if(kartI == -2 || kartI == 2)
+							nAlpha = 0.4f;
+						if(kartI == 1 && choice[s].wheelChangeHeight > 0)
+							nAlpha = 0.4f;
+						if(kartI == -1 && choice[s].wheelChangeHeight < 0)
+							nAlpha = 0.4f;
+							
+						GUI.color.a = nAlpha;
+						
+						GUI.DrawTexture(wheelRect,wheelIcon,ScaleMode.ScaleToFit);
+						
+						GUI.color.a = 1f;
+						
+					}
+					
+				GUI.EndGroup();	
 				
 				var upArrowRect : Rect;
 				var downArrowRect : Rect;
 				
 				if(!kartSelected[s])
 				{
-				
-					/* kartUp = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y - scale*0.8f, scale*0.75f, scale*0.75f);
-					GUI.DrawTexture(kartUp,arrowIcon,ScaleMode.ScaleToFit);
-					
-					var kartDown = Rect(kartListRect.x + ((kartListRect.width/5f)) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
-					GUI.DrawTexture(kartDown,downArrowIcon,ScaleMode.ScaleToFit);
-					
-					if(im.MouseIntersects(Rect(areaRect.x + kartUp.x,areaRect.y + kartUp.y,kartUp.width,kartUp.height)) && mouseClick && canInput)
-					{
-							choice[s].kart ++;						
-					}
-					
-					if(im.MouseIntersects(Rect(areaRect.x + kartDown.x,areaRect.y + kartDown.y,kartDown.width,kartDown.height)) && mouseClick && canInput)
-					{
-							choice[s].kart --;
-					}*/
 					
 					upArrowRect =  Rect(20,10,(selectionRect.width/2f) - 10,heightChunk - 10);
 					downArrowRect =  Rect(20, heightChunk*5f, (selectionRect.width/2f) - 10,heightChunk - 10);
@@ -666,21 +697,6 @@ function OnGUI()
 				}
 				else
 				{
-					/*var wheelUp = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y - scale*0.8f, scale*0.75f, scale*0.75f);
-					GUI.DrawTexture(wheelUp,arrowIcon,ScaleMode.ScaleToFit);
-					
-					var wheelDown = Rect(kartListRect.x + ((kartListRect.width/5f)*3) ,kartListRect.y + kartListRect.height, scale*0.75f, scale*0.75f);
-					GUI.DrawTexture(wheelDown,downArrowIcon,ScaleMode.ScaleToFit);
-				
-					if(im.MouseIntersects(Rect(areaRect.x + wheelUp.x,areaRect.y + wheelUp.y,wheelUp.width,wheelUp.height)) && mouseClick && canInput)
-					{
-							choice[s].wheel ++;						
-					}
-					
-					if(im.MouseIntersects(Rect(areaRect.x + wheelDown.x,areaRect.y + wheelDown.y,wheelDown.width,wheelDown.height)) && mouseClick && canInput)
-					{
-							choice[s].wheel --;
-					}*/
 					
 					upArrowRect =  Rect(20 + (selectionRect.width/2f), 10, (selectionRect.width/2f) - 10, heightChunk - 10);
 					downArrowRect =  Rect(20 + (selectionRect.width/2f), heightChunk*5f, (selectionRect.width/2f) - 10, heightChunk - 10);
@@ -820,5 +836,75 @@ class LoadOut{
 	var hat : int = 0;
 	var wheel : int= 0;
 	var kart : int = 0;
+	
+	var scrolling : boolean;
+	var kartChangeHeight : float = 0f;
+	var wheelChangeHeight : float = 0f;
+	var kartAlpha : float = 0.4f;
+	var wheelAlpha : float = 0.4f;
+}
 
+function ScrollKart(loadOut : LoadOut, finalHeight : float)
+{
+	loadOut.scrolling = true;
+
+	var startTime = Time.time;
+	
+	while(Time.time - startTime < 0.15f)
+	{
+		loadOut.kartChangeHeight = Mathf.Lerp(0,finalHeight,(Time.time - startTime)/0.15f);
+		loadOut.kartAlpha = Mathf.Lerp(0.4f,1f,(Time.time - startTime)/0.15f);
+		yield;
+	}
+	
+	loadOut.kartChangeHeight = finalHeight;
+	loadOut.kartAlpha = 1f;
+	
+	loadOut.kart -= Mathf.Sign(finalHeight);
+	
+	loadOut.kart = ClampRound(loadOut.kart,0,gd.Karts.Length);
+			
+	loadOut.kartChangeHeight = 0;
+	loadOut.kartAlpha = 0.4f;
+	
+	loadOut.scrolling = false;
+}
+
+function ScrollWheel(loadOut : LoadOut, finalHeight : float)
+{
+	loadOut.scrolling = true;
+
+	var startTime = Time.time;
+	
+	while(Time.time - startTime < 0.15f)
+	{
+		loadOut.wheelChangeHeight = Mathf.Lerp(0,finalHeight,(Time.time - startTime)/0.15f);
+		loadOut.wheelAlpha = Mathf.Lerp(0.4f,1f,(Time.time - startTime)/0.15f);
+		yield;
+	}
+	
+	loadOut.wheelChangeHeight = finalHeight;
+	loadOut.wheelAlpha = 1f;
+	
+	loadOut.wheel -= Mathf.Sign(finalHeight);
+	
+	loadOut.wheel = ClampRound(loadOut.wheel,0,gd.Wheels.Length);
+	
+	loadOut.wheelChangeHeight = 0;
+	loadOut.wheelAlpha = 0.4f;
+	
+	loadOut.scrolling = false;
+}
+
+
+
+function ClampRound(val : float,min : float,max : float)
+{
+	while(val >= max)
+		val -= (max-min);
+	
+	while(val < min)
+		val += (max-min);
+		
+	return val;
 }

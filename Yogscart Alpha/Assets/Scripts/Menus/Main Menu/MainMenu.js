@@ -37,8 +37,8 @@ private var currentQuality : int;
 private var currentVSync : int = 0;
 
 var changesMade : boolean;
-static var xAmount : float;
-				
+static var xAmount : float;							
+																					
 function Start ()
 {
 
@@ -82,6 +82,7 @@ function OnGUI ()
 {
 	
 	GUI.skin = skin;
+	GUI.skin.label.fontSize = Mathf.Min(Screen.width, Screen.height) / 20f;
 	
 	var options : String[];
 	
@@ -239,13 +240,8 @@ function OnGUI ()
 			
 				options = [];
 				
-				var fontSize : float = (box.width / 13f);
-				var holder : float = GUI.skin.label.fontSize;
-				GUI.skin.label.fontSize = fontSize;
-				
 				GUI.Label(Rect(box.x + 40,20 + (box.height/4f),box.width - 20,box.height - 20 - (box.height/4f)),popupText);
 				
-				GUI.skin.label.fontSize = holder;
 				
 			break;
 		}
@@ -312,9 +308,8 @@ function OnGUI ()
 			if(options != null && options.Length > 0)
 			{
 				//Single Player is the longest word in the menu and is 13 characters long
-				fontSize = (box.width / 15f);
-				holder = GUI.skin.label.fontSize;
-				GUI.skin.label.fontSize = fontSize;
+				
+				var optionHeight = GUI.skin.label.fontSize + 10;
 				
 				for(var i : int = 0; i < options.Length; i++)
 				{	
@@ -324,7 +319,7 @@ function OnGUI ()
 						GUI.skin.label.normal.textColor = Color.white;
 						
 						
-					var labelRect = Rect(40,20 + (box.height/4f) +(i * (10+fontSize)),box.width - 20,fontSize);
+					var labelRect = Rect(40,20 + (box.height/4f) +(i * optionHeight),box.width - 20,optionHeight);
 					GUI.Label(labelRect,options[i]);
 
 					labelRect.x += box.x;
@@ -344,7 +339,6 @@ function OnGUI ()
 				}
 				
 				GUI.skin.label.normal.textColor = Color.white;
-				GUI.skin.label.fontSize = holder;
 			}
 			
 		GUI.EndGroup();
@@ -352,13 +346,11 @@ function OnGUI ()
 		//Show Changes Made
 		if(changesMade)
 			{
-				GUI.skin.label.fontSize = fontSize/2f;
 				GUI.skin.label.normal.textColor = Color.red;
 				
-				GUI.Label(Rect(Screen.width/2f - (box.width/4f) ,20 + (box.height/4f),box.width - 20,fontSize),"Changes Made. Confirm?");
+				GUI.Label(Rect(Screen.width/2f - (box.width/4f) ,20 + (box.height/4f),box.width - 20,optionHeight),"Changes Made. Confirm?");
 				
 				GUI.skin.label.normal.textColor = Color.white;
-				GUI.skin.label.fontSize = fontSize;
 			}
 		
 		if(submitBool)
