@@ -37,7 +37,10 @@ private var currentQuality : int;
 private var currentVSync : int = 0;
 
 var changesMade : boolean;
-static var xAmount : float;							
+static var xAmount : float;	
+
+private var hideTitle : boolean;
+private var titleAlpha : float = 1f;						
 																					
 function Start ()
 {
@@ -73,10 +76,11 @@ function LoadLibraries()
 	currentVSync = QualitySettings.vSyncCount;
 }
 
-enum MenuState {Main,SinglePlayer,Difficulty,CharacterSelect,LevelSelect,Multiplayer,Online,Options,Popup};
+enum MenuState {Main,SinglePlayer,Difficulty,CharacterSelect,LevelSelect,Multiplayer,Online,Options,Popup,Credits};
 var state : MenuState[];
 
 var popupText : String;
+private var currentState : MenuState;
 
 function OnGUI ()
 {
@@ -93,7 +97,7 @@ function OnGUI ()
 	else
 	{
 	
-		var currentState = state[state.Length-1];
+		currentState = state[state.Length-1];
 	
 		if(!hidden)
 		{
@@ -132,8 +136,14 @@ function OnGUI ()
 		}
 		
 		if(!hidden && sidePicture != null)
+		{
+			var holder = GUI.color.a;
+			GUI.color.a = titleAlpha;
+
 			GUI.DrawTexture(Rect(sidePictureAmount,10,Screen.width/2f - 10,Screen.height-20),sidePicture,ScaleMode.ScaleToFit);
-		
+			
+			GUI.color.a = holder;
+		}
 		
 		var box : Rect = Rect(sideAmount,0,Screen.width/2f,Screen.height);
 		
@@ -142,7 +152,7 @@ function OnGUI ()
 		{
 			case MenuState.Main:
 			
-				options = ["Single Player","Multiplayer","Online","Options","Quit"];
+				options = ["Single Player","Multiplayer","Online","Options","Credits","Quit"];
 				im.allowedToChange = true;
 				hidden = false;
 				nm.enabled = false;
@@ -265,8 +275,22 @@ function OnGUI ()
 		
 		if(!hidden)
 		{
+			if(hideTitle)
+			{
+				titleAlpha = Mathf.Lerp(titleAlpha,0f,Time.deltaTime*5f);
+			}
+			else
+			{
+				titleAlpha = Mathf.Lerp(titleAlpha,1f,Time.deltaTime*5f);
+			}
+			
 			//Render the Game Logo
+			holder = GUI.color.a;
+			GUI.color.a = titleAlpha;
+			
 			GUI.DrawTexture(Rect(10,10,box.width - 10,box.height/4f),logo,ScaleMode.ScaleToFit);
+			
+			GUI.color.a = holder;
 			
 			var nextTexture : Texture2D = Resources.Load("UI Textures/New Main Menu/nextnew",Texture2D);
 			var ratio = (box.width/3f)/nextTexture.width;
@@ -284,7 +308,7 @@ function OnGUI ()
 				{
 				
 					if(currentState != MenuState.Difficulty && currentState != MenuState.CharacterSelect )
-						freezeBack = false;
+						freezeBack = false;						
 					
 					BackState();//Go back to the previous state
 			 	}	 
@@ -298,7 +322,15 @@ function OnGUI ()
 			if(hideNext == NextState.Sliding)
 				nextxAmount = Screen.width - sideAmount;
 			
-			GUI.DrawTexture(Rect(nextxAmount - (box.width/3f),Screen.height - 10 - height,box.width/3f,height),nextTexture);
+			var nextRect = Rect(nextxAmount - (box.width/3f),Screen.height - 10 - height,box.width/3f,height);
+			
+			GUI.DrawTexture(nextRect,nextTexture);
+			
+			if(!transitioning && im.MouseIntersects(nextRect) && im.GetClick())
+			{					
+				submitBool = true;
+		 	}	
+			
 		}
 		
 		//Draw the GUI inside a group which can dragged off screen for transitions
@@ -382,6 +414,13 @@ function OnGUI ()
 							ChangeMenu(MenuState.Options);
 						break;
 						case 4:
+							//Credits
+							ChangeMenu(MenuState.Credits);
+							ChangePicture(null);
+							transform.GetComponent(Credits).enabled = true;
+							transform.GetComponent(Credits).StartCredits();
+						break;
+						case 5:
 							Application.Quit();
 						break;
 					}
@@ -585,6 +624,12 @@ function OnGUI ()
 				}
 				
 			break;
+			case MenuState.Credits:
+			
+			if(sidePicture != null)
+				ChangePicture(null);
+			
+			break;
 		}
 	}
 }
@@ -595,8 +640,11 @@ function ChangeMenu(newState : MenuState)
 	{
 		transitioning = true;
 		
-		if(newState == MenuState.Options)
+		if(newState == MenuState.Options || newState == MenuState.Credits)
+		{
 			hideNext = NextState.Sliding;
+			hideTitle = true;
+		}
 		
 		yield Slide(0,-(Screen.width/2f));
 		
@@ -608,7 +656,7 @@ function ChangeMenu(newState : MenuState)
 		}
 		state[state.Length-1] = newState;
 		
-		if(newState == MenuState.Options)
+		if(newState == MenuState.Options || newState == MenuState.Credits)
 			hideNext = NextState.Hidden;
 		
 		currentSelection = 0;
@@ -635,15 +683,37 @@ function ChangePicture(texture : Texture2D)
 	}
 }
 
+function ForceChangePicture(texture : Texture2D)
+{
+
+	StopCoroutine("ChangePicture");
+
+	pictureTransitioning = true;
+	
+	yield PictureSlide(sidePictureAmount,Screen.width);
+	
+	sidePicture = texture;
+	
+	yield PictureSlide(Screen.width,Screen.width/2f);
+	
+	pictureTransitioning = false;
+}
+
 function BackState()
 {
 	if(!transitioning)
 	{
 		transitioning = true;
 		
+		//Turn off the credits
+		if(currentState == MenuState.Credits)
+		{
+			transform.GetComponent(Credits).StopCredits();
+		}
+		
 		sm.PlaySFX(Resources.Load("Music & Sounds/SFX/back",AudioClip));
 		
-		var optionsChange : boolean = (state[state.Length-1] == MenuState.Options);
+		var optionsChange : boolean = (currentState == MenuState.Options || currentState == MenuState.Credits);
 		changesMade = false;
 		
 		yield Slide(0,-(Screen.width/2f));
@@ -655,7 +725,10 @@ function BackState()
 			state[i] = holder[i];
 		}
 		if(optionsChange)
+		{
 			hideNext = NextState.Sliding;
+			hideTitle = false;
+		}
 		
 		currentSelection = 0;
 			
