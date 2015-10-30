@@ -24,15 +24,17 @@ function StartCredits ()
 	playing = true;
 }
 
+
 function StopCredits()
 {
 	playing = false;
+	
 	yield WaitForSeconds(0.5f);
 	
-	mm.ChangeMenu(MenuState.Main);
 	sm.PlayMusic(mm.menuMusic);
 	
 	this.enabled = false;
+
 }
 
 function OnGUI ()
@@ -57,17 +59,17 @@ function OnGUI ()
 	GUI.DrawTexture(Rect(Screen.width/2f - Screen.width/4f,Screen.height - creditsHeight, Screen.width/2f,logoHeight),mm.logo,ScaleMode.ScaleToFit);
 
 	var credits : String[] =
-	["Created By","Robo_Chiz",
-	"Programmed By","Robo_Chiz",
-	"Art By","Robo_Chiz",
-	"Music By","Robo_Chiz",
-	"Tea Provided By","Robo_Chiz",
-	"Massages Given By","Robo_Chiz",
-	"Coughs coughed By","Robo_Chiz",
-	"Sandwiches Eaten By","Robo_Chiz",
-	"Josh cursed By","Robo_Chiz",
-	"Credit Titles By","Robo_Chiz",
-	"All fucking work By","Robo_Chiz",
+	["Created By","Team Yogscart",
+	"Programing","Robo_Chiz",
+	"A bit of Everything","Ross",
+	"3D / 2D Art","Beardbotnik",
+	"Graphics Dude","Mysca",
+	"Other Graphics Dude","LinkTCOne",
+	"Trophy Design","Duck",
+	"Music By","Pico",
+	"Yogscast Outro performed by","Ben Binderow",
+	"Additional Music By","Kevin MacLeod (incompetech.com) \n Licensed under Creative Commons: By Attribution 3.0 \n http://creativecommons.org/licenses/by/3.0/",
+	"","",
 	"","The End",
 	"","Yogscart is a non-profit fan game and is in no way \n affiliated with the Yogscast or the youth olympic games. \n Please don't sue us! XXX"];
 	
@@ -78,8 +80,16 @@ function OnGUI ()
 		GUI.skin.label.fontSize = Mathf.Min(Screen.width, Screen.height) / 40f;
 		GUI.Label(Rect(0,startY + ((logoHeight/3f)*i),Screen.width,logoHeight),credits[i]);
 		
+		var secHeight : int = startY + ((logoHeight/3f)*(i + 0.4f));
+		
 		GUI.skin.label.fontSize = Mathf.Min(Screen.width, Screen.height) / 20f;
-		GUI.Label(Rect(0,startY + ((logoHeight/3f)*(i + 0.4f)),Screen.width,logoHeight),credits[i+1]);
+		GUI.Label(Rect(0,secHeight,Screen.width,logoHeight),credits[i+1]);
+		
+		if(playing && i == credits.Length-2 && secHeight <= 0)
+		{	
+			mm.ChangeMenu(MenuState.Main);
+			StopCredits();
+		}
 		
 	}
 

@@ -54,7 +54,7 @@ function Start () {
 
 function OnGUI()
 {
-	var fontSize = Mathf.Min(Screen.width, Screen.height) / 40f; 
+	var fontSize = Mathf.Min(Screen.width, Screen.height) / 20f; 
 	GUI.skin = Resources.Load("Font/Menu",GUISkin);
 	GUI.skin.label.fontSize = fontSize;
 	
@@ -589,7 +589,8 @@ function OnGUI()
 			GUI.DrawTexture(CursorRect,CursorTexture);
 		}
 		
-		var screenHeight : float = Screen.height - 10 - (backTexture.height*backRatio);
+		var topHeight : float =  Screen.height * 0.05f;
+		var screenHeight : float = Screen.height - 10 - (backTexture.height*backRatio) - topHeight;
 		
 		//Render Kart And Wheel
 		if(state == csState.Kart)
@@ -597,26 +598,26 @@ function OnGUI()
 			var areaRect : Rect;
 			
 			if(im.c.Length == 1)
-				areaRect = Rect(0,0,Screen.width,screenHeight);
+				areaRect = Rect(0,topHeight,Screen.width,screenHeight);
 			
 			if(im.c.Length == 2)
 			{			
 				if(s == 0)
-					areaRect = Rect(0,0,Screen.width,screenHeight/2f);
+					areaRect = Rect(0,topHeight,Screen.width,screenHeight/2f);
 				else
-					areaRect = Rect(0,screenHeight/2f,Screen.width,screenHeight/2f);
+					areaRect = Rect(0,topHeight + screenHeight/2f,Screen.width,screenHeight/2f);
 			}
 			
 			if(im.c.Length > 2)
 			{			
 				if(s == 0)
-					areaRect = Rect(0,0,Screen.width/2f,screenHeight/2f);
+					areaRect = Rect(0,topHeight,Screen.width/2f,screenHeight/2f);
 				if(s == 1)
-					areaRect = Rect(Screen.width/2f,0,Screen.width/2f,screenHeight/2f);
+					areaRect = Rect(Screen.width/2f,topHeight,Screen.width/2f,screenHeight/2f);
 				if(s == 2)
-					areaRect = Rect(0,screenHeight/2f,Screen.width/2f,screenHeight/2f);
+					areaRect = Rect(0,topHeight + screenHeight/2f,Screen.width/2f,screenHeight/2f);
 				if(s == 3)
-					areaRect = Rect(Screen.width/2f,screenHeight/2f,Screen.width/2f,screenHeight/2f);
+					areaRect = Rect(Screen.width/2f,topHeight + screenHeight/2f,Screen.width/2f,screenHeight/2f);
 			}
 			
 			var heightChunk : float = areaRect.height / 6f;
@@ -675,6 +676,20 @@ function OnGUI()
 						
 						GUI.color.a = 1f;
 						
+						if(kartI == 0)
+						{	
+							if(!kartSelected[s] && im.MouseIntersects(Rect(areaRect.x + selectionRect.x + kartRect.x,areaRect.y + selectionRect.y + kartRect.y,kartRect.width,kartRect.height)) && mouseClick)
+							{
+								kartSelected[s] = true;
+								mouseSelecting = false;
+							}
+							if(kartSelected[s] && im.MouseIntersects(Rect(areaRect.x + selectionRect.x + wheelRect.x,areaRect.y + selectionRect.y + wheelRect.y,wheelRect.width,wheelRect.height)) && mouseClick)
+							{
+								ready[s] = true;
+								mouseSelecting = false;
+							}
+						}
+						
 					}
 					
 				GUI.EndGroup();	
@@ -694,6 +709,16 @@ function OnGUI()
 					if(choice[s].kart < 0)
 						choice[s].kart = gd.Karts.Length -1;
 						
+					if(im.MouseIntersects(Rect(areaRect.x + upArrowRect.x, areaRect.y + upArrowRect.y, upArrowRect.width, upArrowRect.height)) && mouseClick)
+					{
+						ScrollKart(choice[s],-kartHeight);
+					}
+					
+					if(im.MouseIntersects(Rect(areaRect.x + downArrowRect.x, areaRect.y + downArrowRect.y, downArrowRect.width, downArrowRect.height)) && mouseClick)
+					{
+						ScrollKart(choice[s],kartHeight);
+					}
+						
 				}
 				else
 				{
@@ -706,6 +731,16 @@ function OnGUI()
 							
 					if(choice[s].wheel < 0)
 						choice[s].wheel = gd.Wheels.Length -1;
+						
+					if(im.MouseIntersects(Rect(areaRect.x + upArrowRect.x, areaRect.y + upArrowRect.y, upArrowRect.width, upArrowRect.height)) && mouseClick)
+					{
+						ScrollWheel(choice[s],-kartHeight);
+					}
+					
+					if(im.MouseIntersects(Rect(areaRect.x + downArrowRect.x, areaRect.y + downArrowRect.y, downArrowRect.width, downArrowRect.height)) && mouseClick)
+					{
+						ScrollWheel(choice[s],kartHeight);
+					}
 						
 					if(ready[s])
 					{

@@ -658,6 +658,8 @@ function ChangeMenu(newState : MenuState)
 		
 		if(newState == MenuState.Options || newState == MenuState.Credits)
 			hideNext = NextState.Hidden;
+		else
+			hideTitle = false;
 		
 		currentSelection = 0;
 		
@@ -705,16 +707,15 @@ function BackState()
 	{
 		transitioning = true;
 		
-		//Turn off the credits
-		if(currentState == MenuState.Credits)
-		{
-			transform.GetComponent(Credits).StopCredits();
-		}
-		
 		sm.PlaySFX(Resources.Load("Music & Sounds/SFX/back",AudioClip));
 		
 		var optionsChange : boolean = (currentState == MenuState.Options || currentState == MenuState.Credits);
 		changesMade = false;
+		
+		if(currentState == MenuState.Credits)
+		{
+			transform.GetComponent(Credits).StopCredits();
+		}
 		
 		yield Slide(0,-(Screen.width/2f));
 		
