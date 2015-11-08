@@ -173,9 +173,9 @@ if(GameObject.Find("Track Manager") != null && GameObject.Find("Track Manager").
 				if(sc.PositionPoints != null && sc.PositionPoints.Length > 0)
 				{
 					if(sc.startPoint != null)
-						Debug.DrawLine(sc.startPoint.position,sc.PositionPoints[0].position,Color.red);
+						Debug.DrawLine(td.PositionPoints[sc.startPoint].position,sc.PositionPoints[0].position,Color.red);
 					if(sc.endPoint != null)
-						Debug.DrawLine(sc.endPoint.position,sc.PositionPoints[sc.PositionPoints.Length-1].position,Color.red);
+						Debug.DrawLine(td.PositionPoints[sc.endPoint].position,sc.PositionPoints[sc.PositionPoints.Length-1].position,Color.red);
 					
 					for(var j : int = 0; j < sc.PositionPoints.Length; j++)
 					{

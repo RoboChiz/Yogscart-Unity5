@@ -70,14 +70,21 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 	kb.GetComponent.<Rigidbody>().angularDrag = 0;
 
 	kb.AddComponent(AudioSource);
-	kartBody.FindChild("Kart Body").gameObject.AddComponent(AudioSource);
 	kb.GetComponent.<AudioSource>().clip = kartSkel.engineSound;
 	kb.GetComponent.<AudioSource>().spatialBlend = 1;
-	kb.GetComponent.<AudioSource>().minDistance = 10;
-	kb.GetComponent.<AudioSource>().maxDistance = 100;
+	kb.GetComponent.<AudioSource>().minDistance = 0;
+	kb.GetComponent.<AudioSource>().maxDistance = 35;
+	kb.GetComponent.<AudioSource>().rolloffMode = AudioRolloffMode.Linear;
+	
+	var kartBodyBody = kartBody.FindChild("Kart Body").gameObject;
+	kartBodyBody.AddComponent(AudioSource);
+	kartBodyBody.GetComponent.<AudioSource>().spatialBlend = 1;
+	kartBodyBody.GetComponent.<AudioSource>().minDistance = 0;
+	kartBodyBody.GetComponent.<AudioSource>().maxDistance = 25;
+	kartBodyBody.GetComponent.<AudioSource>().rolloffMode = AudioRolloffMode.Linear;
 	
 	kb.GetComponent.<AudioSource>().playOnAwake = false;
-	kartBody.GetComponent(AudioSource).playOnAwake = false;
+	kartBodyBody.GetComponent(AudioSource).playOnAwake = false;
 
 	kb.AddComponent(DeathCatch);
 	kb.GetComponent(DeathCatch).DeathParticles = kartBody.FindChild("Kart Body").FindChild("Particles").FindChild("Death Particles").GetComponent.<ParticleSystem>();
@@ -137,6 +144,9 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 
 	kb.AddComponent(Position_Finding);
 	kb.AddComponent(kartUpdate);
+	
+	kb.GetComponent(kartScript).hitSounds = gd.Characters[character].hitSounds;
+	kb.GetComponent(kartScript).tauntSounds = gd.Characters[character].tauntSounds;
 
 
 	if(kartType != KartType.Display)

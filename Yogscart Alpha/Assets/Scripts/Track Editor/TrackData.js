@@ -30,17 +30,24 @@ enum Point{Position,Lap,Shortcut,Spawn};
 public class ShortCut
 {
 
-	var startPoint : Transform;
-	var endPoint : Transform;
+	var startPoint : int;
+	var endPoint : int;
 	var PositionPoints : Transform[];
 	
 	enum ShortCutType{BoostRequired,NeedSmarts,SplitPath};
 	//In SplitPath AI has 50% chance of taking path, in Needs Smarts only Smart AI will take it, in Boost required an ai won't take it unless they have a jaffa
 	var sct : ShortCutType = ShortCutType.NeedSmarts;
 	
-	public function ShortCut(StartPoint : Transform)
+	private var distanceSkipped : float;
+	
+	public function ShortCut(StartPoint : int)
 	{
 		startPoint = StartPoint;
+	}
+	
+	public function GetDistance()
+	{
+		return distanceSkipped;
 	}
 
 }
@@ -53,8 +60,10 @@ public class CameraPoint{
  var TravelTime : float;
  }
  
+  function Update(){
  
- function Update(){
+	if(Application.isEditor)
+{
  
  transform.name = "Track Manager";
  
@@ -104,13 +113,16 @@ public class CameraPoint{
 					if(ShortCuts[j].PositionPoints[k] == null)
 						RemoveShortCutPoint(j,k);
 					else
+					{
 						ShortCuts[j].PositionPoints[k].name = "ShortCut Point " + k;
+						ShortCuts[j].PositionPoints[k].GetComponent(PointHandler).shortCutRef = j;
+					}
 				}
 			}
 			
 			if(ShortCuts[j].PositionPoints == null || ShortCuts[j].PositionPoints.Length == 0)
-				RemoveShortCut(j);	
-				
+				RemoveShortCut(j);				
+		
 		}
  	}
 
@@ -121,8 +133,9 @@ public class CameraPoint{
  
  if(transform.GetComponent(InEngineRender) == null)
  gameObject.AddComponent(InEngineRender);
- 
- }
+
+}
+}
  
  function RemovePoint (removei : int){
  
@@ -214,8 +227,14 @@ public class CameraPoint{
  	
  	if(ShortCuts != null)
  		copy = ShortCuts;
+ 	
+ 	var ppNum : int = -1;	
+ 				
+ 	for(var i : int = 0; i < PositionPoints.Length; i++)
+ 		if(addat == PositionPoints[i])
+ 			ppNum = i;
  		
-	var nShortCut = new ShortCut(addat);
+	var nShortCut = new ShortCut(ppNum);
 	
 	var obj = new GameObject();
 	obj.transform.parent = addat;

@@ -46,7 +46,6 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Editor\CrossPlatformInput\CrossPlatformInputInitialize.cs" />
-     <None Include="Assets\Scenes\Final Tracks\Sjin&apos;s Farm\Shaders\GenericBlendShaderSplat.shader" />
      <None Include="Assets\Resources\Karts\Dyne\Carts\Monowheel\readme-monowheel.txt" />
      <None Include="Assets\Shaders\TerrainBlendShaderSplat.shader" />
      <None Include="Assets\Resources\Confetti Particles\Confetti - Readme.txt" />
@@ -75,7 +74,9 @@
      <None Include="Assets\Scenes\Final Tracks\Sjin&apos;s Farm\Honey\HoneyShader1.shader" />
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Advanced.shader" />
      <None Include="Assets\Beardbotnik\Terrain Shader\TerrainBlendShader.shader" />
-     <None Include="Assets\Scenes\Final Tracks\Sjin&apos;s Farm\Shaders\GenericBlendShaderSplatWorkAround.shader" />
+ <Reference Include="UnityEngine.Advertisements">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/UnityEngine.Advertisements.dll</HintPath>
+ </Reference>
  <Reference Include="UnityEditor.Advertisements">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/Editor/UnityEditor.Advertisements.dll</HintPath>
  </Reference>
@@ -90,6 +91,9 @@
  </Reference>
  <Reference Include="UnityEditor.Networking">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/Editor/UnityEditor.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Analytics">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.Graphs">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.Graphs.dll</HintPath>

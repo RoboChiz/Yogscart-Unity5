@@ -382,7 +382,7 @@ function StartRace ()
 				{
 					//Add Camera
 					var IngameCam = Instantiate(Resources.Load("Prefabs/Cameras",Transform),SpawnPosition,Quaternion.identity);
-					IngameCam.name = "InGame Cams";
+					IngameCam.name = "InGame Cams";	
 					
 					Racers[i].ingameObj.GetComponent(kartInput).InputNum = Racers[i].aiStupidity;
 					Racers[i].ingameObj.GetComponent(kartInput).camLocked = true;

@@ -74,6 +74,9 @@ var touchingKart : Vector3;
 private var sfxVolume : float;
 
 var relativeVelocity : Vector3;
+var hitSounds : AudioClip[];
+var tauntSounds : AudioClip[];
+var sounding : boolean;
 
 function Start()
 {
@@ -87,6 +90,8 @@ function Start()
 	
 	if(GameObject.Find("Sound System") != null)
 		sfxVolume = GameObject.Find("Sound System").transform.FindChild("SFX").GetComponent.<AudioSource>().volume;
+	
+	transform.GetChild(0).GetComponent.<AudioSource>().volume = sfxVolume;
 	
 	InvokeRepeating("CustomUpdate",0f,0.0222f);
 }
@@ -171,7 +176,7 @@ function CustomUpdate()//A special Update function that will run at 45fps
 				GetComponent.<AudioSource>().loop = true;
 			}
 			
-			GetComponent.<AudioSource>().volume = Mathf.Lerp(0.01,0.075,expectedSpeed/maxSpeed) * sfxVolume;
+			GetComponent.<AudioSource>().volume = Mathf.Lerp(0.05,0.4,expectedSpeed/maxSpeed) * sfxVolume;
 			
 			GetComponent.<AudioSource>().pitch = Mathf.Lerp(0.75,1.5,expectedSpeed/maxSpeed);
 
@@ -496,7 +501,14 @@ function StartSpinOut(){
 	CancelBoost();
 
 	locked = true;
-
+	
+	if(!sounding && SilenceCheck() && hitSounds != null && hitSounds.Length > 0)
+	{
+		sounding = true;
+		var randi = Random.Range(0,hitSounds.Length);
+		transform.GetChild(0).GetComponent.<AudioSource>().PlayOneShot(hitSounds[randi]);
+	}
+	
 	var t : float = 0;
 
 	var Ani = transform.FindChild("Kart Body").FindChild("Character").GetComponent(Animator);
@@ -506,10 +518,46 @@ function StartSpinOut(){
 
 	Ani.SetBool("Hit",false);
 	locked = false;
-
+	
 	spunOut = false;
+	sounding = false;
 
 	}
+}
+
+function HitEnemy()
+{
+	if(!sounding && SilenceCheck())
+	{
+		if(tauntSounds != null && tauntSounds.Length > 0)
+		{
+			sounding = true;
+			var randi = Random.Range(0,tauntSounds.Length);
+			transform.GetChild(0).GetComponent.<AudioSource>().PlayOneShot(tauntSounds[randi]);
+			yield WaitForSeconds(tauntSounds[randi].length);
+			sounding = false;
+		}
+	}
+}
+
+function GetSounding()
+{
+	return sounding;
+}
+
+function SilenceCheck()
+{
+	var objs = GameObject.FindObjectsOfType(kartScript);
+	
+	for(var i = 0; i < objs.Length; i++)
+	{
+		if(objs[i].GetSounding() && Vector3.Distance(transform.position,objs[i].transform.position) < 15)
+		{
+			return false;
+		}	
+	}
+	
+	return true;
 }
 
 function SnapUp()
