@@ -198,7 +198,7 @@ else
 	wheelCollider.radius = 0.15;
 
 wheelCollider.wheelDampingRate = 0.05;
-wheelCollider.suspensionDistance = 0.25;
+wheelCollider.suspensionDistance = 0.5f;
 wheelCollider.forceAppPointDistance = 1.25f;
 
 wheelCollider.suspensionSpring.spring = 25000;
@@ -219,6 +219,4 @@ wheelCollider.sidewaysFriction.stiffness = 3;
 
 Destroy(collider.GetComponent(MeshFilter));
 Destroy(collider.GetComponent(MeshRenderer));
-
-
 }

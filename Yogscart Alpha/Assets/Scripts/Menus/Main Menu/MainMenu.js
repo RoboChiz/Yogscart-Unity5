@@ -146,6 +146,7 @@ function OnGUI ()
 		}
 		
 		var box : Rect = Rect(sideAmount,0,Screen.width/2f,Screen.height);
+		var optionHeight = GUI.skin.label.fontSize + 10;
 		
 		//Setup Options for each Menu
 		switch(currentState)
@@ -190,16 +191,18 @@ function OnGUI ()
 				
 			break;
 			case MenuState.Multiplayer:	
-			
+				im.allowedToChange = true;
 				options = ["Tournament","VS Race"];
 				
 			break;
 			case MenuState.Online:
+				im.allowedToChange = false;
 				hidden = true;
 				nm.enabled = true;
 			break;
 			case MenuState.Options:
-			
+				im.allowedToChange = false;
+				
 				if(currentResolution >= Screen.resolutions.Length)
 					currentResolution = 0;
 					
@@ -235,6 +238,16 @@ function OnGUI ()
 					vSyncString += "Enabled (Double Buffered)";
 															
 				options = [fsString,resString,qualityString,vSyncString,mvString,muvString,sfxvString,"Reset Everything"];
+			
+				//SliderRect
+				var masterSlider = Rect(box.width * (3f/4f),20 + (box.height/4f) +(4.25f * optionHeight),box.width - 40,optionHeight);
+				sm.MasterVolume = GUI.HorizontalSlider(masterSlider,sm.MasterVolume,0,100);
+			
+				var musicSlider = Rect(box.width * (3f/4f),20 + (box.height/4f) +(5.25f * optionHeight),box.width - 40,optionHeight);
+				sm.MusicVolume = GUI.HorizontalSlider(musicSlider,sm.MusicVolume,0,100);
+				
+				var sfxSlider = Rect(box.width * (3f/4f),20 + (box.height/4f) +(6.25f * optionHeight),box.width - 40,optionHeight);
+				sm.SFXVolume = GUI.HorizontalSlider(sfxSlider,sm.SFXVolume,0,100);
 			
 			break;
 			case MenuState.Difficulty:
@@ -339,10 +352,7 @@ function OnGUI ()
 			//If the current menu has options.
 			if(options != null && options.Length > 0)
 			{
-				//Single Player is the longest word in the menu and is 13 characters long
-				
-				var optionHeight = GUI.skin.label.fontSize + 10;
-				
+				//Single Player is the longest word in the menu and is 13 characters long			
 				for(var i : int = 0; i < options.Length; i++)
 				{	
 					if(currentSelection == i)

@@ -4,7 +4,7 @@ private var gd : CurrentGameData;
 private var im : InputManager;
 private var sm : Sound_Manager;
 
-enum State {game,graphics,audio,controls};
+enum State {game,graphics,audio,controls,extras};
 var menuState : State = State.game;
 
 /*
@@ -17,7 +17,7 @@ private var savedRect : Rect;
 private var safeRect : Rect;
 
 var selectedColour : Color = Color.cyan;
-var selectedMenu : int;
+var selectedOption : int;
 
 //Store textures once to get menu to run better
 private var topBar : Texture2D;
@@ -55,7 +55,31 @@ function LoadMenu()
 
 function Update () 
 {
-
+	//Get Inputs
+	var menuHori : int = 0;
+	var holdVal : float;
+	
+	if(im.c[0].inputName == "Key_")
+	{
+		holdVal = im.c[0].GetMenuInput("Rotate");
+		if(holdVal != 0)
+			menuHori = Mathf.Sign(holdVal);
+	}
+	else
+	{
+		holdVal = -im.c[0].GetMenuInput("Use Item");
+		if(holdVal != 0)
+			menuHori = Mathf.Sign(holdVal);
+	}
+	
+	menuState += menuHori;
+	if(menuState >= 5)
+		menuState = 0;
+	
+	if(menuState < 0)
+		menuState = 4;
+	
+	
 }
 
 var itemPercent : float = 0.161f;
@@ -98,13 +122,60 @@ function OnGUI ()
 	
 	for(var i : int = 0; i < topItems.Length; i++)
 	{
-		if(i == selectedMenu)
+		if(i == menuState)
 			GUI.skin.label.normal.textColor = selectedColour;
 		else
 			GUI.skin.label.normal.textColor = Color.white;
 
 		GUI.Label(Rect(edgeWidth + ((safeRect.width*itemPercent) * i),0,safeRect.width*itemPercent,topBarHeight),topItems[i]);
 	}
+	
+	GUI.skin.label.normal.textColor = Color.white;
+	
+	var options : String[];
+	 
+	switch(menuState)
+	{
+		case State.game:
+		
+			options = ["Reset All Game Data"];
+			
+		break;
+		case State.graphics:
+		
+			options = ["Fullscreen","Resolution","Quality"];
+		
+		break;
+		case State.audio:
+		
+			options = ["Master Volume","Music Volume","SFX Volume","Subtitles"];
+		
+		break;
+		case State.controls:
+		
+			options = ["Coming Soon..."];
+		
+		break;
+		case State.extras:
+		
+			options = ["Cheat Codes"];
+		
+		break;
+	}
+	
+	var itemHeight : int = Screen.height - topBarHeight - 10;
+	
+	for(i = 0; i < options.Length; i++)
+	{
+		if(i == selectedOption)
+			GUI.skin.label.normal.textColor = selectedColour;
+		else
+			GUI.skin.label.normal.textColor = Color.white;
+
+		GUI.Label(Rect(0, topBarHeight + (i *(itemHeight/8f)), safeRect.width,(itemHeight/8f)),options[i]);
+	}
+	
+	GUI.skin.label.normal.textColor = Color.white;
 
 	
 	GUI.EndGroup();

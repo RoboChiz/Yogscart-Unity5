@@ -146,12 +146,21 @@ function StartSinglePlayer()//true if in Time Trial Mode
 		
 		charactersShuffle = ShuffleArray(charactersShuffle);
 		
+		var availableHats = new Array();
+		for(i = 0; i < gd.Hats.length; i++)
+		{
+			if(gd.Hats[i].Unlocked)
+			{
+				availableHats.Add(i);
+			}
+		}
+		
 		for(i = 0; i < 12; i++)
 		{
 			if(i < 12 - im.c.Length)
-			{
+			{		
 				
-				Racers[i] = new Racer(false,counter,charactersShuffle[i],Random.Range(0,gd.Hats.Length),Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),i);
+				Racers[i] = new Racer(false,counter,charactersShuffle[i],availableHats[Random.Range(0,availableHats.length)],Random.Range(0,gd.Karts.Length),Random.Range(0,gd.Wheels.Length),i);
 				
 				counter++;
 				if(counter > maxVal)
