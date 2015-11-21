@@ -1,12 +1,12 @@
-﻿#pragma strict
+﻿/*#pragma strict
 import UnityEngine.Networking;
 import UnityEngine.Networking.NetworkSystem;
 
 //Holds information about the current client
 var myClient : NetworkClient;
 
-enum NetworkState {Menu,Connecting,Popup,Lobby,Game};
-var networkState : NetworkState = NetworkState.Menu;
+enum MenuState {Menu,Connecting,Popup,Lobby,Game};
+var networkState : MenuState = MenuState.Menu;
 
 var ip : String = "127.0.0.1";
 var port : int = 25000;
@@ -18,7 +18,7 @@ function OnGUI()
 {
 
 	if(popupText != "")
-		networkState = NetworkState.Popup;
+		networkState = MenuState.Popup;
 		
 	GUI.Label(Rect(10,10,Screen.width - 20, 20),"NetworkServer: " + NetworkServer.active);
 	
@@ -27,7 +27,7 @@ function OnGUI()
 		
 	switch(networkState)
 	{
-		case NetworkState.Menu:
+		case MenuState.Menu:
 			GUILayout.BeginArea(Rect(10,90,Screen.width/2f - 50,Screen.height - 20));
 			
 			ip = GUILayout.TextField(ip);
@@ -48,10 +48,10 @@ function OnGUI()
 			
 			GUILayout.EndArea();
 		break;
-		case NetworkState.Connecting:
+		case MenuState.Connecting:
 			GUI.Label(Rect(10,60,Screen.width - 20, 20),"You are connecting...");
 		break;
-		case NetworkState.Lobby:
+		case MenuState.Lobby:
 			GUI.Label(Rect(10,60,Screen.width - 20, 20),"You are connected to the lobby!");
 			
 			if(NetworkServer.active)
@@ -69,7 +69,7 @@ function OnGUI()
 					
 					NetworkServer.Shutdown();
 					NetworkServer.Reset();
-					networkState = NetworkState.Menu;
+					networkState = MenuState.Menu;
 				}
 			}
 			else
@@ -80,13 +80,13 @@ function OnGUI()
 				}
 			}
 		break;
-		case NetworkState.Popup:
+		case MenuState.Popup:
 			GUI.Label(Rect(10,60,Screen.width - 20, 20),popupText);
 			
 			if(GUI.Button(Rect(10,90,100,50),"Okay"))
 			{
 				popupText = "";
-				networkState = NetworkState.Menu;
+				networkState = MenuState.Menu;
 			}
 		break;
 	}
@@ -96,7 +96,7 @@ function OnGUI()
 function SetupServer()
 {
     NetworkServer.Listen(port);
-    networkState = NetworkState.Lobby;
+    networkState = MenuState.Lobby;
 }
 
 // Create a client and connect to the server port
@@ -105,7 +105,7 @@ function SetupClient()
     myClient = new NetworkClient();
  	RegisterHandlers();
     myClient.Connect(ip, port);
-    networkState = NetworkState.Connecting;
+    networkState = MenuState.Connecting;
 }
 
 // Create a local client and connect to the local server
@@ -126,7 +126,7 @@ function RegisterHandlers()
 //When the client connects to the server
 function OnConnected()
 {
-	networkState = NetworkState.Lobby;
+	networkState = MenuState.Lobby;
 }
 
 //When the client disconnects from the server
@@ -143,4 +143,4 @@ function OnError(errMsg : NetworkMessage)
 	var errorMsg = errMsg.ReadMessage.<ErrorMessage>();
 	var ne : NetworkError = errorMsg.errorCode;
 	popupText = ne.ToString();
-}
+}*/

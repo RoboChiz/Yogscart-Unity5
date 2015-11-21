@@ -1,9 +1,11 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Track Maker\Track_Creator.js">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Unet Online\DailyChallengeTest.js">
     <Files>
-      <File FileName="Assets\Scripts\Track Maker\Track_Creator.js" Line="157" Column="79" />
-      <File FileName="Assets\Scripts\Track Maker\Bezier_Curve.js" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Unet Online\UnetManager.js" Line="146" Column="4" />
+      <File FileName="Assets\Scripts\Unet Online\DailyChallengeTest.js" Line="17" Column="83" />
+      <File FileName="Assets\Scripts\Unet Online\TestNetworkGUI.js" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Unet Online\DailyChallengeMessages.js" Line="19" Column="24" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
