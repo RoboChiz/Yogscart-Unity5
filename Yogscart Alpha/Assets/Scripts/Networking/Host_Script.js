@@ -299,7 +299,7 @@ function DoLobbyStuff()
 	StartCoroutine("UpdateLobbyNames");
 }
 
-function OnGUI(){
+/*function OnGUI(){
 
 	var playerString : String = "Total Players : ";
 	playerString += (Network.connections.Length+1);
@@ -323,7 +323,7 @@ function OnGUI(){
 		//GUI.Label(Rect(10,10 + 25 + (25*i),250,25),"[BOT]");
 	}
 
-}
+}*/
 
 class Team
 {

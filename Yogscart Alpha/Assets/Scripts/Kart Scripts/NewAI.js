@@ -133,7 +133,7 @@ function FixedUpdate () {
 	}
 	
 	//Reverse if Kart hits somethings
-	if(ks.expectedSpeed > 5 && ks.actualSpeed < 1) //Presume something is blocking the kart.
+	if(ks.ExpectedSpeed > 5 && ks.actualSpeed < 1) //Presume something is blocking the kart.
 		reversing = true;
 		
 	if(reversing)

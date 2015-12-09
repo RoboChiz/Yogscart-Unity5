@@ -10,7 +10,7 @@ DeathParticles.Play();
 if(transform.GetComponent(Position_Finding) != null)
 {
 if(transform.GetComponent(kartScript) != null)
-transform.GetComponent(kartScript).expectedSpeed = 0;
+transform.GetComponent(kartScript).ExpectedSpeed = 0;
 
 yield WaitForSeconds(0.75);
 

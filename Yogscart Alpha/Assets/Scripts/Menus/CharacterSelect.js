@@ -842,7 +842,16 @@ function Cancel()
 	}
 	else
 	{
-		transform.GetComponent(MainMenu).CancelCharacterSelect();
+		if(gd.GetComponent(RaceLeader).type == RaceStyle.DailyChallenge)
+		{
+			Debug.Log("Backing properly");
+			transform.GetComponent(MainMenu).CancelChallengeCharacterSelect();
+		}
+		else
+		{
+			Debug.Log("Backing BADDLY!");
+			transform.GetComponent(MainMenu).CancelCharacterSelect();
+		}
 	}
 	
 	hidden = true;

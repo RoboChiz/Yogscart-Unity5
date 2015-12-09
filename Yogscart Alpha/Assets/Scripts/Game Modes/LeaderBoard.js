@@ -10,7 +10,7 @@ var sideAmount : float = 0; //Used to make gui slide off screen
 
 private var movingGUI : boolean = false;
 
-enum LBType{Points,NoPoints,Sorted,TimeTrial,Tournament};
+enum LBType{Points,NoPoints,Sorted,TimeTrial,Tournament,DailyChallenge};
 var state : LBType = LBType.Points;
 
 var Racers : List.<DisplayRacer>;
@@ -57,6 +57,12 @@ function StartTimeTrial()
 {
 	hidden = false;
 	state = LBType.TimeTrial;
+}
+
+function StartDailyChallenge()
+{
+	hidden = false;
+	state = LBType.DailyChallenge;
 }
 
 function StartOnline()
@@ -123,6 +129,42 @@ function OnGUI ()
 
 				GUI.Label(Rect(10,10 + 3*(optionSize),BoardRect.width  - 20,optionSize),"Your Time");
 				GUI.Label(Rect(10,10 + 4*(optionSize),BoardRect.width  - 20,optionSize),TimeManager.TimerToString(playerTime));
+			}
+		break;
+		case LBType.DailyChallenge:
+			if(Racers.Count > 0)
+			{		
+				playerTime = Racers[0].timer;
+
+				GUI.Label(Rect(10,10,BoardRect.width - 20,BoardRect.height),"Daily Challenge Complete!");
+
+				GUI.Label(Rect(10,10 + (optionSize),BoardRect.width  - 20,optionSize),"Your Time");
+				GUI.Label(Rect(10,10 + 2*(optionSize),BoardRect.width  - 20,optionSize),TimeManager.TimerToString(playerTime));
+				
+				var dailyRanking = DailyChallengeMenu.rank;
+				var rankString : String = "???";
+				var totalString : String = "???";
+				
+				if(dailyRanking != null)
+				{		
+					rankString = (dailyRanking.yourRank + 1).ToString();
+					if(dailyRanking.yourRank == 0)
+						rankString += "st";
+					else if(dailyRanking.yourRank == 1)
+						rankString += "nd";
+					else if(dailyRanking.yourRank == 2)
+						rankString += "rd";
+					else
+						rankString += "th";
+						
+					totalString = dailyRanking.totalPlayers + " Racers!";
+				}
+				
+				GUI.Label(Rect(10,10 + 3*(optionSize),BoardRect.width  - 20,optionSize),"You're Ranked");
+				GUI.Label(Rect(10,10 + 4*(optionSize),BoardRect.width  - 20,optionSize),rankString);
+				GUI.Label(Rect(10,10 + 5*(optionSize),BoardRect.width  - 20,optionSize),"out of");
+				GUI.Label(Rect(10,10 + 6*(optionSize),BoardRect.width  - 20,optionSize),totalString);
+				
 			}
 		break;
 		default:
@@ -360,4 +402,3 @@ class DisplayRacer
 	}
 		
 }
-

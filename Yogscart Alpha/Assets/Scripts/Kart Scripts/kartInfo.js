@@ -114,7 +114,7 @@ cameras[i].rect = Rect(0,0,1,0.5);
 
 GUI.color = new Color32(255, 255, 255, raceGUIAlpha);
 
-if(rl.type != RaceStyle.TimeTrial)
+if(rl.type != RaceStyle.TimeTrial && rl.type != RaceStyle.DailyChallenge)
 {
 	//Render Position GUI
 	if(position != -1){

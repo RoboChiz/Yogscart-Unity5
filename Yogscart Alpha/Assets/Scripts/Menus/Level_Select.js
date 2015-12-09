@@ -203,18 +203,20 @@ function Finished(){
 	if(Network.isServer == true || Network.isClient == true){
 		SendRPC();
 	}else{
-		//Single Player Stuff
-		gd.currentCup = currentCup;
-		
-		if(!GrandPrixOnly)
-			gd.currentTrack = currentTrack;
-		else
+		if(currentTrack == 0)
 		{
-			gd.currentTrack = 0;
+			//Single Player Stuff
+			gd.currentCup = currentCup;
+			
+			if(!GrandPrixOnly)
+				gd.currentTrack = currentTrack;
+			else
+			{
+				gd.currentTrack = 0;
+			}
+			
+			this.enabled = false;
 		}
-		
-		this.enabled = false;
-		
 	}
 }
 

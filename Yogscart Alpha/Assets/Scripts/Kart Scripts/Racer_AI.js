@@ -122,7 +122,7 @@ ks.throttle = 0.25;
 
 var relativeVelocity : Vector3 = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
 
-if(ks.expectedSpeed > 1 && relativeVelocity.z < 1) //Presume something is blocking the kart.
+if(ks.ExpectedSpeed > 1 && relativeVelocity.z < 1) //Presume something is blocking the kart.
 reversing = true;
 
 if(reversing){
@@ -208,5 +208,4 @@ val += (max-min);
 
 
 return val;
-
 }

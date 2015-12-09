@@ -9,7 +9,7 @@ import System.Collections.Generic; //Cause lazy
 import System.Linq; //Cause lazy
 
 //Used to load specific content depending on the current game type
-enum RaceStyle{GrandPrix,TimeTrial,CustomRace,Online};
+enum RaceStyle{GrandPrix,TimeTrial,CustomRace,Online,DailyChallenge};
 var type : RaceStyle;
 
 //Local
@@ -98,7 +98,7 @@ function StartSinglePlayer()//true if in Time Trial Mode
 	
 	race = 1;
 	
-	if(type != RaceStyle.TimeTrial) //Setup a Grand Prix or VS Race
+	if(type != RaceStyle.TimeTrial && type != RaceStyle.DailyChallenge) //Setup a Grand Prix or VS Race
 	{
 		Racers = new Racer[12];
 
@@ -220,8 +220,12 @@ function spStartRace()
 
 	gd.BlackOut = true;
 	yield WaitForSeconds(0.5);
-	Application.LoadLevel(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].SceneID);
 	
+	if(type != RaceStyle.DailyChallenge)
+		Application.LoadLevel(gd.Tournaments[gd.currentCup].Tracks[gd.currentTrack].SceneID);
+	else
+		Application.LoadLevel(CurrentGameData.ChallengeScene);
+		
 	yield;
 	yield;
 	
@@ -230,7 +234,7 @@ function spStartRace()
 		yield;
 	}
 	
-	if(type == RaceStyle.TimeTrial)
+	if(type == RaceStyle.TimeTrial || type == RaceStyle.DailyChallenge)
 	{
 		var itemCrates = GameObject.FindObjectsOfType(Item_Box);
 		
@@ -345,7 +349,7 @@ function StartRace ()
 			for(i = 0; i < Racers.Length;i++)
 			{
 				
-				if(type == RaceStyle.TimeTrial)
+				if(type == RaceStyle.TimeTrial || type == RaceStyle.DailyChallenge)
 				{
 					//Find Spawn Position
 					rot = td.spawnPoint.rotation;
@@ -431,7 +435,7 @@ function StartRace ()
 					
 					Destroy(Racers[i].ingameObj.GetComponent(kartUpdate));		
 					
-					if(type == RaceStyle.TimeTrial)
+					if(type == RaceStyle.TimeTrial || type == RaceStyle.DailyChallenge)
 							Racers[i].ingameObj.GetComponent(kartItem).RecieveItem(2);
 							
 				}
@@ -655,6 +659,22 @@ function EndGame()
 		
 		rb.lb.AddLBRacer(0, Racers[0].character, Racers[0].points, Racers[0].timer);
 				
+		rb.WrapUp();
+	}
+	else if(type == RaceStyle.DailyChallenge) //Daily Challenge
+	{
+		rb.lb.AddLBRacer(0, Racers[0].character, Racers[0].points, Racers[0].timer);
+		
+		//Tell Server About Time
+		var dcm : DailyChallengeMenu = gameObject.AddComponent(DailyChallengeMenu);
+		dcm.scoring = true;
+		dcm.SetupClient();
+		
+		var timerString : String = TimeManager.TimerToString(Racers[0].timer);
+		dcm.SetScore(PlayerPrefs.GetString("playerName","Player"),timerString);
+		
+		Debug.Log("Before:" + Racers[0].timer + " After:" + TimeManager.Parse(timerString));
+		
 		rb.WrapUp();
 	}
 	else

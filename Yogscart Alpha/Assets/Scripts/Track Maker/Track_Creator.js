@@ -10,6 +10,7 @@ private var allPoints : Vector3[];//Holds just Vector3s
 
 private var clickLock : boolean = false;
 private var bezierStarted : boolean;
+private var trackHeight : float = 0f;
 
 private var lastPoint : Vector3;
 
@@ -29,6 +30,9 @@ function Start()
 
 function OnGUI () 
 {
+
+	GUI.Label(Rect(0,0,100,50),"Track Height:" + trackHeight.ToString());
+
 	if(!creatingMesh)
 	{
 		if(!testing)
@@ -172,11 +176,22 @@ function OnGUI ()
 function Update () 
 {
 	//Inputs
+	trackHeight = Mathf.Clamp(trackHeight,-100,100);
+	if(!testing && !creatingMesh)
+	{
+		if(Input.GetKeyDown(KeyCode.PageUp))
+			trackHeight += 1;
+		
+		if(Input.GetKeyDown(KeyCode.PageDown))
+			trackHeight -= 1;
+		
+	}
+	
 	if(!testing && !creatingMesh && !loopedTrack && !clickLock && Input.mousePosition.y < (Screen.height - 60))
 	{
 		if(Input.GetMouseButton(0)) //Left Mouse Button
 		{
-			var clickPos = viewCam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,Input.mousePosition.y,viewCam.transform.position.y));
+			var clickPos = viewCam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,Input.mousePosition.y,500 - trackHeight));
 			
 			if(points.length > 1 && Vector3.Distance(clickPos,points[0]) < 5)
 			{
@@ -204,7 +219,7 @@ function Update ()
 		
 		if(Input.GetMouseButton(1))
 		{
-			var rightClickPos = viewCam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,Input.mousePosition.y,viewCam.transform.position.y));
+			var rightClickPos = viewCam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,Input.mousePosition.y,500 - trackHeight));
 			var nBezier : Bezier;
 			
 			if(!bezierStarted)

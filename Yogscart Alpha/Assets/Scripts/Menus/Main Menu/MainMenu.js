@@ -18,6 +18,7 @@ var hidden : boolean;
 static var transitioning : boolean;
 static var sliding : boolean;
 var pictureTransitioning : boolean;
+var forcePictureTransitioning : boolean;
 
 private var freezeBack : boolean;
 
@@ -36,7 +37,6 @@ private var currentResolution : int;
 private var currentQuality : int;
 private var currentVSync : int = 0;
 
-var changesMade : boolean;
 static var xAmount : float;	
 
 private var hideTitle : boolean;
@@ -102,8 +102,13 @@ function OnGUI ()
 		if(!hidden)
 		{
 			//Lock controls while menus are transitioning
-			var submitBool : boolean = (im.c[0].GetMenuInput("Submit") != 0 && !transitioning);
-			var cancelBool : boolean = im.c[0].GetMenuInput("Cancel") != 0 && !transitioning;		
+			var submitBool : boolean = false;
+			var cancelBool : boolean = im.c[0].GetMenuInput("Cancel") != 0 && !transitioning;	
+			
+			if(currentState != MenuState.Credits)
+				submitBool = (im.c[0].GetMenuInput("Submit") != 0 && !transitioning);
+			
+				
 				
 			var vertical : float = 0;
 			var horizontal : float = 0;
@@ -153,24 +158,24 @@ function OnGUI ()
 		{
 			case MenuState.Main:
 			
-				options = ["Single Player","Multiplayer","Online","Options","Credits","Quit"];
+				options = ["Single Player","Multiplayer","Online",/*"Daily Challenge",*/"Options","Credits","Quit"];
 				im.allowedToChange = true;
 				hidden = false;
 				nm.enabled = false;
 				
 				if(sidePicture != null)
 				{
-					switch(currentSelection)
+					switch(options[currentSelection])
 					{	
-						case 1:
+						case "Multiplayer":
 						if(sidePicture.name != "Multiplayer")
 								ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Multiplayer",Texture2D));
 						break;
-						case 2:
+						case "Online":
 						if(sidePicture.name != "Online")
 								ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Online",Texture2D));
 						break;
-						case 3:
+						case "Options":
 						if(sidePicture.name != "Options")
 								ChangePicture(Resources.Load("UI Textures/New Main Menu/Side Images/Options",Texture2D));
 						break;
@@ -202,6 +207,7 @@ function OnGUI ()
 			break;
 			case MenuState.Options:
 				im.allowedToChange = false;
+				ForceChangePicture(null);
 				
 				if(currentResolution >= Screen.resolutions.Length)
 					currentResolution = 0;
@@ -237,7 +243,7 @@ function OnGUI ()
 				if(currentVSync == 2)
 					vSyncString += "Enabled (Double Buffered)";
 															
-				options = [fsString,resString,qualityString,vSyncString,mvString,muvString,sfxvString,"Reset Everything"];
+				options = [fsString,resString,qualityString,vSyncString,mvString,muvString,sfxvString,"Save Changes","Reset Everything"];
 			
 				//SliderRect
 				var masterSlider = Rect(box.width * (3f/4f),20 + (box.height/4f) +(4.25f * optionHeight),box.width - 40,optionHeight);
@@ -248,6 +254,16 @@ function OnGUI ()
 				
 				var sfxSlider = Rect(box.width * (3f/4f),20 + (box.height/4f) +(6.25f * optionHeight),box.width - 40,optionHeight);
 				sm.SFXVolume = GUI.HorizontalSlider(sfxSlider,sm.SFXVolume,0,100);
+				
+				//Old Sliders - Delete Later
+				var resolutionSlider = Rect(box.width * (7f/8f),20 + (box.height/4f) +(1.25f * optionHeight),(box.width * (7f/8f)) - 40,optionHeight);
+				currentResolution = GUI.HorizontalSlider(resolutionSlider,currentResolution,0,Screen.resolutions.Length - 1);
+				
+				var qualitySlider = Rect(box.width * (3f/4f),20 + (box.height/4f) +(2.25f * optionHeight),box.width - 40,optionHeight);
+				currentQuality = GUI.HorizontalSlider(qualitySlider,currentQuality,0,QualitySettings.names.Length-1);
+				
+				var vSyncSlider = Rect(box.width * (3f/4f),20 + (box.height/4f) +(3.25f * optionHeight),box.width - 40,optionHeight);
+				currentVSync = GUI.HorizontalSlider(vSyncSlider,currentVSync,0,2);
 			
 			break;
 			case MenuState.Difficulty:
@@ -385,16 +401,6 @@ function OnGUI ()
 			
 		GUI.EndGroup();
 		
-		//Show Changes Made
-		if(changesMade)
-			{
-				GUI.skin.label.normal.textColor = Color.red;
-				
-				GUI.Label(Rect(Screen.width/2f - (box.width/4f) ,20 + (box.height/4f),box.width - 20,optionHeight),"Changes Made. Confirm?");
-				
-				GUI.skin.label.normal.textColor = Color.white;
-			}
-		
 		if(submitBool)
 				sm.PlaySFX(Resources.Load("Music & Sounds/SFX/confirm",AudioClip));
 		
@@ -404,33 +410,40 @@ function OnGUI ()
 			case MenuState.Main:
 				if(submitBool)
 				{
-					switch(currentSelection)
+					switch(options[currentSelection])
 					{
-						case 0:
+						case "Single Player":
 							ChangeMenu(MenuState.SinglePlayer);
 							im.RemoveOtherControllers();
 						break;
-						case 1:
+						case "Multiplayer":
 							ChangeMenu(MenuState.Multiplayer);						
 						break;
-						case 2:
+						case "Online":
 							gd.difficulty = 1;
 							ChangeMenu(MenuState.Online);
 							nm.LoadServers();
 							im.RemoveOtherControllers();
 						break;
-						case 3:
+						case "Options":
+							ForceChangePicture(null);
 							LoadLibraries();
 							ChangeMenu(MenuState.Options);
 						break;
-						case 4:
+						case "Credits":
 							//Credits
 							ChangeMenu(MenuState.Credits);
 							ChangePicture(null);
 							transform.GetComponent(Credits).enabled = true;
 							transform.GetComponent(Credits).StartCredits();
 						break;
-						case 5:
+						case "Daily Challenge":
+							ChangeMenu(MenuState.Credits);
+							ChangePicture(null);
+							transform.GetComponent(DailyChallengeMenu).enabled = true;
+							transform.GetComponent(DailyChallengeMenu).StartMenu(selectedColor, this);
+						break;
+						case "Quit":
 							Application.Quit();
 						break;
 					}
@@ -439,21 +452,21 @@ function OnGUI ()
 			case MenuState.SinglePlayer:
 				if(submitBool)
 				{
-					switch(currentSelection)
+					switch(options[currentSelection])
 					{
-						case 0:
+						case "Tournament":
 							freezeBack = true;
 							gd.GetComponent(Level_Select).GrandPrixOnly = true;
 							gd.GetComponent(RaceLeader).type = RaceStyle.GrandPrix;
 							ChangeMenu(MenuState.Difficulty);
 						break;
-						case 1:
+						case "VS Race":
 							freezeBack = true;
 							gd.GetComponent(Level_Select).GrandPrixOnly = false;
 							gd.GetComponent(RaceLeader).type = RaceStyle.CustomRace;
 							ChangeMenu(MenuState.Difficulty);
 						break;
-						case 2:
+						case "Time Trial":
 							freezeBack = true;
 							gd.GetComponent(Level_Select).GrandPrixOnly = false;
 							gd.GetComponent(RaceLeader).type = RaceStyle.TimeTrial;
@@ -461,7 +474,7 @@ function OnGUI ()
 							ChangeMenu(MenuState.CharacterSelect);
 							StartCoroutine("StartCharacterSelect");
 						break;
-						case 3:
+						default:
 							freezeBack = false;
 							BackState();
 						break;
@@ -471,21 +484,21 @@ function OnGUI ()
 			case MenuState.Multiplayer:		
 				if(submitBool)
 				{
-					switch(currentSelection)
+					switch(options[currentSelection])
 					{
-						case 0:
+						case "Tournament":
 							freezeBack = true;	
 							gd.GetComponent(Level_Select).GrandPrixOnly = true;
 							gd.GetComponent(RaceLeader).type = RaceStyle.GrandPrix;
 							ChangeMenu(MenuState.Difficulty);
 						break;
-						case 1:
+						case "VS Race":
 							freezeBack = true;
 							gd.GetComponent(Level_Select).GrandPrixOnly = false;
 							gd.GetComponent(RaceLeader).type = RaceStyle.CustomRace;
 							ChangeMenu(MenuState.Difficulty);
 						break;
-						case 2:
+						default:
 							freezeBack = false;
 							BackState();
 						break;
@@ -498,20 +511,16 @@ function OnGUI ()
 					switch(options[currentSelection])
 					{
 						case fsString:
-							currentFS = !currentFS;
-							changesMade = true;	
+							currentFS = !currentFS;	
 						break;					
 						case resString:
 							currentResolution ++;
-							changesMade = true;
 						break;
 						case qualityString:
 							currentQuality ++;
-							changesMade = true;
 						break;
 						case vSyncString:
 							currentVSync ++;
-							changesMade = true;
 						break;
 						case mvString:
 							sm.MasterVolume++;
@@ -534,19 +543,16 @@ function OnGUI ()
 					{
 						case fsString:
 							currentFS = !currentFS;
-							changesMade = true;
 						break;
 						case resString:
 							currentResolution --;
-							changesMade = true;
+
 						break;
 						case qualityString:
 							currentQuality --;
-							changesMade = true;
 						break;
 						case vSyncString:
 							currentVSync --;
-							changesMade = true;
 						break;
 						case mvString:
 							sm.MasterVolume--;
@@ -573,21 +579,21 @@ function OnGUI ()
 						break;
 						case sfxvString:
 						break;
-						case "Reset Everything":
-							gd.ResetEverything();
-							popupText = "All data has been reset.";
-							ChangeMenu(MenuState.Popup);
-						break;
-						
-						case "Back":							
-							BackState();
-						break;
-						default:
+						case "Save Changes":
 							var cr : Resolution = Screen.resolutions[currentResolution];
 							Screen.SetResolution(cr.width,cr.height,currentFS);
 							QualitySettings.SetQualityLevel(currentQuality,true);
 							QualitySettings.vSyncCount = currentVSync;
-							changesMade = false;
+							popupText = "All data has been saved.";
+							ChangeMenu(MenuState.Popup);
+						break;
+						case "Reset Everything":
+							gd.ResetEverything();
+							popupText = "All data has been reset.";
+							ChangeMenu(MenuState.Popup);
+						break;					
+						case "Back":							
+							BackState();
 						break;
 					}
 				}
@@ -650,7 +656,7 @@ function ChangeMenu(newState : MenuState)
 	{
 		transitioning = true;
 		
-		if(newState == MenuState.Options || newState == MenuState.Credits)
+		if(newState == MenuState.Credits)
 		{
 			hideNext = NextState.Sliding;
 			hideTitle = true;
@@ -666,7 +672,7 @@ function ChangeMenu(newState : MenuState)
 		}
 		state[state.Length-1] = newState;
 		
-		if(newState == MenuState.Options || newState == MenuState.Credits)
+		if(newState == MenuState.Credits)
 			hideNext = NextState.Hidden;
 		else
 			hideTitle = false;
@@ -698,17 +704,22 @@ function ChangePicture(texture : Texture2D)
 function ForceChangePicture(texture : Texture2D)
 {
 
-	StopCoroutine("ChangePicture");
-
-	pictureTransitioning = true;
-	
-	yield PictureSlide(sidePictureAmount,Screen.width);
-	
-	sidePicture = texture;
-	
-	yield PictureSlide(Screen.width,Screen.width/2f);
-	
-	pictureTransitioning = false;
+	if(!forcePictureTransitioning)
+	{
+		StopCoroutine("ChangePicture");
+		
+		forcePictureTransitioning = true;
+		pictureTransitioning = true;
+		
+		yield PictureSlide(sidePictureAmount,Screen.width);
+		
+		sidePicture = texture;
+		
+		yield PictureSlide(Screen.width,Screen.width/2f);
+		
+		forcePictureTransitioning = false;
+		pictureTransitioning = false;
+	}
 }
 
 function BackState()
@@ -719,13 +730,19 @@ function BackState()
 		
 		sm.PlaySFX(Resources.Load("Music & Sounds/SFX/back",AudioClip));
 		
-		var optionsChange : boolean = (currentState == MenuState.Options || currentState == MenuState.Credits);
-		changesMade = false;
+		var optionsChange : boolean = (currentState == MenuState.Credits);
 		
 		if(currentState == MenuState.Credits)
 		{
-			transform.GetComponent(Credits).StopCredits();
+			if(transform.GetComponent(Credits).enabled)
+				transform.GetComponent(Credits).StopCredits();
+				
+			if(transform.GetComponent(DailyChallengeMenu).enabled)
+				transform.GetComponent(DailyChallengeMenu).StopMenu();
 		}
+		
+		if(currentState == MenuState.CharacterSelect && state[state.length - 2] == MenuState.Credits)
+			hideTitle = true;
 		
 		yield Slide(0,-(Screen.width/2f));
 		
@@ -741,6 +758,9 @@ function BackState()
 			hideTitle = false;
 		}
 		
+		if(state[state.length - 1] == MenuState.Credits)
+			hideTitle = true;
+
 		currentSelection = 0;
 			
 		yield Slide(-(Screen.width/2f),0);
@@ -809,9 +829,48 @@ function StartCharacterSelect()
 
 function CancelCharacterSelect()
 {
-	
 	StopCoroutine("StartCharacterSelect");
 	hidden = false;
 	BackState();
+}
+
+function StartChallengeTimeTrial()
+{
+
+	transform.GetComponent(DailyChallengeMenu).enabled = false;
+
+	gd.GetComponent(Level_Select).GrandPrixOnly = false;
+	gd.GetComponent(RaceLeader).type = RaceStyle.DailyChallenge;
+	gd.difficulty = 1;
+	ChangeMenu(MenuState.CharacterSelect);
+	StartCoroutine("StartChallengeCharacterSelect");
 	
+}
+
+function StartChallengeCharacterSelect()
+{
+		
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled = true;
+	GameObject.Find("Menu Holder").GetComponent(CharacterSelect).ResetEverything();
+	
+	hidden = true;
+	
+	while(GameObject.Find("Menu Holder").GetComponent(CharacterSelect).enabled)
+		yield;
+		
+	gd.GetComponent(RaceLeader).enabled = true;
+	gd.GetComponent(RaceBase).enabled = true;
+	
+	gd.GetComponent(RaceLeader).StartCoroutine("StartSinglePlayer");
+		
+	Debug.Log("Done");
+}
+
+function CancelChallengeCharacterSelect()
+{
+	Debug.Log("Backed!");
+	StopCoroutine("StartChallengeCharacterSelect");
+	hidden = false;
+	BackState();
+	transform.GetComponent(DailyChallengeMenu).enabled = true;
 }

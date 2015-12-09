@@ -59,8 +59,7 @@ var spunTime : float = 1.5f;
 private var Spinning : boolean;
 private var spunOut : boolean;
 
-@HideInInspector
-public var expectedSpeed : float;
+private var expectedSpeed : float;
 
 var actualSpeed : float;
 
@@ -68,7 +67,7 @@ var actualSpeed : float;
 public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
-var pushSpeed : float = 20f;
+var pushSpeed : float = 10f;
 var touchingKart : Vector3;
 
 private var sfxVolume : float;
@@ -93,10 +92,61 @@ function Start()
 	
 	transform.GetChild(0).GetComponent.<AudioSource>().volume = sfxVolume;
 	
-	InvokeRepeating("CustomUpdate",0f,0.0222f);
+	StartCoroutine("CustomUpdate");
 }
 
-function CustomUpdate()//A special Update function that will run at 45fps
+private var lastTime : float = 0.034;
+
+function CustomUpdate()
+{
+	if(Time.timeScale != 0)
+	{
+		var startTime : float = Time.time;			
+									
+		var nA  = (ExpectedSpeed-actualSpeed)/lastTime;
+		if(!isFalling && !isColliding && Mathf.Abs(nA) > 0.1f)
+		{	
+			GetComponent.<Rigidbody>().AddForce(transform.forward * nA,ForceMode.Acceleration);
+		}
+		
+		CalculateExpectedSpeed(lastTime);
+		
+		if(!isFalling)
+		{
+			ApplySteering(lastTime);
+		}
+		else
+		{
+			wheelColliders[0].steerAngle = 0;
+			wheelColliders[1].steerAngle = 0;
+		}
+		
+		ApplyDrift(lastTime);
+		
+		var nMaxSpeed : float = Mathf.Lerp(lastMaxSpeed,maxSpeed-(1f-lapisAmount/10f),lastTime);
+		
+		ExpectedSpeed = Mathf.Clamp(ExpectedSpeed,-nMaxSpeed,nMaxSpeed);
+		
+		if(isBoosting != "")
+		{
+			nMaxSpeed = maxSpeed + BoostAddition;
+			ExpectedSpeed = maxSpeed + BoostAddition;
+		}
+		
+		actualSpeed = relativeVelocity.z;
+		
+		lastMaxSpeed = nMaxSpeed;
+			
+		var processingTime : float = 0.034 - (Time.time - startTime);	
+		yield WaitForSeconds(Mathf.Clamp(processingTime,0,0.0034));//Wait till end of 1/30 seconds
+		
+		
+		lastTime = processingTime;
+		StartCoroutine("CustomUpdate");
+	}
+}
+
+function Update()//A special Update function that will run at 45fps
 {
 	lapisAmount = Mathf.Clamp(lapisAmount,0,10);
 	relativeVelocity = transform.InverseTransformDirection(GetComponent.<Rigidbody>().velocity);
@@ -113,41 +163,6 @@ function CustomUpdate()//A special Update function that will run at 45fps
 			
 		DoTrick();
 		
-		CalculateExpectedSpeed();
-		
-		if(!isFalling)
-		{
-			ApplySteering();
-		}
-		else
-		{
-			wheelColliders[0].steerAngle = 0;
-			wheelColliders[1].steerAngle = 0;
-		}
-		
-		ApplyDrift();
-		
-		var nMaxSpeed : float = Mathf.Lerp(lastMaxSpeed,maxSpeed-(1f-lapisAmount/10f),Time.fixedDeltaTime);
-		
-		expectedSpeed = Mathf.Clamp(expectedSpeed,-nMaxSpeed,nMaxSpeed);
-		
-		if(isBoosting != "")
-		{
-			nMaxSpeed = maxSpeed + BoostAddition;
-			expectedSpeed = maxSpeed + BoostAddition;
-		}
-		
-		actualSpeed = relativeVelocity.z;
-		
-		var nA  = (expectedSpeed-actualSpeed)/Time.fixedDeltaTime;
-
-		if(!isFalling && !isColliding && Mathf.Abs(nA) > 0.1f)
-		{	
-			GetComponent.<Rigidbody>().AddForce(transform.forward * nA,ForceMode.Acceleration);
-		}
-		
-		lastMaxSpeed = nMaxSpeed;
-		
 		for(var i : int; i < wheelMeshes.Length; i++)
 		{
 		
@@ -156,7 +171,7 @@ function CustomUpdate()//A special Update function that will run at 45fps
 			
 			wheelColliders[i].GetWorldPose(wheelPos,wheelRot);
 			
-			if(i == 3 || i == 0)
+			if(i == 0 || i == 2)
 				wheelMeshes[i].rotation = wheelRot;
 			else
 				wheelMeshes[i].rotation = wheelRot * Quaternion.Euler(0,180,0);
@@ -176,9 +191,9 @@ function CustomUpdate()//A special Update function that will run at 45fps
 				GetComponent.<AudioSource>().loop = true;
 			}
 			
-			GetComponent.<AudioSource>().volume = Mathf.Lerp(0.05,0.4,expectedSpeed/maxSpeed) * sfxVolume;
+			GetComponent.<AudioSource>().volume = Mathf.Lerp(0.05,0.4,ExpectedSpeed/maxSpeed) * sfxVolume;
 			
-			GetComponent.<AudioSource>().pitch = Mathf.Lerp(0.75,1.5,expectedSpeed/maxSpeed);
+			GetComponent.<AudioSource>().pitch = Mathf.Lerp(0.75,1.5,ExpectedSpeed/maxSpeed);
 
 		}
 		
@@ -280,36 +295,36 @@ function DoTrick()
 		trickLock = false;
 }
 
-function CalculateExpectedSpeed()
+function CalculateExpectedSpeed(lastTime : float)
 {
 	if(throttle == 0 || locked)
 	{
-		var cacceleration : float = -expectedSpeed/BrakeTime;
-		expectedSpeed += (cacceleration * Time.fixedDeltaTime);
+		var cacceleration : float = -ExpectedSpeed/BrakeTime;
+		ExpectedSpeed += (cacceleration * lastTime);
 
-		if(Mathf.Abs(expectedSpeed) <= 0.02)
-		expectedSpeed = 0;
+		if(Mathf.Abs(ExpectedSpeed) <= 0.02)
+		ExpectedSpeed = 0;
 	}
 	else
 	{
-		if(HaveTheSameSign(throttle,expectedSpeed) == false)
-			expectedSpeed += (throttle * acceleration * 2) *  Time.fixedDeltaTime;
+		if(HaveTheSameSign(throttle,ExpectedSpeed) == false)
+			ExpectedSpeed += (throttle * acceleration * 2) *  lastTime;
 		else{
 		
 			var percentage : float;
 			
 			if(offRoad && isBoosting != "Boost")
-				percentage  = (1f/maxGrassSpeed) * Mathf.Abs(expectedSpeed);
+				percentage  = (1f/maxGrassSpeed) * Mathf.Abs(ExpectedSpeed);
 			else
-				percentage  = (1f/maxSpeed) * Mathf.Abs(expectedSpeed);
+				percentage  = (1f/maxSpeed) * Mathf.Abs(ExpectedSpeed);
 				
-			expectedSpeed += (throttle * acceleration * (1f-percentage)) *  Time.fixedDeltaTime;
+			ExpectedSpeed += (throttle * acceleration * (1f-percentage)) *  lastTime;
 		}
 	}
 						
 }
 
-function ApplySteering()
+function ApplySteering(lastTime : float)
 {
 
 	if(!driftStarted){
@@ -327,8 +342,8 @@ function ApplySteering()
 		
 	}else{	
 	
-		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer * turnSpeed) + (steer * driftAmount),Time.fixedDeltaTime*500f);
-		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer * turnSpeed) + (steer * driftAmount),Time.fixedDeltaTime*500f);	
+		wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle,(driftSteer * turnSpeed) + (steer * driftAmount),lastTime*500f);
+		wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle,(driftSteer * turnSpeed) + (steer * driftAmount),lastTime*500f);	
 		
 	}
 	
@@ -361,11 +376,11 @@ function CheckGravity() : boolean
 
 }
 
-function ApplyDrift(){
+function ApplyDrift(lastTime : float){
 
 	var KartBody : Transform = transform.FindChild("Kart Body");
 
-	if(drift && expectedSpeed > maxSpeed*0.75f && !isFalling && (!offRoad || (offRoad && isBoosting == "Boost"))){
+	if(drift && ExpectedSpeed > maxSpeed*0.75f && !isFalling && (!offRoad || (offRoad && isBoosting == "Boost"))){
 	if(!applyingDrift && Mathf.Abs(steer) > 0.2 && driftStarted == false ){
 	driftStarted = true;
 	driftSteer = Mathf.Sign(steer);
@@ -380,9 +395,9 @@ function ApplyDrift(){
 	}
 
 	if(driftStarted == true){
-	driftTime += Time.fixedDeltaTime + (Time.fixedDeltaTime * Mathf.Abs(driftSteer+steer));
+	driftTime += lastTime + (lastTime * Mathf.Abs(driftSteer+steer));
 	if(!Spinning)
-		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,kartbodyRot * driftSteer,0),Time.fixedDeltaTime*2);
+		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,kartbodyRot * driftSteer,0),lastTime*2);
 
 	for(var f : int = 0; f < 2; f++){
 
@@ -404,7 +419,7 @@ function ApplyDrift(){
 		driftTime = 0;
 	
 	if(!Spinning)
-		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,0,0),Time.fixedDeltaTime*2);
+		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,0,0),lastTime*2);
 
 	if(throttle > 0){
 	if(driftTime >= orangeTime)
@@ -602,9 +617,30 @@ function OnCollisionEnter(collision : Collision)
 
 function Collided(collision : Collision)
 {
+	
+	Debug.Log("Colliding with " + collision.collider.name);
+	
+	var hit : RaycastHit;
+	if(!Physics.Raycast(transform.position,transform.right * 4f) && !Physics.Raycast(transform.position,-transform.right * 4f))
+	{
+		if(Physics.Raycast(transform.position,transform.forward * Mathf.Sign(ExpectedSpeed),hit))
+		{
+			if(hit.collider == collision.collider)
+			{
+				ExpectedSpeed /= 2f;
+				ExpectedSpeed = -ExpectedSpeed;
+			}
+		}
+	}
+	
 	isColliding = true;
-	//expectedSpeed /= 4f;
-	//expectedSpeed = -expectedSpeed;
 	yield WaitForSeconds(0.2f);
 	isColliding = false;
+}
+
+public function get ExpectedSpeed() : float{return expectedSpeed;}
+public function set ExpectedSpeed(value : float)
+{
+	if(!isColliding)
+    	expectedSpeed = value;
 }

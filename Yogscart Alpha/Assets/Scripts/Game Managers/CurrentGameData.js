@@ -9,6 +9,7 @@ var lastoverallLapisCount : int;
 
 static var currentCup : int = 0;
 static var currentTrack : int = 0;
+static var ChallengeScene : String;
 
 var currentChoices : LoadOut[];
 

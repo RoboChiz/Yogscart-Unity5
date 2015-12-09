@@ -240,6 +240,10 @@ function WrapUp()
 		lb.enabled = true;
 		if(rl.type == RaceStyle.TimeTrial)
 			lb.StartTimeTrial();
+		else if(rl.type == RaceStyle.DailyChallenge)
+		{
+			lb.StartDailyChallenge();
+		}
 		else if(rl.type == RaceStyle.Online)
 			lb.StartOnline();
 		else
