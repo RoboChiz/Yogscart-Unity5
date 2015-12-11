@@ -64,7 +64,7 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 	var kb : GameObject = kartBody.gameObject;
 
 	kb.AddComponent(Rigidbody);
-	kb.GetComponent.<Rigidbody>().mass = 2000;
+	kb.GetComponent.<Rigidbody>().mass = 5000;
 	kb.GetComponent.<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 	kb.GetComponent.<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
 	kb.GetComponent.<Rigidbody>().angularDrag = 0;
@@ -191,7 +191,7 @@ collider.gameObject.AddComponent(WheelCollider);
 var wheelCollider = collider.GetComponent(WheelCollider);
 
 //Setup Collider Settings
-wheelCollider.mass = 20;
+wheelCollider.mass = 100;
 
 if(collider.GetComponent(WheelSkeleton) != null)
 {

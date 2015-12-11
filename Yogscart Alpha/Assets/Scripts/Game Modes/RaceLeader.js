@@ -377,16 +377,16 @@ function StartRace ()
 				switch(gd.difficulty)
 				{
 					case 0:
-					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 18;
+					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 19;
 					break;
 					case 1:
-					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 20;
+					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 21;
 					break;
 					case 2:
-					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 22;
+					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 23;
 					break;
 					case 3:
-					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 22;
+					Racers[i].ingameObj.GetComponent(kartScript).maxSpeed = 23;
 					break;
 				
 				}

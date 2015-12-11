@@ -1,4 +1,4 @@
-﻿#pragma strict
+#pragma strict
 
 var locked : boolean = true;
 
@@ -9,16 +9,19 @@ var drift : boolean;
 private var isFalling : boolean;
 private var isColliding : boolean;
 
+private var boostPercent : float = 0.4f;
+private var grassPercent : float = 0.45f;
+
 public var maxSpeed : float = 20f;
-var maxGrassSpeed : float = 7.5f;
+private var maxGrassSpeed : float = 7.5f;
 private var lastMaxSpeed : float;
 private var offRoad : boolean;
 
 var acceleration : float = 10;
 
-var BrakeTime : float = 0.5f;
+var BrakeTime : float = 1.5f;
 
-var turnSpeed : float = 3f;
+var turnSpeed : float = 2f;
 var driftAmount : float = 2f;
 private var driftSteer : int;
 
@@ -50,7 +53,7 @@ var TrickParticles : ParticleSystem;
 var engineSound : AudioClip;
 
 var kartbodyRot : float = 20;
-private var driftTime : float;
+var driftTime : float;
 var blueTime : float = 3;
 var orangeTime : float = 6;
 
@@ -67,7 +70,9 @@ var actualSpeed : float;
 public var startBoostVal : int = -1;
 
 var snapTime : float = 0.1f;
-var pushSpeed : float = 10f;
+var pushSpeed : float = 2f;
+var pushTime : float = 0.5f;
+
 var touchingKart : Vector3;
 
 private var sfxVolume : float;
@@ -91,6 +96,10 @@ function Start()
 		sfxVolume = GameObject.Find("Sound System").transform.FindChild("SFX").GetComponent.<AudioSource>().volume;
 	
 	transform.GetChild(0).GetComponent.<AudioSource>().volume = sfxVolume;
+	
+	BoostAddition = maxSpeed * boostPercent;
+	maxGrassSpeed = maxSpeed * grassPercent;
+	driftAmount = turnSpeed / 2f;
 	
 	StartCoroutine("CustomUpdate");
 }
@@ -237,14 +246,19 @@ function KartCollision(otherKart : Transform)
 			touchingKart = -transform.right;
 
 		//Add the horizontal velocity
-		var stopA = (pushSpeed-relativeVelocity.x) / 0.0333f;
-		GetComponent.<Rigidbody>().AddForce(stopA * touchingKart, ForceMode.Acceleration);	
-		GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
-		
-		yield;
-		
+		//var stopA = (pushSpeed-relativeVelocity.x) / 0.0333f;
+		//GetComponent.<Rigidbody>().AddForce(stopA * touchingKart, ForceMode.Acceleration);	
+		//GetComponent.<Rigidbody>().constraints = RigidbodyConstraints.None;
+	}
+	
+	transform.position += (touchingKart * (2f - compareVect.magnitude));
+	
+	var startTime = Time.time;
+	while(Time.time - startTime <= pushTime)
+	{
 		relativeVelocity.x = pushSpeed * touchingKart.x;	
 		GetComponent.<Rigidbody>().velocity = transform.TransformDirection(relativeVelocity);
+		yield;
 	}
 }
 
