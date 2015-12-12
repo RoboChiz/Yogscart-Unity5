@@ -230,9 +230,14 @@ function OnGUI ()
 				var fsString : String = "Full Screen - " + currentFS;
 				var resString : String = "Resolution - " + Screen.resolutions[currentResolution].width + " x " + Screen.resolutions[currentResolution].height;
 				var qualityString : String = "Quality - " + QualitySettings.names[currentQuality];
-				var mvString : String = "Master Volume - " + sm.MasterVolume + "%";
-				var muvString : String = "Music Volume - " + sm.MusicVolume + "%";
-				var sfxvString : String = "SFX Volume - " + sm.SFXVolume + "%";
+				
+				var mv : int = sm.MasterVolume;
+				var muv : int = sm.MusicVolume;
+				var sfxv : int = sm.SFXVolume;
+				
+				var mvString : String = "Master Volume - " + mv + "%";
+				var muvString : String = "Music Volume - " + muv + "%";
+				var sfxvString : String = "SFX Volume - " + sfxv + "%";
 				
 				var vSyncString : String = "VSync - ";
 				
@@ -506,6 +511,9 @@ function OnGUI ()
 				}
 			break;
 			case MenuState.Options:
+			
+				var slideAmount : float = 8f;
+			
 				if(horizontal > 0)
 				{
 					switch(options[currentSelection])
@@ -523,15 +531,15 @@ function OnGUI ()
 							currentVSync ++;
 						break;
 						case mvString:
-							sm.MasterVolume++;
+							sm.MasterVolume += Time.deltaTime * slideAmount;
 							sm.MasterVolume = Mathf.Clamp(sm.MasterVolume,0,100);
 						break;
 						case muvString:
-							sm.MusicVolume++;
+							sm.MusicVolume += Time.deltaTime * slideAmount;
 							sm.MusicVolume = Mathf.Clamp(sm.MusicVolume,0,100);
 						break;	
 						case sfxvString:
-							sm.SFXVolume++;
+							sm.SFXVolume += Time.deltaTime * slideAmount;
 							sm.SFXVolume = Mathf.Clamp(sm.SFXVolume,0,100);
 						break;		
 					}
@@ -555,15 +563,15 @@ function OnGUI ()
 							currentVSync --;
 						break;
 						case mvString:
-							sm.MasterVolume--;
+							sm.MasterVolume -= Time.deltaTime * slideAmount;
 							sm.MasterVolume = Mathf.Clamp(sm.MasterVolume,0,100);
 						break;
 						case muvString:
-							sm.MusicVolume--;
+							sm.MusicVolume -= Time.deltaTime * slideAmount;
 							sm.MusicVolume = Mathf.Clamp(sm.MusicVolume,0,100);
 						break;	
 						case sfxvString:
-							sm.SFXVolume--;
+							sm.SFXVolume -= Time.deltaTime * slideAmount;
 							sm.SFXVolume = Mathf.Clamp(sm.SFXVolume,0,100);
 						break;	
 					}

@@ -1,8 +1,8 @@
 ﻿#pragma strict
 
-var MasterVolume : int = 100;
-var MusicVolume : int = 100;
-var SFXVolume : int = 100;
+var MasterVolume : float = 100;
+var MusicVolume : float = 100;
+var SFXVolume : float = 100;
 //var DialogueVolume : int = 100;
 
 var fadeTime : float = 0.5f;

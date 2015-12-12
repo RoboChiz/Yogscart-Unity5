@@ -104,7 +104,7 @@ function Start()
 	StartCoroutine("CustomUpdate");
 }
 
-private var lastTime : float = 0.034;
+var lastTime : float = 0.034;
 
 function CustomUpdate()
 {
@@ -146,13 +146,24 @@ function CustomUpdate()
 		
 		lastMaxSpeed = nMaxSpeed;
 			
-		var processingTime : float = 0.034 - (Time.time - startTime);	
-		yield WaitForSeconds(Mathf.Clamp(processingTime,0,0.0034));//Wait till end of 1/30 seconds
+		var processingTime : float = 0.034 - ((Time.time - startTime)/1000f);	
 		
+		if(processingTime <= 0.034f)
+		{
+			yield WaitForSeconds(Mathf.Clamp(processingTime,0,0.0034));//Wait till end of 1/30 seconds
+			lastTime = 0.034f;
+		}
+		else
+		{
+			lastTime = Mathf.Abs(processingTime);
+		}
 		
-		lastTime = processingTime;
-		StartCoroutine("CustomUpdate");
 	}
+	else
+	{
+		yield WaitForSeconds(0.0034);//Wait till end of 1/30 seconds
+	}
+	StartCoroutine("CustomUpdate");
 }
 
 function Update()//A special Update function that will run at 45fps
@@ -409,7 +420,7 @@ function ApplyDrift(lastTime : float){
 	}
 
 	if(driftStarted == true){
-	driftTime += lastTime + (lastTime * Mathf.Abs(driftSteer+steer));
+	driftTime += lastTime * Mathf.Abs(driftSteer+(steer/2f));
 	if(!Spinning)
 		KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation,Quaternion.Euler(0,kartbodyRot * driftSteer,0),lastTime*2);
 
@@ -631,8 +642,6 @@ function OnCollisionEnter(collision : Collision)
 
 function Collided(collision : Collision)
 {
-	
-	Debug.Log("Colliding with " + collision.collider.name);
 	
 	var hit : RaycastHit;
 	if(!Physics.Raycast(transform.position,transform.right * 4f) && !Physics.Raycast(transform.position,-transform.right * 4f))

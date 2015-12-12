@@ -578,8 +578,8 @@ function OnGUI ()
 						Options = ["Resume","Quit"];
 
 						var vertPause : int = im.c[paused].GetMenuInput("Vertical");
-						var submitPause: boolean = (im.c[paused].GetMenuInput("Submit") != 0);
-						
+						var submitPause : boolean = (im.c[paused].GetMenuInput("Submit") != 0);
+							
 						if(vertPause != 0)
 							currentSelection -= Mathf.Sign(vertPause);
 							
