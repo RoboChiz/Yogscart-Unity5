@@ -1,6 +1,9 @@
 ﻿#pragma strict
 
-var allowedToChange : boolean;
+var allowedToChange : boolean;//Used by Main Menu to stop new Inputs
+var lockInputs : boolean; //Used by Character Select to stop new Inputs
+var inCharacterSelect : boolean; //Used to make sure there is never no controllers in the character select
+
 var c : InputController[]; //Holds controllers connected
 
 var keyboardPlayer : int;
@@ -69,7 +72,7 @@ public class InputController
 function Update()
 {
 	//Look for new Controllers
-	if(allowedToChange){
+	if(allowedToChange && !lockInputs){
 		if((c == null || c.Length < 4)){
 			if(Input.GetAxis("Key_Submit"))
 				AddController("Key_");
@@ -89,7 +92,7 @@ function Update()
 		
 		}
 		
-		if(c != null){
+		if(c != null && (c.Length > 1 || !inCharacterSelect)){
 			if(Input.GetAxis("Key_Leave"))
 				RemoveController("Key_");
 			

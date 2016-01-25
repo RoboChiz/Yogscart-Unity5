@@ -19,7 +19,7 @@ private var offRoad : boolean;
 
 var acceleration : float = 10;
 
-var BrakeTime : float = 1.5f;
+private var BrakeTime : float = 0.5f;
 
 var turnSpeed : float = 2f;
 var driftAmount : float = 2f;
@@ -54,15 +54,15 @@ var engineSound : AudioClip;
 
 var kartbodyRot : float = 20;
 var driftTime : float;
-var blueTime : float = 3;
-var orangeTime : float = 6;
+var blueTime : float = 2;
+var orangeTime : float = 4;
 
 var spinTime : float = 0.5f;
 var spunTime : float = 1.5f;
 private var Spinning : boolean;
 private var spunOut : boolean;
 
-private var expectedSpeed : float;
+var expectedSpeed : float;
 
 var actualSpeed : float;
 
@@ -100,24 +100,17 @@ function Start()
 	BoostAddition = maxSpeed * boostPercent;
 	maxGrassSpeed = maxSpeed * grassPercent;
 	driftAmount = turnSpeed / 2f;
-	
-	StartCoroutine("CustomUpdate");
 }
 
-var lastTime : float = 0.034;
-
-function CustomUpdate()
+function FixedUpdate()
 {
+	
+	var lastTime : float = Time.fixedDeltaTime;
+
+	lastTime = Mathf.Clamp(lastTime,0f,0.034f);
+
 	if(Time.timeScale != 0)
-	{
-		var startTime : float = Time.time;			
-									
-		var nA  = (ExpectedSpeed-actualSpeed)/lastTime;
-		if(!isFalling && !isColliding && Mathf.Abs(nA) > 0.1f)
-		{	
-			GetComponent.<Rigidbody>().AddForce(transform.forward * nA,ForceMode.Acceleration);
-		}
-		
+	{										
 		CalculateExpectedSpeed(lastTime);
 		
 		if(!isFalling)
@@ -144,26 +137,14 @@ function CustomUpdate()
 		
 		actualSpeed = relativeVelocity.z;
 		
+		var nA  = (ExpectedSpeed-actualSpeed)/lastTime;
+		if(!isFalling && !isColliding && Mathf.Abs(nA) > 0.1f)
+		{	
+			GetComponent.<Rigidbody>().AddForce(transform.forward * nA,ForceMode.Acceleration);
+		}
+		
 		lastMaxSpeed = nMaxSpeed;
-			
-		var processingTime : float = 0.034 - ((Time.time - startTime)/1000f);	
-		
-		if(processingTime <= 0.034f)
-		{
-			yield WaitForSeconds(Mathf.Clamp(processingTime,0,0.0034));//Wait till end of 1/30 seconds
-			lastTime = 0.034f;
-		}
-		else
-		{
-			lastTime = Mathf.Abs(processingTime);
-		}
-		
 	}
-	else
-	{
-		yield WaitForSeconds(0.0034);//Wait till end of 1/30 seconds
-	}
-	StartCoroutine("CustomUpdate");
 }
 
 function Update()//A special Update function that will run at 45fps
@@ -195,11 +176,10 @@ function Update()//A special Update function that will run at 45fps
 				wheelMeshes[i].rotation = wheelRot;
 			else
 				wheelMeshes[i].rotation = wheelRot * Quaternion.Euler(0,180,0);
-				
-				if(!tricking && !isFalling && !spunOut)
-					wheelMeshes[i].position.y = wheelPos.y;
-				else
-					wheelMeshes[i].localPosition = wheelStart[i];
+			
+			wheelMeshes[i].localPosition = wheelStart[i];	
+			wheelMeshes[i].position.y = wheelPos.y;
+			
 		}
 		
 		//Play engine Audio
@@ -346,7 +326,9 @@ function CalculateExpectedSpeed(lastTime : float)
 			ExpectedSpeed += (throttle * acceleration * (1f-percentage)) *  lastTime;
 		}
 	}
-						
+	
+	if(Mathf.Abs(actualSpeed) < Mathf.Abs(ExpectedSpeed)-5)
+		ExpectedSpeed = actualSpeed;	
 }
 
 function ApplySteering(lastTime : float)

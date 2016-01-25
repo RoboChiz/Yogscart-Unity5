@@ -1,4 +1,4 @@
-﻿#pragma strict
+#pragma strict
 
 //The Slightly Efficent Kart Finding System 
 	

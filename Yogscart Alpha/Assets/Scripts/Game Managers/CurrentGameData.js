@@ -107,7 +107,7 @@ private var ColourAlpha : Color = Color.white;
 		
 		GUI.depth = -5;
 		
-		GUI.Label(Rect(10,Screen.height - GUI.skin.label.fontSize - 10,Screen.width,GUI.skin.label.fontSize * 1.25f),"Yogscart Alpha " + version.ToString());
+		//GUI.Label(Rect(10,Screen.height - GUI.skin.label.fontSize - 10,Screen.width,GUI.skin.label.fontSize * 1.25f),"Yogscart Alpha " + version.ToString());
 		
 		//Black Out
 		var texture = new Texture2D(1,1);

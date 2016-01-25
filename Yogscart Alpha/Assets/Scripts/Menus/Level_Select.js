@@ -203,8 +203,6 @@ function Finished(){
 	if(Network.isServer == true || Network.isClient == true){
 		SendRPC();
 	}else{
-		if(currentTrack == 0)
-		{
 			//Single Player Stuff
 			gd.currentCup = currentCup;
 			
@@ -216,7 +214,6 @@ function Finished(){
 			}
 			
 			this.enabled = false;
-		}
 	}
 }
 

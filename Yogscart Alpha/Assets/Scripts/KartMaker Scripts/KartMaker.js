@@ -64,10 +64,10 @@ function SpawnKart(kartType : KartType, position : Vector3, rotation : Quaternio
 	var kb : GameObject = kartBody.gameObject;
 
 	kb.AddComponent(Rigidbody);
-	kb.GetComponent.<Rigidbody>().mass = 5000;
+	kb.GetComponent.<Rigidbody>().mass = 1000;
 	kb.GetComponent.<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 	kb.GetComponent.<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
-	kb.GetComponent.<Rigidbody>().angularDrag = 0;
+	kb.GetComponent.<Rigidbody>().angularDrag = 0.05;
 
 	kb.AddComponent(AudioSource);
 	kb.GetComponent.<AudioSource>().clip = kartSkel.engineSound;
@@ -201,18 +201,18 @@ if(collider.GetComponent(WheelSkeleton) != null)
 else
 	wheelCollider.radius = 0.15;
 
-wheelCollider.wheelDampingRate = 0.05;
-wheelCollider.suspensionDistance = 0.25f;
+wheelCollider.wheelDampingRate = 0.01;
+wheelCollider.suspensionDistance = 0.3f;
 wheelCollider.forceAppPointDistance = 1f;
 
-wheelCollider.suspensionSpring.spring = 25000;
-wheelCollider.suspensionSpring.damper = 25000;
-wheelCollider.suspensionSpring.targetPosition = 1;
+wheelCollider.suspensionSpring.spring = 100000;
+wheelCollider.suspensionSpring.damper = 5000;
+wheelCollider.suspensionSpring.targetPosition = 0.9;
 
-wheelCollider.forwardFriction.extremumSlip = 0.8;
-wheelCollider.forwardFriction.extremumValue = 3;
-wheelCollider.forwardFriction.asymptoteSlip = 1.5;
-wheelCollider.forwardFriction.asymptoteValue = 2.25;
+wheelCollider.forwardFriction.extremumSlip = 0.1;
+wheelCollider.forwardFriction.extremumValue = 1;
+wheelCollider.forwardFriction.asymptoteSlip = 0.8;
+wheelCollider.forwardFriction.asymptoteValue = 0.5;
 wheelCollider.forwardFriction.stiffness = 1;
 
 wheelCollider.sidewaysFriction.extremumSlip = 0.8;

@@ -160,6 +160,7 @@ function OnGUI ()
 			
 				options = ["Single Player","Multiplayer","Online",/*"Daily Challenge",*/"Options","Credits","Quit"];
 				im.allowedToChange = true;
+				im.inCharacterSelect = false;
 				hidden = false;
 				nm.enabled = false;
 				
@@ -193,15 +194,16 @@ function OnGUI ()
 			
 				options = ["Tournament","VS Race","Time Trial"];
 				im.allowedToChange = false;
-				
+				im.inCharacterSelect = false;
 			break;
 			case MenuState.Multiplayer:	
 				im.allowedToChange = true;
+				im.inCharacterSelect = false;
 				options = ["Tournament","VS Race"];
-				
 			break;
 			case MenuState.Online:
 				im.allowedToChange = false;
+				im.inCharacterSelect = false;
 				hidden = true;
 				nm.enabled = true;
 			break;
@@ -272,7 +274,7 @@ function OnGUI ()
 			
 			break;
 			case MenuState.Difficulty:
-			
+				
 				//options = ["50cc - Only for little Babby!","100cc - You mother trucker!","150cc - Oh what big strong muscles!","Insane - Prepare your butts!","Back"];
 				if(gd.unlockedInsane)
 					options = ["50cc","100cc","150cc","Insane"];

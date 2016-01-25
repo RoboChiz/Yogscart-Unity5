@@ -73,12 +73,14 @@ function OnGUI()
 		
 	if(canInput)
 		var mouseClick = im.GetClick();
+		
+	im.inCharacterSelect = true;
 
 	switch(state)
 	{
 		case(csState.Character):
 		
-		im.allowedToChange = true;
+		im.lockInputs = false;
 		
 		nameListRect = Rect(10,chunkSize/2f,chunkSize*5f,Screen.height - chunkSize*1.5f);
 		GUI.DrawTexture(nameListRect,nameList);
@@ -120,8 +122,8 @@ function OnGUI()
 		break;
 		
 		case(csState.Hat):
-			
-			im.allowedToChange = false;
+		
+			im.lockInputs = true;
 		
 			nameListRect = Rect(10,chunkSize/2f,chunkSize*5f,Screen.height - chunkSize*1.5f);
 			GUI.DrawTexture(nameListRect,nameList);
@@ -855,6 +857,7 @@ function Cancel()
 	}
 	
 	hidden = true;
+	im.inCharacterSelect = false;			
 	this.enabled = false;
 		
 }
@@ -870,7 +873,8 @@ function Finished()
 			if(loadedModels[i] != null)
 				Destroy(loadedModels[i].gameObject);
 		}
-		
+	
+	im.inCharacterSelect = false;			
 	this.enabled = false;
 }
 
