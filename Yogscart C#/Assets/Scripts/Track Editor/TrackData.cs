@@ -114,6 +114,7 @@ public class TrackData : MonoBehaviour
                     {
                         shortCuts[i].positionPoints[j].name = "ShortCut Point " + j;
                         shortCuts[i].positionPoints[j].parent = positionPoints[shortCuts[i].startPoint];
+                        shortCuts[i].positionPoints[j].GetComponent<PointHandler>().style = PointHandler.Point.Shortcut;
                     }
                 }
 
@@ -162,6 +163,32 @@ public class TrackData : MonoBehaviour
             obj.position = positionPoints[value-1].position;
             positionPoints.Insert(value, obj);
         }
+    }
+
+    public void CreateShortcut(int startPosition)
+    {
+        ShortCut nShortCut = new ShortCut(startPosition);
+        shortCuts.Add(nShortCut);
+        nShortCut.positionPoints = new List<Transform>();
+
+        Transform obj = CreatePoint();
+        obj.parent = positionPoints[startPosition];
+        obj.position = positionPoints[startPosition].position;
+
+        obj.GetComponent<PointHandler>().style = PointHandler.Point.Shortcut;
+        nShortCut.positionPoints.Add(obj);
+    }
+
+    public void CreateShortcutPoint(int nPoint, ShortCut sc)
+    {
+        Transform point = sc.positionPoints[nPoint];
+
+        Transform obj = CreatePoint();
+        obj.parent = point.parent;
+        obj.position = point.position;
+        obj.GetComponent<PointHandler>().style = PointHandler.Point.Shortcut;
+
+        sc.positionPoints.Add(obj);
     }
 
     void OnDrawGizmos()

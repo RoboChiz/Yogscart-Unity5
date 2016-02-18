@@ -20,7 +20,7 @@ public class PositionFinding : MonoBehaviour
                 td = tm.GetComponent<TrackData>();
         }
         else
-        {
+        {          
             float closestDistance = float.MaxValue - 1f;
             closestDistance = Vector3.Distance(transform.position, td.positionPoints[MathHelper.NumClamp(currentPos, 0, td.positionPoints.Count)].position);
 
@@ -42,7 +42,7 @@ public class PositionFinding : MonoBehaviour
                 if (td.loopedTrack)
                     currentPos = MathHelper.NumClamp(currentPos, 0, td.positionPoints.Count);
                 else
-                    currentPos = Mathf.Clamp(currentPos, 0, td.positionPoints.Count);
+                    currentPos = Mathf.Clamp(currentPos, 0, td.positionPoints.Count - 1);
             }
 
             currentDistance = Vector3.Distance(transform.position, td.positionPoints[MathHelper.NumClamp(currentPos + 1, 0, td.positionPoints.Count)].position);
@@ -110,7 +110,8 @@ public class PositionFinding : MonoBehaviour
             {
                 closestDistance = newDistance;
                 currentPos += i;
-                currentTotal += i;
+                if(lap != td.Laps)
+                    currentTotal += i;
             }
         }
     }
@@ -124,7 +125,8 @@ public class PositionFinding : MonoBehaviour
             {
                 closestDistance = newDistance;
                 currentPos += i;
-                currentTotal += i;               
+                if (lap != td.Laps)
+                    currentTotal += i;               
             }
         }
     }
@@ -154,15 +156,17 @@ public class PositionFinding : MonoBehaviour
                     lapCounted++;
                 }
 
-                if(lapCounted == lapVal - 1)
-                {
-                    returnVal++;
-                }
-                if (lapCounted == lapVal)
+                returnVal++;
+
+                if (lapCounted == lapVal + 1)
                     break;
             }
 
-            return returnVal;
+            if (lapVal > td.Laps)
+                return int.MaxValue;
+
+
+            return Mathf.Clamp(returnVal-1,0,int.MaxValue);
         }
     }
 
