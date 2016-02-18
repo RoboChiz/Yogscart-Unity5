@@ -1033,6 +1033,9 @@ function SpectatePlease()
 		
 		SpectatorCam.GetComponent(Kart_Camera).height = 3f;
 		
+		SpectatorCam.AddComponent(FlyThrough);
+		SpectatorCam.GetComponent(FlyThrough).enabled = false;
+		
 		SpectatorCam.tag = "MainCamera";
 		DontDestroyOnLoad(SpectatorCam);
 	//SpectatorCam.AddComponent();Add DynamiCam
