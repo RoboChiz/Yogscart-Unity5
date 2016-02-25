@@ -30,5 +30,23 @@ public class InEngineRender : MonoBehaviour
             Debug.DrawLine(pos2, pos3, Color.blue);
             Debug.DrawLine(pos3, pos, Color.blue);
         }
+
+        //Render Track Lines
+        List<Transform> pp = td.positionPoints;
+
+        if (pp != null && pp.Count >= 2)
+        {
+            for (int i = 0; i < pp.Count; i++)
+            {
+                float adjusterFloat = pp[i].GetComponent<PointHandler>().roadWidth;
+
+                if (td.loopedTrack || i < pp.Count - 1)
+                {
+                    Debug.DrawLine(pp[i].position, pp[MathHelper.NumClamp(i + 1, 0, pp.Count)].position,Color.red);
+
+                    //Draw Road Widths
+                }
+            }
+        }
     }
 }
