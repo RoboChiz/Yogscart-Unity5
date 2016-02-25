@@ -88,12 +88,14 @@
      <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanFlags.cs" />
      <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanResult.cs" />
      <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanSettings.cs" />
-     <Compile Include="Assets\Scripts\Kart Scripts\PositionFinding.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartScript.cs" />
      <Compile Include="Assets\Scripts\Track Editor\InEngineRender.cs" />
+     <Compile Include="Assets\Scripts\Track Editor\NodeHandler.cs" />
+     <Compile Include="Assets\Scripts\Track Editor\NodeScript.cs" />
      <Compile Include="Assets\Scripts\Track Editor\PointHandler.cs" />
+     <Compile Include="Assets\Scripts\Track Editor\TestScript.cs" />
      <Compile Include="Assets\Scripts\Track Editor\TrackData.cs" />
      <None Include="Assets\InputManager\Addons\JoystickMapping\Resources\joystick_mappings\xbox_360_linux.xml" />
      <None Include="Assets\InputManager\Examples\01 - Controls Menu\Data\default_input.xml" />

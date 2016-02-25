@@ -45,6 +45,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Editor\NodeEditor.cs" />
      <Compile Include="Assets\Editor\TrackDataEditor.cs" />
      <Compile Include="Assets\InputManager\Addons\InputEvents\Editor\InputEventManagerEditor.cs" />
      <Compile Include="Assets\InputManager\Addons\JoystickMapping\Editor\MappingExplorer.cs" />
