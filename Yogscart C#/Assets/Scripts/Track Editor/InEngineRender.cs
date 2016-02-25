@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using RobsNodes;
 
 [ExecuteInEditMode, RequireComponent(typeof(TrackData))]
 public class InEngineRender : MonoBehaviour
@@ -30,24 +29,6 @@ public class InEngineRender : MonoBehaviour
             Debug.DrawLine(pos1, pos2, Color.blue);
             Debug.DrawLine(pos2, pos3, Color.blue);
             Debug.DrawLine(pos3, pos, Color.blue);
-        }
-
-        if(td.positionPoints != null && td.positionPoints.StartNode != null)
-            DrawNode(td.positionPoints.StartNode);
-
-    }
-
-    void DrawNode(NodeTree.Node currentNode)
-    {
-        if(currentNode.next.Count > 0)
-        {
-            for(int i = 0; i < currentNode.next.Count; i++)
-            {
-                if(currentNode.representation != null)
-                    Debug.DrawLine(currentNode.representation.position, currentNode.next[i].representation.position, Color.red);
-
-                DrawNode(currentNode.next[i]);
-            }
         }
     }
 }
