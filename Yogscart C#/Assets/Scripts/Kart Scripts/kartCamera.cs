@@ -25,7 +25,6 @@ public class kartCamera : MonoBehaviour {
                 (transform.right * sideAmount));
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lookDir), 
                 Time.deltaTime * rotSmoothTime);
-
         }
     }
 }
