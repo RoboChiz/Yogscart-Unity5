@@ -59,6 +59,7 @@
      <None Include="Assets\InputManager\Addons\InputAdapter\Resources\input_adapter_default_config.xml" />
      <None Include="Assets\InputManager\Addons\UIInputModules\Resources\ui_input_modules\unity_5_3.txt" />
      <None Include="Assets\InputManager\Source\Resources\input_manager_project_settings.txt" />
+     <None Include="Assets\Resources\Fonts\read me.txt" />
      <None Include="Assets\InputManager\Examples\Common\Packages\KennyFonts\license.txt" />
      <None Include="Assets\InputManager\Addons\UIInputModules\Resources\ui_input_module_index.xml" />
      <None Include="Assets\InputManager\Addons\UIInputModules\Resources\ui_input_modules\unity_5_2.txt" />

@@ -1,0 +1,893 @@
+fileFormatVersion: 2
+guid: a9cd7f49e9384ca47a3a7c88aebdbbb9
+timeCreated: 1431798541
+licenseType: Free
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: Badge
+    100002: Eyes.L
+    100004: Eyes.R
+    100006: Lewis Rig|chest
+    100008: Lewis Rig|foot.L
+    100010: Lewis Rig|foot.R
+    100012: Lewis Rig|hand.L
+    100014: Lewis Rig|hand.R
+    100016: Lewis Rig|head
+    100018: Lewis Rig|hips
+    100020: Lewis Rig|indexfingerbase.L
+    100022: Lewis Rig|indexfingerbase.R
+    100024: Lewis Rig|indexfingermiddle.L
+    100026: Lewis Rig|indexfingermiddle.R
+    100028: Lewis Rig|indexfingertip.L
+    100030: Lewis Rig|indexfingertip.R
+    100032: Lewis Rig|lowerarm.L
+    100034: Lewis Rig|lowerarm.R
+    100036: Lewis Rig|lowerleg.L
+    100038: Lewis Rig|lowerleg.R
+    100040: Lewis Rig|middlefingerbase.L
+    100042: Lewis Rig|middlefingerbase.R
+    100044: Lewis Rig|middlefingermiddle.L
+    100046: Lewis Rig|middlefingermiddle.R
+    100048: Lewis Rig|middlefingertip.L
+    100050: Lewis Rig|middlefingertip.R
+    100052: Lewis Rig|neck
+    100054: Lewis Rig|pinkyfingerbase.L
+    100056: Lewis Rig|pinkyfingerbase.R
+    100058: Lewis Rig|pinkyfingermiddle.L
+    100060: Lewis Rig|pinkyfingermiddle.R
+    100062: Lewis Rig|pinkyfingertip.L
+    100064: Lewis Rig|pinkyfingertip.R
+    100066: Lewis Rig|ringfingerbase.L
+    100068: Lewis Rig|ringfingerbase.R
+    100070: Lewis Rig|ringfingermiddle.L
+    100072: Lewis Rig|ringfingermiddle.R
+    100074: Lewis Rig|ringfingertip.L
+    100076: Lewis Rig|ringfingertip.R
+    100078: Lewis Rig|shoulder.L
+    100080: Lewis Rig|shoulder.R
+    100082: Lewis Rig|stomach
+    100084: Lewis Rig|thumbbase.L
+    100086: Lewis Rig|thumbbase.R
+    100088: Lewis Rig|thumbmiddle.L
+    100090: Lewis Rig|thumbmiddle.R
+    100092: Lewis Rig|thumbtip.L
+    100094: Lewis Rig|thumbtip.R
+    100096: Lewis Rig|toe.L
+    100098: Lewis Rig|toe.R
+    100100: Lewis Rig|upperarm.L
+    100102: Lewis Rig|upperarm.R
+    100104: Lewis Rig|upperleg.L
+    100106: Lewis Rig|upperleg.R
+    100108: Lewis_Model
+    100110: //RootNode
+    400000: Badge
+    400002: Eyes.L
+    400004: Eyes.R
+    400006: Lewis Rig|chest
+    400008: Lewis Rig|foot.L
+    400010: Lewis Rig|foot.R
+    400012: Lewis Rig|hand.L
+    400014: Lewis Rig|hand.R
+    400016: Lewis Rig|head
+    400018: Lewis Rig|hips
+    400020: Lewis Rig|indexfingerbase.L
+    400022: Lewis Rig|indexfingerbase.R
+    400024: Lewis Rig|indexfingermiddle.L
+    400026: Lewis Rig|indexfingermiddle.R
+    400028: Lewis Rig|indexfingertip.L
+    400030: Lewis Rig|indexfingertip.R
+    400032: Lewis Rig|lowerarm.L
+    400034: Lewis Rig|lowerarm.R
+    400036: Lewis Rig|lowerleg.L
+    400038: Lewis Rig|lowerleg.R
+    400040: Lewis Rig|middlefingerbase.L
+    400042: Lewis Rig|middlefingerbase.R
+    400044: Lewis Rig|middlefingermiddle.L
+    400046: Lewis Rig|middlefingermiddle.R
+    400048: Lewis Rig|middlefingertip.L
+    400050: Lewis Rig|middlefingertip.R
+    400052: Lewis Rig|neck
+    400054: Lewis Rig|pinkyfingerbase.L
+    400056: Lewis Rig|pinkyfingerbase.R
+    400058: Lewis Rig|pinkyfingermiddle.L
+    400060: Lewis Rig|pinkyfingermiddle.R
+    400062: Lewis Rig|pinkyfingertip.L
+    400064: Lewis Rig|pinkyfingertip.R
+    400066: Lewis Rig|ringfingerbase.L
+    400068: Lewis Rig|ringfingerbase.R
+    400070: Lewis Rig|ringfingermiddle.L
+    400072: Lewis Rig|ringfingermiddle.R
+    400074: Lewis Rig|ringfingertip.L
+    400076: Lewis Rig|ringfingertip.R
+    400078: Lewis Rig|shoulder.L
+    400080: Lewis Rig|shoulder.R
+    400082: Lewis Rig|stomach
+    400084: Lewis Rig|thumbbase.L
+    400086: Lewis Rig|thumbbase.R
+    400088: Lewis Rig|thumbmiddle.L
+    400090: Lewis Rig|thumbmiddle.R
+    400092: Lewis Rig|thumbtip.L
+    400094: Lewis Rig|thumbtip.R
+    400096: Lewis Rig|toe.L
+    400098: Lewis Rig|toe.R
+    400100: Lewis Rig|upperarm.L
+    400102: Lewis Rig|upperarm.R
+    400104: Lewis Rig|upperleg.L
+    400106: Lewis Rig|upperleg.R
+    400108: Lewis_Model
+    400110: //RootNode
+    2300000: Eyes.L
+    2300002: Eyes.R
+    3300000: Eyes.L
+    3300002: Eyes.R
+    4300000: Lewis_Model
+    4300002: Eyes.R
+    4300004: Eyes.L
+    4300006: Badge
+    7400000: Take 001
+    9500000: //RootNode
+    13700000: Badge
+    13700002: Lewis_Model
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 3
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .200000003
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    human:
+    - boneName: Lewis Rig|hips
+      humanName: Hips
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|upperleg.L
+      humanName: LeftUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|upperleg.R
+      humanName: RightUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|lowerleg.L
+      humanName: LeftLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|lowerleg.R
+      humanName: RightLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|foot.L
+      humanName: LeftFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|foot.R
+      humanName: RightFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|stomach
+      humanName: Spine
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|chest
+      humanName: Chest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|neck
+      humanName: Neck
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|head
+      humanName: Head
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|shoulder.L
+      humanName: LeftShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|shoulder.R
+      humanName: RightShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|upperarm.L
+      humanName: LeftUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|upperarm.R
+      humanName: RightUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|lowerarm.L
+      humanName: LeftLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|lowerarm.R
+      humanName: RightLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|hand.L
+      humanName: LeftHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|hand.R
+      humanName: RightHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|toe.L
+      humanName: LeftToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|toe.R
+      humanName: RightToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Eyes.L
+      humanName: LeftEye
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Eyes.R
+      humanName: RightEye
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|thumbbase.L
+      humanName: Left Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|thumbmiddle.L
+      humanName: Left Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|thumbtip.L
+      humanName: Left Thumb Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|indexfingerbase.L
+      humanName: Left Index Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|indexfingermiddle.L
+      humanName: Left Index Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|indexfingertip.L
+      humanName: Left Index Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|middlefingerbase.L
+      humanName: Left Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|middlefingermiddle.L
+      humanName: Left Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|middlefingertip.L
+      humanName: Left Middle Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|ringfingerbase.L
+      humanName: Left Ring Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|ringfingermiddle.L
+      humanName: Left Ring Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|ringfingertip.L
+      humanName: Left Ring Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|pinkyfingerbase.L
+      humanName: Left Little Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|pinkyfingermiddle.L
+      humanName: Left Little Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|pinkyfingertip.L
+      humanName: Left Little Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|thumbbase.R
+      humanName: Right Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|thumbmiddle.R
+      humanName: Right Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|thumbtip.R
+      humanName: Right Thumb Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|indexfingerbase.R
+      humanName: Right Index Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|indexfingermiddle.R
+      humanName: Right Index Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|indexfingertip.R
+      humanName: Right Index Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|middlefingerbase.R
+      humanName: Right Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|middlefingermiddle.R
+      humanName: Right Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|middlefingertip.R
+      humanName: Right Middle Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|ringfingerbase.R
+      humanName: Right Ring Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|ringfingermiddle.R
+      humanName: Right Ring Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|ringfingertip.R
+      humanName: Right Ring Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|pinkyfingerbase.R
+      humanName: Right Little Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|pinkyfingermiddle.R
+      humanName: Right Little Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Lewis Rig|pinkyfingertip.R
+      humanName: Right Little Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    skeleton:
+    - name: Lewis(Clone)
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Badge
+      position: {x: -.0938495398, y: .967158616, z: .102206044}
+      rotation: {x: 2.65000608e-07, y: -.0515873469, z: 3.23401963e-08, w: .998668492}
+      scale: {x: 10.0003748, y: 10.0003748, z: 10.0003757}
+      transformModified: 1
+    - name: Lewis_Model
+      position: {x: .00652642408, y: -.00665052747, z: .0328898095}
+      rotation: {x: .706165433, y: -.0364777558, z: -.0364777334, w: .706165075}
+      scale: {x: 10.0003738, y: 10.0003748, z: 10.0003748}
+      transformModified: 1
+    - name: Lewis Rig|hips
+      position: {x: 1.49011612e-08, y: .515684009, z: -.0197743438}
+      rotation: {x: .0637028813, y: -.704231381, z: -.0637029707, w: .704231501}
+      scale: {x: 39.3700714, y: 39.3700676, z: 39.3700752}
+      transformModified: 1
+    - name: Lewis Rig|stomach
+      position: {x: -0, y: .00437204679, z: -3.78489497e-11}
+      rotation: {x: -2.05916404e-08, y: 2.05156314e-09, z: .0749981552, w: .997183681}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|chest
+      position: {x: -1.51395799e-10, y: .0045079058, z: 0}
+      rotation: {x: -6.07662827e-08, y: -1.82900962e-07, z: .0781816542, w: .996939123}
+      scale: {x: .999999702, y: .999999702, z: .999999881}
+      transformModified: 1
+    - name: Lewis Rig|neck
+      position: {x: 3.02791597e-10, y: .0053345873, z: -3.78489497e-11}
+      rotation: {x: -1.85347186e-08, y: 1.56005857e-08, z: -.163541093, w: .986536562}
+      scale: {x: .99999994, y: 1.00000024, z: .99999994}
+      transformModified: 1
+    - name: Lewis Rig|head
+      position: {x: -6.05583195e-10, y: .00271685934, z: -7.56978993e-11}
+      rotation: {x: 1.38788945e-08, y: 1.75475435e-07, z: .0608466938, w: .99814713}
+      scale: {x: .999999881, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Eyes.L
+      position: {x: .00312091806, y: .0052407654, z: .00165354263}
+      rotation: {x: .0179395434, y: .674375355, z: .102090716, w: .731076956}
+      scale: {x: .254009604, y: .254009664, z: .254009753}
+      transformModified: 1
+    - name: Eyes.R
+      position: {x: .00312060467, y: .00526968809, z: -.00136518769}
+      rotation: {x: -.0205960814, y: .675493836, z: .022346573, w: .736739099}
+      scale: {x: .254009604, y: .254009724, z: .254009664}
+      transformModified: 1
+    - name: Lewis Rig|shoulder.R
+      position: {x: .00114381581, y: .00357107329, z: -.00137883751}
+      rotation: {x: -.364836872, y: -.457226604, z: .63397944, w: .505873561}
+      scale: {x: .999999702, y: .99999994, z: .999999881}
+      transformModified: 1
+    - name: Lewis Rig|upperarm.R
+      position: {x: 2.42233278e-09, y: .00268473173, z: 6.05583195e-10}
+      rotation: {x: -.123339221, y: -.458693981, z: .0943743289, w: .874917626}
+      scale: {x: 1, y: 1, z: 1.00000024}
+      transformModified: 1
+    - name: Lewis Rig|lowerarm.R
+      position: {x: -9.0837482e-10, y: .00577112474, z: -2.42233278e-09}
+      rotation: {x: -.0328487232, y: -.20678179, z: .0305727646, w: .977357507}
+      scale: {x: .999999881, y: .99999994, z: .999999881}
+      transformModified: 1
+    - name: Lewis Rig|hand.R
+      position: {x: 6.05583195e-10, y: .00508526107, z: 4.84466556e-09}
+      rotation: {x: .0860454664, y: .0209301747, z: -.0186813418, w: .995896161}
+      scale: {x: .999999821, y: .99999994, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|indexfingerbase.R
+      position: {x: -.000727744482, y: .00244017807, z: 6.52818699e-06}
+      rotation: {x: -.021038115, y: -.0133527992, z: .0135798175, w: .999597251}
+      scale: {x: 1.00000036, y: .999999821, z: .999999762}
+      transformModified: 1
+    - name: Lewis Rig|indexfingermiddle.R
+      position: {x: 6.05583195e-10, y: .000875208178, z: 4.84466556e-09}
+      rotation: {x: .0396245569, y: .0122246994, z: -.0118331267, w: .99906981}
+      scale: {x: .999999881, y: .999999881, z: .999999821}
+      transformModified: 1
+    - name: Lewis Rig|indexfingertip.R
+      position: {x: -0, y: .000840792898, z: 0}
+      rotation: {x: .0206193533, y: -.0153889107, z: .0186360423, w: .999495268}
+      scale: {x: 1, y: 1.00000012, z: .999999762}
+      transformModified: 1
+    - name: Lewis Rig|middlefingerbase.R
+      position: {x: -9.1492715e-05, y: .00264905579, z: -.000102755359}
+      rotation: {x: -.00964718591, y: -.00657198904, z: .00683790632, w: .999908507}
+      scale: {x: 1.00000024, y: .999999642, z: .999999881}
+      transformModified: 1
+    - name: Lewis Rig|middlefingermiddle.R
+      position: {x: -6.05583195e-10, y: .000846568961, z: -2.42233278e-09}
+      rotation: {x: .0298945475, y: .0159568395, z: -.0172904432, w: .999276102}
+      scale: {x: 1.00000024, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|middlefingertip.R
+      position: {x: 1.21116639e-09, y: .000884402718, z: 0}
+      rotation: {x: -.0261278953, y: -.012826873, z: .0140046971, w: .999478221}
+      scale: {x: .999999762, y: .999999762, z: .999999821}
+      transformModified: 1
+    - name: Lewis Rig|ringfingerbase.R
+      position: {x: .00042850399, y: .00245785085, z: -2.79973228e-05}
+      rotation: {x: .0487171002, y: .0298554227, z: -.0292336419, w: .997938275}
+      scale: {x: .99999994, y: .999999762, z: .999999642}
+      transformModified: 1
+    - name: Lewis Rig|ringfingermiddle.R
+      position: {x: -0, y: .000838749052, z: 2.42233278e-09}
+      rotation: {x: -.024276834, y: -.0124438144, z: .0159198958, w: .99950105}
+      scale: {x: .999999821, y: .999999762, z: .999999642}
+      transformModified: 1
+    - name: Lewis Rig|ringfingertip.R
+      position: {x: 6.05583195e-10, y: .00073648541, z: -2.42233278e-09}
+      rotation: {x: .0183532182, y: .00324943219, z: -.0041066464, w: .999817848}
+      scale: {x: 1, y: 1.00000012, z: .999999762}
+      transformModified: 1
+    - name: Lewis Rig|pinkyfingerbase.R
+      position: {x: .00106713327, y: .00212169695, z: .000238008724}
+      rotation: {x: .060003981, y: .00667103799, z: -.00318632857, w: .998170793}
+      scale: {x: 1, y: .999999881, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|pinkyfingermiddle.R
+      position: {x: -3.02791597e-10, y: .000743303681, z: -3.63349928e-09}
+      rotation: {x: -.0100531317, y: -.0179258995, z: .0260278098, w: .999449968}
+      scale: {x: .999999881, y: .999999821, z: .99999994}
+      transformModified: 1
+    - name: Lewis Rig|pinkyfingertip.R
+      position: {x: -1.21116639e-09, y: .00064512837, z: 1.21116639e-09}
+      rotation: {x: -.00930111483, y: .0116652763, z: -.0162545033, w: .999756575}
+      scale: {x: 1, y: .99999994, z: .999999464}
+      transformModified: 1
+    - name: Lewis Rig|thumbbase.R
+      position: {x: -.00104061235, y: .00101820217, z: .00026216908}
+      rotation: {x: .20353128, y: -.210546896, z: .371827841, w: .880902469}
+      scale: {x: .99999994, y: 1, z: .999999642}
+      transformModified: 1
+    - name: Lewis Rig|thumbmiddle.R
+      position: {x: -0, y: .000686034968, z: 0}
+      rotation: {x: -.0256744679, y: -.00118154241, z: -.0284351278, w: .999265194}
+      scale: {x: .999999762, y: .999999881, z: .99999994}
+      transformModified: 1
+    - name: Lewis Rig|thumbtip.R
+      position: {x: 3.63349928e-09, y: .00082733325, z: 0}
+      rotation: {x: -.0614835098, y: .000668430643, z: -.00565366494, w: .998091877}
+      scale: {x: .999999881, y: .999999821, z: .999999821}
+      transformModified: 1
+    - name: Lewis Rig|shoulder.L
+      position: {x: .00114381709, y: .00357107073, z: .00137883611}
+      rotation: {x: .36483705, y: .457226753, z: .633979201, w: .505873501}
+      scale: {x: .99999994, y: .999999881, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|upperarm.L
+      position: {x: 2.42233278e-09, y: .0026847308, z: 0}
+      rotation: {x: .123339504, y: .458693951, z: .0943743512, w: .874917567}
+      scale: {x: 1, y: 1.00000012, z: .999999881}
+      transformModified: 1
+    - name: Lewis Rig|lowerarm.L
+      position: {x: -1.21116639e-09, y: .00577112241, z: -3.63349928e-09}
+      rotation: {x: .0366061926, y: .210495785, z: .029436931, w: .976465583}
+      scale: {x: .999999881, y: .999999702, z: .999999821}
+      transformModified: 1
+    - name: Lewis Rig|hand.L
+      position: {x: -1.81674964e-09, y: .00512176286, z: 2.42233278e-09}
+      rotation: {x: -.101889193, y: -.0208542645, z: -.0231086612, w: .99430871}
+      scale: {x: .99999994, y: .999999583, z: .999999881}
+      transformModified: 1
+    - name: Lewis Rig|indexfingerbase.L
+      position: {x: -.000727742037, y: .00244017807, z: -6.53060943e-06}
+      rotation: {x: .0210381486, y: .0133526819, z: .0135797849, w: .999597251}
+      scale: {x: 1.00000036, y: .999999821, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|indexfingermiddle.L
+      position: {x: 6.05583195e-10, y: .000875206373, z: -2.42233278e-09}
+      rotation: {x: -.0396243371, y: -.0122244675, z: -.0118330438, w: .99906981}
+      scale: {x: 1.00000024, y: .999999881, z: 1.00000012}
+      transformModified: 1
+    - name: Lewis Rig|indexfingertip.L
+      position: {x: -0, y: .00084079412, z: 4.84466556e-09}
+      rotation: {x: -.0206193291, y: .0153888511, z: .0186359324, w: .999495268}
+      scale: {x: .999999762, y: .999999821, z: .99999994}
+      transformModified: 1
+    - name: Lewis Rig|middlefingerbase.L
+      position: {x: -9.14909033e-05, y: .00264905836, z: .000102755359}
+      rotation: {x: .00964720175, y: .00657181907, z: .00683789467, w: .999908507}
+      scale: {x: 1, y: .999999762, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|middlefingermiddle.L
+      position: {x: -6.05583195e-10, y: .000846568961, z: 0}
+      rotation: {x: -.0298944842, y: -.0159568843, z: -.017290473, w: .999276102}
+      scale: {x: 1, y: .999999881, z: .999999762}
+      transformModified: 1
+    - name: Lewis Rig|middlefingertip.L
+      position: {x: -0, y: .00088440394, z: 0}
+      rotation: {x: .0261281189, y: .0128269447, z: .0140045704, w: .999478221}
+      scale: {x: .999999881, y: 1.00000012, z: .999999821}
+      transformModified: 1
+    - name: Lewis Rig|ringfingerbase.L
+      position: {x: .00042850399, y: .00245785085, z: 2.80021668e-05}
+      rotation: {x: -.0487159379, y: -.0298560187, z: -.0292329118, w: .997938275}
+      scale: {x: .999999821, y: .999999881, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|ringfingermiddle.L
+      position: {x: 6.05583195e-10, y: .000838746608, z: -7.26699856e-09}
+      rotation: {x: .0242769811, y: .0124438815, z: .0159198586, w: .99950105}
+      scale: {x: 1.00000036, y: .999999821, z: 1.00000012}
+      transformModified: 1
+    - name: Lewis Rig|ringfingertip.L
+      position: {x: -0, y: .000736486632, z: 4.84466556e-09}
+      rotation: {x: -.0183531959, y: -.00324936421, z: -.00410668226, w: .999817848}
+      scale: {x: 1, y: .999999762, z: .999999702}
+      transformModified: 1
+    - name: Lewis Rig|pinkyfingerbase.L
+      position: {x: .00106713397, y: .00212169834, z: -.00023801357}
+      rotation: {x: -.0605883002, y: -.00666546682, z: -.00319954683, w: .998135448}
+      scale: {x: .999999762, y: 1.00000012, z: .99999994}
+      transformModified: 1
+    - name: Lewis Rig|pinkyfingermiddle.L
+      position: {x: -9.0837482e-10, y: .000779446156, z: 0}
+      rotation: {x: -.0165885556, y: .0177745968, z: .016374791, w: .99957031}
+      scale: {x: 1.00000024, y: .999999642, z: .999999821}
+      transformModified: 1
+    - name: Lewis Rig|pinkyfingertip.L
+      position: {x: 1.21116639e-09, y: .000673957809, z: 0}
+      rotation: {x: .028450828, y: -.011397073, z: -.00713439612, w: .999504745}
+      scale: {x: .999999881, y: .999999702, z: .999999821}
+      transformModified: 1
+    - name: Lewis Rig|thumbbase.L
+      position: {x: -.00104061177, y: .00101820403, z: -.000262170302}
+      rotation: {x: -.205644354, y: .209340408, z: .371118784, w: .880998194}
+      scale: {x: .999999881, y: 1, z: .999999762}
+      transformModified: 1
+    - name: Lewis Rig|thumbmiddle.L
+      position: {x: -0, y: .000686038577, z: -1.21116639e-09}
+      rotation: {x: .0256749056, y: .00118166197, z: -.028438475, w: .999265134}
+      scale: {x: .99999994, y: .999999821, z: 1.00000012}
+      transformModified: 1
+    - name: Lewis Rig|thumbtip.L
+      position: {x: 2.42233278e-09, y: .000827334472, z: -1.21116639e-09}
+      rotation: {x: .0614835843, y: -.000668500725, z: -.00565367518, w: .998091877}
+      scale: {x: .999999762, y: .999999821, z: .99999994}
+      transformModified: 1
+    - name: Lewis Rig|upperleg.R
+      position: {x: .00014857894, y: .00115126686, z: -.00204794086}
+      rotation: {x: -.00214918866, y: .0245718081, z: .995894194, w: -.0870998502}
+      scale: {x: .999999881, y: 1, z: 1.00000048}
+      transformModified: 1
+    - name: Lewis Rig|lowerleg.R
+      position: {x: -0, y: .00664413674, z: 3.02791597e-10}
+      rotation: {x: .0250612572, y: -.0070705777, z: -.0947112665, w: .995164216}
+      scale: {x: .999999881, y: 1, z: .999999762}
+      transformModified: 1
+    - name: Lewis Rig|foot.R
+      position: {x: -1.51395799e-10, y: .00612677773, z: 1.51395799e-10}
+      rotation: {x: -.0780804902, y: .00172147085, z: .589006305, w: .804345727}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|toe.R
+      position: {x: 7.56978993e-11, y: .00321759097, z: -1.51395799e-10}
+      rotation: {x: .010111127, y: -.0345196277, z: .416362464, w: .908486962}
+      scale: {x: 1.00000012, y: 1.00000036, z: 1}
+      transformModified: 1
+    - name: Lewis Rig|upperleg.L
+      position: {x: .000148578634, y: .00115126814, z: .00204794179}
+      rotation: {x: .00214909879, y: -.0245721582, z: .995894253, w: -.0870995}
+      scale: {x: .999999821, y: 1, z: 1.00000012}
+      transformModified: 1
+    - name: Lewis Rig|lowerleg.L
+      position: {x: 1.51395799e-10, y: .00664413488, z: 1.51395799e-10}
+      rotation: {x: -.0250611361, y: .00707055395, z: -.0947112516, w: .995164216}
+      scale: {x: 1, y: .99999994, z: .999999881}
+      transformModified: 1
+    - name: Lewis Rig|foot.L
+      position: {x: 4.5418741e-10, y: .00612677634, z: 0}
+      rotation: {x: .07808052, y: -.00172135176, z: .589006305, w: .804345727}
+      scale: {x: .99999994, y: 1.00000012, z: 1.00000036}
+      transformModified: 1
+    - name: Lewis Rig|toe.L
+      position: {x: 3.78489518e-10, y: .00321758888, z: 7.56978993e-11}
+      rotation: {x: -.0101110954, y: .034519773, z: .416362464, w: .908486903}
+      scale: {x: 1.00000012, y: .999999881, z: .999999642}
+      transformModified: 1
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 3
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

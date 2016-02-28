@@ -88,7 +88,15 @@
      <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanFlags.cs" />
      <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanResult.cs" />
      <Compile Include="Assets\InputManager\Source\Runtime\_Support\ScanSettings.cs" />
+     <Compile Include="Assets\Scripts\Character Scripts\StandingCharacter.cs" />
+     <Compile Include="Assets\Scripts\Game Data\CurrentGameData.cs" />
+     <Compile Include="Assets\Scripts\Kart Maker\Character_Skeleton.cs" />
+     <Compile Include="Assets\Scripts\Kart Maker\KartMaker.cs" />
+     <Compile Include="Assets\Scripts\Kart Maker\Kart_Skeleton.cs" />
+     <Compile Include="Assets\Scripts\Kart Maker\Wheel_Skeleton.cs" />
+     <Compile Include="Assets\Scripts\Kart Scripts\DeathCatch.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\PositionFinding.cs" />
+     <Compile Include="Assets\Scripts\Kart Scripts\kartAnimator.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartScript.cs" />
@@ -100,6 +108,7 @@
      <None Include="Assets\InputManager\Addons\InputAdapter\Resources\input_adapter_default_config.xml" />
      <None Include="Assets\InputManager\Addons\UIInputModules\Resources\ui_input_modules\unity_5_3.txt" />
      <None Include="Assets\InputManager\Source\Resources\input_manager_project_settings.txt" />
+     <None Include="Assets\Resources\Fonts\read me.txt" />
      <None Include="Assets\InputManager\Examples\Common\Packages\KennyFonts\license.txt" />
      <None Include="Assets\InputManager\Addons\UIInputModules\Resources\ui_input_module_index.xml" />
      <None Include="Assets\InputManager\Addons\UIInputModules\Resources\ui_input_modules\unity_5_2.txt" />
