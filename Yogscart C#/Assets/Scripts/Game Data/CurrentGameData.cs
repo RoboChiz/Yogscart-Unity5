@@ -20,7 +20,7 @@ public class CurrentGameData : MonoBehaviour {
 
     //BlackOut Variables
     public static bool blackOut = true;
-    private Color colourAlpha = Color.black;
+    private Color colourAlpha = Color.white;
     const float animationSpeed = 0.05f;
     private float lastTime = 0f;
     private int currentFrame = 0;
@@ -57,8 +57,7 @@ public class CurrentGameData : MonoBehaviour {
         }
 
         GUI.color = colourAlpha;
-        GUI.DrawTexture(new Rect(-5f, -5f, Screen.width + 5f, Screen.height + 5f), blackTexture);
-        GUI.color = Color.white;
+        GUI.DrawTexture(new Rect(-5f, -5f, Screen.width + 5f, Screen.height + 5f), blackTexture);      
 
         //Sort out Animation
         if (Time.time - lastTime >= animationSpeed)
@@ -74,7 +73,7 @@ public class CurrentGameData : MonoBehaviour {
         Rect aniRect = new Rect(Screen.width - 10 - aniSize, Screen.height - 10 - aniSize, aniSize, aniSize);
         GUI.DrawTexture(aniRect, Resources.Load<Texture2D>("UI/Loading/" + (currentFrame + 1)));
 
-
+        GUI.color = Color.white;
 
     }
 }

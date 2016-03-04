@@ -1,13 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
-using TeamUtility.IO;
 
 [RequireComponent(typeof(kartScript))]
 public class kartInput : MonoBehaviour
 {
 
     private kartScript ks;
-    public PlayerID playerID = PlayerID.One;
 
     public bool camLocked = false;
     public Camera frontCamera, backCamera;
@@ -18,11 +16,11 @@ public class kartInput : MonoBehaviour
         if (ks == null)
             ks = GetComponent<kartScript>();
 
-        ks.throttle = InputManager.GetAxis("Throttle", playerID);
-        ks.steer = InputManager.GetAxis("Steer", playerID);
-        ks.drift = (InputManager.GetAxis("Drift", playerID) != 0);
+        ks.throttle = Input.GetAxis("Throttle");
+        ks.steer = Input.GetAxis("Steer");
+        ks.drift = (Input.GetAxis("Drift") != 0);
 
-        bool lookBehind = (InputManager.GetAxis("Rearview", playerID) != 0);
+        bool lookBehind = (Input.GetAxis("Rearview") != 0);
 
         if(!camLocked && lookBehind)
         {
