@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\Game Data\GUIHelper.cs" />
      <Compile Include="Assets\Scripts\Game Data\GameMode.cs" />
      <Compile Include="Assets\Scripts\Game Data\InputManager.cs" />
+     <Compile Include="Assets\Scripts\Game Data\SoundManager.cs" />
      <Compile Include="Assets\Scripts\Kart Maker\Character_Skeleton.cs" />
      <Compile Include="Assets\Scripts\Kart Maker\KartMaker.cs" />
      <Compile Include="Assets\Scripts\Kart Maker\Kart_Skeleton.cs" />
@@ -60,6 +61,7 @@
      <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartInput.cs" />
      <Compile Include="Assets\Scripts\Kart Scripts\kartScript.cs" />
+     <Compile Include="Assets\Scripts\Menus\Credits.cs" />
      <Compile Include="Assets\Scripts\Menus\IntroScript.cs" />
      <Compile Include="Assets\Scripts\Menus\MainMenu.cs" />
      <Compile Include="Assets\Scripts\Track Editor\InEngineRender.cs" />

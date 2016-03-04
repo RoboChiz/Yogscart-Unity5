@@ -8,7 +8,7 @@ public class CurrentGameData : MonoBehaviour {
 
     static public LoadOut[] currentChoices;
 
-    static bool unlockedInsane;
+    public static bool unlockedInsane = false;
 
     public Character[] characters;
     public Hat[] hats;
@@ -17,6 +17,8 @@ public class CurrentGameData : MonoBehaviour {
     public Wheel[] wheels;
 
     public Tournament[] tournaments;
+
+    public static GameMode currentGamemode;
 
     //BlackOut Variables
     public static bool blackOut = true;

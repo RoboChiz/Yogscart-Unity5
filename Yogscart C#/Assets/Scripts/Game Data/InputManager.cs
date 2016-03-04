@@ -117,6 +117,16 @@ public class InputManager : MonoBehaviour
         }        
     }
 
+    //Removes all but one Controller from the Input Manager
+    public void RemoveOtherControllers()
+    {
+        for (int i = 1; i < controllers.Count; i++)
+        {
+                controllers.RemoveAt(i);
+                StartCoroutine("RemoveInput", i);
+        }
+    }
+
     void Update()
     {
         if(controllers != null && controllers.Count > 0)
