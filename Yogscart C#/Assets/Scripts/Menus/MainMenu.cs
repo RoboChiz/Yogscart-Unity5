@@ -6,11 +6,12 @@ public class MainMenu : MonoBehaviour
 {
 
     CurrentGameData gd;
+    SoundManager sm;
 
     public GUISkin skin;
 
     public Texture2D logo;
-    AudioClip menuMusic;
+    public AudioClip menuMusic;
 
     public Color selectedColor;
     int currentSelection;
@@ -35,6 +36,7 @@ public class MainMenu : MonoBehaviour
 	void Start ()
     {
         gd = GameObject.FindObjectOfType<CurrentGameData>();
+        sm = GameObject.FindObjectOfType<SoundManager>();
 
         //Update as more characters are added
         randomImage = Random.Range(0, 1);
@@ -44,7 +46,11 @@ public class MainMenu : MonoBehaviour
 
         CurrentGameData.blackOut = false;
         InputManager.allowedToChange = true;
-	}
+
+        if (menuMusic != null)
+            sm.PlayMusic(menuMusic);
+
+    }
 	
 	// Update is called once per GUI Frame
 	void OnGUI()
@@ -302,7 +308,10 @@ public class MainMenu : MonoBehaviour
     {
         if (backStates.Count > 0)
         {
-            if(state == MenuState.Credits && transform.GetComponent<Credits>().enabled)
+
+            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/back"));
+
+            if (state == MenuState.Credits && transform.GetComponent<Credits>().enabled)
             {
                 transform.GetComponent<Credits>().StartCoroutine("StopCredits");
                 lockPicture = false;
@@ -314,7 +323,8 @@ public class MainMenu : MonoBehaviour
     }
 
     public void ChangeMenu(MenuState changeState)
-    {
+    { 
+        sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
         StartCoroutine("ChangeMenuPhysical", changeState);
         backStates.Add(state);
     }

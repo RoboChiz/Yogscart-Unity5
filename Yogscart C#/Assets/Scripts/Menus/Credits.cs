@@ -19,8 +19,8 @@ public class Credits : MonoBehaviour
         creditsHeight = 0;
 
         mm = transform.GetComponent<MainMenu>();
-        //sm = GameObject.Find("GameData").transform.GetChild(0).GetComponent<SoundManager>();
-        //sm.PlayMusic(creditsMusic);
+        sm = GameObject.FindObjectOfType<SoundManager>();
+        sm.PlayMusic(creditsMusic);
 
         isPlaying = true;
     }
@@ -31,7 +31,7 @@ public class Credits : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
-        //sm.PlayMusic(mm.menuMusic);
+        sm.PlayMusic(mm.menuMusic);
 
         enabled = false;
     }
