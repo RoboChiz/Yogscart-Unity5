@@ -41,7 +41,7 @@ public class KartMaker : MonoBehaviour
         Transform characterMesh = (Transform)Instantiate(gd.characters[c].model, Vector3.zero, Quaternion.identity);
         characterMesh.name = "Character";
 
-        Character_Skeleton charSkel = transform.GetComponent<Character_Skeleton>();
+        Character_Skeleton charSkel = characterMesh.GetComponent<Character_Skeleton>();
 
         characterMesh.position = kartSkel.SeatPosition - charSkel.SeatPosition;
         characterMesh.parent = kartBody.FindChild("Kart Body");

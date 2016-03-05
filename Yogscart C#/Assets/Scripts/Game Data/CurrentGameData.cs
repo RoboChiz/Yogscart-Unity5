@@ -134,6 +134,22 @@ public class LoadOut
     public int hat;
     public int kart;
     public int wheel;
+
+    public LoadOut()
+    {
+        character = 0;
+        hat = 0;
+        kart = 0;
+        wheel = 0;
+    }
+
+    public LoadOut(int ch, int ha, int ka, int wh)
+    {
+        character = ch;
+        hat = ha;
+        kart = ka;
+        wheel = wh;
+    }
 }
 
 [System.Serializable]

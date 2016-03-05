@@ -39,7 +39,7 @@ public class InputManager : MonoBehaviour
 
         //Load default Input
         allConfigs = new List<InputLayout>();
-        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Reverse:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis"));
+        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Reverse:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis"));
 
         bool saveNeeded = false;
 
@@ -369,7 +369,7 @@ public class InputLayout
     {
         string[] splitString = contents.Split(","[0]);
 
-        List<string> validCommands = new List<string>() {"Throttle","Reverse","Steer","Drift","Item","RearView","Pause","Submit","Cancel","MenuHorizontal","MenuVertical"};
+        List<string> validCommands = new List<string>() {"Throttle","Reverse","Steer","Drift","Item","RearView","Pause","Submit","Cancel","MenuHorizontal","MenuVertical","Rotate"};
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
 

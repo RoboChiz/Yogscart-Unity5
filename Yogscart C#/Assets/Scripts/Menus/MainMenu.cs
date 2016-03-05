@@ -18,12 +18,22 @@ public class MainMenu : MonoBehaviour
 
     public Texture2D sidePicture;
     private float sidePictureAmount = 0;
-    private bool pictureTransitioning = false ,lockPicture = false;
+    private bool pictureTransitioning = false, lockPicture = false;
 
     private bool moveTitle = false;
-    private bool sliding = false;
+
+    [HideInInspector]
+    public bool sliding = false;
+
     List<MenuState> backStates = new List<MenuState>();
-    private float sideAmount = 0f;
+
+    static public float SideAmount
+    {
+        get { return sideAmount; }
+        set { }
+    }
+    static private float sideAmount = 0f;
+
     private float titleAmount = 10f;
     int randomImage;
 
@@ -179,10 +189,15 @@ public class MainMenu : MonoBehaviour
         //Handle Inputs
         if (!sliding && InputManager.controllers.Count > 0)
         {
+            int vertical = 0, horizontal = 0;
+            bool submitBool = false;
 
-            int vertical = InputManager.controllers[0].GetMenuInput("MenuVertical");
-            int horizontal = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
-            bool submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)
+            {
+                vertical = InputManager.controllers[0].GetMenuInput("MenuVertical");
+                horizontal = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
+                submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
+            }
 
             //Menu Navigation
             if (options != null && options.Length > 0)
@@ -241,12 +256,15 @@ public class MainMenu : MonoBehaviour
                                 //gd.GetComponent(RaceLeader).type = RaceStyle.CustomRace;
                                 ChangeMenu(MenuState.Difficulty);
                                 break;
-                            case "Time Trial":                              
+                            case "Time Trial":
                                 //gd.GetComponent(Level_Select).GrandPrixOnly = false;
                                 //gd.GetComponent(RaceLeader).type = RaceStyle.TimeTrial;
                                 //gd.difficulty = 1;
+                                moveTitle = true;
                                 ChangeMenu(MenuState.CharacterSelect);
-                                //StartCoroutine("StartCharacterSelect");
+                                StartCoroutine(ForcePicRemove());
+                                GetComponent<CharacterSelect>().enabled = true;
+                                GetComponent<CharacterSelect>().ShowCharacterSelect();
                                 break;
                         }
                     break;
@@ -270,23 +288,35 @@ public class MainMenu : MonoBehaviour
                         {
                             case "50cc":
                                 //gd.difficulty = 0;
+                                moveTitle = true;
                                 ChangeMenu(MenuState.CharacterSelect);
-                               // StartCoroutine("StartCharacterSelect");
+                                StartCoroutine(ForcePicRemove());
+                                GetComponent<CharacterSelect>().enabled = true;
+                                GetComponent<CharacterSelect>().ShowCharacterSelect();
                                 break;
                             case "100cc":
                                 //gd.difficulty = 1;
+                                moveTitle = true;
                                 ChangeMenu(MenuState.CharacterSelect);
-                               // StartCoroutine("StartCharacterSelect");
+                                StartCoroutine(ForcePicRemove());
+                                GetComponent<CharacterSelect>().enabled = true;
+                                GetComponent<CharacterSelect>().ShowCharacterSelect();
                                 break;
                             case "150cc":
                                 //gd.difficulty = 2;
+                                moveTitle = true;
                                 ChangeMenu(MenuState.CharacterSelect);
-                                //StartCoroutine("StartCharacterSelect");
+                                StartCoroutine(ForcePicRemove());
+                                GetComponent<CharacterSelect>().enabled = true;
+                                GetComponent<CharacterSelect>().ShowCharacterSelect();
                                 break;
                             case "Insane":
                                 //gd.difficulty = 3;
+                                moveTitle = true;
                                 ChangeMenu(MenuState.CharacterSelect);
-                                //StartCoroutine("StartCharacterSelect");
+                                StartCoroutine(ForcePicRemove());
+                                GetComponent<CharacterSelect>().enabled = true;
+                                GetComponent<CharacterSelect>().ShowCharacterSelect();
                                 break;
                         }
                     break;
@@ -296,7 +326,7 @@ public class MainMenu : MonoBehaviour
                     break;
                 }
             }
-            if (InputManager.controllers[0].GetInput("Cancel") != 0)
+            if (InputManager.controllers[0].GetInput("Cancel") != 0 && state != MenuState.CharacterSelect)
             {
                 BackMenu();
             }
@@ -304,7 +334,7 @@ public class MainMenu : MonoBehaviour
     }
 
     //Go Back to Previous Menu
-    void BackMenu()
+    public void BackMenu()
     {
         if (backStates.Count > 0)
         {
@@ -356,9 +386,10 @@ public class MainMenu : MonoBehaviour
             currentSelection = 0;
             state = changeState;
 
-            if(state == MenuState.Main)
+            if(state != MenuState.Credits && state != MenuState.CharacterSelect)
             {
                 moveTitle = false;
+                lockPicture = false;
             }
 
             //Slide Down/////////////////////

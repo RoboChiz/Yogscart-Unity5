@@ -42,6 +42,7 @@ public class Credits : MonoBehaviour
         Color white = Color.white;
         white.a = creditsAlpha;
         GUI.color = white;
+        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,Vector3.one);
 
         if (isPlaying)
         {
