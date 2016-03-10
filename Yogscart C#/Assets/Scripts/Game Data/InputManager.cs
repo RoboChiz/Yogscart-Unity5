@@ -277,7 +277,7 @@ public class InputController
     {
         controllerName = inputName;
         controlLayout = InputManager.AllConfigs[0];
-        buttonLock = "";
+        buttonLock = "Submit";
     }
 
     public float GetInput(string axis)

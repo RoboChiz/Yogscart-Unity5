@@ -12,8 +12,13 @@ public class CharacterSelect : MonoBehaviour
 
     public GUISkin skin;
 
-    enum csState { Character, Hat, Kart, Off };
+    public enum csState { Character, Hat, Kart, Off, Finished};
     private csState state  = csState.Off;
+    public csState State
+    {
+        get { return state; }
+        set { }
+    }
 
     //Cursors
     private Vector2[] cursorPosition;
@@ -29,21 +34,30 @@ public class CharacterSelect : MonoBehaviour
     private Texture2D nameList;
     private float kartHeight;
 
-    public void ShowCharacterSelect()
-    {
-        isShowing = true;
+    //Transtition
+    private float scale = 1f;
+    private float menuAlpha = 1f;
+    private bool sliding = false;
 
+    public IEnumerator ShowCharacterSelect(csState state)
+    {
         gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();        
+        sm = GameObject.FindObjectOfType<SoundManager>();
         km = GameObject.FindObjectOfType<KartMaker>();
 
-        if(transform.GetComponent<MainMenu>() != null)
+        if (transform.GetComponent<MainMenu>() != null)
             mm = transform.GetComponent<MainMenu>();
 
         cursorPosition = new Vector2[4];
         nameList = Resources.Load<Texture2D>("UI/Lobby/NamesList");
 
         ResetEverything();
+
+        yield return new WaitForSeconds(0.5f);
+
+        isShowing = true;
+        StartCoroutine(ChangeState(state));
+
     }
 
     public void HideCharacterSelect()
@@ -55,7 +69,24 @@ public class CharacterSelect : MonoBehaviour
     {
         isShowing = false;
 
-        yield return new WaitForSeconds(0.5f);
+        sliding = true;
+
+        float startTime = Time.time;
+        float travelTime = 0.25f;
+        float endScale = 0.9f;
+        //Slide Off //////////////////////////////
+        menuAlpha = 1f;
+        scale = 1f;
+
+        while (Time.time - startTime < travelTime)
+        {
+            menuAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
+            scale = Mathf.Lerp(1f, endScale, (Time.time - startTime) / travelTime);
+            yield return null;
+        }
+
+        menuAlpha = 0f;
+        scale = endScale;
 
         if (loadedModels != null)
         {
@@ -64,6 +95,8 @@ public class CharacterSelect : MonoBehaviour
                 if (t != null)
                     Destroy(t.gameObject);
         }
+
+        sliding = false;
 
         enabled = false;
     }
@@ -89,8 +122,6 @@ public class CharacterSelect : MonoBehaviour
         loadedChoice = new CharacterSelectLoadOut[4];
         kartSelected = new bool[4];
 
-        state = csState.Character;
-
         for(int i = 0; i < 4; i++)
         {
             loadedChoice[i] = new CharacterSelectLoadOut(-1,-1,-1,-1);
@@ -102,10 +133,14 @@ public class CharacterSelect : MonoBehaviour
         GUI.skin = skin;
         GUI.depth = -5;
 
+        Color nGUI = Color.white;
+        nGUI.a = menuAlpha;
+        GUI.color = nGUI;
+
         float fontSize = Mathf.Min(Screen.width, Screen.height) / 20f;
         GUI.skin.label.fontSize = (int)fontSize;
 
-        float chunkSize = Mathf.Min(Screen.width,Screen.height * 2f) / 10f;
+        float chunkSize = (Mathf.Min(Screen.width,Screen.height * 2f) / 10f) * scale;
         LoadOut[] choice = CurrentGameData.currentChoices;
 
         Rect nameListRect = new Rect(0,0,0,0);
@@ -116,13 +151,18 @@ public class CharacterSelect : MonoBehaviour
 
         float choicesPerColumn = 0f;
 
+        float nameWidth = chunkSize * 5f * scale;
+        float nameHeight = (Screen.height - (chunkSize * 1.75f)) * scale;
+        float nameX = 10f + (nameWidth * (1 - scale));
+        float nameY = (chunkSize * 0.75f) + (nameHeight * (1 - scale));
+
         switch (state)
         {
             case csState.Character:
 
                 InputManager.allowedToChange = true;
 
-                nameListRect = new Rect(10f, chunkSize * 0.75f, chunkSize * 5f, Screen.height - chunkSize * 1.75f);
+                nameListRect = new Rect(nameX, nameY, nameWidth, nameHeight);
                 GUI.DrawTexture(nameListRect, nameList);
                 GUI.Label(new Rect(10, 10, Screen.width, chunkSize / 2f), "Select A Character");
 
@@ -153,7 +193,7 @@ public class CharacterSelect : MonoBehaviour
 
                 InputManager.allowedToChange = false;
 
-                nameListRect = new Rect(10f, chunkSize * 0.75f, chunkSize * 5f, Screen.height - chunkSize * 1.75f);
+                nameListRect = new Rect(nameX, nameY, nameWidth, nameHeight);
                 GUI.DrawTexture(nameListRect, nameList);
                 GUI.Label(new Rect(10, 10, Screen.width, chunkSize / 2f), "Select A Hat");
 
@@ -187,10 +227,6 @@ public class CharacterSelect : MonoBehaviour
         }
 
         //Draw the back button
-        Texture2D backTexture = Resources.Load<Texture2D>("UI/New Main Menu/backnew");
-        float backRatio = (Screen.width / 6f) / backTexture.width;
-        Rect backRect = new Rect(MainMenu.SideAmount, Screen.height - 10 - (backTexture.height * backRatio), Screen.width / 6f, backTexture.height * backRatio);
-        GUI.DrawTexture(backRect, backTexture);
 
         bool readyCheck = true;
         for (int s = 0; s < InputManager.controllers.Count; s++)
@@ -387,7 +423,7 @@ public class CharacterSelect : MonoBehaviour
             int hori = 0, vert = 0;
             bool submit = false, cancel = false;
 
-            if (canInput)
+            if (canInput && !sliding)
             {
                 if (!ready[s])
                 {
@@ -398,8 +434,6 @@ public class CharacterSelect : MonoBehaviour
                 submit = (InputManager.controllers[s].GetMenuInput("Submit") != 0);
                 cancel = (InputManager.controllers[s].GetMenuInput("Cancel") != 0);
             }
-
-            Debug.Log("canInput:" + canInput + " submit:" + submit);
 
             if (hori != 0)
             {
@@ -547,13 +581,13 @@ public class CharacterSelect : MonoBehaviour
                     if (state == csState.Character)
                         Cancel();
                     if (state == csState.Hat)
-                        state = csState.Character;
+                        StartCoroutine(ChangeState(csState.Character));
                     if (state == csState.Kart)
                     {
                         if (kartSelected[s])
                             kartSelected[s] = false;
                         else
-                            state = csState.Hat;
+                            StartCoroutine(ChangeState(csState.Hat));
                     }
                 }
                 else
@@ -580,6 +614,8 @@ public class CharacterSelect : MonoBehaviour
                 GUI.DrawTexture(CursorRect, CursorTexture);
             }
 
+            Texture2D backTexture = Resources.Load<Texture2D>("UI/New Main Menu/backnew");
+            float backRatio = (Screen.width / 6f) / backTexture.width;
             float topHeight = Screen.height * 0.05f;
             float screenHeight = Screen.height - 10 - (backTexture.height * backRatio) - topHeight;
 
@@ -610,6 +646,8 @@ public class CharacterSelect : MonoBehaviour
                     if (s == 3)
                         areaRect = new Rect(Screen.width / 2f, topHeight + screenHeight / 2f, Screen.width / 2f, screenHeight / 2f);
                 }
+
+                areaRect = new Rect(areaRect.x + (areaRect.width * (1-scale)), areaRect.y + (areaRect.height * (1-scale)), areaRect.width * scale, areaRect.height * scale);
 
                 float heightChunk = areaRect.height / 6f;
 
@@ -643,7 +681,7 @@ public class CharacterSelect : MonoBehaviour
                         nAlpha = 0.4f;
 
                     Color nColor = Color.white;
-                    nColor.a = nAlpha;
+                    nColor.a = nAlpha * menuAlpha;
                     GUI.color = nColor;
 
                     GUI.DrawTexture(kartRect, kartIcon, ScaleMode.ScaleToFit);
@@ -661,12 +699,12 @@ public class CharacterSelect : MonoBehaviour
                     if (kartI == -1 && loadedChoice[s].wheelChangeHeight < 0)
                         nAlpha = 0.4f;
 
-                    nColor.a = nAlpha;
+                    nColor.a = nAlpha * menuAlpha;
                     GUI.color = nColor;
 
                     GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);
 
-                    GUI.color = Color.white;
+                    GUI.color = nGUI;
 
                 }
 
@@ -718,11 +756,14 @@ public class CharacterSelect : MonoBehaviour
                 readyCheck = false;
         }
 
+        if (InputManager.controllers.Count == 0)
+            readyCheck = false;
+
         if (readyCheck)
         {
             if (state == csState.Character)
             {
-                state = csState.Hat;
+                StartCoroutine(ChangeState(csState.Hat));
                 //Reset the hats
                 loadedChoice[0].hat = -1;
                 loadedChoice[1].hat = -1;
@@ -730,7 +771,7 @@ public class CharacterSelect : MonoBehaviour
                 loadedChoice[3].hat = -1;
             }
             else if (state == csState.Hat)
-                state = csState.Kart;
+                StartCoroutine(ChangeState(csState.Kart));
             else if (state == csState.Kart)
                 Finished();
 
@@ -740,17 +781,19 @@ public class CharacterSelect : MonoBehaviour
 
     private void Cancel()
     {
+        state = csState.Off;
         HideCharacterSelect();
-        if(mm != null && mm.enabled)
-        {
-            mm.BackMenu();
-        }
+        //if(mm != null && mm.enabled)
+        //{
+        //     mm.BackMenu();
+        // }
     }
 
     private void Finished()
     {
+        state = csState.Finished;
         HideCharacterSelect();
-        mm.ChangeMenu(MainMenu.MenuState.LevelSelect);
+        //mm.ChangeMenu(MainMenu.MenuState.LevelSelect);
     }
 
     //Scroll Kart
@@ -806,6 +849,52 @@ public class CharacterSelect : MonoBehaviour
         loadOut.wheelAlpha = 0.4f;
 
         loadOut.scrolling = false;
+    }
+
+    private IEnumerator ChangeState(csState nState)
+    {
+        if (!sliding)
+        {
+            sliding = true;
+
+            float startTime = Time.time;
+            float travelTime = 0.25f;
+            float endScale = 0.9f;
+
+            if (scale > endScale)
+            {
+                //Slide Off //////////////////////////////
+                menuAlpha = 1f;
+                scale = 1f;
+
+                while (Time.time - startTime < travelTime)
+                {
+                    menuAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
+                    scale = Mathf.Lerp(1f, endScale, (Time.time - startTime) / travelTime);
+                    yield return null;
+                }
+
+                //Pause at Top///////////////////////////////////////
+                menuAlpha = 0f;
+                scale = endScale;
+            }
+
+            state = nState;
+
+            //Slide Down/////////////////////
+            startTime = Time.time;
+            while (Time.time - startTime < travelTime)
+            {
+                menuAlpha = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
+                scale = Mathf.Lerp(endScale, 1f, (Time.time - startTime) / travelTime);
+                yield return null;
+            }
+
+            menuAlpha = 1f;
+            scale = 1f;
+
+            sliding = false;
+        }
     }
 }
 

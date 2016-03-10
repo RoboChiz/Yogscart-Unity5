@@ -6,7 +6,15 @@ public class CurrentGameData : MonoBehaviour {
     public string version;
     public int overallLapisCount;
 
+    //Used for current Game Mode
     static public LoadOut[] currentChoices;
+    static public int difficulty = 0;
+    /*For Races
+    0 = 50CC
+    1 = 100CC
+    2 = 150CC
+    3 = Insane
+    */
 
     public static bool unlockedInsane = false;
 
@@ -158,6 +166,7 @@ public class Track
     public string name;
     public Texture2D logo;
     public Texture2D preview; //Maybe Animated???
+    public Texture2D preview_GreyOut; //Maybe Animated???
 
     public float bestTime;
     public string sceneID;

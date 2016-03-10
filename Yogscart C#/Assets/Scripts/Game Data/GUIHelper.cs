@@ -29,5 +29,23 @@ public class GUIHelper
             return Matrix4x4.TRS(new Vector3(0, hStart, 0), Quaternion.identity, new Vector3(wScale, wScale, 1));
         }
     }
-   
+
+    public static void OutLineLabel(Rect pos, string text, float distance, Color Colour)
+    {
+        distance = Mathf.Clamp(distance, 1, Mathf.Infinity);
+
+        GUIStyle style = new GUIStyle(GUI.skin.GetStyle("Label"));
+        style.normal.textColor = Colour;
+
+        GUI.Label(new Rect(pos.x + distance, pos.y, pos.width, pos.height), text, style);
+        GUI.Label(new Rect(pos.x, pos.y + distance, pos.width, pos.height), text, style);
+        GUI.Label(new Rect(pos.x - distance, pos.y, pos.width, pos.height), text, style);
+        GUI.Label(new Rect(pos.x, pos.y - distance, pos.width, pos.height), text, style);
+
+        GUIStyle nstyle = new GUIStyle(GUI.skin.GetStyle("Label"));
+        GUI.Label(pos, text, nstyle);
+
+    }
+
+
 }

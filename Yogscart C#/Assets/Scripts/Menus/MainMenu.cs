@@ -18,9 +18,11 @@ public class MainMenu : MonoBehaviour
 
     public Texture2D sidePicture;
     private float sidePictureAmount = 0;
+    private float sidePictureFade = 1f;
     private bool pictureTransitioning = false, lockPicture = false;
 
     private bool moveTitle = false;
+
 
     [HideInInspector]
     public bool sliding = false;
@@ -34,13 +36,16 @@ public class MainMenu : MonoBehaviour
     }
     static private float sideAmount = 0f;
 
+    private float sideFade = 1f;
+    private bool fadeTitle = false, showTitle = false;
+
     private float titleAmount = 10f;
     int randomImage;
 
     private string popupText = "";
 
     public enum MenuState {Start, Main, SinglePlayer, Difficulty, CharacterSelect, LevelSelect, Multiplayer, Online, Options, Popup, Credits };
-    private MenuState state = MenuState.Start;
+    public MenuState state = MenuState.Start;
 
 	// Use this for initialization
 	void Start ()
@@ -71,25 +76,41 @@ public class MainMenu : MonoBehaviour
 
         string[] options = new string[] { };
 
-        //Draw Title
-        float titleWidth = (GUIHelper.width / 2f) - 10f;
-        float ratio = titleWidth / logo.width;
-
-        if (moveTitle)
-        {
-            if (sideAmount < titleAmount)
-                titleAmount = sideAmount;
-        }
-        else
-        {
-            if (sideAmount > titleAmount)
-                titleAmount = sideAmount;
-        }            
-
-        GUI.DrawTexture(new Rect(titleAmount, 10, titleWidth, logo.height * ratio), logo, ScaleMode.ScaleToFit);
+        Color nGUI = Color.white;
+        nGUI.a = sidePictureFade;
+        GUI.color = nGUI;
 
         if (sidePicture != null)
-        GUI.DrawTexture(new Rect(sidePictureAmount, 40, GUIHelper.width / 2f - 30, GUIHelper.height - 20), sidePicture, ScaleMode.ScaleToFit);
+            GUI.DrawTexture(new Rect(sidePictureAmount, 40, GUIHelper.width / 2f - 30, GUIHelper.height - 20), sidePicture, ScaleMode.ScaleToFit);
+
+        GUI.color = Color.white;
+        nGUI.a = sideFade;
+
+        if (showTitle)
+        {
+            if (fadeTitle)
+                GUI.color = nGUI;
+
+            //Draw Title
+            float titleWidth = (GUIHelper.width / 2f) - 10f;
+            float ratio = titleWidth / logo.width;
+
+            if (moveTitle)
+            {
+                if (sideAmount < titleAmount)
+                    titleAmount = sideAmount;
+
+            }
+            else
+            {
+                if (sideAmount > titleAmount)
+                    titleAmount = sideAmount;
+            }
+
+            GUI.DrawTexture(new Rect(titleAmount, 10, titleWidth, logo.height * ratio), logo, ScaleMode.ScaleToFit);
+        }
+
+        GUI.color = nGUI;
 
         //Draw Stuff
         Rect box = new Rect(sideAmount, 0, GUIHelper.width / 2f, GUIHelper.height);
@@ -98,10 +119,11 @@ public class MainMenu : MonoBehaviour
         {
             case MenuState.Start:
                 GUI.Label(new Rect(sideAmount + GUIHelper.width / 8f - 100, 680, 960, 400), "Press Start / Enter!");
+                showTitle = true;
                 break;
             case MenuState.Main:
                 options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Quit" };
-
+                showTitle = true;
                 if (sidePicture != null)
                 {
                     switch(options[currentSelection])
@@ -131,21 +153,26 @@ public class MainMenu : MonoBehaviour
 
                 break;
             case MenuState.SinglePlayer:
+                showTitle = true;
                 options = new string[] { "Tournament", "VS Race", "Time Trial" };
                 InputManager.allowedToChange = false;
             break;
             case MenuState.Multiplayer:
+                showTitle = true;
                 options = new string[] { "Tournament", "VS Race" };
                 InputManager.allowedToChange = true;
             break;
             case MenuState.Online:
+                showTitle = false;
                 InputManager.allowedToChange = true;
             break;
             case MenuState.Options:
+                showTitle = false;
                 options = new string[] { "Nothing Here Yet" };
                 InputManager.allowedToChange = true;
             break;
             case MenuState.Difficulty:
+                showTitle = true;
                 //options = ["50cc - Only for little Babby!","100cc - You mother trucker!","150cc - Oh what big strong muscles!","Insane - Prepare your butts!","Back"];
                 if (CurrentGameData.unlockedInsane)
                     options = new string[] { "50cc", "100cc", "150cc", "Insane" };
@@ -153,14 +180,19 @@ public class MainMenu : MonoBehaviour
                     options = new string[] { "50cc", "100cc", "150cc" };
             break;
             case MenuState.Popup:
+                showTitle = true;
                 options = new string[] { };
                 GUI.Label(new Rect(box.x + 40, 20 + (box.height / 4f), box.width - 20, box.height - 20 - (box.height / 4f)), popupText);
              break;
             case MenuState.Credits:
+                showTitle = false;
                 if (sidePicture != null)
                 {
                     StartCoroutine(ChangePicture(null));
                 }
+                break;
+            case MenuState.CharacterSelect:
+                showTitle = false;
                 break;
         }
 
@@ -207,21 +239,23 @@ public class MainMenu : MonoBehaviour
                     currentSelection = MathHelper.NumClamp(currentSelection, 0, options.Length);
             }
 
+            if(state == MenuState.Start && InputManager.controllers[0].GetInput("Submit") != 0)
+                        ChangeMenu(MenuState.Main);
+
             if (submitBool)
             {
                 switch (state)
                 {
-                    case MenuState.Start:
-                        ChangeMenu(MenuState.Main);
-                        break;
                     case MenuState.Main:
                         switch (options[currentSelection])
                         {
                             case "Single Player":
+                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<Race>();
                                 ChangeMenu(MenuState.SinglePlayer);
                                 gd.GetComponent<InputManager>().RemoveOtherControllers();
                                 break;
                             case "Multiplayer":
+                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<Race>();
                                 ChangeMenu(MenuState.Multiplayer);
                                 break;
                             case "Online":
@@ -247,24 +281,24 @@ public class MainMenu : MonoBehaviour
                         switch (options[currentSelection])
                         {
                             case "Tournament":
-                                //gd.GetComponent(Level_Select).GrandPrixOnly = true;
-                                //gd.GetComponent(RaceLeader).type = RaceStyle.GrandPrix;
+                                Race temp = (Race)CurrentGameData.currentGamemode;
+                                temp.raceType = RaceType.GrandPrix;
+
                                 ChangeMenu(MenuState.Difficulty);
                                 break;
                             case "VS Race":
-                                //gd.GetComponent(Level_Select).GrandPrixOnly = false;
-                                //gd.GetComponent(RaceLeader).type = RaceStyle.CustomRace;
+                                temp = (Race)CurrentGameData.currentGamemode;
+                                temp.raceType = RaceType.VSRace;
+
                                 ChangeMenu(MenuState.Difficulty);
                                 break;
                             case "Time Trial":
-                                //gd.GetComponent(Level_Select).GrandPrixOnly = false;
-                                //gd.GetComponent(RaceLeader).type = RaceStyle.TimeTrial;
-                                //gd.difficulty = 1;
+                                temp = (Race)CurrentGameData.currentGamemode;
+                                temp.raceType = RaceType.TimeTrial;
+
+                                CurrentGameData.difficulty = 1;
                                 moveTitle = true;
-                                ChangeMenu(MenuState.CharacterSelect);
-                                StartCoroutine(ForcePicRemove());
-                                GetComponent<CharacterSelect>().enabled = true;
-                                GetComponent<CharacterSelect>().ShowCharacterSelect();
+                                StartGameMode();
                                 break;
                         }
                     break;
@@ -272,13 +306,15 @@ public class MainMenu : MonoBehaviour
                         switch (options[currentSelection])
                         {
                             case "Tournament":
-                                //gd.GetComponent(Level_Select).GrandPrixOnly = true;
-                                //gd.GetComponent(RaceLeader).type = RaceStyle.GrandPrix;
+                                Race temp = (Race)CurrentGameData.currentGamemode;
+                                temp.raceType = RaceType.GrandPrix;
+
                                 ChangeMenu(MenuState.Difficulty);
                                 break;
-                            case "VS Race":                         
-                                //gd.GetComponent(Level_Select).GrandPrixOnly = false;
-                                //gd.GetComponent(RaceLeader).type = RaceStyle.CustomRace;
+                            case "VS Race":
+                                temp = (Race)CurrentGameData.currentGamemode;
+                                temp.raceType = RaceType.VSRace;
+
                                 ChangeMenu(MenuState.Difficulty);
                                 break;
                         }
@@ -287,36 +323,24 @@ public class MainMenu : MonoBehaviour
                         switch (options[currentSelection])
                         {
                             case "50cc":
-                                //gd.difficulty = 0;
+                                CurrentGameData.difficulty = 0;
                                 moveTitle = true;
-                                ChangeMenu(MenuState.CharacterSelect);
-                                StartCoroutine(ForcePicRemove());
-                                GetComponent<CharacterSelect>().enabled = true;
-                                GetComponent<CharacterSelect>().ShowCharacterSelect();
+                                StartGameMode();
                                 break;
                             case "100cc":
-                                //gd.difficulty = 1;
+                                CurrentGameData.difficulty = 1;
                                 moveTitle = true;
-                                ChangeMenu(MenuState.CharacterSelect);
-                                StartCoroutine(ForcePicRemove());
-                                GetComponent<CharacterSelect>().enabled = true;
-                                GetComponent<CharacterSelect>().ShowCharacterSelect();
+                                StartGameMode();
                                 break;
                             case "150cc":
-                                //gd.difficulty = 2;
+                                CurrentGameData.difficulty = 2;
                                 moveTitle = true;
-                                ChangeMenu(MenuState.CharacterSelect);
-                                StartCoroutine(ForcePicRemove());
-                                GetComponent<CharacterSelect>().enabled = true;
-                                GetComponent<CharacterSelect>().ShowCharacterSelect();
+                                StartGameMode();
                                 break;
                             case "Insane":
-                                //gd.difficulty = 3;
-                                moveTitle = true;
-                                ChangeMenu(MenuState.CharacterSelect);
-                                StartCoroutine(ForcePicRemove());
-                                GetComponent<CharacterSelect>().enabled = true;
-                                GetComponent<CharacterSelect>().ShowCharacterSelect();
+                                CurrentGameData.difficulty = 3;
+                                moveTitle = true;                                
+                                StartGameMode();
                                 break;
                         }
                     break;
@@ -331,6 +355,15 @@ public class MainMenu : MonoBehaviour
                 BackMenu();
             }
         }
+
+        GUI.color = Color.white;
+    }
+
+    private void StartGameMode()
+    {
+        ChangeMenu(MenuState.CharacterSelect);
+        StartCoroutine(ForcePicRemove());
+        CurrentGameData.currentGamemode.StartGameMode();
     }
 
     //Go Back to Previous Menu
@@ -345,6 +378,12 @@ public class MainMenu : MonoBehaviour
             {
                 transform.GetComponent<Credits>().StartCoroutine("StopCredits");
                 lockPicture = false;
+            }
+
+            if (state == MenuState.CharacterSelect)
+            {
+                lockPicture = false;
+                StartCoroutine("ChangePicture", Resources.Load<Texture2D>("UI/New Main Menu/Side Images/" + randomImage.ToString()));
             }
 
             StartCoroutine("ChangeMenuPhysical", backStates[backStates.Count - 1]);
@@ -363,33 +402,42 @@ public class MainMenu : MonoBehaviour
     {
         if(!sliding)
         {
-            sliding = true;           
+            sliding = true;
+
+            if (changeState == MenuState.CharacterSelect || changeState == MenuState.Credits)
+                fadeTitle = true;
+            else
+                fadeTitle = false;
 
             float startTime = Time.time;
             float travelTime = 0.5f;
 
-            float actualWidth = Mathf.Clamp(GUIHelper.width * (Screen.height / GUIHelper.height), 0, Screen.width);
-            float ratio = Screen.width / actualWidth;
-            float endSideAmount = -(GUIHelper.width * ratio)/2f;
+            float endSideAmount = -GUIHelper.width/2f;
 
             //Slide Off //////////////////////////////
             sideAmount = 0f;
+            sideFade = 1f;
 
             while (Time.time - startTime < travelTime)
             {
                 sideAmount = Mathf.Lerp(0f, endSideAmount, (Time.time - startTime) / travelTime);
+                sideFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
                 yield return null;
             }
 
             //Pause at Top///////////////////////////////////////
             sideAmount = endSideAmount;
+            sideFade = 0f;
+
+            if (state == MenuState.CharacterSelect || state == MenuState.Credits)
+                fadeTitle = true;
+
             currentSelection = 0;
             state = changeState;
 
             if(state != MenuState.Credits && state != MenuState.CharacterSelect)
             {
                 moveTitle = false;
-                lockPicture = false;
             }
 
             //Slide Down/////////////////////
@@ -397,10 +445,12 @@ public class MainMenu : MonoBehaviour
             while (Time.time - startTime < travelTime)
             {
                 sideAmount = Mathf.Lerp(endSideAmount, 0f, (Time.time - startTime) / travelTime);
+                sideFade = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
                 yield return null;
             }
 
             sideAmount = 0f;
+            sideFade = 1f;
 
             sliding = false;
         }
@@ -415,18 +465,20 @@ public class MainMenu : MonoBehaviour
             float startTime = Time.time;
             float travelTime = 0.35f;
 
-            float actualWidth = Mathf.Clamp(GUIHelper.width * (Screen.height / GUIHelper.height), 0, Screen.width);
-            float ratio = Screen.width / actualWidth;
-            float endSideAmount = GUIHelper.width * ratio;
+            float endSideAmount = GUIHelper.width;
+
+            sidePictureFade = 1f;
 
             while (Time.time - startTime < travelTime)
             {
                 sidePictureAmount = Mathf.Lerp(GUIHelper.width / 2f, endSideAmount, (Time.time - startTime) / travelTime);
+                sidePictureFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
                 yield return null;
             }
 
             sidePicture = texture;
             sidePictureAmount = endSideAmount;
+            sidePictureFade = 0f;
 
             if (!lockPicture)
             {
@@ -434,10 +486,12 @@ public class MainMenu : MonoBehaviour
                 while (Time.time - startTime < travelTime)
                 {
                     sidePictureAmount = Mathf.Lerp(endSideAmount, GUIHelper.width / 2f, (Time.time - startTime) / travelTime);
+                    sidePictureFade = Mathf.Lerp(0f,1f, (Time.time - startTime) / travelTime);
                     yield return null;
                 }
 
                 sidePictureAmount = GUIHelper.width / 2f;
+                sidePictureFade = 1f;
             }
 
             pictureTransitioning = false;
@@ -454,20 +508,20 @@ public class MainMenu : MonoBehaviour
         float startTime = Time.time;
         float startX = sidePictureAmount; 
 
-        float actualWidth = Mathf.Clamp(GUIHelper.width * (Screen.height / GUIHelper.height), 0, Screen.width);
-        float ratio = Screen.width / actualWidth;
-        float endSideAmount = GUIHelper.width * ratio;
+        float endSideAmount = GUIHelper.width;
 
         float travelTime = 0.35f * (startX / endSideAmount);
 
         while (Time.time - startTime < travelTime)
         {
             sidePictureAmount = Mathf.Lerp(startX, endSideAmount, (Time.time - startTime) / travelTime);
+            sidePictureFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
             yield return null;
         }
 
         sidePicture = null;
         sidePictureAmount = endSideAmount;
+        sidePictureFade = 0f;
 
         pictureTransitioning = false;
     }
