@@ -16,7 +16,8 @@ public class kartScript : MonoBehaviour
     private bool isFalling, isColliding;
 
     //Kart Stats
-    static float maxSpeed = 20f, lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f,
+    public static float maxSpeed = 20f;
+    static float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f,
         turnSpeed = 2f, driftAmount = 1f;
     private bool offRoad;
     public int lapisAmount;

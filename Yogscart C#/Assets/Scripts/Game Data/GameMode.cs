@@ -15,6 +15,9 @@ abstract public class GameMode : MonoBehaviour
     protected List<Racer> racers;
     protected float timer;
 
+    protected Vector3 spawnPosition = Vector3.zero;
+    protected Quaternion spawnRotation = Quaternion.identity;
+
     protected bool aiEnabled = true, finished = false, clientOnly = false;
 
     protected CurrentGameData gd;
@@ -128,10 +131,12 @@ abstract public class GameMode : MonoBehaviour
             }
         }
 
+        int startRacer = racers.Count;
+
         //Add Human Players
         for(int i = 0; i < controllerCount; i++)
         {
-            racers.Add(new Racer(i, -1, CurrentGameData.currentChoices[i], i));
+            racers.Add(new Racer(i, -1, CurrentGameData.currentChoices[i], startRacer + i));
         }
     }
 
@@ -154,6 +159,62 @@ abstract public class GameMode : MonoBehaviour
 
     public virtual void SpawnKarts()
     {
+        KartMaker km = GameObject.FindObjectOfType<KartMaker>();
+
+        //Set speeds of Kart depending on Difficulty
+        switch (CurrentGameData.difficulty)
+        {
+            case 0:
+                kartScript.maxSpeed = 19;
+                break;
+            case 1:
+                kartScript.maxSpeed = 21;
+                break;
+            default:
+                kartScript.maxSpeed = 23;
+                break;
+        }
+
+        //Spawn the Karts
+        for (int i = 0; i < racers.Count; i++)
+        {
+            int racePos = racers[i].position;
+
+            Vector3 startPos = spawnPosition + (spawnRotation * Vector3.forward * (3f * 1.5f) * -1.5f);
+            Vector3 x2 = spawnRotation * (Vector3.forward * (racePos % 3) * (3 * 1.5f) + (Vector3.forward * .75f * 3));
+            Vector3 y2 = spawnRotation * (Vector3.right * (racePos + 1) * 3);
+            startPos += x2 + y2;
+            
+            racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);     
+
+            if(racers[i].Human != -1)
+            {
+                Transform inGameCam = (Transform)Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), startPos, Quaternion.identity);
+                inGameCam.name = "InGame Cams";
+
+                kartInput ki = racers[i].ingameObj.GetComponent<kartInput>();
+                ki.myController = racers[i].Human;
+                ki.camLocked = true;
+                ki.frontCamera = inGameCam.GetChild(1).GetComponent<Camera>();
+                ki.backCamera = inGameCam.GetChild(0).GetComponent<Camera>();
+
+                inGameCam.GetChild(1).tag = "MainCamera";
+
+                inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
+                inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
+                racers[i].cameras = inGameCam;
+
+                //Setup Camera
+                //Kart INFO Stuff
+            }
+            else
+            {
+                Destroy(racers[i].ingameObj.GetComponent<kartInput>());
+                //Destroy(racers[i].ingameObj.GetComponent<kartInfo>());
+                //racers[i].ingameObj.gameObject.AddComponent<AIRacer>();
+                //racers[i].ingameObj.GetComponent<AIRacer>().stupidity = racers[i].aiStupidity;
+            }
+        }
     }
 
     //Do your intro to the map

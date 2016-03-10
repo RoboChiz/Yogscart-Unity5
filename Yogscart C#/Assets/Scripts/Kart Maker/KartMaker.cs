@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum KartType { Display, Local, Online, Spectator };
 
@@ -111,11 +112,13 @@ public class KartMaker : MonoBehaviour
 
             ks.engineSound = kartSkel.engineSound;
 
+            ks.wheelColliders = new List<WheelCollider>();
             ks.wheelColliders.Add(frontlWheelCollider.GetComponent<WheelCollider>());
             ks.wheelColliders.Add(frontrWheelCollider.GetComponent<WheelCollider>());
             ks.wheelColliders.Add(backlWheelCollider.GetComponent<WheelCollider>());
             ks.wheelColliders.Add(backrWheelCollider.GetComponent<WheelCollider>());
 
+            ks.wheelMeshes = new List<Transform>();
             ks.wheelMeshes.Add(frontlWheel);
             ks.wheelMeshes.Add(frontrWheel);
             ks.wheelMeshes.Add(backlWheel);
@@ -124,9 +127,11 @@ public class KartMaker : MonoBehaviour
             //Sort Particles Out
             Transform kp = kartBody.FindChild("Kart Body").FindChild("Particles");
 
+            ks.flameParticles = new List<ParticleSystem>();
             ks.flameParticles.Add(kp.FindChild("L_Flame").GetComponent<ParticleSystem>());
             ks.flameParticles.Add(kp.FindChild("R_Flame").GetComponent<ParticleSystem>());
 
+            ks.driftParticles = new List<ParticleSystem>();
             ks.driftParticles.Add(kp.FindChild("L_Sparks").GetComponent<ParticleSystem>());
             ks.driftParticles.Add(kp.FindChild("R_Sparks").GetComponent<ParticleSystem>());
 

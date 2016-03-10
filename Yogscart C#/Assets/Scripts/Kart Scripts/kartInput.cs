@@ -7,6 +7,7 @@ public class kartInput : MonoBehaviour
 
     private kartScript ks;
 
+    public int myController;
     public bool camLocked = false;
     public Camera frontCamera, backCamera;
 
@@ -16,13 +17,13 @@ public class kartInput : MonoBehaviour
         if (ks == null)
             ks = GetComponent<kartScript>();
 
-        ks.throttle = Input.GetAxis("Throttle");
-        ks.steer = Input.GetAxis("Steer");
-        ks.drift = (Input.GetAxis("Drift") != 0);
+        ks.throttle = InputManager.controllers[myController].GetInput("Throttle");
+        ks.steer = InputManager.controllers[myController].GetInput("Steer");
+        ks.drift = (InputManager.controllers[myController].GetInput("Drift") != 0);
 
-        bool lookBehind = (Input.GetAxis("Rearview") != 0);
+        bool lookBehind = (InputManager.controllers[myController].GetInput("RearView") != 0);
 
-        if(!camLocked && lookBehind)
+        if (!camLocked && lookBehind)
         {
             backCamera.enabled = true;
             frontCamera.enabled = false;

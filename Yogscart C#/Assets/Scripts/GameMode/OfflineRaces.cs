@@ -19,11 +19,22 @@ class Race : GameMode
     public RaceType raceType;
     public int currentCup = -1;
     public int currentTrack = -1;
+
+    private TrackData td;
  
     public override IEnumerator MyStart()
     {
         CharacterSelect cs = GameObject.FindObjectOfType<CharacterSelect>();
         bool firstTime = true;
+
+        if(raceType == RaceType.TimeTrial)
+        {
+            aiEnabled = false;
+        }
+        else
+        {
+            aiEnabled = true;
+        }
 
         while (currentTrack == -1 || currentCup == -1)
         {
@@ -87,10 +98,17 @@ class Race : GameMode
                 Debug.Log("Cup:" + currentCup + " Track:" + currentTrack);
 
                 CurrentGameData.blackOut = true;
-
+ 
                 yield return new WaitForSeconds(0.5f);
 
                 SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
+
+                yield return null;
+
+                td = GameObject.FindObjectOfType<TrackData>();
+
+                spawnPosition = td.spawnPoint.position;
+                spawnRotation = td.spawnPoint.rotation;
             }
         }
     }
