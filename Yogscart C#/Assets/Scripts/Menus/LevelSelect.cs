@@ -67,11 +67,11 @@ public class LevelSelect : MonoBehaviour {
 
             if(gamemode.raceType != RaceType.GrandPrix && (!state || i != currentTrack))
             {
-                trackPreview = gd.tournaments[tempCurrentCup].tracks[i].preview_GreyOut;
+                trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo_GreyOut;
             }
             else
             {
-                trackPreview = gd.tournaments[tempCurrentCup].tracks[i].preview;
+                trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo;
             }
 
             Rect previewRect = new Rect(800 + (500 * (i%2)), 150 + (390 * (i/2)), 400, 365);

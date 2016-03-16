@@ -4,21 +4,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
+
 /*
-Offline Races Class v1.0
-Created by Robert (Robo_Chiz)
-FOR THE LOVE OF ALL THAT IS HOLY, DO NOT EDIT ANYTHING IN THIS SCRIPT!
-Thanks
-*/
-
-public enum RaceType { GrandPrix, VSRace, TimeTrial};
-
 //Default Class for all races
 class Race : GameMode
 {
     public RaceType raceType;
     public int currentCup = -1;
     public int currentTrack = -1;
+    public int currentRace = 1;
 
     private TrackData td;
  
@@ -115,9 +109,97 @@ class Race : GameMode
 
     public override IEnumerator DoIntro()
     {
+        yield return new WaitForSeconds(1f);
+
+        ChangeState(GUIState.CutScene);
+
+        GameObject cutsceneCam = new GameObject();
+        cutsceneCam.AddComponent<Camera>();
+        cutsceneCam.tag = "MainCamera";
+
+        sm.PlayMusic(Resources.Load<AudioClip>("Music & Sounds/RaceStart"));
+
+        cutsceneCam.transform.position = td.introPans[0].startPoint;
+        cutsceneCam.transform.rotation = Quaternion.Euler(td.introPans[0].startRotation);
+
         CurrentGameData.blackOut = false;
         yield return new WaitForSeconds(0.5f);
-        Debug.Log("LET'S DO THIS INTRO");
+
+        for (int i = 0; i < td.introPans.Count; i++)
+        {
+            yield return StartCoroutine(Play(cutsceneCam.transform, td.introPans[i]));
+        }
+
+        ChangeState(GUIState.RaceInfo);
+
+        CurrentGameData.blackOut = true;
+        yield return new WaitForSeconds(0.5f);
+
+        cutsceneCam.GetComponent<Camera>().depth = -5;
+
+        yield return new WaitForSeconds(0.5f);
+        CurrentGameData.blackOut = false;
+
+        Destroy(cutsceneCam);
+        sm.PlayMusic(td.backgroundMusic);
+
+    }
+
+    private IEnumerator Play(Transform cam, CameraPoint clip)
+    {
+        float startTime = Time.time;
+
+        while ((Time.time - startTime) < clip.travelTime)
+        {
+            cam.position = Vector3.Lerp(clip.startPoint, clip.endPoint, (Time.time - startTime) / clip.travelTime);
+            cam.rotation = Quaternion.Slerp(Quaternion.Euler(clip.startRotation), Quaternion.Euler(clip.endRotation), (Time.realtimeSinceStartup - startTime) / clip.travelTime);
+            yield return null;
+        }
+    }
+
+    void OnGUI()
+    {
+
+        ParentGUI();
+
+        Color nWhite = Color.white;
+        nWhite.a = guiAlpha;
+        GUI.color = nWhite;
+
+        switch (currentGUI)
+        {
+
+            case GUIState.CutScene:
+
+                float idealWidth = Screen.width / 3f;
+                Texture2D previewTexture = gd.tournaments[currentCup].tracks[currentTrack].preview;
+                float previewRatio = idealWidth / previewTexture.width;
+                Rect previewRect = new Rect(Screen.width - idealWidth - 20, Screen.height - (previewTexture.height * previewRatio * 2f), idealWidth, previewTexture.height * previewRatio);
+
+                GUI.DrawTexture(previewRect, previewTexture);
+
+                break;
+            case GUIState.RaceInfo:
+
+                Texture2D raceTexture;
+
+                if (Network.isClient || Network.isServer)
+                {
+                    raceTexture = Resources.Load<Texture2D>("UI/Level Selection/Online");
+                }
+                else
+                {
+                    if (raceType == RaceType.TimeTrial)
+                        raceTexture = Resources.Load<Texture2D>("UI/Level Selection/TimeTrial");
+                    else
+                        raceTexture = Resources.Load<Texture2D>("UI/Level Selection/" + currentRace);
+                }
+
+                GUI.DrawTexture(new Rect(10, 10, Screen.width - 20, Screen.height), raceTexture, ScaleMode.ScaleToFit);
+
+
+                break;
+        }
     }
 
     public override void HostUpdate()
@@ -129,5 +211,5 @@ class Race : GameMode
     {
         
     }
-
-}
+    
+}*/

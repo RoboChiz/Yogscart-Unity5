@@ -6,7 +6,7 @@ public class PositionFinding : MonoBehaviour
 
     private TrackData td;
 
-    public int lap = -1, currentPos, currentShortcut = -1, currentTotal;
+    public int lap = -1, currentPos, currentShortcut = -1, currentTotal, position = -1;
     public float currentDistance;
 
     // Update is called once per frame

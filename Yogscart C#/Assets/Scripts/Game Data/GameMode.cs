@@ -11,71 +11,51 @@ Thanks
 
 abstract public class GameMode : MonoBehaviour
 {
+    //Game Managers - Loaded automatically
+    protected CurrentGameData gd;
+    protected SoundManager sm;
+    protected KartMaker km;
+
+    //Player Information
     protected float maxPlayers = 12f;
     protected List<Racer> racers;
-    protected float timer;
 
-    protected Vector3 spawnPosition = Vector3.zero;
-    protected Quaternion spawnRotation = Quaternion.identity;
+    //Match Information
+    private float startTimer;
+    protected float timer; //Holds the time the match has been going on for...
+    public float Timer
+    {
+        get { return timer; }
+        set { }
+    }
 
+    /* Important Game Stuff
+    AI Enabled - Obvious
+    Finished - Used by Menu systems to tell wheter the gamemode has finished
+    Client Only - Avoid running host stuff, useful for Network games*/
     protected bool aiEnabled = true, finished = false, clientOnly = false;
 
-    protected CurrentGameData gd;
+    //Countdown Stuff
+    public int CountdownText; //The number on screen
+    public Rect CountdownRect; //Where to draw the countdown
+    public bool CountdownShow = false, countdowning = false;
+    public float CountdownAlpha = 1f;
 
-    //Called to Start Gamemode, can't be changed
-    public void StartGameMode()
-    {
-        StartCoroutine("ActualStartGameMode");
-    }
-
-    private IEnumerator ActualStartGameMode()
+    //Load the Game Managers
+    void Awake()
     {
         gd = GameObject.FindObjectOfType<CurrentGameData>();
-
-        //Apply programmers desired changes, probably load the level
-        yield return StartCoroutine("MyStart");
-
-        Debug.Log("It seriously worked...");
-
-        //Setup the Racers for the Gamemode
-        Setup();
-
-        Debug.Log("Lets load some Karts");
-        //Spawn the karts however programmer wants 
-        SpawnKarts();
-        
-        //Do the intro to the Map
-        yield return StartCoroutine("DoIntro");
-        
-        //Do the Countdown
-        yield return StartCoroutine("StartCountdown");
-
-        //Wait for the gamemode to be over
-        while (!finished)
-        {
-            ClientUpdate();
-
-            if (!clientOnly)
-                HostUpdate();
-
-            yield return null;
-        }
-
-        //Show Results
-
-        //Tidy Up
-
+        sm = GameObject.FindObjectOfType<SoundManager>();
+        km = GameObject.FindObjectOfType<KartMaker>();
     }
 
-    /// <summary>
-    /// Add your own start behaviour here
-    /// </summary>
-    public abstract IEnumerator MyStart();
+    //Called to Start Gamemode by menus. Must be included in your class
+    abstract public void StartGameMode();
 
     /// <summary>
-    /// Setup the Racers for the GamemOde
+    /// Default way to setup the Racers for the Gamemode
     /// </summary>
-    private void Setup()
+    protected void SetupRacers()
     {   
         racers = new List<Racer>();
         int controllerCount = InputManager.controllers.Count;
@@ -140,6 +120,7 @@ abstract public class GameMode : MonoBehaviour
         }
     }
 
+    //Used as part of ShuffleArray to randomise selected AI characters
     private List<int> ShuffleArray(List<int> arr)
     {
         int i1 = 0, i2 = 0;
@@ -157,23 +138,9 @@ abstract public class GameMode : MonoBehaviour
         return arr;
     }
 
-    public virtual void SpawnKarts()
-    {
-        KartMaker km = GameObject.FindObjectOfType<KartMaker>();
-
-        //Set speeds of Kart depending on Difficulty
-        switch (CurrentGameData.difficulty)
-        {
-            case 0:
-                kartScript.maxSpeed = 19;
-                break;
-            case 1:
-                kartScript.maxSpeed = 21;
-                break;
-            default:
-                kartScript.maxSpeed = 23;
-                break;
-        }
+    //Spawns all Karts in the typical race layout
+    protected void SpawnAllKarts(Vector3 spawnPosition, Quaternion spawnRotation)
+    {       
 
         //Spawn the Karts
         for (int i = 0; i < racers.Count; i++)
@@ -185,9 +152,23 @@ abstract public class GameMode : MonoBehaviour
             Vector3 y2 = spawnRotation * (Vector3.right * (racePos + 1) * 3);
             startPos += x2 + y2;
             
-            racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);     
+            racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
-            if(racers[i].Human != -1)
+            //Set speeds of Kart depending on Difficulty
+            switch (CurrentGameData.difficulty)
+            {
+                case 0:
+                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 19;
+                    break;
+                case 1:
+                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 21;
+                    break;
+                default:
+                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 23;
+                    break;
+            }
+
+            if (racers[i].Human != -1)
             {
                 Transform inGameCam = (Transform)Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), startPos, Quaternion.identity);
                 inGameCam.name = "InGame Cams";
@@ -217,22 +198,158 @@ abstract public class GameMode : MonoBehaviour
         }
     }
 
-    //Do your intro to the map
-    public abstract IEnumerator DoIntro();
-
-    private IEnumerator StartCountdown()
+    //Spawns the given kart in Racers in the Time Trial layout
+    protected void SpawnLoneKart(Vector3 spawnPosition, Quaternion spawnRotation, int i)
     {
-        yield return null;
+        //Spawn the Karts
+        int racePos = racers[i].position;
+
+        Vector3 startPos = spawnPosition + (spawnRotation * Vector3.forward * (3 * 1.5f) * -1.5f);
+        Vector3 x2 = spawnRotation * (Vector3.forward * 4.5f) + (Vector3.forward * .75f * 3);
+        Vector3 y2 = spawnRotation * (Vector3.right * 6);
+        startPos += x2 + y2;
+
+        racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
+
+        //Set speeds of Kart depending on Difficulty
+        switch (CurrentGameData.difficulty)
+        {
+            case 0:
+                racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 19;
+                break;
+            case 1:
+                racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 21;
+                break;
+            default:
+                racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 23;
+                break;
+        }
+
+        if (racers[i].Human != -1)
+        {
+            Transform inGameCam = (Transform)Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), startPos, Quaternion.identity);
+            inGameCam.name = "InGame Cams";
+
+            kartInput ki = racers[i].ingameObj.GetComponent<kartInput>();
+            ki.myController = racers[i].Human;
+            ki.camLocked = true;
+            ki.frontCamera = inGameCam.GetChild(1).GetComponent<Camera>();
+            ki.backCamera = inGameCam.GetChild(0).GetComponent<Camera>();
+
+            inGameCam.GetChild(1).tag = "MainCamera";
+
+            inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
+            inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
+            racers[i].cameras = inGameCam;
+
+            //Setup Camera
+            //Kart INFO Stuff
+        }
+        else
+        {
+            Destroy(racers[i].ingameObj.GetComponent<kartInput>());
+            //Destroy(racers[i].ingameObj.GetComponent<kartInfo>());
+            //racers[i].ingameObj.gameObject.AddComponent<AIRacer>();
+            //racers[i].ingameObj.GetComponent<AIRacer>().stupidity = racers[i].aiStupidity;
+        }
     }
 
-    abstract public void HostUpdate();
+    protected void StartCountdown()
+    {
+        if(!countdowning)
+        StartCoroutine("ActualStartCountdown");
+    }
 
-    abstract public void ClientUpdate();
+    private IEnumerator ActualStartCountdown()
+    {
+        countdowning = true;
+
+        sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/CountDown"));
+
+        for (int i = 3; i >= 0; i--){
+
+            CountdownText = i;
+            kartScript.startBoostVal = i;
+
+            CountdownRect = new Rect(Screen.width / 2 - (Screen.height / 1.5f) / 2f, Screen.height / 2 - (Screen.height / 1.5f) / 2f, Screen.height / 1.5f, Screen.height / 1.5f);
+            CountdownShow = true;
+
+            yield return new WaitForSeconds(0.8f);
+
+            CountdownShow = false;
+            yield return new WaitForSeconds(0.3f);
+        }
+
+        CountdownText = -1;
+        kartScript.startBoostVal = -1;
+
+        countdowning = false;
+    }
+
+    //Remember to call "base.OnGUI();" to get countdown behaviour
+    public virtual void OnGUI()
+    {
+        //CountDown
+
+        GUIHelper.SetGUIAlpha(CountdownAlpha);
+
+        Texture2D countdownTexture;
+
+        if (CountdownText == 0)
+            countdownTexture = Resources.Load<Texture2D>("UI/CountDown/GO");
+        else if (CountdownText > 0)
+            countdownTexture = Resources.Load<Texture2D>("UI/CountDown/" + CountdownText.ToString());
+        else
+            countdownTexture = null;
+
+        if(countdownTexture != null)
+        {
+            GUI.DrawTexture(CountdownRect, countdownTexture, ScaleMode.ScaleToFit);
+
+            CountdownRect.x = Mathf.Lerp(CountdownRect.x, Screen.width / 2 - Screen.height / 6f, Time.deltaTime);
+            CountdownRect.y = Mathf.Lerp(CountdownRect.y, Screen.height / 2 - Screen.height / 6f, Time.deltaTime);
+            CountdownRect.width = Mathf.Lerp(CountdownRect.width, Screen.height / 3f, Time.deltaTime);
+            CountdownRect.height = Mathf.Lerp(CountdownRect.height, Screen.height / 3f, Time.deltaTime);
+
+            if (CountdownShow)
+                CountdownAlpha = Mathf.Lerp(CountdownAlpha, 1f, Time.deltaTime * 10f);
+            else
+                CountdownAlpha = Mathf.Lerp(CountdownAlpha, 0f, Time.deltaTime * 10f);
+        }
+
+        GUIHelper.ResetColor();
+    }
+
+    public abstract void HostUpdate();
+
+    public abstract void ClientUpdate();
 
     protected void ForceStop()
     {
         StopAllCoroutines();
     }
+
+    protected void StartTimer()
+    {
+        startTimer = Time.time;
+        StartCoroutine("ActualStartTimer");
+    }
+
+    protected void StopTimer()
+    {
+        StopCoroutine("ActualStartTimer");
+    }
+
+    private IEnumerator ActualStartTimer()
+    {
+        while(true)
+        {
+            timer = Time.time - startTimer;
+            yield return null;
+        }
+    }
+
+
 }
 
 abstract public class TeamGameMode : GameMode
@@ -337,6 +454,8 @@ public class Racer
     public Transform cameras;
 
     public float timer;
+    public int totalDistance;
+    public float currentDistance;
 
     //After Race Information //////////////////////////////////
     public int points;

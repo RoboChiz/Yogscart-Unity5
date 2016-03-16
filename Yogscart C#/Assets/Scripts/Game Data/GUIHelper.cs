@@ -47,5 +47,17 @@ public class GUIHelper
 
     }
 
+    public static void ResetColor()
+    {
+        GUI.color = Color.white;
+    }
+
+    public static void SetGUIAlpha(float alpha)
+    {
+        Color nWhite = Color.white;
+        nWhite.a = alpha;
+        GUI.color = nWhite;
+    }
+
 
 }

@@ -29,7 +29,7 @@ public class CurrentGameData : MonoBehaviour {
     public static GameMode currentGamemode;
 
     //BlackOut Variables
-    public static bool blackOut = true;
+    public static bool blackOut = false;
     private Color colourAlpha = Color.white;
     const float animationSpeed = 0.05f;
     private float lastTime = 0f;
@@ -164,9 +164,9 @@ public class LoadOut
 public class Track
 {
     public string name;
-    public Texture2D logo;
-    public Texture2D preview; //Maybe Animated???
-    public Texture2D preview_GreyOut; //Maybe Animated???
+    public Texture2D logo; //Maybe Animated???
+    public Texture2D logo_GreyOut; //Maybe Animated???
+    public Texture2D preview;
 
     public float bestTime;
     public string sceneID;

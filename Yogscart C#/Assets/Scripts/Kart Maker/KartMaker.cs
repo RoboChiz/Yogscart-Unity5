@@ -189,7 +189,7 @@ public class KartMaker : MonoBehaviour
         JointSpring suspensionSpring = new JointSpring();
         suspensionSpring.spring = 100000f;
         suspensionSpring.damper = 5000f;
-        suspensionSpring.targetPosition = 0.9f;
+        suspensionSpring.targetPosition = 0.8f;
         wheelCollider.suspensionSpring = suspensionSpring;
 
         WheelFrictionCurve forwardFriction = new WheelFrictionCurve();

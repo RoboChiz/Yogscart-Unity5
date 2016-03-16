@@ -16,15 +16,20 @@ public class kartScript : MonoBehaviour
     private bool isFalling, isColliding;
 
     //Kart Stats
-    public static float maxSpeed = 20f;
-    static float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f,
-        turnSpeed = 2f, driftAmount = 1f;
+    public float maxSpeed = 20f;
+    private float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f, turnSpeed = 2f, driftAmount = 1f;
+
     private bool offRoad;
     public int lapisAmount;
 
     //Driving Stuff
     private float expectedSpeed, actualSpeed;
 
+    public float ActualSpeed
+    {
+        get { return actualSpeed; }
+        set { }
+    }
     public float ExpectedSpeed
     {
         get
@@ -54,7 +59,7 @@ public class kartScript : MonoBehaviour
     //Boost at Start
     private bool allowedBoost, spinOut;
     private float startBoostAmount;
-    static int startBoostVal = -1;
+    public static int startBoostVal = -1;
 
     //Tricking off Ramps
     private bool tricking, trickPotential, trickLock;
@@ -138,6 +143,23 @@ public class kartScript : MonoBehaviour
             }
 
             lastMaxSpeed = nMaxSpeed;
+
+            //Keep kart upwards
+            if(isFalling)
+            {
+                transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(0, transform.localRotation.eulerAngles.y, 0), lastTime * 5f);
+
+               /* if(Vector3.Angle(transform.forward,GetComponent<Rigidbody>().velocity) > 20f)
+                {
+                    Vector3 horiVel = GetComponent<Rigidbody>().velocity;
+                    horiVel.y = 0f;
+                    float scale = horiVel.magnitude;
+
+                    horiVel = Vector3.Lerp(horiVel, transform.forward * scale, lastTime * 5f);
+
+                    GetComponent<Rigidbody>().velocity = new Vector3(horiVel.x, GetComponent<Rigidbody>().velocity.y, horiVel.z);
+                }*/
+            }
         }
     }
 
@@ -194,11 +216,11 @@ public class kartScript : MonoBehaviour
             //Calculate Start Boost
             bool throttleOver = (throttle > 0f);
 
-            if (startBoostAmount == 3 && throttleOver)
+            if (startBoostVal == 3 && throttleOver)
             {
                 spinOut = true;
             }
-            else if (startBoostVal == 2 && throttleOver && spinOut == false)
+            else if (startBoostVal == 2 && throttleOver && !spinOut)
             {
                 allowedBoost = true;
             }
@@ -210,10 +232,11 @@ public class kartScript : MonoBehaviour
             if (allowedBoost && throttleOver)
                 startBoostAmount += Time.deltaTime * 0.1f;
 
-            if (startBoostVal == 0 && allowedBoost)
-                Boost(startBoostAmount, BoostMode.Trick);
             if (startBoostVal == 0 && spinOut)
                 SpinOut();
+            else if (startBoostVal == 0 && allowedBoost)
+                Boost(startBoostAmount, BoostMode.Trick);
+
             //Boost Particles
             if(isBoosting == BoostMode.Not)
             {
@@ -270,10 +293,8 @@ public class kartScript : MonoBehaviour
 
     void DoTrick()
     {
-        if (isFalling)
+        if (isFalling || locked)
         {
-            StartCoroutine("SnapUp");
-
             if (trickPotential)
             {
                 tricking = true;
@@ -304,7 +325,7 @@ public class kartScript : MonoBehaviour
 
     void CalculateExpectedSpeed(float lastTime)
     {
-        if (throttle == 0 || locked)
+        if (throttle == 0 || locked || spunOut)
         {
             float cacceleration = -ExpectedSpeed / brakeTime;
             ExpectedSpeed += (cacceleration * lastTime);
@@ -352,7 +373,7 @@ public class kartScript : MonoBehaviour
             wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle, (driftSteer * turnSpeed) + (steer * driftAmount), lastTime * 500f);
         }
 
-        if (isColliding)
+        if (isColliding || isFalling)
         {
             wheelColliders[0].steerAngle = 0;
             wheelColliders[1].steerAngle = 0;
@@ -452,7 +473,7 @@ public class kartScript : MonoBehaviour
         applyingDrift = false;
     }
 
-    void Boost(float t, BoostMode type)
+    public void Boost(float t, BoostMode type)
     {
         isBoosting = type;
         StopCoroutine("StartBoost");
@@ -498,6 +519,8 @@ public class kartScript : MonoBehaviour
             transform.FindChild("Kart Body").Rotate((dir * 360f * Time.deltaTime) / time);
             yield return null;
         }
+
+        spinning = false;
     }
 
     void SpinOut()
@@ -527,7 +550,7 @@ public class kartScript : MonoBehaviour
         }
     }
 
-    IEnumerator SnapUp()
+    /*IEnumerator SnapUp()
     {
         if (!snapping)
         {
@@ -548,7 +571,7 @@ public class kartScript : MonoBehaviour
 
             snapping = false;
         }
-    }
+    }*/
 
     bool HaveTheSameSign(float first, float second)
     {
