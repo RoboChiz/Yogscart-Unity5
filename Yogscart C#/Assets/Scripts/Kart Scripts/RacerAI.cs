@@ -158,6 +158,14 @@ public class RacerAI : MonoBehaviour {
                 if (ks.ActualSpeed >= turnSpeed)
                     ks.throttle = 0;
             }
+            else
+            {
+                ks.drift = true;
+            }
+        }
+        else
+        {
+            ks.drift = false;
         }
     }
 

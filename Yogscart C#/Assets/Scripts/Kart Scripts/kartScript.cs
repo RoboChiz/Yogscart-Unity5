@@ -81,8 +81,8 @@ public class kartScript : MonoBehaviour
     public AudioClip engineSound;
 
     //Collisions
-    const float snapTime = 0.1f, pushSpeed = 2f, pushTime = 0.5f;
-    private Vector3 touchingKart, relativeVelocity;
+    const float snapTime = 0.1f, pushTime = 0.3f, pushAmount = 1f;
+    private Vector3 relativeVelocity;
 
     //Stop Flipping
     private bool snapping;
@@ -106,6 +106,7 @@ public class kartScript : MonoBehaviour
     // Update is called once per 60th of a second
     void FixedUpdate()
     {
+
         float lastTime = Time.fixedDeltaTime;
         lastTime = Mathf.Clamp(lastTime, 0f, 0.034f);
 
@@ -257,38 +258,29 @@ public class kartScript : MonoBehaviour
         }
     }
 
-    IEnumerator KartCollision(Transform otherKart)
+    public void KartCollision(Transform otherKart)
     {
-        //Put kart collisions effects here
-        Vector3 compareVect = otherKart.transform.position - transform.position;
+        //Stop the karts from colliding
+        Vector3 compareVect = otherKart.position - transform.position;
 
-        if (touchingKart == Vector3.zero)
+        /*
+        𝑣1 = (((𝑚1−𝑚2)/(𝑚1+𝑚2)) × 𝑢1) + ((2𝑚2)/(𝑚1+𝑚2)× 𝑢2) 
+        */
+        Rigidbody me = GetComponent<Rigidbody>();
+        Rigidbody them = otherKart.GetComponent<Rigidbody>();
+
+        Vector3 newVelocity = ((2f * them.mass) / (me.mass + them.mass)) * them.velocity;
+
+        if (Vector3.Angle(transform.forward, compareVect) < 25)
         {
-            if (Vector3.Angle(compareVect, transform.right) > 90) //Decides where way will push us away from the kart
-                touchingKart = transform.right;
+            if (Vector3.Angle(transform.right, compareVect) < 90)
+                newVelocity = -transform.right * newVelocity.magnitude;
             else
-                touchingKart = -transform.right;
+                newVelocity = transform.right * newVelocity.magnitude;
         }
 
-        transform.position += (touchingKart * (2f - compareVect.magnitude));
-
-        var startTime = Time.time;
-        while (Time.time - startTime <= pushTime)
-        {
-            relativeVelocity.x = pushSpeed * touchingKart.x;
-            GetComponent<Rigidbody>().velocity = transform.TransformDirection(relativeVelocity);
-            yield return null;
-        }
-    }
-
-    void CancelCollision()
-    {
-        touchingKart = Vector3.zero;
-
-        //Remove the horizontal velocity
-        relativeVelocity.x = 0;
-        GetComponent<Rigidbody>().velocity = transform.TransformDirection(relativeVelocity);
-        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        me.velocity += newVelocity;
+       
     }
 
     void DoTrick()
@@ -523,7 +515,7 @@ public class kartScript : MonoBehaviour
         spinning = false;
     }
 
-    void SpinOut()
+    public void SpinOut()
     {
         StartCoroutine("StartSpinOut");
     }
@@ -549,29 +541,6 @@ public class kartScript : MonoBehaviour
 
         }
     }
-
-    /*IEnumerator SnapUp()
-    {
-        if (!snapping)
-        {
-            snapping = true;
-
-            Quaternion startRot = transform.rotation;
-            float startTime = Time.time;
-
-            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
-
-            while (Time.time - startTime < snapTime)
-            {
-                transform.rotation = Quaternion.Lerp(startRot, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0), (Time.realtimeSinceStartup - startTime) / snapTime);
-                yield return null;
-            }
-
-            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-
-            snapping = false;
-        }
-    }*/
 
     bool HaveTheSameSign(float first, float second)
     {
@@ -603,4 +572,5 @@ public class kartScript : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         isColliding = false;
     }
+
 }

@@ -90,6 +90,10 @@ public class Race : GameMode
         foreach (kartInfo ki in kies)
             ki.hidden = false;
 
+        kartInput[] kines = GameObject.FindObjectsOfType<kartInput>();
+        foreach (kartInput ki in kines)
+            ki.camLocked = false;
+
         yield return StartCoroutine(ChangeState(RaceGUI.Countdown));
 
         //Do the Countdown
@@ -117,6 +121,9 @@ public class Race : GameMode
         //Show Results
         Debug.Log("It's over!");
         StopTimer();
+
+        foreach (kartInput ki in kines)
+            ki.camLocked = false;
 
         //Tidy Up
 
