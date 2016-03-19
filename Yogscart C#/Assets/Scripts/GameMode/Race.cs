@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System;
 
 public enum RaceType { GrandPrix, VSRace, TimeTrial };
-public enum RaceGUI { Blank, CutScene, RaceInfo, Countdown, RaceGUI, Finish, ScoreBoard, NextMenu, Win};
+public enum RaceGUI { Blank, CutScene, RaceInfo, Countdown, RaceGUI, ScoreBoard, NextMenu, Win };
 
 /*
     Races Class v1.0
@@ -18,7 +18,8 @@ public class Race : GameMode
 {
 
     public RaceType raceType;
-    public int currentCup = -1, currentTrack = -1, currentRace = 1;
+    public static int currentCup = -1, currentTrack = -1, currentRace = 1, lastcurrentRace;
+    private int currentSelection;
 
     public RaceGUI currentGUI = RaceGUI.Blank;
     public float guiAlpha = 0f;
@@ -42,6 +43,32 @@ public class Race : GameMode
         //Setup the Racers for the Gamemode
         SetupRacers();
 
+        yield return null;
+
+        StartCoroutine("StartRace");
+
+        yield return null;
+    }
+
+    protected IEnumerator StartRace()
+    {
+
+        CurrentGameData.blackOut = true;
+
+        yield return new WaitForSeconds(0.5f);
+
+        //Tidy Up
+        foreach (Racer r in racers)
+        {
+            r.finished = false;
+            r.currentDistance = 0;
+            r.totalDistance = 0;
+            r.timer = 0;
+        }
+
+        lastcurrentRace = currentRace;
+
+
         //Load the Level
         SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
         yield return null;
@@ -55,7 +82,7 @@ public class Race : GameMode
         else
             SpawnAllKarts(td.spawnPoint.position, td.spawnPoint.rotation);
 
-        for(int i = 0; i < racers.Count; i++)
+        for (int i = 0; i < racers.Count; i++)
         {
             if (racers[i].Human != -1)
             {
@@ -125,7 +152,31 @@ public class Race : GameMode
         foreach (kartInput ki in kines)
             ki.camLocked = false;
 
+        yield return new WaitForSeconds(2.5f);
+
+        StartCoroutine(ChangeState(RaceGUI.ScoreBoard));
+
+        Leaderboard lb = gameObject.AddComponent<Leaderboard>();
+
+        DisplayRacer[] sortedRacers = new DisplayRacer[racers.Count];
+        yield return null;
+
+        foreach (Racer r in racers)
+        {
+            r.points += 15 - r.position;
+            sortedRacers[r.position] = new DisplayRacer(r);
+        }
+
+        lb.racers = new List<DisplayRacer>(sortedRacers);
+
+        if (raceType == RaceType.TimeTrial)
+            lb.StartTimeTrial();
+        else
+            lb.StartLeaderBoard();
+
         //Tidy Up
+        timer = 0;
+        finished = false;
 
         yield return null;
     }
@@ -253,7 +304,7 @@ public class Race : GameMode
     {
         float startTime = Time.time;
 
-        while((Time.time - startTime) < clip.travelTime)
+        while ((Time.time - startTime) < clip.travelTime)
         {
             cam.position = Vector3.Lerp(clip.startPoint, clip.endPoint, (Time.time - startTime) / clip.travelTime);
             cam.rotation = Quaternion.Slerp(Quaternion.Euler(clip.startRotation), Quaternion.Euler(clip.endRotation), (Time.time - startTime) / clip.travelTime);
@@ -264,14 +315,14 @@ public class Race : GameMode
 
     public IEnumerator ChangeState(RaceGUI nState)
     {
-        if(currentGUI != nState && ! changingState)
+        if (currentGUI != nState && !changingState)
         {
             changingState = true;
 
             float startTime = Time.time;
             const float changeTime = 0.5f;
 
-            while((Time.time - startTime) < changeTime)
+            while ((Time.time - startTime) < changeTime)
             {
                 guiAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / changeTime);
                 yield return null;
@@ -293,13 +344,15 @@ public class Race : GameMode
     }
 
     // Update is called once per frame
-    public override void OnGUI() 
+    public override void OnGUI()
     {
         base.OnGUI();
 
         GUIHelper.SetGUIAlpha(guiAlpha);
 
-        switch(currentGUI)
+        string[] options;
+
+        switch (currentGUI)
         {
             case RaceGUI.CutScene:
 
@@ -321,6 +374,112 @@ public class Race : GameMode
 
                 GUI.DrawTexture(new Rect(10, 10, Screen.width - 20, Screen.height), raceTexture, ScaleMode.ScaleToFit);
                 break;
+            case RaceGUI.ScoreBoard:
+
+                Leaderboard lb = GetComponent<Leaderboard>();
+
+                if (!changingState && ( InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick()))
+                {
+                    if (lb.state != LBType.Points || currentRace == 1)
+                    {
+                        StartCoroutine(ChangeState(RaceGUI.NextMenu));
+                        lb.hidden = true;
+                    }
+                    else
+                    {
+                        lb.SecondStep();
+                    }
+                }
+                break;
+            case RaceGUI.NextMenu:
+
+                if (GetComponent<Leaderboard>())
+                {
+                    Destroy(GetComponent<Leaderboard>());
+                }
+
+                Texture2D BoardTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Backing");
+                Rect BoardRect = new Rect(Screen.width / 2f - Screen.height / 16f, Screen.height / 16f, Screen.width / 2f, (Screen.height / 16f) * 14f);
+                GUI.DrawTexture(BoardRect, BoardTexture);
+
+                if (raceType != RaceType.TimeTrial)
+                {
+                    if (lastcurrentRace + 1 <= 4)
+                        options = new string[] { "Next Race", "Quit" };
+                    else
+                        options = new string[] { "Finish" };
+                }
+                else
+                {
+                    options = new string[] { "Restart", "Quit" };
+                }
+
+                float IdealHeight = Screen.height / 8f;
+                float ratio = IdealHeight / 100f;
+
+                int vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
+
+                if (changingState)
+                    vert = 0;
+
+                if (vert != 0)
+                    currentSelection -= vert;
+
+                currentSelection = MathHelper.NumClamp(currentSelection, 0, options.Length);
+
+                bool mouseSelecting = false;
+
+                for (int k = 0; k < options.Length; k++)
+                {
+
+                    Texture2D optionTexture = Resources.Load<Texture2D>("UI/Next Menu/" + options[k]);
+                    Texture2D optionTextureSel = Resources.Load<Texture2D>("UI/Next Menu/" + options[k] + "_Sel");
+                    Rect optionRect = new Rect(BoardRect.x + BoardRect.width / 2f - ((300f * ratio) / 2f), BoardRect.y + (IdealHeight * (k + 1)), (300f * ratio), IdealHeight);
+
+                    if (currentSelection == k)
+                        GUI.DrawTexture(optionRect, optionTextureSel, ScaleMode.ScaleToFit);
+                    else
+                        GUI.DrawTexture(optionRect, optionTexture, ScaleMode.ScaleToFit);
+
+                    if (InputManager.MouseIntersects(optionRect))
+                    {
+                        currentSelection = k;
+                        mouseSelecting = true;
+                    }
+                }
+
+                bool submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
+
+
+                if (!changingState && (submitBool || (mouseSelecting && InputManager.GetClick())))
+                {
+
+                    StartCoroutine(ChangeState(RaceGUI.Blank));
+
+                    switch (options[currentSelection])
+                    {
+                        case "Quit":
+                            StartCoroutine(QuitGame());
+                            break;
+                        case "Next Race":
+                            StartCoroutine("StartRace");
+                            currentTrack++;
+                            currentRace++;
+                            break;
+                        case "Restart":
+                            StartCoroutine("StartRace");
+                            break;
+                        case "Replay":
+                            //Not implemented
+                            break;
+                        case "Finish":
+                            //DetermineWinner();
+                            StartCoroutine(ChangeState(RaceGUI.Win));
+                            break;
+                    }
+                }
+
+                break;
         }
 
         GUIHelper.ResetColor();
@@ -338,10 +497,12 @@ public class Race : GameMode
             pf.position = racers[i].position;
 
             //Finish Player
-            if(pf.lap >= td.Laps && !racers[i].finished)
+            if (pf.lap >= td.Laps && !racers[i].finished)
             {
                 racers[i].finished = true;
                 racers[i].timer = timer;
+                if (racers[i].Human != -1)
+                    StartCoroutine(FinishKart(racers[i]));
             }
 
             //Finish Race
@@ -358,6 +519,46 @@ public class Race : GameMode
 
     public override void ClientUpdate()
     {
-        
+
     }
+
+    private IEnumerator FinishKart(Racer racer)
+    {
+        racer.ingameObj.gameObject.AddComponent<RacerAI>();
+        Destroy(racer.ingameObj.GetComponent<kartInput>());
+        //Hide Kart Item
+        racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");
+
+        racer.cameras.GetChild(0).GetComponent<Camera>().enabled = false;
+        racer.cameras.GetChild(1).GetComponent<Camera>().enabled = true;
+
+        yield return new WaitForSeconds(2f);
+
+        racer.ingameObj.GetComponent<kartInfo>().hidden = true;
+
+        float startTime = Time.time;
+        const float travelTime = 3f;
+        kartCamera kc = racer.cameras.GetChild(1).GetComponent<kartCamera>();
+
+        while (Time.time - startTime < travelTime)
+        {
+            float percent = (Time.time - startTime) / travelTime;
+
+            kc.angle = Mathf.Lerp(0f, 180f, percent);
+            kc.height = Mathf.Lerp(2f, 1f, percent);
+            kc.playerHeight = Mathf.Lerp(2f, 1f, percent);
+            kc.sideAmount = Mathf.Lerp(0, -1.9f, percent);
+
+            yield return null;
+        }
+
+        kc.angle = 180f;
+        kc.height = 1f;
+        kc.playerHeight = 1f;
+        kc.sideAmount = -1.9f;
+
+    }
+
+
+
 }

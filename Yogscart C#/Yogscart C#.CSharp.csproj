@@ -94,6 +94,7 @@
     <Compile Include="Assets\Scripts\Menus\CharacterSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\Credits.cs" />
     <Compile Include="Assets\Scripts\Menus\IntroScript.cs" />
+    <Compile Include="Assets\Scripts\Menus\Leaderboard.cs" />
     <Compile Include="Assets\Scripts\Menus\LevelSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\MainMenu.cs" />
     <Compile Include="Assets\Scripts\Track Editor\BoostPad.cs" />

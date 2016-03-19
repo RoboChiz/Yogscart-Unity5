@@ -30,6 +30,7 @@ public class InputManager : MonoBehaviour
     static public bool allowedToChange = true;
 
     static public List<InputController> controllers = new List<InputController>();
+    static private bool mouseLock = false;
 
     private List<float> iconHeights = new List<float>();
 
@@ -46,7 +47,7 @@ public class InputManager : MonoBehaviour
         string allConfigString = PlayerPrefs.GetString("SavedConfigs", "");
         string[] configStrings = allConfigString.Split(";"[0]);
 
-        foreach(string s in configStrings)
+        foreach (string s in configStrings)
         {
             InputLayout n = new InputLayout();
             if (n.LoadInput(s))
@@ -63,10 +64,9 @@ public class InputManager : MonoBehaviour
     //Saves Current Input Configurations
     private static void SaveConfig()
     {
-        List<InputLayout> toSave = new List<InputLayout>();
         string saveString = "";
 
-        for(int i = 1; i < allConfigs.Count; i++)
+        for (int i = 1; i < allConfigs.Count; i++)
         {
             saveString += allConfigs[i].ToString() + ";";
         }
@@ -74,7 +74,7 @@ public class InputManager : MonoBehaviour
         //Remove last ;
         if (allConfigs.Count > 1)
             saveString.Remove(saveString.Length - 1);
-        else if(allConfigs.Count == 0)
+        else if (allConfigs.Count == 0)
             Debug.Log("NO CONFIGS AT ALL!!! AHHHH!!! RUN!!!!");
 
         PlayerPrefs.SetString("SavedConfigs", saveString);
@@ -85,9 +85,9 @@ public class InputManager : MonoBehaviour
     {
         //Check that the controller isn't already in
         bool alreadyIn = false;
-        for(int i = 0; i < controllers.Count; i++)
+        for (int i = 0; i < controllers.Count; i++)
         {
-            if(controllers[i].controllerName == input)
+            if (controllers[i].controllerName == input)
             {
                 alreadyIn = true;
                 break;
@@ -98,7 +98,7 @@ public class InputManager : MonoBehaviour
         if (!alreadyIn)
         {
             controllers.Add(new InputController(input));
-            StartCoroutine("ShowInput",controllers.Count - 1);
+            StartCoroutine("ShowInput", controllers.Count - 1);
             Debug.Log("Added " + input + " controllers:" + controllers.Count);
         }
     }
@@ -114,7 +114,7 @@ public class InputManager : MonoBehaviour
                 StartCoroutine("RemoveInput", i);
                 break;
             }
-        }        
+        }
     }
 
     //Removes all but one Controller from the Input Manager
@@ -122,29 +122,33 @@ public class InputManager : MonoBehaviour
     {
         for (int i = 1; i < controllers.Count; i++)
         {
-                controllers.RemoveAt(i);
-                StartCoroutine("RemoveInput", i);
+            controllers.RemoveAt(i);
+            StartCoroutine("RemoveInput", i);
         }
     }
 
     void Update()
     {
-        if(controllers != null && controllers.Count > 0)
+        if (controllers != null && controllers.Count > 0)
         {
-            foreach(InputController c in controllers)
+            foreach (InputController c in controllers)
             {
                 if (c.buttonLock != "" && c.GetInput(c.buttonLock) == 0)
                     c.buttonLock = "";
             }
         }
 
+        //Reset Mouse Lock
+        if (Input.GetMouseButtonUp(0))
+            mouseLock = false;
+
         //Look for new Controllers
         if (allowedToChange)
         {
             if (controllers.Count < 4)
             {
-               // if (Input.GetAxis("Key_Submit"))
-                  //  AddController("Key_");
+                // if (Input.GetAxis("Key_Submit"))
+                //  AddController("Key_");
 
                 if (Input.GetAxis("Start_1") != 0)
                     AddController("_1");
@@ -187,9 +191,9 @@ public class InputManager : MonoBehaviour
         while (controllers.Count > iconHeights.Count)
             iconHeights.Add(Screen.height);
 
-        for(int i = 0; i < iconHeights.Count; i++)
+        for (int i = 0; i < iconHeights.Count; i++)
         {
-            if(controllers.Count > i && controllers[i] != null)
+            if (controllers.Count > i && controllers[i] != null)
                 icon = Resources.Load<Texture2D>("UI/Controls/Xbox" + controllers[i].controllerName);
             else
                 icon = Resources.Load<Texture2D>("UI/Controls/Gone");
@@ -205,7 +209,7 @@ public class InputManager : MonoBehaviour
         float travelTime = 0.5f;
 
         //Slide UP //////////////////////////////
-        while(toShow >= iconHeights.Count)
+        while (toShow >= iconHeights.Count)
             iconHeights.Add(Screen.height);
 
         if (iconHeights[toShow] == Screen.height)
@@ -264,6 +268,26 @@ public class InputManager : MonoBehaviour
 
     }
 
+    public static bool MouseIntersects(Rect area)
+    {
+        if (Input.mousePosition.x >= area.x && Input.mousePosition.x <= area.x + area.width
+    && Screen.height - Input.mousePosition.y >= area.y && Screen.height - Input.mousePosition.y <= area.y + area.height)
+            return true;
+        else
+            return false;
+    }
+
+    public static bool GetClick()
+    {
+        if (!mouseLock && Input.GetMouseButtonDown(0))
+        {
+            mouseLock = true;
+            return true;
+        }
+
+        return false;
+    }
+
 }
 
 public class InputController
@@ -293,10 +317,10 @@ public class InputController
             Debug.LogError(axis + " is not an Axis!");
         }
         else
-        { 
+        {
             if (inputAxisOne != null)
             {
-                value = Input.GetAxis(inputAxisOne + controllerName);            
+                value = Input.GetAxis(inputAxisOne + controllerName);
             }
             if ((inputAxisTwo != null) && value == 0)
             {
@@ -324,7 +348,7 @@ public class InputController
     }
 }
 
-public enum ControllerType { Xbox360,Keyboard};
+public enum ControllerType { Xbox360, Keyboard };
 //Stores the User's Input Config
 public class InputLayout
 {
@@ -369,7 +393,7 @@ public class InputLayout
     {
         string[] splitString = contents.Split(","[0]);
 
-        List<string> validCommands = new List<string>() {"Throttle","Steer","Drift","Item","RearView","Pause","Submit","Cancel","MenuHorizontal","MenuVertical","Rotate"};
+        List<string> validCommands = new List<string>() { "Throttle", "Steer", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate" };
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
 
@@ -377,7 +401,7 @@ public class InputLayout
         {
             name = splitString[0];
 
-            if(splitString[1] == "Xbox360")
+            if (splitString[1] == "Xbox360")
             {
                 type = ControllerType.Xbox360;
             }
@@ -386,11 +410,11 @@ public class InputLayout
                 type = ControllerType.Keyboard;
             }
 
-            for(int i = 2; i < splitString.Length; i++)
+            for (int i = 2; i < splitString.Length; i++)
             {
                 string[] inputSplit = splitString[i].Split(":"[0]);
 
-                if(inputSplit.Length == 2 && validCommands.Contains(inputSplit[0]))
+                if (inputSplit.Length == 2 && validCommands.Contains(inputSplit[0]))
                 {
                     if (!commandsOne.ContainsKey(inputSplit[0]))
                     {
@@ -404,7 +428,7 @@ public class InputLayout
                         return CancelLoad();
                 }
                 else
-                    return CancelLoad();               
+                    return CancelLoad();
             }
 
             return true;

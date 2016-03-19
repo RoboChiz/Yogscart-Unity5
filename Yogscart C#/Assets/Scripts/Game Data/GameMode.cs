@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 /*
@@ -56,7 +57,7 @@ abstract public class GameMode : MonoBehaviour
     /// Default way to setup the Racers for the Gamemode
     /// </summary>
     protected void SetupRacers()
-    {   
+    {
         racers = new List<Racer>();
         int controllerCount = InputManager.controllers.Count;
 
@@ -91,7 +92,7 @@ abstract public class GameMode : MonoBehaviour
             int counter = minVal;
 
             List<int> characterShuffle = new List<int>();
-            for(int i = 0; i < gd.characters.Length; i++)
+            for (int i = 0; i < gd.characters.Length; i++)
             {
                 characterShuffle.Add(i);
             }
@@ -101,7 +102,7 @@ abstract public class GameMode : MonoBehaviour
             //Add Hats if you feel like it XD
 
             //Add Racers
-            for(int i = 0; i < maxPlayers - controllerCount; i++)
+            for (int i = 0; i < maxPlayers - controllerCount; i++)
             {
                 racers.Add(new Racer(-1, counter, characterShuffle[i % characterShuffle.Count], 0, Random.Range(0, gd.karts.Length), Random.Range(0, gd.wheels.Length), i));
 
@@ -114,7 +115,7 @@ abstract public class GameMode : MonoBehaviour
         int startRacer = racers.Count;
 
         //Add Human Players
-        for(int i = 0; i < controllerCount; i++)
+        for (int i = 0; i < controllerCount; i++)
         {
             racers.Add(new Racer(i, -1, CurrentGameData.currentChoices[i], startRacer + i));
         }
@@ -125,7 +126,7 @@ abstract public class GameMode : MonoBehaviour
     {
         int i1 = 0, i2 = 0;
 
-        for(int i = 0; i < arr.Count * 2; i++)
+        for (int i = 0; i < arr.Count * 2; i++)
         {
             i1 = Random.Range(0, arr.Count);
             i2 = Random.Range(0, arr.Count);
@@ -140,7 +141,7 @@ abstract public class GameMode : MonoBehaviour
 
     //Spawns all Karts in the typical race layout
     protected void SpawnAllKarts(Vector3 spawnPosition, Quaternion spawnRotation)
-    {       
+    {
 
         //Spawn the Karts
         for (int i = 0; i < racers.Count; i++)
@@ -151,7 +152,7 @@ abstract public class GameMode : MonoBehaviour
             Vector3 x2 = spawnRotation * (Vector3.forward * (racePos % 3) * (3 * 1.5f) + (Vector3.forward * .75f * 3));
             Vector3 y2 = spawnRotation * (Vector3.right * (racePos + 1) * 3);
             startPos += x2 + y2;
-            
+
             racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
             //Set speeds of Kart depending on Difficulty
@@ -202,8 +203,6 @@ abstract public class GameMode : MonoBehaviour
     protected void SpawnLoneKart(Vector3 spawnPosition, Quaternion spawnRotation, int i)
     {
         //Spawn the Karts
-        int racePos = racers[i].position;
-
         Vector3 startPos = spawnPosition + (spawnRotation * Vector3.forward * (3 * 1.5f) * -1.5f);
         Vector3 x2 = spawnRotation * (Vector3.forward * 4.5f) + (Vector3.forward * .75f * 3);
         Vector3 y2 = spawnRotation * (Vector3.right * 6);
@@ -256,8 +255,8 @@ abstract public class GameMode : MonoBehaviour
 
     protected void StartCountdown()
     {
-        if(!countdowning)
-        StartCoroutine("ActualStartCountdown");
+        if (!countdowning)
+            StartCoroutine("ActualStartCountdown");
     }
 
     private IEnumerator ActualStartCountdown()
@@ -266,7 +265,8 @@ abstract public class GameMode : MonoBehaviour
 
         sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/CountDown"));
 
-        for (int i = 3; i >= 0; i--){
+        for (int i = 3; i >= 0; i--)
+        {
 
             CountdownText = i;
             kartScript.startBoostVal = i;
@@ -302,7 +302,7 @@ abstract public class GameMode : MonoBehaviour
         else
             countdownTexture = null;
 
-        if(countdownTexture != null)
+        if (countdownTexture != null)
         {
             GUI.DrawTexture(CountdownRect, countdownTexture, ScaleMode.ScaleToFit);
 
@@ -342,11 +342,23 @@ abstract public class GameMode : MonoBehaviour
 
     private IEnumerator ActualStartTimer()
     {
-        while(true)
+        while (true)
         {
             timer = Time.time - startTimer;
             yield return null;
         }
+    }
+
+    protected IEnumerator QuitGame()
+    {
+        CurrentGameData.blackOut = true;
+        yield return new WaitForSeconds(0.5f);
+        SceneManager.LoadScene("Main_Menu");
+
+        yield return null;
+        yield return null;
+
+        Destroy(this);
     }
 
 
@@ -458,8 +470,8 @@ public class Racer
     public float currentDistance;
 
     //After Race Information //////////////////////////////////
-    public int points;
-    public int teams;
+    public int points  = 0;
+    public int team;
 
     //Constructor
     public Racer(int hum, int ais, int ch, int h, int k, int w, int p)

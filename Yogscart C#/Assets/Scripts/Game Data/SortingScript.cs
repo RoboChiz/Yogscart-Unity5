@@ -3,15 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class SortingScript : MonoBehaviour {
+public class SortingScript : MonoBehaviour
+{
 
-	static public void CalculatePositions(List<Racer> array)
+    static public void CalculatePositions(List<Racer> array)
     {
         int finished = 0;
         List<Racer> sortedArray = new List<Racer>();
 
         for (int i = 0; i < array.Count; i++)
-	    {
+        {
             if (!array[i].finished)
                 sortedArray.Add(array[i]);
             else
@@ -29,7 +30,7 @@ public class SortingScript : MonoBehaviour {
 
     static private void QuickSort(List<Racer> array, int left, int right)
     {
-        if(right-left >= 1)
+        if (right - left >= 1)
         {
             int pivot = (right + left) / 2, leftCheck = left, rightCheck = right;
 
@@ -73,6 +74,35 @@ public class SortingScript : MonoBehaviour {
         }
 
         return;
+    }
+
+    static public List<DisplayRacer> CalculatePoints(List<DisplayRacer> toSort)
+    {
+        bool sorted = false;
+        int endInt = 0;
+
+        List<DisplayRacer> array = new List<DisplayRacer>(toSort);
+
+        while (!sorted)
+        {
+            sorted = true;
+
+            for (int i = 1; i < array.Count - endInt; i++)
+            {
+                if (array[i - 1].points < array[i].points)
+                {
+                    DisplayRacer holder = array[i - 1];
+                    array[i - 1] = array[i];
+                    array[i] = holder;
+                    sorted = false;
+                }
+            }
+
+            endInt++;
+        }
+
+        return array;
+
     }
 
     static private void Swap(List<Racer> array, int a, int b)

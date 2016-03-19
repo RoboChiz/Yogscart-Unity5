@@ -20,9 +20,9 @@ public class kartInfo : MonoBehaviour
     public Camera[] cameras;
 
     //Finish Stuff
-    private bool finishShow;
-    private float finishAlpha;
-    private Rect finishRect, screenRect;
+    public bool finishShow;
+    public float finishAlpha;
+    public Rect finishRect, screenRect;
 
     private TrackData td;
     private SoundManager sm;
@@ -193,7 +193,7 @@ public class kartInfo : MonoBehaviour
         }
 
         GUIHelper.SetGUIAlpha(finishAlpha);
-        Texture2D finishTexture = Resources.Load<Texture2D>("UI Textures/CountDown/Finish");
+        Texture2D finishTexture = Resources.Load<Texture2D>("UI/CountDown/Finish");
 
         if (finishTexture != null)
             GUI.DrawTexture(finishRect, finishTexture, ScaleMode.ScaleToFit);
@@ -202,9 +202,9 @@ public class kartInfo : MonoBehaviour
         finishRect.height = Mathf.Lerp(finishRect.height, screenRect.height * 0.5f, Time.deltaTime);
 
         if (finishShow)
-            finishAlpha = Mathf.Lerp(finishAlpha, 256, Time.deltaTime * 10f);
+            finishAlpha = Mathf.Lerp(finishAlpha, 1f, Time.deltaTime * 7f);
         else
-            finishAlpha = Mathf.Lerp(finishAlpha, 0, Time.deltaTime * 10f);
+            finishAlpha = Mathf.Lerp(finishAlpha, 0f, Time.deltaTime * 7f);
 
         GUIHelper.ResetColor();
     }
@@ -225,6 +225,15 @@ public class kartInfo : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         flashing = false;
+    }
+
+    public IEnumerator Finish()
+    {
+        finishRect = new Rect(screenRect.x, screenRect.y + (screenRect.height / 2f) - ((screenRect.height / 3f) / 2f), screenRect.width, screenRect.height / 3f);
+
+        finishShow = true;
+        yield return new WaitForSeconds(1.4f);
+        finishShow = false;
     }
 
 }

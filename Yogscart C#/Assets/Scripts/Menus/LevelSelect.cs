@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class LevelSelect : MonoBehaviour {
+public class LevelSelect : MonoBehaviour
+{
 
     CurrentGameData gd;
     public GUISkin skin;
@@ -25,7 +26,7 @@ public class LevelSelect : MonoBehaviour {
     {
         CurrentGameData.blackOut = false;
         GUI.matrix = GUIHelper.GetMatrix();
-        GUI.matrix *= Matrix4x4.TRS(new Vector3(GUIHelper.width * (1-scale), GUIHelper.height * (1-scale)), Quaternion.identity, new Vector3(scale, scale, scale));
+        GUI.matrix *= Matrix4x4.TRS(new Vector3(GUIHelper.width * (1 - scale), GUIHelper.height * (1 - scale)), Quaternion.identity, new Vector3(scale, scale, scale));
         GUI.skin = skin;
 
         Color nWhite = Color.white;
@@ -33,7 +34,7 @@ public class LevelSelect : MonoBehaviour {
         GUI.color = nWhite;
 
         float cupNameHeight = GUIHelper.height / 2f;
-        float individualHeight = cupNameHeight / Mathf.Clamp(gd.tournaments.Length,4,8);
+        float individualHeight = cupNameHeight / Mathf.Clamp(gd.tournaments.Length, 4, 8);
         Texture2D rectangle = Resources.Load<Texture2D>("UI/Level Selection/Rectangle");
 
         //Draw Tournaments
@@ -65,7 +66,7 @@ public class LevelSelect : MonoBehaviour {
         {
             Texture2D trackPreview;
 
-            if(gamemode.raceType != RaceType.GrandPrix && (!state || i != currentTrack))
+            if (gamemode.raceType != RaceType.GrandPrix && (!state || i != currentTrack))
             {
                 trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo_GreyOut;
             }
@@ -74,7 +75,7 @@ public class LevelSelect : MonoBehaviour {
                 trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo;
             }
 
-            Rect previewRect = new Rect(800 + (500 * (i%2)), 150 + (390 * (i/2)), 400, 365);
+            Rect previewRect = new Rect(800 + (500 * (i % 2)), 150 + (390 * (i / 2)), 400, 365);
 
             GUI.DrawTexture(previewRect, trackPreview, ScaleMode.ScaleToFit);
         }
@@ -123,12 +124,12 @@ public class LevelSelect : MonoBehaviour {
             currentCup = MathHelper.NumClamp(currentCup, 0, gd.tournaments.Length);
         }
 
-        gamemode.currentTrack = currentTrack;
-        gamemode.currentCup = currentCup;
+        Race.currentTrack = currentTrack;
+        Race.currentCup = currentCup;
 
-        if(submit)
-        {          
-            if(gamemode.raceType == RaceType.GrandPrix)
+        if (submit)
+        {
+            if (gamemode.raceType == RaceType.GrandPrix)
             {
                 FinishLevelSelect();
             }
@@ -141,9 +142,9 @@ public class LevelSelect : MonoBehaviour {
             }
         }
 
-        if(cancel)
+        if (cancel)
         {
-            if(!state)
+            if (!state)
             {
                 //Cancel out of Level Select
                 StartCoroutine(HideLevelSelect());

@@ -48,7 +48,7 @@ public class MainMenu : MonoBehaviour
     public MenuState state = MenuState.Start;
 
 	// Use this for initialization
-	void Start ()
+	IEnumerator Start ()
     {
         gd = GameObject.FindObjectOfType<CurrentGameData>();
         sm = GameObject.FindObjectOfType<SoundManager>();
@@ -58,6 +58,8 @@ public class MainMenu : MonoBehaviour
 
         sidePicture = Resources.Load<Texture2D>("UI/New Main Menu/Side Images/" + randomImage.ToString());
         sidePictureAmount = GUIHelper.width / 2f;
+
+        yield return new WaitForSeconds(0.5f);
 
         CurrentGameData.blackOut = false;
         InputManager.allowedToChange = true;
