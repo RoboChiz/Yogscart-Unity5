@@ -171,7 +171,7 @@ public class Leaderboard : MonoBehaviour
                     float bestTime = gd.tournaments[Race.currentCup].tracks[Race.currentTrack].bestTime;
                     float playerTime = racers[0].timer;
 
-                    if (playerTime <= bestTime)
+                    if (playerTime <= bestTime || bestTime == 0)
                         GUI.Label(new Rect(10, 10, BoardRect.width - 20, BoardRect.height), "New Best Time!!!");
                     else
                         GUI.Label(new Rect(10, 10, BoardRect.width - 20, BoardRect.height), "You Lost!!!");

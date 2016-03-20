@@ -27,7 +27,7 @@ public class InputManager : MonoBehaviour
     }
     static private List<InputLayout> allConfigs;
 
-    static public bool allowedToChange = true;
+    static public bool allowedToChange = false;
 
     static public List<InputController> controllers = new List<InputController>();
     static private bool mouseLock = false;

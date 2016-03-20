@@ -27,6 +27,9 @@ public class Race : GameMode
 
     private TrackData td;
 
+    private string rankString;
+    private int bestPlace;
+
     public override void StartGameMode()
     {
         StartCoroutine("actualStartGamemode");
@@ -152,14 +155,10 @@ public class Race : GameMode
         foreach (kartInput ki in kines)
             ki.camLocked = false;
 
-        yield return new WaitForSeconds(2.5f);
-
-        StartCoroutine(ChangeState(RaceGUI.ScoreBoard));
-
-        Leaderboard lb = gameObject.AddComponent<Leaderboard>();
-
         DisplayRacer[] sortedRacers = new DisplayRacer[racers.Count];
-        yield return null;
+
+        while(sortedRacers.Length != racers.Count)
+            yield return null;
 
         foreach (Racer r in racers)
         {
@@ -167,7 +166,18 @@ public class Race : GameMode
             sortedRacers[r.position] = new DisplayRacer(r);
         }
 
+        if (currentRace == 4 || raceType == RaceType.TimeTrial)
+            DetermineWinner();
+
+        yield return new WaitForSeconds(2.5f);
+
+        StartCoroutine(ChangeState(RaceGUI.ScoreBoard));
+
+        Leaderboard lb = gameObject.AddComponent<Leaderboard>();
+
         lb.racers = new List<DisplayRacer>(sortedRacers);
+
+        yield return null;
 
         if (raceType == RaceType.TimeTrial)
             lb.StartTimeTrial();
@@ -453,30 +463,69 @@ public class Race : GameMode
 
                 if (!changingState && (submitBool || (mouseSelecting && InputManager.GetClick())))
                 {
-
-                    StartCoroutine(ChangeState(RaceGUI.Blank));
-
+                
                     switch (options[currentSelection])
                     {
                         case "Quit":
-                            StartCoroutine(QuitGame());
+                            StartCoroutine(ChangeState(RaceGUI.Blank));
+                            EndGamemode();
                             break;
                         case "Next Race":
+                            StartCoroutine(ChangeState(RaceGUI.Blank));
                             StartCoroutine("StartRace");
                             currentTrack++;
                             currentRace++;
                             break;
                         case "Restart":
+                            StartCoroutine(ChangeState(RaceGUI.Blank));
                             StartCoroutine("StartRace");
                             break;
                         case "Replay":
                             //Not implemented
                             break;
                         case "Finish":
-                            //DetermineWinner();
                             StartCoroutine(ChangeState(RaceGUI.Win));
                             break;
                     }
+                }
+
+                break;
+            case RaceGUI.Win:
+
+                BoardTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Backing");
+                BoardRect = new Rect(Screen.width / 2f - Screen.height / 16f, Screen.height / 16f, Screen.width / 2f, (Screen.height / 16f) * 14f);
+                GUI.DrawTexture(BoardRect, BoardTexture);
+
+                GUI.BeginGroup(BoardRect);
+
+                var lineSize = GUI.skin.label.fontSize + 5;
+
+                GUI.Label(new Rect(10, lineSize, BoardRect.width, lineSize), "Congratulations!");
+
+                string positionString = "You came ";
+                positionString += (bestPlace).ToString();
+
+                if (bestPlace == 1)
+                    positionString += "st!";
+                else if (bestPlace == 2)
+                    positionString += "nd!";
+                else if (bestPlace == 3)
+                    positionString += "rd!";
+                else
+                    positionString += "th!";
+
+                GUI.Label(new Rect(10, lineSize * 2, BoardRect.width, lineSize), positionString);
+                GUI.Label(new Rect(10, lineSize * 3, BoardRect.width, lineSize), "Rank:" + rankString);
+
+                GUI.Label(new Rect(10, lineSize * 4, BoardRect.width, lineSize), "This menu is under Construction!");
+
+                GUI.EndGroup();
+
+                submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
+
+                if (submitBool)
+                {
+                    EndGamemode();
                 }
 
                 break;
@@ -559,6 +608,79 @@ public class Race : GameMode
 
     }
 
+    private void DetermineWinner()
+    {
+        if (raceType != RaceType.TimeTrial)
+        {
+
+            List<Racer> pointsSorted = SortingScript.CalculatePoints(racers);
+
+            Racer bestHuman = racers[racers.Count - 1];
+            for(int i = 0; i < pointsSorted.Count; i++)
+            {
+                if(pointsSorted[i].Human != -1)
+                {
+                    bestHuman = pointsSorted[i];
+                    break;
+                }
+            }
+
+            bestPlace = bestHuman.overallPosition + 1;
+            int points = bestHuman.points;
+            Rank currentRank = gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty];
+
+            if (points == 60)
+            {
+                rankString = "Perfect";
+                if(raceType == RaceType.GrandPrix)
+                    gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty] = Rank.Perfect;
+            }
+            else if (bestHuman.overallPosition == 0)
+            {
+                rankString = "Gold";
+                if (raceType == RaceType.GrandPrix && currentRank < Rank.Gold)
+                    gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty] = Rank.Gold;
+            }
+            else if (bestHuman.overallPosition == 1)
+            {
+                rankString = "Silver";
+                if (raceType == RaceType.GrandPrix && currentRank < Rank.Silver)
+                    gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty] = Rank.Silver;
+            }
+            else if (bestHuman.overallPosition == 2)
+            {
+                rankString = "Bronze";
+                if (raceType == RaceType.GrandPrix && currentRank < Rank.Bronze)
+                    gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty] = Rank.Bronze;
+            }
+            else
+            {
+                rankString = "No Rank";
+            }
+        }
+        
+        if(raceType == RaceType.TimeTrial)
+        {
+            float bestTime = gd.tournaments[currentCup].tracks[currentTrack].bestTime;
+
+            if(racers[0].timer <= bestTime || bestTime == 0)
+            {
+                gd.tournaments[currentCup].tracks[currentTrack].bestTime = racers[0].timer;
+
+            }
+        }
+
+        gd.SaveGame();
+    }
+
+    void EndGamemode()
+    {
+        currentCup = -1;
+        currentTrack = -1;
+        currentRace = 1;
+        lastcurrentRace = -1;
+        StartCoroutine(QuitGame());
+    }
 
 
 }

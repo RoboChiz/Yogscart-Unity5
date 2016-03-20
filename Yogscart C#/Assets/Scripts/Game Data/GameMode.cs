@@ -356,7 +356,6 @@ abstract public class GameMode : MonoBehaviour
         SceneManager.LoadScene("Main_Menu");
 
         yield return null;
-        yield return null;
 
         Destroy(this);
     }

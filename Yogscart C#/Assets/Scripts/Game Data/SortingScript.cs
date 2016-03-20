@@ -105,6 +105,41 @@ public class SortingScript : MonoBehaviour
 
     }
 
+    static public List<Racer> CalculatePoints(List<Racer> toSort)
+    {
+        bool sorted = false;
+        int endInt = 0;
+
+        List<Racer> array = new List<Racer>(toSort);
+
+        while (!sorted)
+        {
+            sorted = true;
+
+            for (int i = 1; i < array.Count - endInt; i++)
+            {
+                if (array[i - 1].points < array[i].points)
+                {
+                    Racer holder = array[i - 1];
+                    array[i - 1] = array[i];
+                    array[i] = holder;
+                    sorted = false;
+                }
+            }
+
+            endInt++;
+        }
+
+        for(int i = 0; i < array.Count; i++)
+        {
+            array[i].overallPosition = i;
+        }
+
+        return array;
+
+    }
+
+
     static private void Swap(List<Racer> array, int a, int b)
     {
         Racer holder = array[a];

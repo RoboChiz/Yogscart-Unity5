@@ -80,11 +80,20 @@ public class LevelSelect : MonoBehaviour
             GUI.DrawTexture(previewRect, trackPreview, ScaleMode.ScaleToFit);
         }
 
+        Rect timeRect = new Rect(800, 880, 1000, 200);
+
         if (gamemode.raceType == RaceType.TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
-        {
-            Rect timeRect = new Rect(800, 880, 1000, 200);
+        {         
             string timeString = TimeManager.ToString(gd.tournaments[tempCurrentCup].tracks[currentTrack].bestTime);
-            GUIHelper.OutLineLabel(timeRect, timeString, 2, Color.black);
+            GUIHelper.OutLineLabel(timeRect, timeString, 3, Color.black);
+        }
+        else if(gamemode.raceType == RaceType.GrandPrix)
+        {
+            string rank = gd.tournaments[tempCurrentCup].lastRank[CurrentGameData.difficulty].ToString();
+            if (rank == "NoRank")
+                rank = "No Rank";
+
+            GUIHelper.OutLineLabel(timeRect, rank, 3, Color.black);
         }
 
         //Inputs

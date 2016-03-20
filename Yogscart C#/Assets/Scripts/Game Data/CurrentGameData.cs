@@ -49,11 +49,11 @@ public class CurrentGameData : MonoBehaviour {
         blackTexture.SetPixel(0, 0, Color.black);
         blackTexture.Apply();
 
-        //LoadEverything();
+        LoadGame();
 
     }
-	
-	void OnGUI()
+
+    void OnGUI()
     {
         GUI.depth = -5;
 
@@ -86,8 +86,149 @@ public class CurrentGameData : MonoBehaviour {
         GUI.color = Color.white;
 
     }
-}
 
+    public void SaveGame()
+    {
+        string gameData = "";
+
+        //Data Layout
+        //0 - Version Number
+        gameData += version + ";";
+        //1 - Unlocked Characters
+        gameData += ";";
+        //2 - Unlocked Hats
+        gameData += ";";
+        //3 - Unlocked Karts
+        gameData += ";";
+        //4 - Unlocked Wheels
+        gameData += ";";
+        //5 - Tournament Ranks
+        for (int i = 0; i < tournaments.Length; i++)
+        {
+            if (tournaments[i].lastRank.Length != 4)
+                tournaments[i].lastRank = new Rank[4];
+
+            for (int j = 0; j < tournaments[i].lastRank.Length; j++)
+            {
+                gameData += (int)tournaments[i].lastRank[j];
+
+                if (j != 3)
+                {
+                    gameData += ",";
+                }
+            }
+        }
+        gameData += ";";
+        //6 - Track Times
+        for (int i = 0; i < tournaments.Length; i++)
+        {
+            for(int j = 0; j < tournaments[i].tracks.Length; j++)
+            {
+                gameData += tournaments[i].tracks[j].bestTime;
+                if (j != 3)
+                {
+                    gameData += ",";
+                }
+            }
+        }
+
+        PlayerPrefs.SetString("YogscartData", gameData);
+    }
+
+    void LoadGame()
+    {
+        string gameData = PlayerPrefs.GetString("YogscartData","");
+
+        if (gameData == "")
+        {
+            //No Data Available
+            Debug.Log("No Data Available");
+            SaveGame();
+        }
+        else
+        {
+            string[] splitData = gameData.Split(";"[0]);
+
+            //Data Layout
+            //0 - Version Number
+            switch (splitData[0])
+            {
+                case "C# Version 0.1":
+                    Debug.Log("Version is compatible!");
+                    break;
+                default:
+                    ResetData();
+                    return;
+            }
+            //1 - Unlocked Characters
+            //2 - Unlocked Hats
+            //3 - Unlocked Karts
+            //4 - Unlocked Wheels
+            //5 - Tournament Ranks
+            string[] tournamentRanks = splitData[5].Split(","[0]);
+            Debug.Log("tournamentRanks:" + tournamentRanks.Length + " tournaments.Length:" + tournaments.Length);
+
+            if (tournamentRanks.Length != (tournaments.Length * 4))
+            {
+                ResetData();
+                return;
+            }
+            else
+            {
+                Debug.Log("Tournament Ranks is compatible!");
+                int rankCount = 0;
+                for (int i = 0; i < tournaments.Length; i++)
+                {
+                    Rank[] ranks = new Rank[4];
+
+                    for (int j = 0; j < ranks.Length; j++)
+                    {
+                        int outVal = -1;
+
+                        if (!int.TryParse(tournamentRanks[rankCount], out outVal) || ranks[j] < 0 || (int)ranks[j] >= 5)
+                        {
+                            ResetData();
+                            return;
+                        }
+
+                        ranks[j] = (Rank)outVal;
+
+                        rankCount++;
+                    }
+
+                    tournaments[i].lastRank = ranks;
+                }
+            }
+            //6 - Track Times
+            string[] trackTimes = splitData[6].Split(","[0]);
+            int timeCount = 0;
+            for (int i = 0; i < tournaments.Length; i++)
+            {
+                for (int j = 0; j < tournaments[i].tracks.Length; j++)
+                {
+                    float outFloat = -1;
+                    if (!float.TryParse(trackTimes[timeCount], out outFloat) || outFloat < 0 || outFloat >= 3600)
+                    {
+                        ResetData();
+                        return;
+                    }
+
+                    tournaments[i].tracks[j].bestTime = outFloat;
+
+                    timeCount++;
+                }
+            }
+            Debug.Log("Track Times is compatible!");
+        }
+    }
+
+    void ResetData()
+    {
+        Debug.Log("Data not compatible!");
+        PlayerPrefs.SetString("YogscartData", "");
+        LoadGame();
+    }
+}
 
 //Other Classes
 public enum UnlockedState { FromStart, Unlocked, Locked};
@@ -172,13 +313,15 @@ public class Track
     public string sceneID;
 }
 
+public enum Rank { NoRank, Bronze, Silver, Gold, Perfect};
+
 [System.Serializable]
 public class Tournament
 {
     public string name;
     public Texture2D icon;
     public Transform[] trophyModels;
-    public string[] lastRank;
+    public Rank[] lastRank = new Rank[4];
     public Track[] tracks;
     public UnlockedState unlocked;
 }
