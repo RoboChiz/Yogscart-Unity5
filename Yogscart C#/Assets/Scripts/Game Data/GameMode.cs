@@ -115,9 +115,10 @@ abstract public class GameMode : MonoBehaviour
         int startRacer = racers.Count;
 
         //Add Human Players
-        for (int i = 0; i < controllerCount; i++)
+        for (int i = controllerCount - 1; i >= 0 ; i--)
         {
-            racers.Add(new Racer(i, -1, CurrentGameData.currentChoices[i], startRacer + i));
+            racers.Add(new Racer(i, -1, CurrentGameData.currentChoices[i], startRacer));
+            startRacer++;
         }
     }
 

@@ -21,9 +21,9 @@ public class SortingScript : MonoBehaviour
 
         QuickSort(sortedArray, 0, sortedArray.Count - 1);
 
-        for (int i = finished; i < sortedArray.Count; i++)
+        for (int i = 0; i < sortedArray.Count; i++)
         {
-            sortedArray[i - finished].position = i;
+            sortedArray[i].position = finished + i;
         }
 
     }

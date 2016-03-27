@@ -106,7 +106,23 @@ public class Race : GameMode
             }
         }
 
-        yield return new WaitForSeconds(1f);
+        if(InputManager.controllers.Count == 2)
+        {
+            racers[racers.Count - 1].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.Top;
+            racers[racers.Count - 2].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.Bottom;
+        }
+
+        if (InputManager.controllers.Count >= 3)
+        {
+            racers[racers.Count - 1].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.TopLeft;
+            racers[racers.Count - 2].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.TopRight;
+            racers[racers.Count - 3].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.BottomLeft;
+        }
+
+        if (InputManager.controllers.Count == 4)
+            racers[racers.Count - 4].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.BottomRight;
+
+            yield return new WaitForSeconds(1f);
 
         //Do the intro to the Map
         yield return StartCoroutine("DoIntro");

@@ -41,6 +41,8 @@ public class InputManager : MonoBehaviour
         //Load default Input
         allConfigs = new List<InputLayout>();
         allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis"));
+        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Throttle:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:a,MenuHorizontal:d,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q"));
+
 
         bool saveNeeded = false;
 
@@ -66,14 +68,14 @@ public class InputManager : MonoBehaviour
     {
         string saveString = "";
 
-        for (int i = 1; i < allConfigs.Count; i++)
+        for (int i = 2; i < allConfigs.Count; i++)
         {
             saveString += allConfigs[i].ToString() + ";";
         }
 
         //Remove last ;
-        if (allConfigs.Count > 1)
-            saveString.Remove(saveString.Length - 1);
+        if (allConfigs.Count > 2)
+            saveString.Remove(saveString.Length - 2);
         else if (allConfigs.Count == 0)
             Debug.Log("NO CONFIGS AT ALL!!! AHHHH!!! RUN!!!!");
 
@@ -147,8 +149,8 @@ public class InputManager : MonoBehaviour
         {
             if (controllers.Count < 4)
             {
-                // if (Input.GetAxis("Key_Submit"))
-                //  AddController("Key_");
+                if (Input.GetKey("return"))
+                    AddController("Key_");
 
                 if (Input.GetAxis("Start_1") != 0)
                     AddController("_1");
@@ -165,8 +167,8 @@ public class InputManager : MonoBehaviour
 
             if (controllers.Count >= 1)
             {
-                // if (Input.GetAxis("KeyBack") != 0)
-                //  RemoveController("Key_");
+                if (Input.GetKey("backspace"))
+                    RemoveController("Key_");
 
                 if (Input.GetAxis("Back_1") != 0)
                     RemoveController("_1");
@@ -194,7 +196,12 @@ public class InputManager : MonoBehaviour
         for (int i = 0; i < iconHeights.Count; i++)
         {
             if (controllers.Count > i && controllers[i] != null)
-                icon = Resources.Load<Texture2D>("UI/Controls/Xbox" + controllers[i].controllerName);
+            {
+                if(controllers[i].controlLayout.Type == ControllerType.Xbox360)
+                    icon = Resources.Load<Texture2D>("UI/Controls/Xbox" + controllers[i].controllerName);
+                else
+                    icon = Resources.Load<Texture2D>("UI/Controls/Keyboard");
+            }
             else
                 icon = Resources.Load<Texture2D>("UI/Controls/Gone");
 
@@ -300,7 +307,10 @@ public class InputController
     public InputController(string inputName)
     {
         controllerName = inputName;
-        controlLayout = InputManager.AllConfigs[0];
+        if(inputName == "Key_")
+            controlLayout = InputManager.AllConfigs[1];
+        else
+            controlLayout = InputManager.AllConfigs[0];
         buttonLock = "Submit";
     }
 
@@ -320,11 +330,26 @@ public class InputController
         {
             if (inputAxisOne != null)
             {
-                value = Input.GetAxis(inputAxisOne + controllerName);
+                if (controlLayout.Type == ControllerType.Xbox360)
+                    value = Input.GetAxis(inputAxisOne + controllerName);
+                else
+                {
+                    if (Input.GetKey(inputAxisOne))
+                        value = 1;
+                    else
+                        value = 0;
+                }
+                    
             }
             if ((inputAxisTwo != null) && value == 0)
             {
-                value = -Input.GetAxis(inputAxisTwo + controllerName);
+                if (controlLayout.Type == ControllerType.Xbox360)
+                    value = -Input.GetAxis(inputAxisTwo + controllerName);
+                else
+                {
+                    if (Input.GetKey(inputAxisTwo))
+                        value -= 1;
+                }
             }
 
         }
