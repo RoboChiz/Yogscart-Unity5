@@ -139,9 +139,6 @@ public class KartMaker : MonoBehaviour
 
             //Add Other Kart Scripts
             kb.AddComponent<PositionFinding>();
-            //kb.AddComponent<kartItem>();
-            //kb.GetComponent<kartItem>().itemDistance = kartSkel.ItemDrop;
-
             //Sort out Character Noises
 
             //Add Animator Script
@@ -153,6 +150,9 @@ public class KartMaker : MonoBehaviour
                 kb.AddComponent<kartInput>();
                 //kb.AddComponent<kartInfo>();
             }
+
+            kb.AddComponent<kartItem>();
+            kb.GetComponent<kartItem>().itemDistance = kartSkel.ItemDrop;
         }
 
         Destroy(kartSkel);

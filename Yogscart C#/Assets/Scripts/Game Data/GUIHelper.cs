@@ -11,6 +11,7 @@ public class GUIHelper
 {
     public const float width = 1920.0f;
     public const float height = 1080.0f;
+    public static Rect screenEdges;
 
     public static Matrix4x4 GetMatrix()
     {
@@ -22,10 +23,12 @@ public class GUIHelper
 
         if (Screen.width > (width * hScale))
         {
+            screenEdges = new Rect(-wStart / hScale, 0f, Screen.width / hScale, Screen.height / hScale);
             return Matrix4x4.TRS(new Vector3(wStart, 0, 0), Quaternion.identity, new Vector3(hScale, hScale, 1));
         }
         else
         {
+            screenEdges = new Rect(0f, -hStart / wScale, Screen.width / wScale, Screen.height / wScale);
             return Matrix4x4.TRS(new Vector3(0, hStart, 0), Quaternion.identity, new Vector3(wScale, wScale, 1));
         }
     }

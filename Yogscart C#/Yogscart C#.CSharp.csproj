@@ -58,12 +58,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -83,7 +77,6 @@
     <Compile Include="Assets\Scripts\Game Data\SortingScript.cs" />
     <Compile Include="Assets\Scripts\Game Data\SoundManager.cs" />
     <Compile Include="Assets\Scripts\Game Data\TimeManager.cs" />
-    <Compile Include="Assets\Scripts\GameMode\OfflineRaces.cs" />
     <Compile Include="Assets\Scripts\GameMode\Race.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\Character_Skeleton.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\KartMaker.cs" />
@@ -99,6 +92,7 @@
     <Compile Include="Assets\Scripts\Kart Scripts\kartCollider.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartInput.cs" />
+    <Compile Include="Assets\Scripts\Kart Scripts\kartItem.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartScript.cs" />
     <Compile Include="Assets\Scripts\Menus\CharacterSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\Credits.cs" />
@@ -106,6 +100,15 @@
     <Compile Include="Assets\Scripts\Menus\Leaderboard.cs" />
     <Compile Include="Assets\Scripts\Menus\LevelSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\MainMenu.cs" />
+    <Compile Include="Assets\Scripts\Menus\Options.cs" />
+    <Compile Include="Assets\Scripts\Networking\NetworkSetup.cs" />
+    <Compile Include="Assets\Scripts\Networking\UnetClient.cs" />
+    <Compile Include="Assets\Scripts\Networking\UnetHost.cs" />
+    <Compile Include="Assets\Scripts\Networking\UnetMessages.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\ItemBox.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\Lapis.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\Rotate.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\SpeedBoost.cs" />
     <Compile Include="Assets\Scripts\Track Editor\BoostPad.cs" />
     <Compile Include="Assets\Scripts\Track Editor\Cannon.cs" />
     <Compile Include="Assets\Scripts\Track Editor\InEngineRender.cs" />

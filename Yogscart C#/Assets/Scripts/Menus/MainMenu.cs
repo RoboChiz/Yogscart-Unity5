@@ -166,6 +166,10 @@ public class MainMenu : MonoBehaviour
             break;
             case MenuState.Online:
                 showTitle = false;
+                if (sidePicture != null)
+                {
+                    StartCoroutine(ChangePicture(null));
+                }
                 InputManager.allowedToChange = true;
             break;
             case MenuState.Options:
@@ -262,6 +266,7 @@ public class MainMenu : MonoBehaviour
                                 break;
                             case "Online":
                                 ChangeMenu(MenuState.Online);
+                                StartCoroutine(ForcePicRemove());
                                 gd.GetComponent<InputManager>().RemoveOtherControllers();
                                 break;
                             case "Options":
@@ -382,6 +387,11 @@ public class MainMenu : MonoBehaviour
                 lockPicture = false;
             }
 
+            if (state == MenuState.Online)
+            {
+                lockPicture = false;
+            }
+
             if (state == MenuState.CharacterSelect)
             {
                 lockPicture = false;
@@ -406,7 +416,7 @@ public class MainMenu : MonoBehaviour
         {
             sliding = true;
 
-            if (changeState == MenuState.CharacterSelect || changeState == MenuState.Credits)
+            if (changeState == MenuState.CharacterSelect || changeState == MenuState.Credits || changeState == MenuState.Online)
                 fadeTitle = true;
             else
                 fadeTitle = false;
@@ -431,13 +441,13 @@ public class MainMenu : MonoBehaviour
             sideAmount = endSideAmount;
             sideFade = 0f;
 
-            if (state == MenuState.CharacterSelect || state == MenuState.Credits)
+            if (state == MenuState.CharacterSelect || state == MenuState.Credits || changeState == MenuState.Online)
                 fadeTitle = true;
 
             currentSelection = 0;
             state = changeState;
 
-            if(state != MenuState.Credits && state != MenuState.CharacterSelect)
+            if(state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online)
             {
                 moveTitle = false;
             }

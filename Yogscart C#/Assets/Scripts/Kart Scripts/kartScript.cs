@@ -25,11 +25,7 @@ public class kartScript : MonoBehaviour
     //Driving Stuff
     private float expectedSpeed, actualSpeed;
 
-    public float ActualSpeed
-    {
-        get { return actualSpeed; }
-        set { }
-    }
+    public float ActualSpeed { get; private set; }
     public float ExpectedSpeed
     {
         get
@@ -277,6 +273,11 @@ public class kartScript : MonoBehaviour
                 newVelocity = -transform.right * newVelocity.magnitude;
             else
                 newVelocity = transform.right * newVelocity.magnitude;
+        }
+
+        if(newVelocity.magnitude > 20)
+        {
+            newVelocity = newVelocity.normalized * 20f;
         }
 
         me.velocity += newVelocity;

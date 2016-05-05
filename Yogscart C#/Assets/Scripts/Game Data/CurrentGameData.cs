@@ -26,6 +26,8 @@ public class CurrentGameData : MonoBehaviour {
 
     public Tournament[] tournaments;
 
+    public PowerUp[] powerUps;
+
     public static GameMode currentGamemode;
 
     //BlackOut Variables
@@ -324,4 +326,18 @@ public class Tournament
     public Rank[] lastRank = new Rank[4];
     public Track[] tracks;
     public UnlockedState unlocked;
+}
+
+public enum ItemType { AffectsPlayer, AffectsOther, Projectile };
+
+[System.Serializable]
+public class PowerUp
+{
+    public string name;
+    public Texture2D icon;
+    public Transform model;
+    public ItemType type;
+    public bool multipleUses;
+    public bool useableShield;
+    public int[] likelihood;
 }

@@ -76,6 +76,17 @@ public class Race : GameMode
         SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
         yield return null;
 
+        //Get rid of Item Boxes
+        if(raceType == RaceType.TimeTrial)
+        {
+            ItemBox[] itemBoxes = GameObject.FindObjectsOfType<ItemBox>();
+
+            foreach(ItemBox ib in itemBoxes)
+            {
+                Destroy(ib.gameObject);
+            }
+        }
+
         //Load the Track Manager
         td = GameObject.FindObjectOfType<TrackData>();
 
@@ -97,6 +108,11 @@ public class Race : GameMode
                 cameras[1] = racers[i].ingameObj.GetComponent<kartInput>().backCamera;
 
                 ki.cameras = cameras;
+
+                if(raceType == RaceType.TimeTrial)
+                {
+                    racers[i].ingameObj.GetComponent<kartItem>().RecieveItem(2);
+                }
             }
             else
             {
@@ -136,6 +152,10 @@ public class Race : GameMode
         foreach (kartInfo ki in kies)
             ki.hidden = false;
 
+        kartItem[] kitemes = FindObjectsOfType<kartItem>();
+        foreach (kartItem ki in kitemes)
+            ki.hidden = false;
+
         kartInput[] kines = GameObject.FindObjectsOfType<kartInput>();
         foreach (kartInput ki in kines)
             ki.camLocked = false;
@@ -152,6 +172,9 @@ public class Race : GameMode
         kartScript[] kses = GameObject.FindObjectsOfType<kartScript>();
         foreach (kartScript ks in kses)
             ks.locked = false;
+
+        foreach (kartItem ki in kitemes)
+            ki.locked = false;
 
         //Wait for the gamemode to be over
         while (!finished && timer < 3600)
@@ -592,6 +615,9 @@ public class Race : GameMode
         racer.ingameObj.gameObject.AddComponent<RacerAI>();
         Destroy(racer.ingameObj.GetComponent<kartInput>());
         //Hide Kart Item
+        racer.ingameObj.GetComponent<kartItem>().locked = true;
+        racer.ingameObj.GetComponent<kartItem>().hidden = true;
+
         racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");
 
         racer.cameras.GetChild(0).GetComponent<Camera>().enabled = false;
