@@ -233,7 +233,7 @@ public class Race : GameMode
     //Do Character Select and Level Select
     private IEnumerator PlayerSetup()
     {
-        CharacterSelect cs = GameObject.FindObjectOfType<CharacterSelect>();
+        CharacterSelect cs = FindObjectOfType<CharacterSelect>();
         bool firstTime = true;
 
         //Setup AI

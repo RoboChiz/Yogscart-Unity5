@@ -10,13 +10,13 @@ public class Credits : MonoBehaviour
     public GUISkin skin;
 
     public static bool isPlaying = false;
-    private float creditsHeight = 0f;
+    private float actualCreditsHeight = 0f;
     private const float scrollSpeed = 15f;
     private float creditsAlpha = 0f;
 
     public void StartCredits()
     {
-        creditsHeight = 0;
+        actualCreditsHeight = 0;
 
         mm = transform.GetComponent<MainMenu>();
         sm = GameObject.FindObjectOfType<SoundManager>();
@@ -46,13 +46,15 @@ public class Credits : MonoBehaviour
 
         if (isPlaying)
         {
-            creditsHeight += Time.deltaTime * scrollSpeed;
+            actualCreditsHeight += Time.deltaTime * scrollSpeed;
             creditsAlpha = Mathf.Lerp(creditsAlpha, 1f, Time.deltaTime * 5f);
         }
         else
         {
             creditsAlpha = Mathf.Lerp(creditsAlpha, 0f, Time.deltaTime * 5f);
         }
+
+        float creditsHeight = Mathf.Floor(actualCreditsHeight);
 
         float logoHeight = 0;
         if (mm != null)
@@ -72,7 +74,7 @@ public class Credits : MonoBehaviour
     "Yogscast Outro performed by", "Ben Binderow",
     "Additional Music By", "Kevin MacLeod (incompetech.com) \n Licensed under Creative Commons: By Attribution 3.0 \n http://creativecommons.org/licenses/by/3.0/",
     "", "",
-    "", "The End",
+    "", "Thanks for Playing!",
     "", "Yogscart is a non-profit fan game and is in no way \n affiliated with the Yogscast or the youth olympic games. \n Please don't sue us! XXX"};
 
         float startY = Screen.height - creditsHeight + logoHeight;
@@ -89,8 +91,7 @@ public class Credits : MonoBehaviour
 
             if (isPlaying && i == credits.Length - 2 && secHeight <= 0)
             {
-                mm.ChangeMenu(MainMenu.MenuState.Main);
-
+                mm.BackMenu();
                 StartCoroutine(StopCredits());
             }
         }

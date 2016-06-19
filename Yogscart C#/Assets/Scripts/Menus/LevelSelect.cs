@@ -82,7 +82,7 @@ public class LevelSelect : MonoBehaviour
 
         Rect timeRect = new Rect(800, 880, 1000, 200);
 
-        if (gamemode.raceType == RaceType.TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
+        if (state && gamemode.raceType == RaceType.TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
         {         
             string timeString = TimeManager.ToString(gd.tournaments[tempCurrentCup].tracks[currentTrack].bestTime);
             GUIHelper.OutLineLabel(timeRect, timeString, 3, Color.black);

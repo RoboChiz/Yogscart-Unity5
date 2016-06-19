@@ -406,14 +406,6 @@ abstract public class TeamGameMode : GameMode
 public class Racer
 {
     //Racer Information //////////////////////////////////
-    //The name of the Player
-    private string name = "";
-    public string Name
-    {
-        get { return name; }
-        set { }
-    }
-
     //What input the racer is -1 = AI, 0 - 3 Human
     private int human = -1;
     public int Human
@@ -495,6 +487,17 @@ public class Racer
         kart = lo.kart;
         wheel = lo.wheel;
         position = p;
+    }
+
+    public Racer()
+    {
+        human = 0;
+        aiStupidity = -1;
+        character = -1;
+        hat = -1;
+        kart = -1;
+        wheel = -1;
+        position = -1;
     }
 }
 

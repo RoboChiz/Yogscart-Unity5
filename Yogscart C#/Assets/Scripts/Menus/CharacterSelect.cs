@@ -65,7 +65,7 @@ public class CharacterSelect : MonoBehaviour
         StartCoroutine(ActualHideCharacterSelect());
     }
 
-    public IEnumerator ActualHideCharacterSelect()
+    private IEnumerator ActualHideCharacterSelect()
     {
         isShowing = false;
 
@@ -783,17 +783,12 @@ public class CharacterSelect : MonoBehaviour
     {
         state = csState.Off;
         HideCharacterSelect();
-        //if(mm != null && mm.enabled)
-        //{
-        //     mm.BackMenu();
-        // }
     }
 
     private void Finished()
     {
         state = csState.Finished;
         HideCharacterSelect();
-        //mm.ChangeMenu(MainMenu.MenuState.LevelSelect);
     }
 
     //Scroll Kart

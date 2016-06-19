@@ -38,6 +38,8 @@ public class CurrentGameData : MonoBehaviour {
     private int currentFrame = 0;
     private Texture2D blackTexture;
 
+    public GameModeInfo[] onlineGameModes;
+
     // Use this for initialization
     void Awake ()
     {
