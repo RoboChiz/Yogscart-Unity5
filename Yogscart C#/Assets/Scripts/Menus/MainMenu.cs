@@ -113,7 +113,7 @@ public class MainMenu : MonoBehaviour
             case MenuState.Start:
                 GUI.Label(new Rect(sideAmount + GUIHelper.width / 8f - 100, 680, 960, 400), "Press Start / Enter!");
 
-                GUI.Label(new Rect(210, 1010 - sideAmount, 1900, 60), gd.version);
+                GUI.Label(new Rect(210, 1010 - (sideAmount/4f), 1900, 60), gd.version);
 
                 break;
             case MenuState.Main:
@@ -344,7 +344,7 @@ public class MainMenu : MonoBehaviour
                     break;
                 }
             }
-            if (!lockInputs && InputManager.controllers[0].GetMenuInput("Cancel") != 0 && state != MenuState.CharacterSelect)
+            if (state != MenuState.CharacterSelect && !lockInputs && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
             {
                 BackMenu();
             }

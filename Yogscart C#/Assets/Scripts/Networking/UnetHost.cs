@@ -9,14 +9,34 @@ public class UnetHost : UnetClient
     public enum GameState { Lobby, Loading, Race };
     public GameState currentState = GameState.Lobby;
 
+    public bool runClient = true;
+
+    //Players who will race in the next game
     public List<NetworkRacer> finalPlayers;
+    //People who want to join the race but can't cause it's full or we're not in the lobby
     public List<NetworkConnection> waitingPlayers;
+    //People who are choosing a character 
     public List<NetworkConnection> possiblePlayers;
+    //People who have said they don't want to race, Will be put at the back of waiting list on next race
+    public List<NetworkConnection> rejectedPlayers;
+
+    private List<DisplayName> displayNames;
+
+    private GameMode hostGamemode;
+    private int gamemodeInt;
 
     public override void RegisterHandlers()
     {
+        if (runClient)
+        {
+            base.RegisterHandlers();
+            ClientScene.Ready(client.connection);
+        }
+            
         NetworkServer.RegisterHandler(UnetMessages.versionMsg, OnVersion);
         NetworkServer.RegisterHandler(UnetMessages.playerInfoMsg, OnPlayerInfo);
+        NetworkServer.RegisterHandler(UnetMessages.rejectPlayerUpMsg, OnRejectPlayerUp);
+        NetworkServer.RegisterHandler(UnetMessages.readyMsg, OnReady);
     }
 
     public override NetworkClient StartHost()
@@ -24,10 +44,20 @@ public class UnetHost : UnetClient
         var output = base.StartHost();
 
         finalPlayers = new List<NetworkRacer>();
-        NetworkRacer newRacer = new NetworkRacer(0, -1, CurrentGameData.currentChoices[0], 0);
+        waitingPlayers = new List<NetworkConnection>();
+        possiblePlayers = new List<NetworkConnection>();
+        rejectedPlayers = new List<NetworkConnection>();
+        displayNames = new List<DisplayName>();
+
+        NetworkRacer newRacer = new NetworkRacer(-2, -1, CurrentGameData.currentChoices[0], 0);
         newRacer.name = PlayerPrefs.GetString("playerName", "Player");
+        newRacer.conn = client.connection;
+
         finalPlayers.Add(newRacer);
+
         UpdateDisplayNames();
+        //Manual override to avoid sending message to yourself
+        FindObjectOfType<NetworkGUI>().finalPlayers = displayNames;
 
         return output;
     }
@@ -46,23 +76,48 @@ public class UnetHost : UnetClient
         }
         else//If they do match add client to game
         {
-            AcceptedMessage ackMsg = new AcceptedMessage();
-            ackMsg.currentState = currentState;
-
-            //Check to see if Client can join players
-            if (currentState != GameState.Lobby || finalPlayers.Count >= 12)
-            {
-                //Add Player to Waiting List
-                waitingPlayers.Add(netMsg.conn);
-            }
-            else
-            {
-                //Tell Player they can join
-                ackMsg.playerUp = true;
-            }
-
-            NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.acceptedMsg, ackMsg);
+            StartCoroutine(AcceptPlayer(netMsg.conn));
         }
+    }
+
+    //Used to give send time between messages to avoid flooding the client
+    private IEnumerator AcceptPlayer(NetworkConnection conn)
+    {
+        AcceptedMessage ackMsg = new AcceptedMessage();
+        ackMsg.currentState = currentState;
+
+        //Check to see if Client can join players
+        if (currentState != GameState.Lobby || finalPlayers.Count >= 12)
+        {
+            //Add Player to Waiting List
+            waitingPlayers.Add(conn);
+        }
+        else
+        {
+            //Tell Player they can join
+            ackMsg.playerUp = true;
+            possiblePlayers.Add(conn);
+        }
+
+        NetworkServer.SendToClient(conn.connectionId, UnetMessages.acceptedMsg, ackMsg);
+
+        //Wait for message to be recieved
+        yield return new WaitForSeconds(0.2f);
+
+        if (currentState == GameState.Race && hostGamemode != null)
+        {
+            //Tell the client what the gamemode is
+            LoadGamemodeMessage gmMsg = new LoadGamemodeMessage();
+            gmMsg.gamemode = gamemodeInt;
+            NetworkServer.SendToAll(UnetMessages.loadGamemodeMsg, gmMsg);
+
+            //Wait for message to be recieved
+            yield return new WaitForSeconds(0.2f);
+
+            //Tell Host Script that a Player's joined
+            hostGamemode.OnServerConnect(conn);
+        }
+
     }
 
     // Called when a Player Info Message is recieved by a client
@@ -70,14 +125,55 @@ public class UnetHost : UnetClient
     {
         PlayerInfoMessage msg = netMsg.ReadMessage<PlayerInfoMessage>();
 
-        NetworkRacer newRacer = new NetworkRacer(0, -1, msg.character, msg.hat, msg.kart, msg.wheel, finalPlayers.Count);
+        bool playerFound = false;
+
+        for(int i = 0; i < possiblePlayers.Count; i++)
+        {
+            if(possiblePlayers[i] == netMsg.conn)
+            {
+                possiblePlayers.RemoveAt(i);
+                playerFound = true;
+                break;
+            }
+        }
+
+        if(!playerFound)
+        {
+            string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
+            ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
+            NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+        }
+
+        NetworkRacer newRacer = new NetworkRacer(-2, -1, msg.character, msg.hat, msg.kart, msg.wheel, finalPlayers.Count);
         newRacer.conn = netMsg.conn;
         newRacer.name = msg.displayName;
 
         finalPlayers.Add(newRacer);
 
-        UpdateDisplayNames();
+        if (currentState == GameState.Lobby)
+        {
+            UpdateDisplayNames();
+            SendDisplayNames();
+        }
     }
+    // Called when a Player Up Message is rejected
+    private void OnRejectPlayerUp(NetworkMessage netMsg)
+    {
+        for(int i = 0; i < possiblePlayers.Count; i++)
+        {
+            if(possiblePlayers[i] == netMsg.conn)
+            {
+                //Send the Display Names list to client
+                SendDisplayNames(possiblePlayers[i]);
+                //Add them to rejected Players List
+                rejectedPlayers.Add(possiblePlayers[i]);
+                possiblePlayers.RemoveAt(i);
+                Debug.Log("Possible Player " + i.ToString() + " has rejected a player up. Rejected Players count:" + rejectedPlayers.Count.ToString());
+
+                break;
+            }
+        }
+    }       
 
     // Called when a client disconnects
     public override void OnServerDisconnect(NetworkConnection conn)
@@ -90,38 +186,194 @@ public class UnetHost : UnetClient
             if (finalPlayers[i].conn == conn)
             {
                 finalPlayers.RemoveAt(i);
-                break;
+                if (currentState == GameState.Lobby)
+                {
+                    //Only update Display Names if Player mattered
+                    UpdateDisplayNames();
+                    SendDisplayNames();
+                }
+                return;
             }
         }
 
-        UpdateDisplayNames();
+        //Remove players for Possible Players
+        for (int i = 0; i < possiblePlayers.Count; i++)
+        {
+            if(possiblePlayers[i] == conn)
+            {
+                possiblePlayers.RemoveAt(i);
+                return;
+            }
+        }
+
+        //Remove players for Rejected Players
+        for (int i = 0; i < rejectedPlayers.Count; i++)
+        {
+            if (rejectedPlayers[i] == conn)
+            {
+                rejectedPlayers.RemoveAt(i);
+                return;
+            }
+        }
+
+        //Remove players for Waiting Players
+        for (int i = 0; i < waitingPlayers.Count; i++)
+        {
+            if (waitingPlayers[i] == conn)
+            {
+                waitingPlayers.RemoveAt(i);
+                return;
+            }
+        }
     }
 
-    //Send a message with the current players
+    //Update the Display Names List
     private void UpdateDisplayNames()
     {
-        List<DisplayName> nDisplayList = new List<DisplayName>();
-        List<string> toSend = new List<string>();
+        //Reset displayNames
+        displayNames = new List<DisplayName>();
 
         foreach (NetworkRacer racer in finalPlayers)
         {
-            int ping = -1;
-            nDisplayList.Add(new DisplayName(racer.name, racer.Character, ping, racer.team, racer.points));
-            toSend.Add(nDisplayList[nDisplayList.Count - 1].ToString());
+            int ping = 9999;
+            displayNames.Add(new DisplayName(racer.name, racer.Character, ping, racer.team, racer.points));
+        }
+    }
+
+    //Send a message with the current players to all Players
+    private void SendDisplayNames()
+    {
+        List<string> toSend = new List<string>();
+        foreach (DisplayName dn in displayNames)
+        {
+            toSend.Add(dn.ToString());
         }
 
         DisplayNameUpdateMessage msg = new DisplayNameUpdateMessage();
         msg.players = toSend.ToArray();
         NetworkServer.SendToAll(UnetMessages.displayNameUpdateMsg, msg);
-
-        Debug.Log("Sent a Display Name Update");
-        FindObjectOfType<NetworkGUI>().finalPlayers = nDisplayList;
     }
 
-
-    void Update()
+    //Send a message with the current players to a specific Player
+    private void SendDisplayNames(NetworkConnection conn)
     {
+        List<string> toSend = new List<string>();
+        foreach (DisplayName dn in displayNames)
+        {
+            toSend.Add(dn.ToString());
+        }
 
+        DisplayNameUpdateMessage msg = new DisplayNameUpdateMessage();
+        msg.players = toSend.ToArray();
+        NetworkServer.SendToClient(conn.connectionId,UnetMessages.displayNameUpdateMsg, msg);
+    }
+
+    public override void Update()
+    {
+        base.Update();
+
+        if(currentState == GameState.Lobby)
+        {
+            while(waitingPlayers.Count > 0 && finalPlayers.Count + waitingPlayers.Count < 12)
+            {          
+                //Move player to new list  
+                possiblePlayers.Add(waitingPlayers[0]);
+                waitingPlayers.RemoveAt(0);
+                //Send a player up request to the person
+                SendPlayerUp(possiblePlayers[possiblePlayers.Count - 1]);
+                Debug.Log("Waiting Players Count:" + waitingPlayers.Count.ToString() + " Possible Player count: " + possiblePlayers.Count.ToString());
+            }
+        }
+    }
+
+    private void SendPlayerUp(NetworkConnection conn)
+    {
+        EmptyMessage msg = new EmptyMessage();
+        NetworkServer.SendToClient(conn.connectionId, UnetMessages.playerUpMsg, msg);
+    }
+
+    public void StartGame(int gamemode)
+    {
+        currentState = GameState.Loading;   
+        StartCoroutine(ActualStartGame(gamemode));
+    }
+
+    private IEnumerator ActualStartGame(int gamemode)
+    {
+        //Force all Players to send their Player Info
+        EmptyMessage msg = new EmptyMessage();
+        foreach (NetworkConnection conn in possiblePlayers)
+        {
+            NetworkServer.SendToClient(conn.connectionId, UnetMessages.forceCharacterSelectMsg, msg);
+        }
+
+        //Wait a frame
+        yield return null;
+
+        //Move all rejected players to the back of the waiting list
+        waitingPlayers.AddRange(rejectedPlayers);
+        rejectedPlayers = new List<NetworkConnection>();
+
+        //While until all Possible Players have replied, wait for 1 second max
+        float startTime = Time.time;
+        while(possiblePlayers.Count > 0 && Time.time - startTime < 1)
+        {
+            yield return null;
+        }
+
+        //Kick any one who hasn't replied
+        string errorMessage = "You haven't provided the server with a character choice fast enough. So you've been kicked... Sorry";
+        foreach (NetworkConnection conn in possiblePlayers)
+        {        
+            ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
+            NetworkServer.SendToClient(conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+        }
+
+        //Wait a frame
+        yield return null;
+
+        //Start Gamemode in Host Script
+        hostGamemode = OnlineGameModeScripts.AddHostScript(gamemode);
+        gamemodeInt = gamemode;
+
+        //Tell all clients to load the appropriate Client Scripts
+        LoadGamemodeMessage gmMsg = new LoadGamemodeMessage();
+        gmMsg.gamemode = gamemode;
+        NetworkServer.SendToAll(UnetMessages.loadGamemodeMsg, gmMsg);
+
+        //Wait a second for message to be recieved
+        yield return new WaitForSeconds(1f);
+
+        currentState = GameState.Race;
+
+        //Start host script
+        hostGamemode.StartGameMode();
+    }
+
+    public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)
+    {
+        for(int i = 0; i < finalPlayers.Count; i++)
+        {
+            NetworkRacer nr = finalPlayers[i] as NetworkRacer;
+            if(nr.conn.connectionId == conn.connectionId)
+            {
+                GameObject player = hostGamemode.OnServerAddPlayer(nr,playerPrefab);
+                NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
+                break;
+            }
+        }       
+    }
+
+    private void OnReady(NetworkMessage netMsg)
+    {
+        for(int i = 0; i < finalPlayers.Count; i++)
+        {
+            NetworkRacer racer = finalPlayers[i] as NetworkRacer;
+            if(racer.conn.connectionId == finalPlayers[i].conn.connectionId)
+            {
+                racer.ready = true;
+            }            
+        }
     }
 }
 
@@ -129,6 +381,8 @@ public class UnetHost : UnetClient
 public class NetworkRacer : Racer
 {
     public NetworkConnection conn;
+    public bool ready = false;
+
     //The name of the Player
     public string name = "";
 

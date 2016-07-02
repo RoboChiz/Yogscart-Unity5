@@ -28,6 +28,7 @@ public class LevelSelect : MonoBehaviour
         GUI.matrix = GUIHelper.GetMatrix();
         GUI.matrix *= Matrix4x4.TRS(new Vector3(GUIHelper.width * (1 - scale), GUIHelper.height * (1 - scale)), Quaternion.identity, new Vector3(scale, scale, scale));
         GUI.skin = skin;
+        GUI.depth = -5;
 
         Color nWhite = Color.white;
         nWhite.a = menuAlpha;
@@ -133,8 +134,11 @@ public class LevelSelect : MonoBehaviour
             currentCup = MathHelper.NumClamp(currentCup, 0, gd.tournaments.Length);
         }
 
-        Race.currentTrack = currentTrack;
-        Race.currentCup = currentCup;
+        if (gamemode.raceType != RaceType.Online)
+        {
+            Race.currentTrack = currentTrack;
+            Race.currentCup = currentCup;
+        }
 
         if (submit)
         {
@@ -159,6 +163,15 @@ public class LevelSelect : MonoBehaviour
                 StartCoroutine(HideLevelSelect());
                 currentCup = -1;
                 currentTrack = -1;
+
+                //If backing out of Level Select make sure Voting Screen is showed
+                if (gamemode.raceType == RaceType.Online)
+                {
+                    if (FindObjectOfType<VotingScreen>() == null)
+                        gd.gameObject.AddComponent<VotingScreen>();
+
+                    FindObjectOfType<VotingScreen>().ShowScreen();
+                }
             }
             else
             {
@@ -201,6 +214,23 @@ public class LevelSelect : MonoBehaviour
     }
 
     private void FinishLevelSelect()
+    {
+        Race gamemode = (Race)CurrentGameData.currentGamemode;
+        if (gamemode.raceType == RaceType.Online)
+        {
+            //Send data to server
+            FindObjectOfType<NetworkRaceClient>().SendVote(currentCup, currentTrack);
+
+            if(FindObjectOfType<VotingScreen>() == null)
+                gd.gameObject.AddComponent<VotingScreen>();
+
+            FindObjectOfType<VotingScreen>().ShowScreen();
+        }
+
+        StartCoroutine(HideLevelSelect());
+    }
+
+    public void ForceFinishLevelSelect()
     {
         StartCoroutine(HideLevelSelect());
     }

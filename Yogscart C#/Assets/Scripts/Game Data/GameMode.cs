@@ -2,6 +2,7 @@
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 /*
 Gamemode Base Class v1.0
 Created by Robert (Robo_Chiz)
@@ -45,9 +46,9 @@ abstract public class GameMode : MonoBehaviour
     //Load the Game Managers
     void Awake()
     {
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();
-        km = GameObject.FindObjectOfType<KartMaker>();
+        gd = FindObjectOfType<CurrentGameData>();
+        sm = FindObjectOfType<SoundManager>();
+        km = FindObjectOfType<KartMaker>();
     }
 
     //Called to Start Gamemode by menus. Must be included in your class
@@ -186,16 +187,10 @@ abstract public class GameMode : MonoBehaviour
                 inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
                 inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
                 racers[i].cameras = inGameCam;
-
-                //Setup Camera
-                //Kart INFO Stuff
             }
             else
             {
                 Destroy(racers[i].ingameObj.GetComponent<kartInput>());
-                //Destroy(racers[i].ingameObj.GetComponent<kartInfo>());
-                //racers[i].ingameObj.gameObject.AddComponent<AIRacer>();
-                //racers[i].ingameObj.GetComponent<AIRacer>().stupidity = racers[i].aiStupidity;
             }
         }
     }
@@ -254,7 +249,7 @@ abstract public class GameMode : MonoBehaviour
         }
     }
 
-    protected void StartCountdown()
+    public void StartCountdown()
     {
         if (!countdowning)
             StartCoroutine("ActualStartCountdown");
@@ -361,7 +356,12 @@ abstract public class GameMode : MonoBehaviour
         Destroy(this);
     }
 
+    //Called when a client disconnects from online gamemode (Ignore if Single Player Only)
+    public abstract void OnServerDisconnect(NetworkConnection conn);
+    //Called when a client connects to online gamemode (Ignore if Single Player Only)
+    public abstract void OnServerConnect(NetworkConnection conn);
 
+    public abstract GameObject OnServerAddPlayer(NetworkRacer nPlayer, GameObject playerPrefab);
 }
 
 abstract public class TeamGameMode : GameMode

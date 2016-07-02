@@ -5,12 +5,32 @@ using System.Collections.Generic;
 
 public static class UnetMessages
 {
+    //Default Network Messages
     public const short versionMsg = 1002;
     public const short acceptedMsg = 1003;
     public const short clientErrorMsg = 1004;
     public const short playerUpMsg = 1005;
     public const short playerInfoMsg = 1006;
     public const short displayNameUpdateMsg = 1007;
+    public const short rejectPlayerUpMsg = 1008;
+    public const short forceCharacterSelectMsg = 1009;
+    public const short loadGamemodeMsg = 1010;
+    public const short timerMsg = 1011;
+    public const short readyMsg = 1012;
+    public const short countdownMsg = 1013;
+    public const short unlockKartMsg = 1014;
+
+    //Network Race Messages
+    public const short showLvlSelectMsg = 1102;
+    public const short trackVoteMsg = 1103;
+    public const short voteListUpdateMsg = 1104;
+    public const short startRollMsg = 1105;
+    public const short forceLevelSelectMsg = 1106;
+    public const short allVoteListMsg = 1107;
+    public const short loadLevelMsg = 1108;
+    public const short spawnKartMsg = 1109;
+    public const short positionMsg = 1110;
+    public const short finishRaceMsg = 1111;
 }
 
 //Sent by Client to Server to check if both are running the same version
@@ -42,8 +62,8 @@ public class ClientErrorMessage : MessageBase //1004
     }
 }
 
-//Sent by Server telling client to pick a character
-public class PlayerUpMessage : MessageBase //1005
+//Sent by Server when a Message needs to be sent with no Info inside of it
+public class EmptyMessage : MessageBase //1005, 1008, 1009, 1101, 1102, 1105, 1106, 1109, 1012, 1013, 1014, 1111
 {
 }
 
@@ -59,4 +79,107 @@ public class DisplayNameUpdateMessage : MessageBase //1007
 {
     public string[] players;
 }
-    
+
+//Sent by Server to tell client to add the scripts of a Specific Gamemode
+public class LoadGamemodeMessage : MessageBase //1010
+{
+    public int gamemode;
+}
+
+//Sent by Server to make a timer appear on Client 
+public class TimerMessage : MessageBase //1011
+{
+    public float time;
+
+    public TimerMessage(float nTime)
+    {
+        time = nTime;
+    }
+
+    public TimerMessage()
+    {
+        time = -1;
+    }
+}
+
+//----------------------------------- GAMEMODE 0 - Network Race ----------------------------------------------------//
+
+//Sent by Client to Server & From Server to all Clients
+public class TrackVoteMessage : MessageBase //1103, 1104
+{
+    public int cup;
+    public int track;
+
+    public TrackVoteMessage()
+    {
+        cup = 0;
+        track = 0;
+    }
+
+    public TrackVoteMessage(int nCup, int nTrack)
+    {
+        cup = nCup;
+        track = nTrack;
+    }
+}
+
+public class AllVoteMessage : MessageBase //1107
+{
+    public int[] cups;
+    public int[] tracks;
+}
+
+//Sent by Server to Client when an int needs sending
+public class intMessage : MessageBase //1105, 1109, 1110
+{
+    public int value;
+
+    public intMessage()
+    {
+        value = 0;
+    }
+
+    public intMessage(int nValue)
+    {
+        value = nValue;
+    }
+}
+
+//----------------------------------- GAME MODE REQUIRED STATIC CLASSES ----------------------------------------------------//
+
+//Used to add the Host script for each Online Gamemode to the GameData Object
+public static class OnlineGameModeScripts
+{
+    public static GameMode AddHostScript(int gamemode)
+    {
+        GameObject gdObject = GameObject.FindObjectOfType<CurrentGameData>().gameObject;
+        switch (gamemode)
+        {
+            //Online Race
+            case 0:
+                NetworkRaceHost host = gdObject.AddComponent<NetworkRaceHost>();
+                CurrentGameData.currentGamemode = host;
+                return host;
+        }
+
+        return null;
+    }
+
+    public static GameMode AddClientScript(int gamemode)
+    {
+        GameObject gdObject = GameObject.FindObjectOfType<CurrentGameData>().gameObject;
+        switch (gamemode)
+        {
+            //Online Race
+            case 0:
+                NetworkRaceClient client = gdObject.AddComponent<NetworkRaceClient>();
+                CurrentGameData.currentGamemode = client;
+                return client;
+        }
+
+        return null;
+    }
+}
+
+
+

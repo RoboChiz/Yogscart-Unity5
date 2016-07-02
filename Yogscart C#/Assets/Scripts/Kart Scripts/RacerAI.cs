@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class RacerAI : MonoBehaviour {
+public class RacerAI : MonoBehaviour
+{
 
     //Straight Port of JS Version
     private kartScript ks;
@@ -24,7 +25,7 @@ public class RacerAI : MonoBehaviour {
     public float adjusterFloat = -999f;
 
     // Use this for initialization
-    void Awake ()
+    void Awake()
     {
         ks = GetComponent<kartScript>();
         td = GameObject.FindObjectOfType<TrackData>();
@@ -32,10 +33,10 @@ public class RacerAI : MonoBehaviour {
 
         if (ks.locked)
             startDrive = false;
-	}
-	
-	// Update is called once per frame
-	void FixedUpdate()
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
     {
         //Wait till positions are set to create Adjuster
         if (adjusterFloat <= -999 && pf.position != -1)
@@ -64,7 +65,7 @@ public class RacerAI : MonoBehaviour {
         Vector3 fireDirection = transform.right;
         fireDirection.y = 0;
 
-        float angle  = Vector3.Angle(fireDirection, desiredDirection);
+        float angle = Vector3.Angle(fireDirection, desiredDirection);
         int turnRequired = CheckAngle(angle);
 
         if (startDrive)
@@ -119,7 +120,7 @@ public class RacerAI : MonoBehaviour {
         }
 
         //Reverse if Kart hits somethings
-        if (ks.ExpectedSpeed > 5 && ks.ActualSpeed < 1) //Presume something is blocking the kart.
+        if (ks.ExpectedSpeed > ks.maxSpeed/2f && Mathf.Abs(ks.ActualSpeed) < 1) //Presume something is blocking the kart.
             reversing = true;
 
         if (reversing)

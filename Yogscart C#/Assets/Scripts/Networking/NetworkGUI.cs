@@ -14,7 +14,7 @@ public class NetworkGUI : MonoBehaviour
     public enum ServerState { ServerList, Connecting, Popup, Lobby, LoadingRace, LoadingLevel, Racing };
     public ServerState state;
 
-    private string popupText;
+    public string popupText;
 
     const int maxServerCount = 10;
     public Color currentPlayerColour;
@@ -25,7 +25,7 @@ public class NetworkGUI : MonoBehaviour
     private Vector2 serverScroll = Vector2.zero;
 
     private int hostPort = 25000;
-    private string playerName;
+    public string playerName { get; private set; }
     private int finalPlayersID = -1;
 
     public List<DisplayName> finalPlayers;
@@ -370,7 +370,7 @@ public class NetworkGUI : MonoBehaviour
 
                 GUI.DrawTexture(nameListRect, nameList);
 
-                nameListRect = new Rect(285, 190, 380, 605);
+                nameListRect = new Rect(220, 190, 520, 700);
 
                 GUI.BeginGroup(nameListRect);
 
@@ -384,22 +384,24 @@ public class NetworkGUI : MonoBehaviour
                     for (int i = 0; i < finalPlayers.Count; i++)
                     {
                         float startHeight = fontSize * 2f + (i * fontSize * 1.25f);
-                        float textSize = Mathf.Clamp(fontSize / (finalPlayers[i].displayName.Length / 10f), 0, fontSize);
-                        GUI.skin.label.fontSize = (int)textSize;
+                        float eighth = nameListRect.width / 8f;
+                        int holder = GUI.skin.label.fontSize;
 
                         if (finalPlayersID == i)
                             GUI.skin.label.normal.textColor = currentPlayerColour;
                         else
                             GUI.skin.label.normal.textColor = Color.white;
 
-                        GUI.Label(new Rect(0, startHeight, nameListRect.width, fontSize * 1.25f), finalPlayers[i].displayName);
+                        GUI.skin.label.fontSize = (int)(holder * 0.8f);
+                        GUI.Label(new Rect(0, startHeight, eighth * 6f, fontSize * 1.25f), finalPlayers[i].displayName);
 
                         //Calculate Ping
+                        GUI.skin.label.fontSize = (int)(holder * 0.5f);
+                        GUI.Label(new Rect(eighth * 6f,startHeight, eighth, fontSize * 1.5f), finalPlayers[i].ping.ToString() + " Ping");
 
-                        textSize = Mathf.Clamp(fontSize / 2f, 0, fontSize);
-                        GUI.skin.label.fontSize = (int)textSize;
+                        GUI.skin.label.fontSize = holder;
 
-                        GUI.Label(new Rect(nameListRect.width - (textSize * 5f), startHeight + textSize * 0.5f, textSize * 10f, fontSize * 1.5f), finalPlayers[i].ping.ToString() + " Ping");
+                        GUI.DrawTexture(new Rect(eighth * 7f, startHeight, fontSize * 1.5f, fontSize * 1.5f), gd.characters[finalPlayers[i].character].icon, ScaleMode.ScaleToFit);
 
                     }
                 }
@@ -452,7 +454,7 @@ public class NetworkGUI : MonoBehaviour
                 if (xboxController)
                     quitText = "Quit   B";
 
-                if ((GUI.Button(new Rect(190, nameListRect.x + nameListRect.height, 190, 95), quitText) || InputManager.controllers[0].GetMenuInput("Cancel") != 0) && !inputLock)
+                if ((GUI.Button(new Rect(190, nameListRect.y + nameListRect.height + 20, 190, 95), quitText) || InputManager.controllers[0].GetMenuInput("Cancel") != 0) && !inputLock)
                 {
                     //Disconnect
                     if(NetworkServer.active)//Client is server
@@ -468,7 +470,7 @@ public class NetworkGUI : MonoBehaviour
                 }
 
                 if (xboxController)
-                    GUI.DrawTexture(new Rect(304, nameListRect.x + nameListRect.height + 20, fontSize * 1.5f, fontSize * 1.5f), Resources.Load<Texture2D>("UI/Main Menu/B"));
+                    GUI.DrawTexture(new Rect(304, nameListRect.y + nameListRect.height + 40, fontSize * 1.5f, fontSize * 1.5f), Resources.Load<Texture2D>("UI/Main Menu/B"));
 
                 if (currentGamemode != -1)
                 {
@@ -494,13 +496,13 @@ public class NetworkGUI : MonoBehaviour
                         if (xboxController)
                             startText = "Start   A";
 
-                        if ((GUI.Button(new Rect(380, nameListRect.x + nameListRect.height, 190, 95), startText) || (InputManager.controllers[0].GetMenuInput("Submit") != 0)) && !inputLock)
+                        if ((GUI.Button(new Rect(400, nameListRect.y + nameListRect.height + 20, 190, 95), startText) || (InputManager.controllers[0].GetMenuInput("Submit") != 0)) && !inputLock)
                         {
-                            //StartGame();
+                            StartHostGame();
                         }
 
                         if (xboxController)
-                            GUI.DrawTexture(new Rect(505, nameListRect.x + nameListRect.height + 20, fontSize * 1.5f, fontSize * 1.5f), Resources.Load<Texture2D>("UI/Main Menu/A"));
+                            GUI.DrawTexture(new Rect(525, nameListRect.y + nameListRect.height + 40, fontSize * 1.5f, fontSize * 1.5f), Resources.Load<Texture2D>("UI/Main Menu/A"));
                     }
 
                     Rect hostInfoRect = new Rect(780, 380, 950, 475);
@@ -605,18 +607,28 @@ public class NetworkGUI : MonoBehaviour
 
     public void ShowMenu()
     {
-        StartCoroutine(ChangeGUIAlpha(0f, 1f, true, false));
+        StartCoroutine(ActualShowMenu());
     }
+
+    private IEnumerator ActualShowMenu()
+    {
+        yield return new WaitForSeconds(0.5f);
+        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
+    }
+
     public void CloseMenu()
     {
-        StartCoroutine(ChangeGUIAlpha(1f, 0f, false, true));
+        StartCoroutine(ActualCloseMenu());
     }
 
-    private IEnumerator ChangeGUIAlpha(float start, float end, bool waitFirst, bool disableAfter)
+    private IEnumerator ActualCloseMenu()
     {
-        if (waitFirst)
-            yield return new WaitForSeconds(0.5f);
+        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
+        enabled = false;
+    }
 
+    private IEnumerator ChangeGUIAlpha(float start, float end)
+    {   
         if(start == 1f)
             inputLock = true;
 
@@ -629,8 +641,6 @@ public class NetworkGUI : MonoBehaviour
 
         guiAlpha = end;
 
-        if (disableAfter)
-            enabled = false;
         if(end == 1)
             inputLock = false;
     }
@@ -651,16 +661,14 @@ public class NetworkGUI : MonoBehaviour
         CharacterSelect cs = FindObjectOfType<CharacterSelect>();
         cs.enabled = true;
 
-        StartCoroutine(ChangeGUIAlpha(1f, 0f, false, false));
+        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
 
-        Debug.Log("Character Select found:" + (cs != null).ToString());
-        yield return cs.StartCoroutine("ShowCharacterSelect", CharacterSelect.csState.Character);
-
-        //Wait for fade
+        cs.StartCoroutine("ShowCharacterSelect", CharacterSelect.csState.Character);
         yield return new WaitForSeconds(0.5f);
 
         state = ServerState.Connecting;
-        StartCoroutine(ChangeGUIAlpha(0f, 1f, false, false));
+
+        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
 
         //Wait until all characters have been selected
         while (cs.State != CharacterSelect.csState.Finished && cs.State != CharacterSelect.csState.Off)
@@ -677,6 +685,7 @@ public class NetworkGUI : MonoBehaviour
         //Everything worked out perfect!
         Debug.Log("It worked");
         myUnet = gd.gameObject.AddComponent<UnetHost>();
+        myUnet.playerPrefab = Resources.Load<GameObject>("Prefabs/Kart Maker/Network Kart");
 
         myUnet.networkPort = hostPort;
         myUnet.StartHost();
@@ -708,29 +717,22 @@ public class NetworkGUI : MonoBehaviour
             yield return null;
         }
 
-        if (cs.State != CharacterSelect.csState.Off)
+        if (cs.State == CharacterSelect.csState.Finished)
         {
             //Everything worked out perfect!
-            Debug.Log("It worked");
-
-            //Send PlayerInfo to Server
-            PlayerInfoMessage newMsg = new PlayerInfoMessage();
-            newMsg.displayName = playerName;
-            newMsg.character = CurrentGameData.currentChoices[0].character;
-            newMsg.hat = CurrentGameData.currentChoices[0].hat;
-            newMsg.kart = CurrentGameData.currentChoices[0].kart;
-            newMsg.wheel = CurrentGameData.currentChoices[0].wheel;
-
-            FindObjectOfType<UnetClient>().SendPlayerInfo(newMsg);
+            Debug.Log("It worked");       
+            FindObjectOfType<UnetClient>().SendPlayerInfo();
+        }
+        else
+        {
+            myUnet.SendRejection();
         }
 
-        StartCoroutine(ChangeGUIAlpha(1f, 0f, false, false));
-        yield return new WaitForSeconds(0.5f);
+        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
 
         state = ServerState.Lobby;
 
-        StartCoroutine(ChangeGUIAlpha(0f, 1f, false, false));
-        yield return new WaitForSeconds(0.5f);
+        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
     }
 
     public void CloseServer()
@@ -743,13 +745,9 @@ public class NetworkGUI : MonoBehaviour
         DestroyImmediate(myUnet);
 
         //Wait for fade
-        StartCoroutine(ChangeGUIAlpha(1f, 0f, false, false));
-        yield return new WaitForSeconds(0.5f);
-
+        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
         state = ServerState.ServerList;
-
-        StartCoroutine(ChangeGUIAlpha(0f, 1f, false, false));
-        yield return new WaitForSeconds(0.5f);
+        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
 
         MainMenu.lockInputs = false;
 
@@ -771,17 +769,14 @@ public class NetworkGUI : MonoBehaviour
         MainMenu.lockInputs = true;
 
         //Wait for fade
-        StartCoroutine(ChangeGUIAlpha(1f, 0f, false, false));
-        yield return new WaitForSeconds(0.5f);
-
+        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
         state = ServerState.Connecting;
-
-        StartCoroutine(ChangeGUIAlpha(0f, 1f, false, false));
-        yield return new WaitForSeconds(0.5f);
+        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
 
         finalPlayers = new List<DisplayName>();
 
         myUnet = gd.gameObject.AddComponent<UnetClient>();
+        myUnet.playerPrefab = Resources.Load<GameObject>("Prefabs/Kart Maker/Network Kart");
 
         Debug.Log("Connecting to " + servers[currentSelection].ip + ":" + servers[currentSelection].port);
 
@@ -791,6 +786,25 @@ public class NetworkGUI : MonoBehaviour
         myUnet.RegisterHandlers();
 
         
+    }
+
+    private void StartHostGame()
+    {
+        UnetHost host = myUnet as UnetHost;
+        host.StartGame(currentGamemode);
+    }
+
+    public void StartClientGame()
+    {
+        StartCoroutine(ActualStartClientGame());
+    }
+
+    private IEnumerator ActualStartClientGame()
+    {
+        inputLock = true;
+        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
+        state = ServerState.Connecting;
+        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
     }
 
     public void PopUp(string message)

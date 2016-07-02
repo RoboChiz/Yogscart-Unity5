@@ -77,6 +77,8 @@
     <Compile Include="Assets\Scripts\Game Data\SortingScript.cs" />
     <Compile Include="Assets\Scripts\Game Data\SoundManager.cs" />
     <Compile Include="Assets\Scripts\Game Data\TimeManager.cs" />
+    <Compile Include="Assets\Scripts\GameMode\NetworkRaceClient.cs" />
+    <Compile Include="Assets\Scripts\GameMode\NetworkRaceHost.cs" />
     <Compile Include="Assets\Scripts\GameMode\Race.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\Character_Skeleton.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\KartMaker.cs" />
@@ -101,8 +103,10 @@
     <Compile Include="Assets\Scripts\Menus\LevelSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\MainMenu.cs" />
     <Compile Include="Assets\Scripts\Menus\Options.cs" />
+    <Compile Include="Assets\Scripts\Networking\KartNetworker.cs" />
     <Compile Include="Assets\Scripts\Networking\NetworkGUI.cs" />
-    <Compile Include="Assets\Scripts\Networking\NetworkSetup.cs" />
+    <Compile Include="Assets\Scripts\Networking\NetworkPass.cs" />
+    <Compile Include="Assets\Scripts\Networking\Online Race\VotingScreen.cs" />
     <Compile Include="Assets\Scripts\Networking\UnetClient.cs" />
     <Compile Include="Assets\Scripts\Networking\UnetHost.cs" />
     <Compile Include="Assets\Scripts\Networking\UnetMessages.cs" />

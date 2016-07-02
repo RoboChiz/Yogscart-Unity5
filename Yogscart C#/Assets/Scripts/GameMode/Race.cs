@@ -3,8 +3,9 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using UnityEngine.Networking;
 
-public enum RaceType { GrandPrix, VSRace, TimeTrial };
+public enum RaceType { GrandPrix, VSRace, TimeTrial, Online };
 public enum RaceGUI { Blank, CutScene, RaceInfo, Countdown, RaceGUI, ScoreBoard, NextMenu, Win };
 
 /*
@@ -25,7 +26,7 @@ public class Race : GameMode
     public float guiAlpha = 0f;
     public bool changingState = false;
 
-    private TrackData td;
+    protected TrackData td;
 
     private string rankString;
     private int bestPlace;
@@ -35,7 +36,7 @@ public class Race : GameMode
         StartCoroutine("actualStartGamemode");
     }
 
-    public IEnumerator actualStartGamemode()
+    protected virtual IEnumerator actualStartGamemode()
     {
         gd = GameObject.FindObjectOfType<CurrentGameData>();
         sm = GameObject.FindObjectOfType<SoundManager>();
@@ -361,7 +362,6 @@ public class Race : GameMode
         }
     }
 
-
     public IEnumerator ChangeState(RaceGUI nState)
     {
         if (currentGUI != nState && !changingState)
@@ -589,7 +589,7 @@ public class Race : GameMode
             {
                 racers[i].finished = true;
                 racers[i].timer = timer;
-                if (racers[i].Human != -1)
+                if (racers[i].Human >= 0)
                     StartCoroutine(FinishKart(racers[i]));
             }
 
@@ -610,14 +610,17 @@ public class Race : GameMode
 
     }
 
-    private IEnumerator FinishKart(Racer racer)
+    protected IEnumerator FinishKart(Racer racer)
     {
         racer.ingameObj.gameObject.AddComponent<RacerAI>();
         Destroy(racer.ingameObj.GetComponent<kartInput>());
         //Hide Kart Item
-        racer.ingameObj.GetComponent<kartItem>().locked = true;
-        racer.ingameObj.GetComponent<kartItem>().hidden = true;
-
+        if(racer.ingameObj.GetComponent<kartItem>() != null)
+        {
+            racer.ingameObj.GetComponent<kartItem>().locked = true;
+            racer.ingameObj.GetComponent<kartItem>().hidden = true;
+        }
+        
         racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");
 
         racer.cameras.GetChild(0).GetComponent<Camera>().enabled = false;
@@ -724,5 +727,10 @@ public class Race : GameMode
         StartCoroutine(QuitGame());
     }
 
-
+    //Called when a client disconnects from online gamemode (Not used as Race is Single Player Only)
+    public override void OnServerDisconnect(NetworkConnection conn) { }
+    //Called when a client connects to online gamemode  (Not used as Race is Single Player Only)
+    public override void OnServerConnect(NetworkConnection conn) { }
+    //Called when a clint requests a Player Object
+    public override GameObject OnServerAddPlayer(NetworkRacer nPlayer, GameObject playerPrefab) { return null; }
 }

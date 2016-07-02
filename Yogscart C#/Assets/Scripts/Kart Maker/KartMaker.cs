@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 public enum KartType { Display, Local, Online, Spectator };
 
@@ -52,6 +53,11 @@ public class KartMaker : MonoBehaviour
             Transform hatMesh = (Transform)Instantiate(gd.hats[h].model, charSkel.HatHolder.position, Quaternion.identity);
             hatMesh.parent = charSkel.HatHolder;
             hatMesh.localRotation = Quaternion.Euler(0, 0, 0);
+        }
+
+        if(type == KartType.Online)
+        {
+            kartBody.gameObject.AddComponent<NetworkIdentity>();
         }
 
         if(type != KartType.Display)
