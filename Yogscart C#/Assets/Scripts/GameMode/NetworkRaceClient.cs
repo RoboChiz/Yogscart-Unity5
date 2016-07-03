@@ -36,6 +36,23 @@ public class NetworkRaceClient : Race
         client.RegisterHandler(UnetMessages.spawnKartMsg, OnSpawnKart);
         client.RegisterHandler(UnetMessages.positionMsg, OnPosition);
         client.RegisterHandler(UnetMessages.finishRaceMsg, OnFinishRace);
+        client.RegisterHandler(UnetMessages.playerFinishedMsg, OnPlayerFinished);
+        client.RegisterHandler(UnetMessages.allPlayerFinishedMsg, OnAllPlayerFinished);
+    }
+
+    public override void OnEndGamemode()
+    {
+        client.UnregisterHandler(UnetMessages.showLvlSelectMsg);
+        client.UnregisterHandler(UnetMessages.voteListUpdateMsg);
+        client.UnregisterHandler(UnetMessages.startRollMsg);
+        client.UnregisterHandler(UnetMessages.forceLevelSelectMsg);
+        client.UnregisterHandler(UnetMessages.allVoteListMsg);
+        client.UnregisterHandler(UnetMessages.loadLevelMsg);
+        client.UnregisterHandler(UnetMessages.spawnKartMsg);
+        client.UnregisterHandler(UnetMessages.positionMsg);
+        client.UnregisterHandler(UnetMessages.finishRaceMsg);
+        client.UnregisterHandler(UnetMessages.playerFinishedMsg);
+        client.UnregisterHandler(UnetMessages.allPlayerFinishedMsg);
     }
 
     private void OnShowLevelSelect(NetworkMessage netMsg)
@@ -167,16 +184,22 @@ public class NetworkRaceClient : Race
 
         yield return StartCoroutine(ChangeState(RaceGUI.Countdown));
 
-        client.Send(UnetMessages.readyMsg, new EmptyMessage());
+        Leaderboard lb = gameObject.AddComponent<Leaderboard>();
+        lb.racers = new List<DisplayRacer>();
 
+        if (myKart != null)
+        {
+            client.Send(UnetMessages.readyMsg, new EmptyMessage());
+        }
+       
     }
 
     //Called when the server wants the client to spawn it's Kart
     private void OnSpawnKart(NetworkMessage netMsg)
     {
         intMessage msg = netMsg.ReadMessage<intMessage>();
-
         myRacer = new Racer(0, -1, CurrentGameData.currentChoices[0], msg.value);
+
         ClientScene.AddPlayer(0);        
     }
 
@@ -222,9 +245,57 @@ public class NetworkRaceClient : Race
         }     
     }
 
+    //Sent when a racing client finishes the Race
     private void OnFinishRace(NetworkMessage netMsg)
-    {
-        StartCoroutine(FinishKart(myRacer));
+    {        
         StopTimer();
+        StartCoroutine(actualOnFinishRace());
     }
+
+    private IEnumerator actualOnFinishRace()
+    {
+        yield return StartCoroutine(FinishKart(myRacer));
+        yield return StartCoroutine(ChangeState(RaceGUI.ScoreBoard));
+        GetComponent<Leaderboard>().StartOnline();
+    }
+
+    //Sent when any client has finished the race used for Leaderboard
+    private void OnPlayerFinished(NetworkMessage netMsg)
+    {
+        stringMessage msg = netMsg.ReadMessage<stringMessage>();
+        GetComponent<Leaderboard>().racers.Add(new DisplayRacer(msg.value));
+
+        if (myKart == null)
+        {
+            StartCoroutine(ChangeState(RaceGUI.ScoreBoard));
+            GetComponent<Leaderboard>().StartOnline();
+        }           
+    }
+
+    //Sent once the Leaderboard has been sorted, and points awarded
+    private void OnAllPlayerFinished(NetworkMessage netMsg)
+    {
+        Debug.Log("Recieved the final scores");
+        DisplayNameUpdateMessage msg = netMsg.ReadMessage<DisplayNameUpdateMessage>();
+
+        List<DisplayRacer> nList = new List<DisplayRacer>();
+        foreach (string val in msg.players)
+        {
+            DisplayRacer nName = new DisplayRacer(val);
+            nList.Add(nName);
+        }
+
+        GetComponent<Leaderboard>().racers = nList;
+        GetComponent<Leaderboard>().StartLeaderBoard();
+
+        StartCoroutine(OnAllPlayerFinishedWait());
+
+    }
+
+    private IEnumerator OnAllPlayerFinishedWait()
+    {
+        yield return new WaitForSeconds(5);
+        GetComponent<Leaderboard>().SecondStep();
+    }
+
 }

@@ -19,6 +19,8 @@ public static class UnetMessages
     public const short readyMsg = 1012;
     public const short countdownMsg = 1013;
     public const short unlockKartMsg = 1014;
+    public const short returnLobbyMsg = 1016;
+    public const short loadLevelID = 1017;
 
     //Network Race Messages
     public const short showLvlSelectMsg = 1102;
@@ -31,6 +33,8 @@ public static class UnetMessages
     public const short spawnKartMsg = 1109;
     public const short positionMsg = 1110;
     public const short finishRaceMsg = 1111;
+    public const short playerFinishedMsg = 1112;
+    public const short allPlayerFinishedMsg = 1113;
 }
 
 //Sent by Client to Server to check if both are running the same version
@@ -63,7 +67,7 @@ public class ClientErrorMessage : MessageBase //1004
 }
 
 //Sent by Server when a Message needs to be sent with no Info inside of it
-public class EmptyMessage : MessageBase //1005, 1008, 1009, 1101, 1102, 1105, 1106, 1109, 1012, 1013, 1014, 1111
+public class EmptyMessage : MessageBase //1005, 1008, 1009, 1101, 1102, 1105, 1106, 1109, 1012, 1013, 1014, 1111, 1016
 {
 }
 
@@ -142,6 +146,22 @@ public class intMessage : MessageBase //1105, 1109, 1110
     public intMessage(int nValue)
     {
         value = nValue;
+    }
+}
+
+//Sent by Server to Client when an string needs sending
+public class stringMessage : MessageBase //1112, 1017
+{
+    public string value;
+
+    public stringMessage()
+    {
+        value = "";
+    }
+
+    public stringMessage(string v)
+    {
+        value = v;
     }
 }
 

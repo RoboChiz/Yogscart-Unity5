@@ -427,18 +427,21 @@ public class Race : GameMode
 
                 Leaderboard lb = GetComponent<Leaderboard>();
 
-                if (!changingState && ( InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick()))
+                if(raceType != RaceType.Online)
                 {
-                    if (lb.state != LBType.Points || currentRace == 1)
+                    if (!changingState && (InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick()))
                     {
-                        StartCoroutine(ChangeState(RaceGUI.NextMenu));
-                        lb.hidden = true;
+                        if (lb.state != LBType.Points || currentRace == 1)
+                        {
+                            StartCoroutine(ChangeState(RaceGUI.NextMenu));
+                            lb.hidden = true;
+                        }
+                        else
+                        {
+                            lb.SecondStep();
+                        }
                     }
-                    else
-                    {
-                        lb.SecondStep();
-                    }
-                }
+                }               
                 break;
             case RaceGUI.NextMenu:
 
@@ -733,4 +736,9 @@ public class Race : GameMode
     public override void OnServerConnect(NetworkConnection conn) { }
     //Called when a clint requests a Player Object
     public override GameObject OnServerAddPlayer(NetworkRacer nPlayer, GameObject playerPrefab) { return null; }
+
+    public override void OnEndGamemode()
+    {
+        throw new NotImplementedException();
+    }
 }

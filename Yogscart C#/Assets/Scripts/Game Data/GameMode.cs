@@ -35,7 +35,8 @@ abstract public class GameMode : MonoBehaviour
     AI Enabled - Obvious
     Finished - Used by Menu systems to tell wheter the gamemode has finished
     Client Only - Avoid running host stuff, useful for Network games*/
-    protected bool aiEnabled = true, finished = false, clientOnly = false;
+    protected bool aiEnabled = true, clientOnly = false;
+    public bool finished = false;
 
     //Countdown Stuff
     public int CountdownText; //The number on screen
@@ -360,8 +361,10 @@ abstract public class GameMode : MonoBehaviour
     public abstract void OnServerDisconnect(NetworkConnection conn);
     //Called when a client connects to online gamemode (Ignore if Single Player Only)
     public abstract void OnServerConnect(NetworkConnection conn);
-
+    //Called when a new player is requested by a client
     public abstract GameObject OnServerAddPlayer(NetworkRacer nPlayer, GameObject playerPrefab);
+    //Called by the server when a Gamemode has finished. Should be used for tidying up
+    public abstract void OnEndGamemode();
 }
 
 abstract public class TeamGameMode : GameMode

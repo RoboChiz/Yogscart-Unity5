@@ -58,6 +58,8 @@ public class UnetClient : NetworkManager
         client.RegisterHandler(UnetMessages.timerMsg, OnTimer);
         client.RegisterHandler(UnetMessages.countdownMsg, OnCountdown);
         client.RegisterHandler(UnetMessages.unlockKartMsg, OnUnlockKart);
+        client.RegisterHandler(UnetMessages.returnLobbyMsg, OnReturnLobby);
+        client.RegisterHandler(UnetMessages.loadLevelID, OnLoadLevelID);
     }
 
     // Called when connected to a server
@@ -214,6 +216,36 @@ public class UnetClient : NetworkManager
         kartItem[] kitemes = FindObjectsOfType<kartItem>();
         foreach (kartItem ki in kitemes)
             ki.locked = false;
+    }
+
+    //Called when the gamemode has finished
+    private void OnReturnLobby(NetworkMessage netMsg)
+    {
+        //Tell the client gamemode to clear up
+        clientGamemode.OnEndGamemode();
+        //Delete it for good measure
+        Destroy(clientGamemode);
+
+
+    }
+
+    private IEnumerator ReloadLobby()
+    {
+        yield return null;
+        
+        //Load the Lobby
+        SceneManager.LoadScene("Main_Menu");
+        yield return null;
+
+        //Reload the Lobby
+
+    }
+
+    //Called when a Server wants a client to load a level by ID
+    private void OnLoadLevelID(NetworkMessage netMsg)
+    {
+        stringMessage msg = netMsg.ReadMessage<stringMessage>();
+        SceneManager.LoadScene(msg.value);
     }
 
     public void EndClient(string message)

@@ -133,6 +133,11 @@ public class NetworkRaceHost : Race
                 {
                     NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.finishRaceMsg, new EmptyMessage());
                     racer.ready = true;
+                    //Tell all Clients about Finish
+                    DisplayRacer displayRacer = new DisplayRacer(racer);
+                    displayRacer.name = racer.name;
+
+                    NetworkServer.SendToAll(UnetMessages.playerFinishedMsg, new stringMessage(displayRacer.ToString()));
                 }
                     
             }
@@ -143,6 +148,46 @@ public class NetworkRaceHost : Race
         Debug.Log("It's over!");
         StopTimer();
 
+        //Wait for all Clients to finish what they're doing
+        yield return new WaitForSeconds(1f);
+        
+        //Add Points .etc
+        DisplayRacer[] sortedRacers = new DisplayRacer[racers.Count];
+        while (sortedRacers.Length != racers.Count)
+            yield return null;
+
+        foreach (NetworkRacer r in racers)
+        {
+            r.points += 15 - r.position;
+            sortedRacers[r.position] = new DisplayRacer(r);
+            sortedRacers[r.position].name = r.name;
+        }
+
+        //Send Sorted Racers to all Clients
+        List<string> toSend = new List<string>();
+        foreach (DisplayRacer dr in sortedRacers)
+        {
+            toSend.Add(dr.ToString());
+        }
+        DisplayNameUpdateMessage msg = new DisplayNameUpdateMessage();
+        msg.players = toSend.ToArray();
+        NetworkServer.SendToAll(UnetMessages.allPlayerFinishedMsg, msg);
+
+        //Wait again for message to be recieved
+        yield return new WaitForSeconds(1f);
+
+        //Give them 10 seconds to look at the score
+        NetworkServer.SendToAll(UnetMessages.timerMsg, new TimerMessage(10));
+        yield return new WaitForSeconds(10f);
+
+        Debug.Log("Race is done!");
+        WrapUp();
+        finished = true;
+    }
+
+    private void WrapUp()
+    {
+        NetworkServer.UnregisterHandler(UnetMessages.trackVoteMsg);
     }
 
     private void RegisterHandles()

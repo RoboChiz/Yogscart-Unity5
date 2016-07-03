@@ -348,6 +348,19 @@ public class UnetHost : UnetClient
 
         //Start host script
         hostGamemode.StartGameMode();
+
+        //Wait for the Gamemode to Finish
+        while(!hostGamemode.finished)
+        {
+            yield return null;
+        }
+
+        //Delete the host gamemode if it isn't a client (No more cleanup needed)
+        if(client != null)
+            Destroy(hostGamemode);
+
+        //Tell the clients to clean up
+        NetworkServer.SendToAll(UnetMessages.returnLobbyMsg, new EmptyMessage());
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)

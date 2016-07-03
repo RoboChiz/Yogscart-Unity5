@@ -66,7 +66,7 @@ public class Leaderboard : MonoBehaviour
         }
 
         Debug.Log("Sorted!");
-        Debug.Log("The best human Racer is " + BestHuman());
+        //Debug.Log("The best human Racer is " + BestHuman());
         state = LBType.Sorted;
     }
 
@@ -188,7 +188,7 @@ public class Leaderboard : MonoBehaviour
                 for (int i = 0; i < racers.Count; i++)
                 {
                     DisplayRacer nRacer = racers[i];
-                    if (nRacer.human != -1)
+                    if (nRacer.human >= 0)
                     {
                         Texture2D humanTexture;
 
@@ -221,7 +221,7 @@ public class Leaderboard : MonoBehaviour
                     else
                     {
                         Texture2D NameTexture;
-                        if (nRacer.human != -1)
+                        if (nRacer.human >= 0)
                         {
                             NameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name + "_Sel");
                         }
@@ -312,6 +312,23 @@ public class DisplayRacer
         points = racer.points;
         timer = racer.timer;
         position = racer.position;
+    }
+
+    public override string ToString()
+    {
+        return position + ";" + name + ";" + character + ";" + points + ";" + timer + ";" + human;
+    }
+
+    public DisplayRacer(string readFrom)
+    {
+        string[] splitString = readFrom.Split(";"[0]);
+
+        position = float.Parse(splitString[0]);
+        name = splitString[1];
+        character = int.Parse(splitString[2]);
+        points = int.Parse(splitString[3]);
+        timer = float.Parse(splitString[4]);
+        human = int.Parse(splitString[5]);
     }
 
 }
