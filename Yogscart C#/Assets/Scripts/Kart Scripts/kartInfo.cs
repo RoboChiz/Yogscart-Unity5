@@ -94,7 +94,7 @@ public class kartInfo : MonoBehaviour
 
         GUIHelper.SetGUIAlpha(raceGUIAlpha);
 
-        Race gamemode = GameObject.FindObjectOfType<Race>();
+        Race gamemode = FindObjectOfType<Race>();
 
         if (gamemode.raceType != RaceType.TimeTrial)
         {

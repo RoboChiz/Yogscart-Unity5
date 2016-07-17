@@ -31,6 +31,8 @@ public class Race : GameMode
     private string rankString;
     private int bestPlace;
 
+    protected bool raceFinished = false;
+
     public override void StartGameMode()
     {
         StartCoroutine("actualStartGamemode");
@@ -38,8 +40,8 @@ public class Race : GameMode
 
     protected virtual IEnumerator actualStartGamemode()
     {
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();
+        gd = FindObjectOfType<CurrentGameData>();
+        sm = FindObjectOfType<SoundManager>();
 
         //Character Select & Level Select
         yield return StartCoroutine("PlayerSetup");
@@ -89,7 +91,7 @@ public class Race : GameMode
         }
 
         //Load the Track Manager
-        td = GameObject.FindObjectOfType<TrackData>();
+        td = FindObjectOfType<TrackData>();
 
         //Spawn the karts
         if (raceType == RaceType.TimeTrial)
@@ -178,7 +180,7 @@ public class Race : GameMode
             ki.locked = false;
 
         //Wait for the gamemode to be over
-        while (!finished && timer < 3600)
+        while (!raceFinished && timer < 3600)
         {
             ClientUpdate();
 
@@ -190,6 +192,8 @@ public class Race : GameMode
 
         //Show Results
         Debug.Log("It's over!");
+        finished = true;
+
         StopTimer();
 
         foreach (kartInput ki in kines)
@@ -418,6 +422,8 @@ public class Race : GameMode
 
                 if (raceType == RaceType.TimeTrial)
                     raceTexture = Resources.Load<Texture2D>("UI/Level Selection/TimeTrial");
+                else if (raceType == RaceType.Online)
+                    raceTexture = Resources.Load<Texture2D>("UI/Level Selection/Online");
                 else
                     raceTexture = Resources.Load<Texture2D>("UI/Level Selection/" + currentRace);
 
@@ -604,7 +610,7 @@ public class Race : GameMode
         SortingScript.CalculatePositions(racers);
 
         if (allFinished)
-            finished = true;
+            raceFinished = true;
 
     }
 
@@ -644,7 +650,7 @@ public class Race : GameMode
             kc.angle = Mathf.Lerp(0f, 180f, percent);
             kc.height = Mathf.Lerp(2f, 1f, percent);
             kc.playerHeight = Mathf.Lerp(2f, 1f, percent);
-            kc.sideAmount = Mathf.Lerp(0, -1.9f, percent);
+            kc.sideAmount = Mathf.Lerp(0, -1.9f, percent * 4f);
 
             yield return null;
         }

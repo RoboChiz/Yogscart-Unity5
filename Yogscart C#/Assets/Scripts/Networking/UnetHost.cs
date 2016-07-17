@@ -332,6 +332,13 @@ public class UnetHost : UnetClient
         //Wait a frame
         yield return null;
 
+        //Reset Network Racers values
+        foreach(NetworkRacer r in finalPlayers)
+        {
+            r.ready = false;
+            r.finished = false;
+        }
+
         //Start Gamemode in Host Script
         hostGamemode = OnlineGameModeScripts.AddHostScript(gamemode);
         gamemodeInt = gamemode;
@@ -355,12 +362,14 @@ public class UnetHost : UnetClient
             yield return null;
         }
 
-        //Delete the host gamemode if it isn't a client (No more cleanup needed)
-        if(client != null)
-            Destroy(hostGamemode);
-
         //Tell the clients to clean up
         NetworkServer.SendToAll(UnetMessages.returnLobbyMsg, new EmptyMessage());
+
+        yield return null;
+
+        //Delete the host gamemode if it isn't a client (No more cleanup needed)
+        if (client != null)
+            Destroy(hostGamemode);
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)

@@ -157,7 +157,6 @@ public class UnetClient : NetworkManager
     //Forces the client to send it current Character Selection Wheter or not if it has finished
     public void OnForceCharacterSelect(NetworkMessage netMsg)
     {
-        PlayerInfoMessage msg = new PlayerInfoMessage();
         //Check that something has been chosen for each loadout option
         LoadOut toSend = CurrentGameData.currentChoices[0];
 
@@ -187,7 +186,7 @@ public class UnetClient : NetworkManager
         LoadGamemodeMessage msg = netMsg.ReadMessage<LoadGamemodeMessage>();
 
         clientGamemode = OnlineGameModeScripts.AddClientScript(msg.gamemode);
-        clientGamemode.StartGameMode();
+        clientGamemode.StartGameMode(); 
 
         FindObjectOfType<NetworkGUI>().StartClientGame();
     }
@@ -223,22 +222,52 @@ public class UnetClient : NetworkManager
     {
         //Tell the client gamemode to clear up
         clientGamemode.OnEndGamemode();
-        //Delete it for good measure
-        Destroy(clientGamemode);
-
+        StartCoroutine(ReloadLobby());
 
     }
 
     private IEnumerator ReloadLobby()
     {
-        yield return null;
-        
+
+        yield return StartCoroutine(LoadMainMenu(NetworkGUI.ServerState.Lobby));
+
+        //Delete it for good measure
+        Destroy(clientGamemode);       
+    }
+
+    private IEnumerator LoadMainMenu(NetworkGUI.ServerState newState)
+    {
+        CurrentGameData.blackOut = true;
+        yield return new WaitForSeconds(0.5f);
+
         //Load the Lobby
         SceneManager.LoadScene("Main_Menu");
         yield return null;
 
         //Reload the Lobby
+        FindObjectOfType<NetworkGUI>().state = newState;
 
+        //Turn the Main Menu off
+        FindObjectOfType<MainMenu>().state = MainMenu.MenuState.Online;
+
+        FindObjectOfType<MainMenu>().backStates = new List<MainMenu.MenuState>();
+        FindObjectOfType<MainMenu>().backStates.Add(MainMenu.MenuState.Start);
+        FindObjectOfType<MainMenu>().backStates.Add(MainMenu.MenuState.Main);
+        FindObjectOfType<MainMenu>().HideTitle();
+
+        //Clear away any Components it may of gained
+        Component[] comps = GetComponents(typeof(Component));
+        foreach (Component comp in comps)
+        {
+            if (!(comp is Transform || comp is CurrentGameData || comp is InputManager || comp is SoundManager || comp is KartMaker || comp is CollisionHandler || comp is NetworkGUI || comp is UnetClient || comp is UnetHost))
+            {
+                Destroy(comp);
+            }
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        CurrentGameData.blackOut = false;
     }
 
     //Called when a Server wants a client to load a level by ID
@@ -250,29 +279,14 @@ public class UnetClient : NetworkManager
 
     public void EndClient(string message)
     {
+        StartCoroutine(ActualEndClient(message));
+    }
+
+    private IEnumerator ActualEndClient(string message)
+    {
         StopClient();
 
-        //If not at Main Menu, Load it
-        if (SceneManager.GetActiveScene() != SceneManager.GetSceneByName("Main_Menu"))
-            SceneManager.LoadScene("Main_Menu");
-
-        //Turn the Main Menu off
-        FindObjectOfType<MainMenu>().enabled = false;
-
-        //Load the disconnect screen
-        NetworkGUI gui = FindObjectOfType<NetworkGUI>();
-        gui.enabled = true;
-        gui.PopUp(message);
-
-        //Clear away any Components it may of gained
-        Component[] comps = GetComponents(typeof(Component));
-        foreach(Component comp in comps)
-        {
-            if(!(comp is Transform || comp is CurrentGameData || comp is InputManager || comp is SoundManager || comp is KartMaker || comp is CollisionHandler))
-            {
-                Destroy(comp);
-            }         
-        }
+        yield return StartCoroutine(LoadMainMenu(NetworkGUI.ServerState.ServerList));
 
         //Kill itself
         DestroyImmediate(GetComponent<UnetClient>());

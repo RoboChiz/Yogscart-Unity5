@@ -10,7 +10,7 @@ public class NetworkRaceHost : Race
     private List<Vote> votes;
 
     public enum ServerRaceState {Voting, Setup, Racing, After};
-    public ServerRaceState serverState = ServerRaceState.Voting;
+    public ServerRaceState serverState = ServerRaceState.Voting;   
 
     //Called by StartGamemode() void, Overides Offline Racer IEnumerator
     protected override IEnumerator actualStartGamemode()
@@ -56,18 +56,31 @@ public class NetworkRaceHost : Race
 
         yield return new WaitForSeconds(1f);
 
+        int cup, track;
+
         //Decide on Track and send it out
-        int chosenVote = UnityEngine.Random.Range(0, votes.Count);
+        if (votes.Count > 0)
+        {
+            int chosenVote = UnityEngine.Random.Range(0, votes.Count);
+            NetworkServer.SendToAll(UnetMessages.startRollMsg, new intMessage(chosenVote));
 
-        NetworkServer.SendToAll(UnetMessages.startRollMsg, new intMessage(chosenVote));
+            cup = votes[chosenVote].cup;
+            track = votes[chosenVote].track;
 
-        serverState = ServerRaceState.Setup;
+            //Wait for Roll to finish and give players enough time to see Race
+            yield return new WaitForSeconds(5f);
+        }
+        else
+        {
+            //Select a track at Random
+            cup = UnityEngine.Random.Range(0, gd.tournaments.Length);
+            track = UnityEngine.Random.Range(0, gd.tournaments[cup].tracks.Length);
+        }
 
-        //Wait for Roll to finish and give players enough time to see Race
-        yield return new WaitForSeconds(5f);
+        serverState = ServerRaceState.Setup;       
 
         //Tell everyone to load the level
-        NetworkServer.SendToAll(UnetMessages.loadLevelMsg, new TrackVoteMessage(votes[chosenVote].cup, votes[chosenVote].track));
+        NetworkServer.SendToAll(UnetMessages.loadLevelMsg, new TrackVoteMessage(cup, track));
 
         yield return null;
 
@@ -120,7 +133,7 @@ public class NetworkRaceHost : Race
         NetworkServer.SendToAll(UnetMessages.unlockKartMsg, new EmptyMessage());
 
         //Wait for the gamemode to be over
-        while (!finished && timer < 3600)
+        while (!raceFinished && timer < 3600)
         {
             HostUpdate();
 
@@ -131,6 +144,7 @@ public class NetworkRaceHost : Race
 
                 if(racer.finished && !racer.ready)
                 {
+                    Debug.Log("Finish sent to racer!");
                     NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.finishRaceMsg, new EmptyMessage());
                     racer.ready = true;
                     //Tell all Clients about Finish
@@ -188,6 +202,15 @@ public class NetworkRaceHost : Race
     private void WrapUp()
     {
         NetworkServer.UnregisterHandler(UnetMessages.trackVoteMsg);
+
+        foreach (NetworkRacer r in racers)
+        {
+            r.finished = false;
+            r.ready = false;
+            r.timer = 0;
+            r.currentDistance = 0;
+            r.totalDistance = 0;         
+        }
     }
 
     private void RegisterHandles()

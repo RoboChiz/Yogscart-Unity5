@@ -4,23 +4,87 @@ using UnityEngine.Networking;
 
 public class KartNetworker : NetworkBehaviour
 {
+    //Current and Loaded values of the Player used to load the correct models onto networked karts
     [SyncVar]
     public int currentChar, currentHat, currentKart, currentWheel;
-    //Make private later
-    public int loadedChar = -1, loadedHat = -1, loadedKart = -1, loadedWheel = -1;
+    private int loadedChar = -1, loadedHat = -1, loadedKart = -1, loadedWheel = -1;
 
+    //Stores the essential values of the clients kart script
+    [SyncVar]
+    private float throttle, steer, expectedSpeed, boostTime;
+    [SyncVar]
+    private bool drift;
+    [SyncVar]
+    private int boostType;
 
+    private kartScript ks;
 
-	// Update is called once per frame
-	void FixedUpdate ()
+    void Start()
+    {
+        ks = GetComponent<kartScript>();
+    }
+
+    // Update is called once per frame
+    void FixedUpdate ()
     {
         //If loaded values do not match current then fix it
         if(currentChar != loadedChar || currentHat != loadedHat || currentKart != loadedKart || loadedWheel != currentWheel)
         {
             LoadKartModel();
         }
-	
-	}
+
+        if(isLocalPlayer)
+        {
+            SendKartInfo();
+        }
+        else
+        {
+            //Update the Kart Scripts Values 
+            ks.throttle = throttle;
+            ks.steer = steer;
+            ks.drift = drift;
+            ks.ExpectedSpeed = expectedSpeed;
+            ks.stopmanualBoosting = true;
+
+            if(boostTime > 0)
+            {
+                ks.Boost(boostTime, (kartScript.BoostMode)boostType);
+                boostTime = 0;
+                boostType = 0;
+            }
+        }         
+    }
+
+    [ClientCallback]
+    private void SendKartInfo()
+    {
+        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.ExpectedSpeed);
+    }
+
+    [Command]
+    private void CmdRecieveKartInfo(float _throttle, float _steer, bool _drift, float _expectedSpeed)
+    {
+        throttle = _throttle;
+        steer = _steer;
+        drift = _drift;
+        expectedSpeed = _expectedSpeed;
+    }
+
+    [ClientCallback]
+    public void SendBoost(float time, kartScript.BoostMode type)
+    {
+        if(isLocalPlayer)
+        {
+            CmdRecieveBoost(time, (int)type);
+        }
+    }
+
+    [Command]
+    private void CmdRecieveBoost(float time, int type)
+    {
+        boostTime = time;
+        boostType = type;            
+    }
 
     //Called on client when Player is created
     public override void OnStartLocalPlayer()

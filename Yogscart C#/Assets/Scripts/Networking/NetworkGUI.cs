@@ -9,12 +9,12 @@ public class NetworkGUI : MonoBehaviour
     CurrentGameData gd;
     SoundManager sm;
 
-    public float guiAlpha = 0f, fadeTime = 0.5f;
+    private float guiAlpha = 0f, fadeTime = 0.5f;
 
     public enum ServerState { ServerList, Connecting, Popup, Lobby, LoadingRace, LoadingLevel, Racing };
     public ServerState state;
 
-    public string popupText;
+    private string popupText;
 
     const int maxServerCount = 10;
     public Color currentPlayerColour;
@@ -356,6 +356,7 @@ public class NetworkGUI : MonoBehaviour
                 {
                     PlayerPrefs.SetString("playerName", playerName);
                     FindObjectOfType<MainMenu>().BackMenu();
+                    MainMenu.lockInputs = false;
                 }
 
                 break;
@@ -759,7 +760,7 @@ public class NetworkGUI : MonoBehaviour
 
     public void StartClient()
     {
-        PlayerPrefs.SetString("playerName", playerName);
+        PlayerPrefs.SetString("playerName", playerName);        
         StartCoroutine(ActualStartClient());
     }
 

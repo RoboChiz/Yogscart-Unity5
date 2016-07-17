@@ -26,7 +26,7 @@ public class MainMenu : MonoBehaviour
     [HideInInspector]
     public bool sliding = false;
 
-    List<MenuState> backStates = new List<MenuState>();
+    public List<MenuState> backStates = new List<MenuState>();
 
     static public float SideAmount
     {
@@ -253,8 +253,8 @@ public class MainMenu : MonoBehaviour
                                 ChangeMenu(MenuState.Online);
                                 StartCoroutine(ForcePicRemove());
                                 gd.GetComponent<InputManager>().RemoveOtherControllers();
-                                GetComponent<NetworkGUI>().enabled = true;
-                                GetComponent<NetworkGUI>().ShowMenu();
+                                FindObjectOfType<NetworkGUI>().enabled = true;
+                                FindObjectOfType<NetworkGUI>().ShowMenu();
                                 break;
                             case "Options":
                                 ChangeMenu(MenuState.Options);
@@ -374,9 +374,9 @@ public class MainMenu : MonoBehaviour
                 lockPicture = false;
             }
 
-            if(state == MenuState.Online && GetComponent<NetworkGUI>().enabled)
+            if(state == MenuState.Online && FindObjectOfType<NetworkGUI>().enabled)
             {
-                GetComponent<NetworkGUI>().CloseMenu();
+                FindObjectOfType<NetworkGUI>().CloseMenu();
             }
 
             if (state == MenuState.Online)

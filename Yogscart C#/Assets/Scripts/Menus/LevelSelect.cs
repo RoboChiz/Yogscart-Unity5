@@ -3,7 +3,6 @@ using System.Collections;
 
 public class LevelSelect : MonoBehaviour
 {
-
     CurrentGameData gd;
     public GUISkin skin;
 
@@ -14,7 +13,7 @@ public class LevelSelect : MonoBehaviour
     //Transtition
     private float scale = 1f;
     private float menuAlpha = 1f;
-    private bool sliding = false;
+    public bool sliding = false;
 
     // Use this for initialization
     void Start()

@@ -100,6 +100,10 @@ public class NetworkRaceClient : Race
         if(FindObjectOfType<LevelSelect>().enabled)
         {
             FindObjectOfType<LevelSelect>().ForceFinishLevelSelect();
+
+            if(FindObjectOfType<VotingScreen>() == null)
+                gameObject.AddComponent<VotingScreen>();
+
             FindObjectOfType<VotingScreen>().ShowScreen();
         }    
     }
@@ -130,6 +134,8 @@ public class NetworkRaceClient : Race
         TrackVoteMessage msg = netMsg.ReadMessage<TrackVoteMessage>();
         currentCup = msg.cup;
         currentTrack = msg.track;
+
+        FindObjectOfType<NetworkGUI>().state = NetworkGUI.ServerState.Racing;
 
         //Clear away handlers that we don't need anymore
         client.UnregisterHandler(UnetMessages.showLvlSelectMsg);
