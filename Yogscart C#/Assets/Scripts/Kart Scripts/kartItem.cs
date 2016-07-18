@@ -23,11 +23,12 @@ public class kartItem : MonoBehaviour
     public float guiAlpha;
 
     public ItemOwner itemOwner = ItemOwner.Mine;
+    public bool onlineGame;
 
     private bool spinning = false;
 
     public bool input = false, locked = true, hidden = true;
-    private bool inputLock = false;
+    public bool inputLock = false;
     private float inputDirection;
     public float itemDistance = 2f;
 
@@ -53,7 +54,7 @@ public class kartItem : MonoBehaviour
     }
 
     //Makes the local version of the kart use an item, the effect should appear the same on all clients
-    void UseItem()
+    public void UseItem()
     {
         if (heldPowerUp != -1)
         {
@@ -64,7 +65,7 @@ public class kartItem : MonoBehaviour
         }
     }
 
-    void UseShield()
+    public void UseShield()
     {
         if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].useableShield)
         {
@@ -74,7 +75,7 @@ public class kartItem : MonoBehaviour
         }
     }
 
-    void DropShield(float dir)
+    public void DropShield(float dir)
     {
         if (myItem != null)
         {
@@ -88,7 +89,7 @@ public class kartItem : MonoBehaviour
         }
     }
 
-    void EndItemUse()
+    private void EndItemUse()
     {
         if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].multipleUses)
         {
@@ -147,6 +148,12 @@ public class kartItem : MonoBehaviour
         yield return StartCoroutine(RollItem(nItem));
 
         RecieveItem(nItem);
+
+        //If Online tell Server about the item
+        if (onlineGame && itemOwner == ItemOwner.Mine)
+        {
+            FindObjectOfType<UnetClient>().client.Send(UnetMessages.recieveItemMsg, new intMessage(nItem));
+        }
     }
 
     IEnumerator RollItem(int item)
@@ -227,6 +234,9 @@ public class kartItem : MonoBehaviour
         if (GetComponent<RacerAI>())//If AI detected must be AI
             itemOwner = ItemOwner.Ai;
 
+        if(kaI == null)
+            kaI = GetComponent<kartInput>();
+
         if (kaI != null)
         {
             input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;
@@ -258,6 +268,10 @@ public class kartItem : MonoBehaviour
                     if (itemKey)
                     {
                         UseItem();
+                        //If Online tell Server about the item use
+                        if (onlineGame && itemOwner == ItemOwner.Mine)
+                            FindObjectOfType<UnetClient>().client.Send(UnetMessages.useItemMsg, new EmptyMessage());
+
                         inputLock = true;
                     }
                 }
@@ -268,6 +282,10 @@ public class kartItem : MonoBehaviour
                         if (!sheilding)
                         {
                             UseShield();
+                            //If Online tell Server about the shield use
+                            if (onlineGame && itemOwner == ItemOwner.Mine)
+                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.useShieldMsg, new EmptyMessage());
+
                             sheilding = true;
                         }
                     }
@@ -276,6 +294,10 @@ public class kartItem : MonoBehaviour
                         if (sheilding)
                         {
                             DropShield(inputDirection);
+                            //If Online tell Server about the shield drop
+                            if (onlineGame && itemOwner == ItemOwner.Mine)
+                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new floatMessage(inputDirection));
+
                             sheilding = false;
                         }
                     }

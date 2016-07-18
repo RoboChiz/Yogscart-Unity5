@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+using System;
 
 public class KartNetworker : NetworkBehaviour
 {
     //Current and Loaded values of the Player used to load the correct models onto networked karts
     [SyncVar]
-    public int currentChar, currentHat, currentKart, currentWheel;
+    public int currentChar = -1, currentHat = -1, currentKart = -1, currentWheel = -1;
+
     private int loadedChar = -1, loadedHat = -1, loadedKart = -1, loadedWheel = -1;
 
     //Stores the essential values of the clients kart script
@@ -17,11 +20,24 @@ public class KartNetworker : NetworkBehaviour
     [SyncVar]
     private int boostType;
 
+    //Used to call local Item Functions
+    [SyncVar]
+    public int recieveItem, useItem, useShield, dropShield, currentItem;
+    [SyncVar]
+    public float currentItemDir;
+
+    private int lastRecieveItem, lastUseItem, lastUseShield, lastDropShield;
+
+    [SyncVar]
+    public string kartPlayerName = "Player";
+
     private kartScript ks;
+    private kartItem ki;
 
     void Start()
     {
         ks = GetComponent<kartScript>();
+        ki = GetComponent<kartItem>();
     }
 
     // Update is called once per frame
@@ -36,6 +52,9 @@ public class KartNetworker : NetworkBehaviour
         if(isLocalPlayer)
         {
             SendKartInfo();
+
+            if (ki != null)
+                ki.itemOwner = ItemOwner.Mine;    
         }
         else
         {
@@ -52,22 +71,55 @@ public class KartNetworker : NetworkBehaviour
                 boostTime = 0;
                 boostType = 0;
             }
+
+            //Add Player Name
+            Text text = GetComponentInChildren<Text>();
+            text.text = kartPlayerName;
+
+            if(ki != null)
+            {
+                //If a function has been again since last time call the function locally
+                if(recieveItem != lastRecieveItem)
+                {
+                    ki.RecieveItem(currentItem);
+                    lastRecieveItem = recieveItem;
+                }
+
+                if (useItem != lastUseItem)
+                {
+                    ki.UseItem();
+                    lastUseItem = useItem;
+                }
+
+                if(useShield != lastUseShield)
+                {
+                    ki.UseShield();
+                    lastUseShield = useShield;
+                }
+
+                if (dropShield != lastDropShield)
+                {
+                    ki.DropShield(currentItemDir);
+                    lastDropShield = dropShield;
+                }
+            }
         }         
     }
 
     [ClientCallback]
     private void SendKartInfo()
     {
-        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.ExpectedSpeed);
+        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.ExpectedSpeed, FindObjectOfType<NetworkGUI>().playerName);
     }
 
     [Command]
-    private void CmdRecieveKartInfo(float _throttle, float _steer, bool _drift, float _expectedSpeed)
+    private void CmdRecieveKartInfo(float _throttle, float _steer, bool _drift, float _expectedSpeed, string _playerName)
     {
         throttle = _throttle;
         steer = _steer;
         drift = _drift;
         expectedSpeed = _expectedSpeed;
+        kartPlayerName = _playerName;
     }
 
     [ClientCallback]
@@ -131,7 +183,7 @@ public class KartNetworker : NetworkBehaviour
             }
         }
 
-        Destroy(newKart.gameObject);
+        Destroy(newKart.gameObject);      
 
         loadedChar = currentChar;
         loadedHat = currentHat;

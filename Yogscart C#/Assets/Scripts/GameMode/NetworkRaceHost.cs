@@ -10,7 +10,9 @@ public class NetworkRaceHost : Race
     private List<Vote> votes;
 
     public enum ServerRaceState {Voting, Setup, Racing, After};
-    public ServerRaceState serverState = ServerRaceState.Voting;   
+    public ServerRaceState serverState = ServerRaceState.Voting;
+
+    private int totalFinishedCount = 0;
 
     //Called by StartGamemode() void, Overides Offline Racer IEnumerator
     protected override IEnumerator actualStartGamemode()
@@ -132,6 +134,8 @@ public class NetworkRaceHost : Race
         //Tell all Client's to unlock their karts
         NetworkServer.SendToAll(UnetMessages.unlockKartMsg, new EmptyMessage());
 
+        float timeLeftStart = 0;
+
         //Wait for the gamemode to be over
         while (!raceFinished && timer < 3600)
         {
@@ -152,15 +156,42 @@ public class NetworkRaceHost : Race
                     displayRacer.name = racer.name;
 
                     NetworkServer.SendToAll(UnetMessages.playerFinishedMsg, new stringMessage(displayRacer.ToString()));
+
+                    totalFinishedCount++;
                 }
                     
             }
+
+            //Start countdown timer when 3 people have crossed the line
+            int playersNeeded = (racers.Count > 3) ? 3 : 2;
+            if(!raceFinished)
+            {
+                if (totalFinishedCount >= playersNeeded)
+                {
+                    timeLeftStart = timer;
+                    NetworkServer.SendToAll(UnetMessages.timerMsg, new TimerMessage(30));
+                    totalFinishedCount = -20;//Make totalFinishedCount a value which can never hit again
+                }
+
+                if(timeLeftStart != 0 && timer - timeLeftStart >= 30)
+                {
+                    raceFinished = true;
+                    DoDNF();
+                }
+            }
+                
 
             yield return new WaitForSeconds(0.25f);
         }
 
         Debug.Log("It's over!");
         StopTimer();
+
+        //Cancel DNF Timer
+        if(timeLeftStart != 0)
+        {
+            NetworkServer.SendToAll(UnetMessages.timerMsg, new TimerMessage(-1));
+        }
 
         //Wait for all Clients to finish what they're doing
         yield return new WaitForSeconds(1f);
@@ -172,9 +203,16 @@ public class NetworkRaceHost : Race
 
         foreach (NetworkRacer r in racers)
         {
-            r.points += 15 - r.position;
+            if(r.finished)
+            {
+                r.points += 15 - r.position;               
+            }
+
             sortedRacers[r.position] = new DisplayRacer(r);
             sortedRacers[r.position].name = r.name;
+
+            if (!r.finished)
+                sortedRacers[r.position].name += " [DNF]";
         }
 
         //Send Sorted Racers to all Clients
@@ -199,6 +237,18 @@ public class NetworkRaceHost : Race
         finished = true;
     }
 
+    private void DoDNF()
+    {
+        foreach(NetworkRacer racer in racers)
+        {
+            if(!racer.finished)
+            {
+                Debug.Log("Sent DNF to racer!");
+                NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.finishRaceMsg, new EmptyMessage());
+            }
+        }
+    }
+
     private void WrapUp()
     {
         NetworkServer.UnregisterHandler(UnetMessages.trackVoteMsg);
@@ -216,8 +266,68 @@ public class NetworkRaceHost : Race
     private void RegisterHandles()
     {
         NetworkServer.RegisterHandler(UnetMessages.trackVoteMsg, OnTrackVote);
+
+        //Power Ups
+        NetworkServer.RegisterHandler(UnetMessages.recieveItemMsg, OnRecieveItem);
+        NetworkServer.RegisterHandler(UnetMessages.useItemMsg, OnUseItem);
+        NetworkServer.RegisterHandler(UnetMessages.useShieldMsg, OnUseShield);
+        NetworkServer.RegisterHandler(UnetMessages.dropShieldMsg, OnDropShield);
     }
 
+    //Called when a client drops the shield they're holding
+    private void OnDropShield(NetworkMessage netMsg)
+    {
+        //Find the Racer that sent the message
+        foreach (NetworkRacer r in racers)
+        {
+            if (netMsg.conn == r.conn)
+            {
+                r.ingameObj.GetComponent<KartNetworker>().currentItemDir = netMsg.ReadMessage<floatMessage>().value;
+                r.ingameObj.GetComponent<KartNetworker>().dropShield++;
+                return;
+            }
+        }
+    }
+    //Called when a client uses the shield they're holding
+    private void OnUseShield(NetworkMessage netMsg)
+    {
+        //Find the Racer that sent the message
+        foreach (NetworkRacer r in racers)
+        {
+            if (netMsg.conn == r.conn)
+            {
+                r.ingameObj.GetComponent<KartNetworker>().useShield++;
+                return;
+            }
+        }
+    }
+    //Called when a client uses the item they're holding
+    private void OnUseItem(NetworkMessage netMsg)
+    {
+        //Find the Racer that sent the message
+        foreach (NetworkRacer r in racers)
+        {
+            if (netMsg.conn == r.conn)
+            {
+                r.ingameObj.GetComponent<KartNetworker>().useItem++;
+                return;
+            }
+        }
+    }
+    //Called when a Client recieves an Item
+    private void OnRecieveItem(NetworkMessage netMsg)
+    {
+        //Find the Racer that sent the message
+        foreach (NetworkRacer r in racers)
+        {
+            if (netMsg.conn == r.conn)
+            {
+                r.ingameObj.GetComponent<KartNetworker>().currentItem = netMsg.ReadMessage<intMessage>().value;
+                r.ingameObj.GetComponent<KartNetworker>().recieveItem++;
+                return;
+            }
+        }
+    }
     //Votes sent by client to be processed
     private void OnTrackVote(NetworkMessage netMsg)
     {

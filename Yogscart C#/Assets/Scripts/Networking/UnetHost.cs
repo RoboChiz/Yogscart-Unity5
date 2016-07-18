@@ -370,6 +370,14 @@ public class UnetHost : UnetClient
         //Delete the host gamemode if it isn't a client (No more cleanup needed)
         if (client != null)
             Destroy(hostGamemode);
+
+        ResetLobby();
+    }
+
+    private void ResetLobby()
+    {
+        UpdateDisplayNames();
+        SendDisplayNames();
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)

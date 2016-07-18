@@ -22,6 +22,12 @@ public static class UnetMessages
     public const short returnLobbyMsg = 1016;
     public const short loadLevelID = 1017;
 
+    //Power Up Messages
+    public const short recieveItemMsg = 1018;
+    public const short useItemMsg = 1019;
+    public const short useShieldMsg = 1020;
+    public const short dropShieldMsg = 1021;
+
     //Network Race Messages
     public const short showLvlSelectMsg = 1102;
     public const short trackVoteMsg = 1103;
@@ -146,6 +152,22 @@ public class intMessage : MessageBase //1105, 1109, 1110
     public intMessage(int nValue)
     {
         value = nValue;
+    }
+}
+
+//Sent by Server to Client when a float needs sending
+public class floatMessage : MessageBase //1021
+{
+    public float value;
+
+    public floatMessage()
+    {
+        value = 0;
+    }
+
+    public floatMessage(float _Value)
+    {
+        value = _Value;
     }
 }
 
