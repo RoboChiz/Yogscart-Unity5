@@ -32,7 +32,7 @@ public class InputManager : MonoBehaviour
     static public List<InputController> controllers = new List<InputController>();
     static private bool mouseLock = false;
 
-    private List<float> iconHeights = new List<float>();
+    public List<float> iconHeights = new List<float>();
 
     //Loads Saved Input Configurations
     private static void LoadConfig()
@@ -100,7 +100,7 @@ public class InputManager : MonoBehaviour
         if (!alreadyIn)
         {
             controllers.Add(new InputController(input));
-            StartCoroutine("ShowInput", controllers.Count - 1);
+            StartCoroutine(ShowInput(controllers.Count - 1));
             Debug.Log("Added " + input + " controllers:" + controllers.Count);
         }
     }
@@ -113,7 +113,7 @@ public class InputManager : MonoBehaviour
             if (controllers[i].controllerName == input)
             {
                 controllers.RemoveAt(i);
-                StartCoroutine("RemoveInput", i);
+                StartCoroutine(ShowInput(i));
                 break;
             }
         }
@@ -125,7 +125,7 @@ public class InputManager : MonoBehaviour
         for (int i = 1; i < controllers.Count; i++)
         {
             controllers.RemoveAt(i);
-            StartCoroutine("RemoveInput", i);
+            StartCoroutine(ShowInput(i));
         }
     }
 
@@ -205,74 +205,41 @@ public class InputManager : MonoBehaviour
             else
                 icon = Resources.Load<Texture2D>("UI/Controls/Gone");
 
-            GUI.Box(new Rect((i * (iconSize + 10)) + 10, iconHeights[i], iconSize, iconSize), icon);
+            GUI.Box(new Rect((i * (iconSize + 10)) + 10, Screen.height - iconHeights[i], iconSize, iconSize), icon);
         }
     }
 
     IEnumerator ShowInput(int toShow)
-    {
+    {        
         float iconSize = Screen.height / 6f;
         float startTime = Time.time;
         float travelTime = 0.5f;
 
         //Slide UP //////////////////////////////
         while (toShow >= iconHeights.Count)
-            iconHeights.Add(Screen.height);
+            iconHeights.Add(0f);
 
-        if (iconHeights[toShow] == Screen.height)
+        //Don't slide if already moving
+        if (iconHeights[toShow] == 0f)
         {
-            while (Time.time - startTime < travelTime)
+            while (Time.time - startTime <= travelTime)
             {
-                iconHeights[toShow] = Mathf.Lerp(Screen.height, Screen.height - iconSize, (Time.time - startTime) / travelTime);
+                iconHeights[toShow] = Mathf.Lerp(0f, iconSize, (Time.time - startTime) / travelTime);
                 yield return null;
             }
 
-            //Pause at Top///////////////////////////////////////
-            iconHeights[toShow] = Screen.height - iconSize;
+            iconHeights[toShow] = iconSize;
             yield return new WaitForSeconds(travelTime);
 
-            //Slide Down/////////////////////
             startTime = Time.time;
-            while (Time.time - startTime < travelTime)
+            while (Time.time - startTime <= travelTime)
             {
-                iconHeights[toShow] = Mathf.Lerp(Screen.height - iconSize, Screen.height, (Time.time - startTime) / travelTime);
+                iconHeights[toShow] = Mathf.Lerp(iconSize, 0f, (Time.time - startTime) / travelTime);
                 yield return null;
             }
-            iconHeights[toShow] = Screen.height;
+
+            iconHeights[toShow] = 0f;
         }
-
-    }
-
-    IEnumerator RemoveInput(int toShow)
-    {
-        float iconSize = Screen.height / 6f;
-        float startTime = Time.time;
-        float travelTime = 0.5f;
-
-        //Slide UP //////////////////////////////
-        if (iconHeights[toShow] == Screen.height)
-        {
-
-            while (Time.time - startTime < travelTime)
-            {
-                iconHeights[toShow] = Mathf.Lerp(Screen.height, Screen.height - iconSize, (Time.time - startTime) / travelTime);
-                yield return null;
-            }
-
-            //Pause at Top///////////////////////////////////////
-            iconHeights[toShow] = Screen.height - iconSize;
-            yield return new WaitForSeconds(travelTime);
-
-            //Slide Down/////////////////////
-            startTime = Time.time;
-            while (Time.time - startTime < travelTime)
-            {
-                iconHeights[toShow] = Mathf.Lerp(Screen.height - iconSize, Screen.height, (Time.time - startTime) / travelTime);
-                yield return null;
-            }
-            iconHeights[toShow] = Screen.height;
-        }
-
     }
 
     public static bool MouseIntersects(Rect area)

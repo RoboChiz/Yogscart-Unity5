@@ -4,23 +4,33 @@ using UnityEngine.Networking;
 
 public class NetworkPass : NetworkBehaviour
 {
+    [SyncVar]
+    public Vector3 syncPos;
+    [SyncVar]
+    public Quaternion syncRot;
+    [SyncVar]
+    private NetworkInstanceId parentID;
 
-    [SyncVar]
-    private Vector3 syncPos;
-    [SyncVar]
-    private Quaternion syncRot;
+    private uint lastParentID = 0;
 
     const float lerpRate = 15;
+
+    void Awake()
+    {
+        syncPos = transform.position;
+        syncRot = transform.rotation;         
+    }
 
     void FixedUpdate()
     {
         TransmitPosition();
         LerpPosition();
+        UpdateParent();
     }
 
     void LerpPosition()
     {
-        if (!isLocalPlayer)
+        if (!hasAuthority)
         {
             transform.position = Vector3.Lerp(transform.position, syncPos, Time.deltaTime * lerpRate);
             transform.rotation = Quaternion.Lerp(transform.rotation, syncRot, Time.deltaTime * lerpRate);
@@ -37,9 +47,37 @@ public class NetworkPass : NetworkBehaviour
     [ClientCallback]
     void TransmitPosition()
     {
-        if(isLocalPlayer)
+        if(hasAuthority)
         {
             CmdProvidePositiontoServer(transform.position, transform.rotation);
         }      
     }
+
+    void UpdateParent()
+    {
+        if (hasAuthority)
+        {
+            if(transform.parent != null)
+            {
+                parentID = transform.parent.GetComponent<NetworkIdentity>().netId;
+            }
+            else
+            {
+                parentID = new NetworkInstanceId(0);
+            }            
+        }
+        else
+        {
+            if (lastParentID != parentID.Value)
+            {
+                if (parentID.IsEmpty())
+                    transform.parent = null;
+                else
+                    transform.parent = ClientScene.FindLocalObject(parentID).transform;
+
+                lastParentID = parentID.Value;
+            }
+        }
+    }
+
 }

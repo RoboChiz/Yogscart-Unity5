@@ -15,8 +15,9 @@ public class kartItem : MonoBehaviour
     public int heldPowerUp = -1;//Used to reference the item in Current Game Data
     public bool iteming; //True is player is getting / has an item
 
-    public Transform myItem { get; protected set; } //Holds the last item spawned by the player
-    private bool sheilding;
+    public Transform myItem; //Holds the last item spawned by the player
+    public bool sheilding;
+    public bool itemSpawned;
 
     public Texture2D renderItem, frame;
     public int renderHeight;
@@ -49,6 +50,7 @@ public class kartItem : MonoBehaviour
     //Informs all clients that this kart has recieved an item
     public void RecieveItem(int item)
     {
+        Debug.Log("Recieved Item " + item.ToString());
         heldPowerUp = item;
         iteming = true;
     }
@@ -58,8 +60,14 @@ public class kartItem : MonoBehaviour
     {
         if (heldPowerUp != -1)
         {
-            myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
-            myItem.parent = transform;
+            Debug.Log("Used Item");
+            //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
+            if (!onlineGame || gd.powerUps[heldPowerUp].onlineModel == null)
+            {
+                myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
+                myItem.parent = transform;
+                itemSpawned = true;
+            }       
 
             EndItemUse();
         }
@@ -69,21 +77,34 @@ public class kartItem : MonoBehaviour
     {
         if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].useableShield)
         {
-            myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
-            myItem.parent = transform;
-            myItem.GetComponent<Rigidbody>().isKinematic = true;
+            Debug.Log("Used Shield");
+            sheilding = true;
+
+            //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
+            if (!onlineGame || gd.powerUps[heldPowerUp].onlineModel == null)
+            {
+                myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
+                myItem.parent = transform;
+                myItem.GetComponent<Rigidbody>().isKinematic = true;
+                itemSpawned = true;
+            }
         }
     }
 
     public void DropShield(float dir)
     {
+        Debug.Log("Dropped Shield");
         if (myItem != null)
         {
+            Debug.Log("Actually dropped Item");
+            sheilding = false;
+
             inputDirection = dir;
 
             myItem.parent = null;
             myItem.GetComponent<Rigidbody>().isKinematic = false;
-            myItem = null;
+
+            myItem = null;        
 
             EndItemUse();
         }
@@ -91,6 +112,8 @@ public class kartItem : MonoBehaviour
 
     private void EndItemUse()
     {
+        itemSpawned = false;
+
         if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].multipleUses)
         {
             int tempPowerUp = heldPowerUp - 1;
@@ -101,7 +124,7 @@ public class kartItem : MonoBehaviour
             //Nothing left to do turn off items
             heldPowerUp = -1;
             renderItem = null;
-            iteming = false;
+            iteming = false;          
         }
 
     }
@@ -284,9 +307,7 @@ public class kartItem : MonoBehaviour
                             UseShield();
                             //If Online tell Server about the shield use
                             if (onlineGame && itemOwner == ItemOwner.Mine)
-                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.useShieldMsg, new EmptyMessage());
-
-                            sheilding = true;
+                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.useShieldMsg, new EmptyMessage());                           
                         }
                     }
                     else
@@ -296,16 +317,14 @@ public class kartItem : MonoBehaviour
                             DropShield(inputDirection);
                             //If Online tell Server about the shield drop
                             if (onlineGame && itemOwner == ItemOwner.Mine)
-                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new floatMessage(inputDirection));
-
-                            sheilding = false;
+                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new floatMessage(inputDirection));     
                         }
                     }
                 }
             }
         }
 
-        if (sheilding && myItem == null)
+        if (sheilding && myItem == null && itemSpawned)
         {
             sheilding = false;
             EndItemUse();

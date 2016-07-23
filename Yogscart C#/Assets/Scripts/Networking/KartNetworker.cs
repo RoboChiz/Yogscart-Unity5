@@ -18,15 +18,15 @@ public class KartNetworker : NetworkBehaviour
     [SyncVar]
     private bool drift;
     [SyncVar]
-    private int boostType;
+    private int boostType, lapisAmount;
 
     //Used to call local Item Functions
     [SyncVar]
-    public int recieveItem, useItem, useShield, dropShield, currentItem;
+    public int recieveItem, useItem, useShield, dropShield, currentItem, spinOut;
     [SyncVar]
     public float currentItemDir;
 
-    private int lastRecieveItem, lastUseItem, lastUseShield, lastDropShield;
+    private int lastRecieveItem, lastUseItem, lastUseShield, lastDropShield, lastSpinOut;
 
     [SyncVar]
     public string kartPlayerName = "Player";
@@ -49,12 +49,15 @@ public class KartNetworker : NetworkBehaviour
             LoadKartModel();
         }
 
-        if(isLocalPlayer)
+        if (isLocalPlayer)
         {
             SendKartInfo();
 
             if (ki != null)
-                ki.itemOwner = ItemOwner.Mine;    
+            {
+                ki.itemOwner = ItemOwner.Mine;
+            }
+
         }
         else
         {
@@ -63,13 +66,21 @@ public class KartNetworker : NetworkBehaviour
             ks.steer = steer;
             ks.drift = drift;
             ks.ExpectedSpeed = expectedSpeed;
-            ks.stopmanualBoosting = true;
+            ks.onlineMode = true;
+            ks.lapisAmount = lapisAmount;
 
-            if(boostTime > 0)
+            if (boostTime > 0)
             {
                 ks.Boost(boostTime, (kartScript.BoostMode)boostType);
                 boostTime = 0;
                 boostType = 0;
+            }
+
+            //Do Spinout
+            if(spinOut != lastSpinOut)
+            {
+                ks.localSpinOut();
+                lastSpinOut = spinOut;
             }
 
             //Add Player Name
@@ -109,17 +120,19 @@ public class KartNetworker : NetworkBehaviour
     [ClientCallback]
     private void SendKartInfo()
     {
-        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.ExpectedSpeed, FindObjectOfType<NetworkGUI>().playerName);
+        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.ExpectedSpeed, FindObjectOfType<NetworkGUI>().playerName, ks.lapisAmount, spinOut);
     }
 
     [Command]
-    private void CmdRecieveKartInfo(float _throttle, float _steer, bool _drift, float _expectedSpeed, string _playerName)
+    private void CmdRecieveKartInfo(float _throttle, float _steer, bool _drift, float _expectedSpeed, string _playerName, int _lapisAmount, int _spinOut)
     {
         throttle = _throttle;
         steer = _steer;
         drift = _drift;
         expectedSpeed = _expectedSpeed;
         kartPlayerName = _playerName;
+        lapisAmount = _lapisAmount;
+        spinOut = _spinOut;
     }
 
     [ClientCallback]

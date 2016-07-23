@@ -43,7 +43,7 @@ public class kartScript : MonoBehaviour
     private bool driftStarted, applyingDrift;
     const float kartbodyRot = 20f; //Amount that the kartbody rotates during drifting
     private float driftTime, blueTime = 2f, orangeTime = 4f;
-    public bool stopmanualBoosting = false; //Used to stop countdown timer and drifting from boosting (These are handled by server)
+    public bool onlineMode = false; //Stops local boosting and spinning out. This is handled by the server (These are handled by server)
 
     //Spinning Out
     private const float spinTime = 0.5f, spunTime = 1.5f;
@@ -211,7 +211,7 @@ public class kartScript : MonoBehaviour
             }
 
             //Calculate Start Boost
-            if (!stopmanualBoosting && startBoostVal >= 0)
+            if (!onlineMode && startBoostVal >= 0)
             {
                 bool throttleOver = (throttle > 0f);
 
@@ -237,8 +237,7 @@ public class kartScript : MonoBehaviour
                 {
                     Boost(startBoostAmount, BoostMode.Trick);
                     allowedBoost = false;
-                }
-                    
+                }                    
             }
 
             //Boost Particles
@@ -314,7 +313,7 @@ public class kartScript : MonoBehaviour
 
             if (tricking)
             {
-                if(!stopmanualBoosting)
+                if(!onlineMode)
                     Boost(0.25f, BoostMode.Trick);
 
                 tricking = false;
@@ -454,12 +453,12 @@ public class kartScript : MonoBehaviour
             {
                 if (driftTime >= orangeTime)
                 {
-                    if(!stopmanualBoosting)
+                    if(!onlineMode)
                         Boost(1f, BoostMode.DriftBoost);
                 }
                 else if (driftTime >= blueTime)
                 {
-                    if (!stopmanualBoosting)
+                    if (!onlineMode)
                         Boost(0.5f, BoostMode.DriftBoost);
                 }
             }
@@ -484,7 +483,7 @@ public class kartScript : MonoBehaviour
         StartCoroutine("StartBoost", t);
 
         //If Kart is networked send this information to server and clients
-        if(GetComponent<KartNetworker>() != null && !stopmanualBoosting)
+        if(GetComponent<KartNetworker>() != null && !onlineMode)
         {
             GetComponent<KartNetworker>().SendBoost(t, type);
         }
@@ -534,6 +533,19 @@ public class kartScript : MonoBehaviour
     }
 
     public void SpinOut()
+    {
+        if (!onlineMode)
+        {
+            StartCoroutine("StartSpinOut");
+
+            //If Kart is networked send this information to server and clients
+            if (GetComponent<KartNetworker>() != null)
+                GetComponent<KartNetworker>().spinOut++;
+        }            
+    }
+
+    //For use by Kart Networker as Kart will not spin locally otherwise
+    public void localSpinOut()
     {
         StartCoroutine("StartSpinOut");
     }

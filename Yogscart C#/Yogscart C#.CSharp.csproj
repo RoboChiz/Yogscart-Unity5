@@ -103,6 +103,7 @@
     <Compile Include="Assets\Scripts\Menus\LevelSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\MainMenu.cs" />
     <Compile Include="Assets\Scripts\Menus\Options.cs" />
+    <Compile Include="Assets\Scripts\Networking\ItemNetworker.cs" />
     <Compile Include="Assets\Scripts\Networking\KartNetworker.cs" />
     <Compile Include="Assets\Scripts\Networking\NetworkGUI.cs" />
     <Compile Include="Assets\Scripts\Networking\NetworkPass.cs" />

@@ -12,30 +12,46 @@ public class UnetClient : NetworkManager
     protected GameMode clientGamemode;
 
     //Used by Timer
-    public float timeLeft = -1f, rotation = 0f;
+    public float timeLeft = -1f;
+    private float rotation = 0f, timerSize = 0f, lastValid = -1f;
 
     public virtual void Update()
     {
         if (timeLeft > 0)
         {
             timeLeft -= Time.deltaTime;
+            lastValid = timeLeft;
             rotation += Time.deltaTime * 50f;
         }          
     }
 
     public void OnGUI()
     {
-        GUI.skin = Resources.Load<GUISkin>("GUISkins/Online");
+        GUI.skin = Resources.Load<GUISkin>("GUISkins/Timer");
         Texture2D TimerIcon = Resources.Load<Texture2D>("UI/Main Menu/Timer");
-
+     
         if (timeLeft > 0)
+            timerSize = Mathf.Lerp(timerSize, 1f, Time.deltaTime * 3f);
+        else
+            timerSize = Mathf.Lerp(timerSize, 0f, Time.deltaTime * 3f);
+
+        if (timerSize > 0)
         {
+
+            float centreX = Mathf.Lerp(60f, 20f, timerSize);
+            float centreY = Mathf.Lerp(35f, -5f, timerSize);
+            float guiSize = Mathf.Lerp(0f, 80f, timerSize);
+            int fontSize = (int)Mathf.Lerp(0f, 35f, timerSize);
+
+            GUI.skin.label.fontSize = fontSize;
+
             GUIUtility.RotateAroundPivot(rotation, new Vector2(60, 35));
-            GUI.DrawTexture(new Rect(20, -5, 80, 80), TimerIcon);
+            GUI.DrawTexture(new Rect(centreX, centreY, guiSize, guiSize), TimerIcon);
             GUIUtility.RotateAroundPivot(-rotation, new Vector2(60, 35));
 
-            GUIHelper.OutLineLabel(new Rect(50, 20, 75, 75), ((int)timeLeft).ToString(), 1,Color.black);
+            GUIHelper.OutLineLabel(new Rect(centreX, centreY, guiSize, guiSize), ((int)Mathf.Clamp(lastValid, 0,int.MaxValue)).ToString(), 1,Color.black);
         }
+
     }
 
     //Register the handlers required for the client
@@ -60,6 +76,14 @@ public class UnetClient : NetworkManager
         client.RegisterHandler(UnetMessages.unlockKartMsg, OnUnlockKart);
         client.RegisterHandler(UnetMessages.returnLobbyMsg, OnReturnLobby);
         client.RegisterHandler(UnetMessages.loadLevelID, OnLoadLevelID);
+
+        //Register all Power Ups as Spawn Items
+        foreach(PowerUp powerUp in gd.powerUps)
+        {
+            if (powerUp.onlineModel != null)
+                ClientScene.RegisterPrefab(powerUp.onlineModel.gameObject);
+        }
+        
     }
 
     // Called when connected to a server

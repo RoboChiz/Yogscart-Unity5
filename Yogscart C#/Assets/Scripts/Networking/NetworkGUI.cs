@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using System;
 
 public class NetworkGUI : MonoBehaviour
 {
@@ -691,8 +692,8 @@ public class NetworkGUI : MonoBehaviour
         myUnet.networkPort = hostPort;
         myUnet.StartHost();
         myUnet.RegisterHandlers();
-
         state = ServerState.Lobby;
+      
     }
 
     public void PlayerUp()

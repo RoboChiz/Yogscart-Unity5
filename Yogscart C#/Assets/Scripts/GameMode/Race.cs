@@ -208,6 +208,7 @@ public class Race : GameMode
         {
             r.points += 15 - r.position;
             sortedRacers[r.position] = new DisplayRacer(r);
+            sortedRacers[r.position].finished = true;
         }
 
         if (currentRace == 4 || raceType == RaceType.TimeTrial)

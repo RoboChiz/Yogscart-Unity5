@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public enum LBType { Points, NoPoints, Sorted, TimeTrial, Tournament };
+public enum LBType { Points, NoPoints, Sorted, TimeTrial };
 
 public class Leaderboard : MonoBehaviour
 {
@@ -12,7 +12,7 @@ public class Leaderboard : MonoBehaviour
     public bool hidden = true;
     private bool movingGUI = false;
     const float slideTime = 0.5f;
-    private float sideAmount = 0;
+    private float sideAmount = 0, guiAlpha = 0f;
 
     public LBType state = LBType.Points;
 
@@ -30,16 +30,27 @@ public class Leaderboard : MonoBehaviour
         BoardTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Backing");
 
         if (hidden)
-            sideAmount = (Screen.width / 2f) + 20f;
+            sideAmount = 1920;
         else
-            sideAmount = 0f;
+            sideAmount = 960;
 
         racers = new List<DisplayRacer>();
     }
 
     public void StartLeaderBoard()
     {
+        StartCoroutine(ActualStartLeaderBoard());   
+    }
+
+    public IEnumerator ActualStartLeaderBoard()
+    {
         hidden = false;
+
+        while(guiAlpha < 0.9f)
+        {
+            yield return null;
+        }
+
         state = LBType.Points;
         pointCount = 0;
     }
@@ -74,9 +85,9 @@ public class Leaderboard : MonoBehaviour
     {
         if (!movingGUI)
         {
-            if (hidden && sideAmount < (Screen.width / 2f))
+            if (hidden && sideAmount < 1920)
                 StartCoroutine("HideGUI");
-            if (!hidden && sideAmount > 0)
+            if (!hidden && sideAmount > 960)
                 StartCoroutine("ShowGUI");
         }
     }
@@ -89,10 +100,13 @@ public class Leaderboard : MonoBehaviour
 
         while (Time.time - startTime < slideTime)
         {
-            sideAmount = Mathf.Lerp((Screen.width / 2f) + 20f, 0f, (Time.time - startTime) / slideTime);
+            sideAmount = Mathf.Lerp(1920, 960, (Time.time - startTime) / slideTime);
+            guiAlpha = Mathf.Lerp(0f, 1f, (Time.time - startTime) / slideTime);
             yield return null;
         }
-        sideAmount = 0f;
+
+        sideAmount = 960;
+        guiAlpha = 1f;
 
         movingGUI = false;
     }
@@ -105,10 +119,13 @@ public class Leaderboard : MonoBehaviour
 
         while (Time.time - startTime < slideTime)
         {
-            sideAmount = Mathf.Lerp(0f, (Screen.width / 2f) + 20f, (Time.time - startTime) / slideTime);
+            sideAmount = Mathf.Lerp(960, 1920, (Time.time - startTime) / slideTime);
+            guiAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / slideTime);
             yield return null;
         }
-        sideAmount = Screen.width / 2f + 20f;
+
+        sideAmount = 1920;
+        guiAlpha = 0f;
 
         movingGUI = false;
     }
@@ -151,15 +168,13 @@ public class Leaderboard : MonoBehaviour
     void OnGUI()
     {
 
-        GUIStyle nStyle =  new GUIStyle(Resources.Load<GUISkin>("GUISkins/Main Menu").label);
-        nStyle.fontSize = (int)(Mathf.Min(Screen.width, Screen.height) / 25f);
+        //Version 2
+        GUI.skin = Resources.Load<GUISkin>("GUISkins/Leaderboard");
+        GUI.matrix = GUIHelper.GetMatrix();
+        GUIHelper.SetGUIAlpha(guiAlpha);
 
-        GUI.skin.label = nStyle;
-
-        GUIHelper.ResetColor();
-
-        float optionSize = Screen.height / 16f;
-        Rect BoardRect = new Rect(sideAmount + Screen.width / 2f, optionSize, Screen.width / 2f - optionSize, (optionSize) * 14f);
+        float optionHeight = 67.5f;
+        Rect BoardRect = new Rect(970, optionHeight, 940, 945);
         GUI.DrawTexture(BoardRect, BoardTexture);
 
         GUI.BeginGroup(BoardRect);
@@ -176,92 +191,80 @@ public class Leaderboard : MonoBehaviour
                     else
                         GUI.Label(new Rect(10, 10, BoardRect.width - 20, BoardRect.height), "You Lost!!!");
 
-                    GUI.Label(new Rect(10, 10 + (optionSize), BoardRect.width - 20, optionSize), "Best Time");
-                    GUI.Label(new Rect(10, 10 + 2 * (optionSize), BoardRect.width - 20, optionSize), TimeManager.ToString(bestTime));
+                    GUI.Label(new Rect(10, 10 + (optionHeight), BoardRect.width - 20, optionHeight), "Best Time");
+                    GUI.Label(new Rect(10, 10 + 2 * (optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(bestTime));
 
-                    GUI.Label(new Rect(10, 10 + 3 * (optionSize), BoardRect.width - 20, optionSize), "Your Time");
-                    GUI.Label(new Rect(10, 10 + 4 * (optionSize), BoardRect.width - 20, optionSize), TimeManager.ToString(playerTime));
+                    GUI.Label(new Rect(10, 10 + 3 * (optionHeight), BoardRect.width - 20, optionHeight), "Your Time");
+                    GUI.Label(new Rect(10, 10 + 4 * (optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(playerTime));
                 }
                 break;
             default:
-                //Render Bars showing what place you came
                 for (int i = 0; i < racers.Count; i++)
                 {
                     DisplayRacer nRacer = racers[i];
+
+                    //Render Bars showing what place you came
                     if (nRacer.human >= 0)
                     {
                         Texture2D humanTexture;
 
                         humanTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Winner_P" + (nRacer.human + 1).ToString());
-                        Rect humanTextureRect = new Rect(0, ((nRacer.position + 1) * optionSize) - 7, BoardRect.width, optionSize + 14);
+                        Rect humanTextureRect = new Rect(0, ((i + 1) * optionHeight) - 7, BoardRect.width, optionHeight + 14);
                         GUI.DrawTexture(humanTextureRect, humanTexture);
                     }
-                }
 
-                for (int i = 0; i < racers.Count; i++)
-                {
-                    DisplayRacer nRacer = racers[i];
-
-                    //Render the position Number
-                    Texture2D PosTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + (i + 1).ToString());
-
-                    float Ratio = (optionSize) / PosTexture.height;
-                    GUI.DrawTexture(new Rect(20, (i + 1) * optionSize, PosTexture.width * Ratio, optionSize), PosTexture);
+                    //Render the Position and Character head of the Racer
+                    string posString = nRacer.finished ? ("UI/GrandPrix Positions/" + (i + 1).ToString()) : "UI/GrandPrix Positions/DNF";
+                    Texture2D PosTexture = Resources.Load<Texture2D>(posString);
+                    GUI.DrawTexture(new Rect(40, (i + 1) * optionHeight, optionHeight, optionHeight), PosTexture, ScaleMode.ScaleToFit);
 
                     Texture2D CharacterIcon = gd.characters[nRacer.character].icon;
-                    GUI.DrawTexture(new Rect(20 + (PosTexture.width * Ratio), (nRacer.position + 1) * optionSize, (PosTexture.width * Ratio), optionSize), CharacterIcon, ScaleMode.ScaleToFit);
+                    GUI.DrawTexture(new Rect(40 + optionHeight, (i + 1) * optionHeight, optionHeight, optionHeight), CharacterIcon, ScaleMode.ScaleToFit);
 
-                    float nameWidth = BoardRect.width - 20 - ((PosTexture.width * Ratio * 2f));
-                    Rect nameRect = new Rect(10 + (PosTexture.width * Ratio * 2f), (nRacer.position + 1) * optionSize, nameWidth, optionSize);
+                    Rect nameRect = new Rect(50 + (optionHeight * 2), (i + 1) * optionHeight, 576, optionHeight);
 
+                    //Draw the name of the Racer if it is available 
                     if (nRacer.human != -1 && nRacer.name != null && nRacer.name != "")
-                    {
                         GUI.Label(nameRect, nRacer.name);
-                    }
                     else
                     {
-                        Texture2D NameTexture;
+                        Texture2D nameTexture;
                         if (nRacer.human >= 0)
-                        {
-                            NameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name + "_Sel");
-                        }
+                            nameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name + "_Sel");
                         else
-                            NameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name);
+                            nameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name);
 
-                        GUI.DrawTexture(nameRect, NameTexture, ScaleMode.ScaleToFit);
+                        GUI.DrawTexture(nameRect, nameTexture, ScaleMode.ScaleToFit);
                     }
 
+                    //Draw the overall points for the Racer
                     if (state != LBType.NoPoints)
                     {
-                        int points = nRacer.points;
+                        int endPoints = nRacer.points;
+                        int startPoints = nRacer.finished ? endPoints - 15 + i : endPoints;
 
-                        if (state == LBType.Points)
-                        {
-                            int startPoint = points;
+                        int renderPoints = (int)Mathf.Clamp(startPoints + pointCount, startPoints, endPoints);
+                        int plusVal = nRacer.finished ? (15 - i) - (int)pointCount : 0;
 
-                            points -= (15 - i);
-                            points = (int)Mathf.Clamp(points + (int)pointCount, 0f, startPoint);
+                        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 2.5f), (i + 1) * optionHeight, optionHeight, optionHeight), renderPoints.ToString(),2);
 
-                            int plusVal = (15 - i) - (int)pointCount;
-
-                            if (plusVal > 0)
-                                GUI.Label(new Rect(BoardRect.width - (PosTexture.width * Ratio * 2f) - 10, (nRacer.position + 1) * optionSize, PosTexture.width * Ratio, optionSize), "+ " + plusVal);
-                        }
-
-                        GUI.Label(new Rect(BoardRect.width - (PosTexture.width * Ratio) - 20, (nRacer.position + 1) * optionSize, PosTexture.width * Ratio, optionSize), points.ToString());
+                        if (plusVal > 0)
+                            GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 1.5f), (i + 1) * optionHeight, optionHeight * 1.5f, optionHeight), "+ " + plusVal,2);
                     }
                 }
-
                 break;
         }
         GUI.EndGroup();
 
-        if (state != LBType.TimeTrial && state != LBType.Tournament && pointCount < 15)
+        if (state != LBType.TimeTrial && pointCount < 15)
         {
-            pointCount += Time.deltaTime*2;
+            pointCount += Time.deltaTime * 2;
         }
 
         pointCount = Mathf.Clamp(pointCount, 0f, 15f);
+
+        //Reset the GUI Alpha after changing it
+        GUIHelper.ResetColor();
     }
 }
 
@@ -269,12 +272,13 @@ public class DisplayRacer
 {
     public string name;
     public int character, points, human;
-    public float timer, position;
+    public float timer, position;//Position is position on Screen not race Position
+    public bool finished = false;
 
     const float slideTime = 0.5f;
 
     //All Human Players should have a name
-    public DisplayRacer(int po, string n, int c, int p, float t)
+    public DisplayRacer(int po, string n, int c, int p, float t, bool f)
     {
         name = n;
         character = c;
@@ -282,6 +286,7 @@ public class DisplayRacer
         timer = t;
         human = 0;
         position = po;
+        finished = f;
     }
 
     //All Human Players should have without name
@@ -292,6 +297,7 @@ public class DisplayRacer
         points = p;
         timer = t;
         position = po;
+        finished = true;
     }
 
     //AI Racers won't have a name
@@ -303,6 +309,7 @@ public class DisplayRacer
         timer = t;
         human = -1;
         position = po;
+        finished = true;
     }
 
     public DisplayRacer(Racer racer)
@@ -312,11 +319,12 @@ public class DisplayRacer
         points = racer.points;
         timer = racer.timer;
         position = racer.position;
+        finished = racer.finished;
     }
 
     public override string ToString()
     {
-        return position + ";" + name + ";" + character + ";" + points + ";" + timer + ";" + human;
+        return position + ";" + name + ";" + character + ";" + points + ";" + timer + ";" + human + ";" + finished;
     }
 
     public DisplayRacer(string readFrom)
@@ -329,6 +337,6 @@ public class DisplayRacer
         points = int.Parse(splitString[3]);
         timer = float.Parse(splitString[4]);
         human = int.Parse(splitString[5]);
+        finished = bool.Parse(splitString[6]);
     }
-
 }

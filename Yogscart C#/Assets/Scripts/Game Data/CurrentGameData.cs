@@ -337,7 +337,10 @@ public class PowerUp
 {
     public string name;
     public Texture2D icon;
+
     public Transform model;
+    public Transform onlineModel;
+
     public ItemType type;
     public bool multipleUses;
     public bool useableShield;

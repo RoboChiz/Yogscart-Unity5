@@ -37,8 +37,8 @@ public class MapGenerator : MonoBehaviour
             SmoothMap();
         }
 
-        MeshGenerator meshGen = FindObjectOfType<MeshGenerator>();
-        meshGen.GenerateMesh(map, 1);
+        CustomMesh meshGen = FindObjectOfType<CustomMesh>();
+        meshGen.GenerateMesh(map);
     }
 
     void RandomFillMap()

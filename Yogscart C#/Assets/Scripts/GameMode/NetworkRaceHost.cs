@@ -154,7 +154,6 @@ public class NetworkRaceHost : Race
                     //Tell all Clients about Finish
                     DisplayRacer displayRacer = new DisplayRacer(racer);
                     displayRacer.name = racer.name;
-
                     NetworkServer.SendToAll(UnetMessages.playerFinishedMsg, new stringMessage(displayRacer.ToString()));
 
                     totalFinishedCount++;
@@ -212,7 +211,7 @@ public class NetworkRaceHost : Race
             sortedRacers[r.position].name = r.name;
 
             if (!r.finished)
-                sortedRacers[r.position].name += " [DNF]";
+                sortedRacers[r.position].position = -1;
         }
 
         //Send Sorted Racers to all Clients
@@ -280,7 +279,7 @@ public class NetworkRaceHost : Race
         //Find the Racer that sent the message
         foreach (NetworkRacer r in racers)
         {
-            if (netMsg.conn == r.conn)
+            if (netMsg.conn.connectionId == r.conn.connectionId)
             {
                 r.ingameObj.GetComponent<KartNetworker>().currentItemDir = netMsg.ReadMessage<floatMessage>().value;
                 r.ingameObj.GetComponent<KartNetworker>().dropShield++;
@@ -294,9 +293,22 @@ public class NetworkRaceHost : Race
         //Find the Racer that sent the message
         foreach (NetworkRacer r in racers)
         {
-            if (netMsg.conn == r.conn)
+            if (netMsg.conn.connectionId == r.conn.connectionId)
             {
-                r.ingameObj.GetComponent<KartNetworker>().useShield++;
+                var kn = r.ingameObj.GetComponent<KartNetworker>();
+                kn.useShield++;
+
+                //Spawn Item over Network if possible
+                if (gd.powerUps[kn.currentItem].onlineModel != null)
+                {
+                    GameObject go = (GameObject)Instantiate(gd.powerUps[kn.currentItem].onlineModel.gameObject,
+                        r.ingameObj.position - (r.ingameObj.forward * r.ingameObj.GetComponent<kartItem>().itemDistance),
+                        r.ingameObj.rotation);
+                    go.transform.parent = r.ingameObj;
+                    go.GetComponent<Rigidbody>().isKinematic = true;
+
+                    SpawnObjectToClient(go, r.conn);
+                }
                 return;
             }
         }
@@ -307,9 +319,20 @@ public class NetworkRaceHost : Race
         //Find the Racer that sent the message
         foreach (NetworkRacer r in racers)
         {
-            if (netMsg.conn == r.conn)
+            if (netMsg.conn.connectionId == r.conn.connectionId)
             {
-                r.ingameObj.GetComponent<KartNetworker>().useItem++;
+                var kn = r.ingameObj.GetComponent<KartNetworker>();
+                kn.useItem++;
+
+                //Spawn Item over Network if possible
+                if (gd.powerUps[kn.currentItem].onlineModel != null)
+                {
+                    GameObject go = (GameObject)Instantiate(gd.powerUps[kn.currentItem].onlineModel.gameObject,
+                        r.ingameObj.position - (r.ingameObj.forward * r.ingameObj.GetComponent<kartItem>().itemDistance),
+                        r.ingameObj.rotation);
+                    go.transform.parent = r.ingameObj;
+                    SpawnObjectToClient(go, r.conn);
+                }
                 return;
             }
         }
@@ -320,9 +343,10 @@ public class NetworkRaceHost : Race
         //Find the Racer that sent the message
         foreach (NetworkRacer r in racers)
         {
-            if (netMsg.conn == r.conn)
+            if (netMsg.conn.connectionId == r.conn.connectionId)
             {
-                r.ingameObj.GetComponent<KartNetworker>().currentItem = netMsg.ReadMessage<intMessage>().value;
+                int value = netMsg.ReadMessage<intMessage>().value;
+                r.ingameObj.GetComponent<KartNetworker>().currentItem = value;
                 r.ingameObj.GetComponent<KartNetworker>().recieveItem++;
                 return;
             }
@@ -397,6 +421,19 @@ public class NetworkRaceHost : Race
         gameObject.GetComponent<KartNetworker>().currentWheel = nPlayer.Wheel;
 
         return gameObject;
+    }
+
+    private void SpawnObjectToClient(GameObject go, NetworkConnection conn)
+    {
+        if (NetworkServer.localClientActive && conn.connectionId != FindObjectOfType<UnetClient>().client.connection.connectionId)
+        {
+            NetworkServer.SpawnWithClientAuthority(go, conn);
+        }
+        else
+        {
+            //Spawn the Item giving the server control
+            NetworkServer.SpawnWithClientAuthority(go, racers[0].ingameObj.gameObject);
+        }
     }
 
 }

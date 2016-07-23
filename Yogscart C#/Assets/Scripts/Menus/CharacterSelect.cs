@@ -529,16 +529,28 @@ public class CharacterSelect : MonoBehaviour
                         if (!kartSelected[s])
                         {
                             if (vert > 0)
-                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight));
+                            {
+                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight,choice[s]));      
+                                //choice[s].kart++;                          
+                            }
                             else
-                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight));
-                        }
+                            {
+                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                                //choice[s].kart--;
+                            }
+                            }
                         else
                         {
                             if (vert > 0)
-                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight));
+                            {
+                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                                //choice[s].wheel++;
+                            }
                             else
-                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight));
+                            {
+                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                                //choice[s].wheel--;
+                            }
                         }
                     }
                 }
@@ -611,6 +623,25 @@ public class CharacterSelect : MonoBehaviour
                     Rect CursorRect = new Rect(10 + cursorPosition[s].x * chunkSize, nameListRect.y + cursorPosition[s].y * chunkSize, chunkSize, chunkSize);
                     Texture2D CursorTexture = Resources.Load<Texture2D>("UI/Cursors/Cursor_" + s);
                     GUI.DrawTexture(CursorRect, CursorTexture);
+                }
+
+
+                if (!kartSelected[s])
+                {
+                    if (choice[s].kart >= gd.karts.Length)
+                        choice[s].kart = 0;
+
+                    if (choice[s].kart < 0)
+                        choice[s].kart = gd.karts.Length - 1;
+
+                }
+                else
+                {
+                    if (choice[s].wheel >= gd.wheels.Length)
+                        choice[s].wheel = 0;
+
+                    if (choice[s].wheel < 0)
+                        choice[s].wheel = gd.wheels.Length - 1;
                 }
 
                 Texture2D backTexture = Resources.Load<Texture2D>("UI/New Main Menu/backnew");
@@ -712,37 +743,22 @@ public class CharacterSelect : MonoBehaviour
                     Rect upArrowRect = new Rect(0, 0, 0, 0);
                     Rect downArrowRect = new Rect(0, 0, 0, 0);
 
+                    if (kartSelected[s] && ready[s])
+                    {                  
+                        Texture2D readyTexture = Resources.Load<Texture2D>("UI/New Main Menu/Ready");
+                        GUI.DrawTexture(selectionRect, readyTexture, ScaleMode.ScaleToFit);
+                    }
+
                     if (!kartSelected[s])
                     {
 
                         upArrowRect = new Rect(20, 10, (selectionRect.width / 2f) - 10, heightChunk - 10);
                         downArrowRect = new Rect(20, heightChunk * 5f, (selectionRect.width / 2f) - 10, heightChunk - 10);
-
-                        if (choice[s].kart >= gd.karts.Length)
-                            choice[s].kart = 0;
-
-                        if (choice[s].kart < 0)
-                            choice[s].kart = gd.karts.Length - 1;
-
                     }
                     else
                     {
-
                         upArrowRect = new Rect(20 + (selectionRect.width / 2f), 10, (selectionRect.width / 2f) - 10, heightChunk - 10);
                         downArrowRect = new Rect(20 + (selectionRect.width / 2f), heightChunk * 5f, (selectionRect.width / 2f) - 10, heightChunk - 10);
-
-                        if (choice[s].wheel >= gd.wheels.Length)
-                            choice[s].wheel = 0;
-
-                        if (choice[s].wheel < 0)
-                            choice[s].wheel = gd.wheels.Length - 1;
-
-                        if (ready[s])
-                        {
-                            Texture2D readyTexture = Resources.Load<Texture2D>("UI/New Main Menu/Ready");
-                            GUI.DrawTexture(selectionRect, readyTexture, ScaleMode.ScaleToFit);
-                        }
-
                     }
 
                     GUI.DrawTexture(upArrowRect, arrowIcon, ScaleMode.ScaleToFit);
@@ -790,7 +806,7 @@ public class CharacterSelect : MonoBehaviour
     }
 
     //Scroll Kart
-    private IEnumerator ScrollKart(CharacterSelectLoadOut loadOut, float finalHeight)
+    private IEnumerator ScrollKart(CharacterSelectLoadOut loadOut, float finalHeight, LoadOut choice)
     {
         loadOut.scrolling = true;
 
@@ -807,9 +823,7 @@ public class CharacterSelect : MonoBehaviour
         loadOut.kartChangeHeight = finalHeight;
         loadOut.kartAlpha = 1f;
 
-        loadOut.kart -= (int)Mathf.Sign(finalHeight);
-
-        loadOut.kart = MathHelper.NumClamp(loadOut.kart, 0, gd.karts.Length);
+        choice.kart = MathHelper.NumClamp(choice.kart - (int)Mathf.Sign(finalHeight), 0, gd.karts.Length);
 
         loadOut.kartChangeHeight = 0;
         loadOut.kartAlpha = 0.4f;
@@ -817,7 +831,7 @@ public class CharacterSelect : MonoBehaviour
         loadOut.scrolling = false;
     }
     //Scroll Wheel
-    private IEnumerator ScrollWheel(CharacterSelectLoadOut loadOut, float finalHeight)
+    private IEnumerator ScrollWheel(CharacterSelectLoadOut loadOut, float finalHeight, LoadOut choice)
     {
         loadOut.scrolling = true;
 
@@ -834,9 +848,7 @@ public class CharacterSelect : MonoBehaviour
         loadOut.wheelChangeHeight = finalHeight;
         loadOut.wheelAlpha = 1f;
 
-        loadOut.wheel -= (int)Mathf.Sign(finalHeight);
-
-        loadOut.wheel = MathHelper.NumClamp(loadOut.wheel, 0, gd.wheels.Length);
+        choice.wheel = MathHelper.NumClamp(choice.wheel - (int)Mathf.Sign(finalHeight), 0, gd.wheels.Length);
 
         loadOut.wheelChangeHeight = 0;
         loadOut.wheelAlpha = 0.4f;
@@ -891,6 +903,7 @@ public class CharacterSelect : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public class CharacterSelectLoadOut : LoadOut
 {
     public bool scrolling;

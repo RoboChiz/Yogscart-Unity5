@@ -37,7 +37,7 @@ public class NetworkRaceClient : Race
         client.RegisterHandler(UnetMessages.positionMsg, OnPosition);
         client.RegisterHandler(UnetMessages.finishRaceMsg, OnFinishRace);
         client.RegisterHandler(UnetMessages.playerFinishedMsg, OnPlayerFinished);
-        client.RegisterHandler(UnetMessages.allPlayerFinishedMsg, OnAllPlayerFinished);
+        client.RegisterHandler(UnetMessages.allPlayerFinishedMsg, OnAllPlayerFinished);        
     }
 
     public override void OnEndGamemode()

@@ -1,4 +1,4 @@
-5.3.4f1:2.2.0.0
+5.3.5f1:2.2.0.0
 WebPlayer
 E:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll
 E:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll
@@ -15,7 +15,6 @@ E:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/TreeEditor/Editor/Unity
 E:/Program Files/Unity/Editor/Data/Managed/UnityEditor.Graphs.dll
 E:/Program Files/Unity/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
 E:/Program Files/Unity/Editor/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.dll
-E:/Program Files/Unity/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
 E:/Program Files/Unity/Editor/Data/PlaybackEngines/LinuxStandaloneSupport/UnityEditor.LinuxStandalone.Extensions.dll
 E:/Program Files/Unity/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
 E:/Program Files/Unity/Editor/Data/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll

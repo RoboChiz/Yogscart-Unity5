@@ -40,14 +40,26 @@ public class GUIHelper
         GUIStyle style = new GUIStyle(GUI.skin.GetStyle("Label"));
         style.normal.textColor = Colour;
 
+        //Right,Top, Left, Bottom
         GUI.Label(new Rect(pos.x + distance, pos.y, pos.width, pos.height), text, style);
         GUI.Label(new Rect(pos.x, pos.y + distance, pos.width, pos.height), text, style);
         GUI.Label(new Rect(pos.x - distance, pos.y, pos.width, pos.height), text, style);
         GUI.Label(new Rect(pos.x, pos.y - distance, pos.width, pos.height), text, style);
 
+        //Top Right, Top Left, Bottom Right, Bottom Left
+        GUI.Label(new Rect(pos.x + distance, pos.y + distance, pos.width, pos.height), text, style);
+        GUI.Label(new Rect(pos.x - distance, pos.y + distance, pos.width, pos.height), text, style);
+        GUI.Label(new Rect(pos.x + distance, pos.y - distance, pos.width, pos.height), text, style);
+        GUI.Label(new Rect(pos.x - distance, pos.y - distance, pos.width, pos.height), text, style);
+
         GUIStyle nstyle = new GUIStyle(GUI.skin.GetStyle("Label"));
         GUI.Label(pos, text, nstyle);
 
+    }
+
+    public static void OutLineLabel(Rect pos, string text, float distance)
+    {
+        OutLineLabel(pos, text, distance, Color.black);
     }
 
     public static void ResetColor()

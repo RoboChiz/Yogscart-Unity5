@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using System.Collections.Generic;
+using System;
 
 public class UnetHost : UnetClient
 {
@@ -41,25 +42,34 @@ public class UnetHost : UnetClient
 
     public override NetworkClient StartHost()
     {
-        var output = base.StartHost();
+        try
+        {
+            var output = base.StartHost();
 
-        finalPlayers = new List<NetworkRacer>();
-        waitingPlayers = new List<NetworkConnection>();
-        possiblePlayers = new List<NetworkConnection>();
-        rejectedPlayers = new List<NetworkConnection>();
-        displayNames = new List<DisplayName>();
+            finalPlayers = new List<NetworkRacer>();
+            waitingPlayers = new List<NetworkConnection>();
+            possiblePlayers = new List<NetworkConnection>();
+            rejectedPlayers = new List<NetworkConnection>();
+            displayNames = new List<DisplayName>();
 
-        NetworkRacer newRacer = new NetworkRacer(-2, -1, CurrentGameData.currentChoices[0], 0);
-        newRacer.name = PlayerPrefs.GetString("playerName", "Player");
-        newRacer.conn = client.connection;
+            NetworkRacer newRacer = new NetworkRacer(-2, -1, CurrentGameData.currentChoices[0], 0);
+            newRacer.name = PlayerPrefs.GetString("playerName", "Player");
+            newRacer.conn = client.connection;
 
-        finalPlayers.Add(newRacer);
+            finalPlayers.Add(newRacer);
 
-        UpdateDisplayNames();
-        //Manual override to avoid sending message to yourself
-        FindObjectOfType<NetworkGUI>().finalPlayers = displayNames;
+            UpdateDisplayNames();
+            //Manual override to avoid sending message to yourself
+            FindObjectOfType<NetworkGUI>().finalPlayers = displayNames;
 
-        return output;
+            return output;
+        }
+        catch(Exception e)
+        {
+            GetComponent<NetworkGUI>().PopUp("Error: " + e.Message);
+            GetComponent<NetworkGUI>().CloseServer();
+            return null;
+        }
     }
 
     // Called when a Version Message is recieved by a client
