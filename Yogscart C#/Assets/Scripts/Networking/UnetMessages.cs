@@ -41,6 +41,7 @@ public static class UnetMessages
     public const short finishRaceMsg = 1111;
     public const short playerFinishedMsg = 1112;
     public const short allPlayerFinishedMsg = 1113;
+    public const short leaderboardPosMsg = 1114;
 }
 
 //Sent by Client to Server to check if both are running the same version
@@ -140,7 +141,7 @@ public class AllVoteMessage : MessageBase //1107
 }
 
 //Sent by Server to Client when an int needs sending
-public class intMessage : MessageBase //1105, 1109, 1110
+public class intMessage : MessageBase //1105, 1109, 1110, 1114
 {
     public int value;
 

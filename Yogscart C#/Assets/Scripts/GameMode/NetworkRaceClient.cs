@@ -37,7 +37,8 @@ public class NetworkRaceClient : Race
         client.RegisterHandler(UnetMessages.positionMsg, OnPosition);
         client.RegisterHandler(UnetMessages.finishRaceMsg, OnFinishRace);
         client.RegisterHandler(UnetMessages.playerFinishedMsg, OnPlayerFinished);
-        client.RegisterHandler(UnetMessages.allPlayerFinishedMsg, OnAllPlayerFinished);        
+        client.RegisterHandler(UnetMessages.allPlayerFinishedMsg, OnAllPlayerFinished);
+        client.RegisterHandler(UnetMessages.leaderboardPosMsg, OnLeaderboardPos);
     }
 
     public override void OnEndGamemode()
@@ -53,6 +54,7 @@ public class NetworkRaceClient : Race
         client.UnregisterHandler(UnetMessages.finishRaceMsg);
         client.UnregisterHandler(UnetMessages.playerFinishedMsg);
         client.UnregisterHandler(UnetMessages.allPlayerFinishedMsg);
+        client.UnregisterHandler(UnetMessages.leaderboardPosMsg);
     }
 
     private void OnShowLevelSelect(NetworkMessage netMsg)
@@ -135,7 +137,7 @@ public class NetworkRaceClient : Race
         currentCup = msg.cup;
         currentTrack = msg.track;
 
-        FindObjectOfType<NetworkGUI>().state = NetworkGUI.ServerState.Racing;
+        FindObjectOfType<NetworkGUI>().ChangeState(NetworkGUI.ServerState.Racing);
 
         //Clear away handlers that we don't need anymore
         client.UnregisterHandler(UnetMessages.showLvlSelectMsg);
@@ -302,6 +304,14 @@ public class NetworkRaceClient : Race
     {
         yield return new WaitForSeconds(5);
         GetComponent<Leaderboard>().SecondStep();
+    }
+
+    //Sent by server, contains the client's position on the leaderboard
+    private void OnLeaderboardPos(NetworkMessage netMsg)
+    {
+        intMessage msg = netMsg.ReadMessage<intMessage>();
+
+        FindObjectOfType<Leaderboard>().racers[msg.value].human = 0;
     }
 
 }

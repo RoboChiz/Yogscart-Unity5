@@ -26,6 +26,8 @@ public class UnetHost : UnetClient
     private GameMode hostGamemode;
     private int gamemodeInt;
 
+    public int choosingCount { get; private set; } //Used to tell Host how many people have no selected a character
+
     public override void RegisterHandlers()
     {
         if (runClient)
@@ -42,34 +44,34 @@ public class UnetHost : UnetClient
 
     public override NetworkClient StartHost()
     {
-        try
+        var output = base.StartHost();
+        
+        if(output == null)
         {
-            var output = base.StartHost();
-
-            finalPlayers = new List<NetworkRacer>();
-            waitingPlayers = new List<NetworkConnection>();
-            possiblePlayers = new List<NetworkConnection>();
-            rejectedPlayers = new List<NetworkConnection>();
-            displayNames = new List<DisplayName>();
-
-            NetworkRacer newRacer = new NetworkRacer(-2, -1, CurrentGameData.currentChoices[0], 0);
-            newRacer.name = PlayerPrefs.GetString("playerName", "Player");
-            newRacer.conn = client.connection;
-
-            finalPlayers.Add(newRacer);
-
-            UpdateDisplayNames();
-            //Manual override to avoid sending message to yourself
-            FindObjectOfType<NetworkGUI>().finalPlayers = displayNames;
-
-            return output;
-        }
-        catch(Exception e)
-        {
-            GetComponent<NetworkGUI>().PopUp("Error: " + e.Message);
-            GetComponent<NetworkGUI>().CloseServer();
+            //Error Server Not Started!
+            FindObjectOfType<NetworkGUI>().CloseServer();
+            FindObjectOfType<NetworkGUI>().PopUp("Error! Server could not be started");
             return null;
-        }
+        }       
+
+        finalPlayers = new List<NetworkRacer>();
+        waitingPlayers = new List<NetworkConnection>();
+        possiblePlayers = new List<NetworkConnection>();
+        rejectedPlayers = new List<NetworkConnection>();
+        displayNames = new List<DisplayName>();
+        choosingCount = 0;
+
+        NetworkRacer newRacer = new NetworkRacer(-2, -1, CurrentGameData.currentChoices[0], 0);
+        newRacer.name = PlayerPrefs.GetString("playerName", "Player");
+        newRacer.conn = client.connection;
+
+        finalPlayers.Add(newRacer);
+
+        UpdateDisplayNames();
+        //Manual override to avoid sending message to yourself
+        FindObjectOfType<NetworkGUI>().finalPlayers = displayNames;
+
+        return output;
     }
 
     // Called when a Version Message is recieved by a client
@@ -107,6 +109,8 @@ public class UnetHost : UnetClient
             //Tell Player they can join
             ackMsg.playerUp = true;
             possiblePlayers.Add(conn);
+
+            choosingCount++;
         }
 
         NetworkServer.SendToClient(conn.connectionId, UnetMessages.acceptedMsg, ackMsg);
@@ -142,6 +146,7 @@ public class UnetHost : UnetClient
             if(possiblePlayers[i] == netMsg.conn)
             {
                 possiblePlayers.RemoveAt(i);
+                choosingCount--;
                 playerFound = true;
                 break;
             }
@@ -187,20 +192,25 @@ public class UnetHost : UnetClient
 
     // Called when a client disconnects
     public override void OnServerDisconnect(NetworkConnection conn)
-    {
-        NetworkServer.DestroyPlayersForConnection(conn);
-
+    {       
         //Remove players for Final Players
         for (int i = 0; i < finalPlayers.Count; i++)
         {
             if (finalPlayers[i].conn == conn)
             {
                 finalPlayers.RemoveAt(i);
-                if (currentState == GameState.Lobby)
+                //Destroy any Player Items
+                NetworkServer.DestroyPlayersForConnection(conn);
+
+                if (currentState != GameState.Race)
                 {
                     //Only update Display Names if Player mattered
                     UpdateDisplayNames();
-                    SendDisplayNames();
+                    SendDisplayNames();                  
+                }
+                else
+                {
+                    hostGamemode.OnServerDisconnect(conn);
                 }
                 return;
             }
@@ -388,6 +398,9 @@ public class UnetHost : UnetClient
     {
         UpdateDisplayNames();
         SendDisplayNames();
+
+        choosingCount = 0;
+        currentState = GameState.Lobby;
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)

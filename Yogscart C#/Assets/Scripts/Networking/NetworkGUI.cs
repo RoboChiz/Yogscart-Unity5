@@ -6,7 +6,6 @@ using System;
 
 public class NetworkGUI : MonoBehaviour
 {
-
     CurrentGameData gd;
     SoundManager sm;
 
@@ -15,7 +14,7 @@ public class NetworkGUI : MonoBehaviour
     public enum ServerState { ServerList, Connecting, Popup, Lobby, LoadingRace, LoadingLevel, Racing };
     public ServerState state;
 
-    private string popupText;
+    public string popupText;
 
     const int maxServerCount = 10;
     public Color currentPlayerColour;
@@ -134,8 +133,8 @@ public class NetworkGUI : MonoBehaviour
 
         float fontSize = GUI.skin.label.fontSize;
 
-        if (popupText != null && popupText != "")
-            state = ServerState.Popup;
+        if (popupText != null && popupText != "" && guiAlpha == 1 && state != ServerState.Popup)
+            ChangeState(ServerState.Popup);
 
         Rect nameListRect = new Rect(190, 95, 570, 795);
 
@@ -515,8 +514,18 @@ public class NetworkGUI : MonoBehaviour
                     GUI.Label(new Rect(20, 10, hostInfoRect.width - 40, fontSize * 2f), "Host Options");
                     GUI.DrawTexture(new Rect(20, 10 + fontSize * 1.25f, hostInfoRect.width - 40, fontSize * 0.2f), Resources.Load<Texture2D>("UI/Lobby/Line"));
 
-                    GUI.Label(new Rect(20, 10 + fontSize * 1.5f, hostInfoRect.width - 40, fontSize * 2f), "Game Mode: ");
-                    serverScroll = GUI.BeginScrollView(new Rect(20, 10 + fontSize * 2.6f, hostInfoRect.width / 2f - 20, hostInfoRect.height - fontSize * 2.8f - 20), serverScroll, new Rect(0, 0, hostInfoRect.width / 2f - 40, Mathf.Clamp(gd.onlineGameModes.Length, 6, Mathf.Infinity) * fontSize * 1.25f));
+                    int choosingCount = FindObjectOfType<UnetHost>().choosingCount;
+                    string ccString = "";
+
+                    if (choosingCount == 1)
+                        ccString = "1 Player choosing Layout";
+                    else if (choosingCount > 1)
+                        ccString = choosingCount.ToString() + " Players choosing Layout";
+
+                    GUI.Label(new Rect(20, 10 + fontSize * 1.5f, hostInfoRect.width - 40, fontSize * 2f), ccString);
+
+                    GUI.Label(new Rect(20, 10 + fontSize * 2.5f, hostInfoRect.width - 40, fontSize * 2f), "Game Mode: ");
+                    serverScroll = GUI.BeginScrollView(new Rect(20, 10 + fontSize * 3.6f, hostInfoRect.width / 2f - 20, hostInfoRect.height - fontSize * 2.8f - 20), serverScroll, new Rect(0, 0, hostInfoRect.width / 2f - 40, Mathf.Clamp(gd.onlineGameModes.Length, 6, Mathf.Infinity) * fontSize * 1.25f));
 
                     for (int i = 0; i < gd.onlineGameModes.Length; i++)
                     {
@@ -525,19 +534,19 @@ public class NetworkGUI : MonoBehaviour
                         if (i == currentSelection)
                             GUI.DrawTexture(new Rect(0, i * fontSize * 1.25f, nameListRect.width, fontSize * 1.25f), Resources.Load<Texture2D>("UI/Lobby/Selected"));
 
-                        if ((Input.GetMouseButtonDown(0) && InputManager.MouseIntersects(new Rect(hostInfoRect.x + 20, hostInfoRect.y + 10 + fontSize * 2.6f + (i * fontSize * 1.25f), nameListRect.width, fontSize * 1.25f)))&&!inputLock)
+                        if ((Input.GetMouseButtonDown(0) && InputManager.MouseIntersects(new Rect(hostInfoRect.x + 20, hostInfoRect.y + 10 + fontSize * 2.6f + (i * fontSize * 1.25f), nameListRect.width, fontSize * 1.25f))) && !inputLock)
                             currentSelection = i;
-
                     }
+                    
                     if (currentSelection != currentGamemode)
                     {
                         currentGamemode = currentSelection;
                     }
 
                     GUI.EndScrollView();
-                    GUI.EndGroup();
+                    }
 
-                }
+                    GUI.EndGroup();
 
                 break;
             case ServerState.Popup:
@@ -562,7 +571,7 @@ public class NetworkGUI : MonoBehaviour
                 if ((GUI.Button(new Rect(865, 525, 190, 95), okayText) || InputManager.controllers[0].GetMenuInput("Submit") != 0) && !inputLock)
                 {
                     popupText = "";
-                    state = ServerState.ServerList;
+                    ChangeState(ServerState.ServerList);
                 }
 
                 if (xboxController)
@@ -647,6 +656,21 @@ public class NetworkGUI : MonoBehaviour
             inputLock = false;
     }
 
+    public void ChangeState(ServerState nState)
+    {
+        StartCoroutine(ActualChangeState(nState));
+    }
+
+    private IEnumerator ActualChangeState(ServerState nState)
+    {
+        if(guiAlpha != 0)
+            yield return StartCoroutine(ChangeGUIAlpha(guiAlpha, 0f));
+
+        state = nState;
+
+        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
+    }
+
     public void StartServer()
     {
         MainMenu.lockInputs = true;
@@ -663,14 +687,9 @@ public class NetworkGUI : MonoBehaviour
         CharacterSelect cs = FindObjectOfType<CharacterSelect>();
         cs.enabled = true;
 
-        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
+        yield return StartCoroutine(ActualChangeState(ServerState.Connecting));
 
-        cs.StartCoroutine("ShowCharacterSelect", CharacterSelect.csState.Character);
-        yield return new WaitForSeconds(0.5f);
-
-        state = ServerState.Connecting;
-
-        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
+        yield return cs.StartCoroutine("ShowCharacterSelect", CharacterSelect.csState.Character);
 
         //Wait until all characters have been selected
         while (cs.State != CharacterSelect.csState.Finished && cs.State != CharacterSelect.csState.Off)
@@ -688,12 +707,18 @@ public class NetworkGUI : MonoBehaviour
         Debug.Log("It worked");
         myUnet = gd.gameObject.AddComponent<UnetHost>();
         myUnet.playerPrefab = Resources.Load<GameObject>("Prefabs/Kart Maker/Network Kart");
-
         myUnet.networkPort = hostPort;
-        myUnet.StartHost();
-        myUnet.RegisterHandlers();
-        state = ServerState.Lobby;
-      
+        try
+        {
+            myUnet.StartHost();
+            myUnet.RegisterHandlers();
+            ChangeState(ServerState.Lobby);
+        }
+        catch
+        {
+            Debug.Log("Error caught!");
+        }
+
     }
 
     public void PlayerUp()
@@ -730,11 +755,7 @@ public class NetworkGUI : MonoBehaviour
             myUnet.SendRejection();
         }
 
-        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
-
-        state = ServerState.Lobby;
-
-        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
+        ChangeState(ServerState.Lobby);
     }
 
     public void CloseServer()
@@ -747,9 +768,7 @@ public class NetworkGUI : MonoBehaviour
         DestroyImmediate(myUnet);
 
         //Wait for fade
-        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
-        state = ServerState.ServerList;
-        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
+        yield return StartCoroutine(ActualChangeState(ServerState.ServerList));
 
         MainMenu.lockInputs = false;
 
@@ -771,9 +790,7 @@ public class NetworkGUI : MonoBehaviour
         MainMenu.lockInputs = true;
 
         //Wait for fade
-        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
-        state = ServerState.Connecting;
-        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
+        yield return StartCoroutine(ActualChangeState(ServerState.Connecting));
 
         finalPlayers = new List<DisplayName>();
 
@@ -784,10 +801,17 @@ public class NetworkGUI : MonoBehaviour
 
         myUnet.networkAddress = servers[currentSelection].ip;
         myUnet.networkPort = servers[currentSelection].port;
-        myUnet.StartClient();
-        myUnet.RegisterHandlers();
 
-        
+        try
+        {
+            myUnet.StartClient();
+            myUnet.RegisterHandlers();
+        }
+        catch
+        {
+            Debug.Log("Error caught!");
+        }
+
     }
 
     private void StartHostGame()
@@ -798,21 +822,13 @@ public class NetworkGUI : MonoBehaviour
 
     public void StartClientGame()
     {
-        StartCoroutine(ActualStartClientGame());
-    }
-
-    private IEnumerator ActualStartClientGame()
-    {
         inputLock = true;
-        yield return StartCoroutine(ChangeGUIAlpha(1f, 0f));
-        state = ServerState.Connecting;
-        yield return StartCoroutine(ChangeGUIAlpha(0f, 1f));
+        ChangeState(ServerState.Connecting);
     }
 
     public void PopUp(string message)
     {
         inputLock = false;
-        ShowMenu();
         popupText = message;
     }
 

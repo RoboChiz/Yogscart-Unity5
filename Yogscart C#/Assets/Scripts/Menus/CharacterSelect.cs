@@ -12,8 +12,8 @@ public class CharacterSelect : MonoBehaviour
 
     public GUISkin skin;
 
-    public enum csState { Character, Hat, Kart, Off, Finished};
-    public csState state  = csState.Off;
+    public enum csState { Character, Hat, Kart, Off, Finished };
+    public csState state = csState.Off;
     public csState State
     {
         get { return state; }
@@ -22,7 +22,7 @@ public class CharacterSelect : MonoBehaviour
 
     //Cursors
     private Vector2[] cursorPosition;
-    private const float cursorSpeed = 5f, rotateSpeed = 30f;
+    private const float cursorSpeed = 5f, rotateSpeed = 60f;
 
     public Transform[] platforms;
     public bool[] ready, kartSelected;
@@ -108,11 +108,11 @@ public class CharacterSelect : MonoBehaviour
     private void ResetEverything()
     {
         ResetReady();
-        
-        if(loadedModels != null)
+
+        if (loadedModels != null)
         {
             //Clear any models that are loaded
-            foreach(Transform t in loadedModels)
+            foreach (Transform t in loadedModels)
                 if (t != null)
                     Destroy(t.gameObject);
         }
@@ -121,9 +121,9 @@ public class CharacterSelect : MonoBehaviour
         loadedChoice = new CharacterSelectLoadOut[4];
         kartSelected = new bool[4];
 
-        for(int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
         {
-            loadedChoice[i] = new CharacterSelectLoadOut(-1,-1,-1,-1);
+            loadedChoice[i] = new CharacterSelectLoadOut(-1, -1, -1, -1);
         }
     }
 
@@ -133,37 +133,31 @@ public class CharacterSelect : MonoBehaviour
         {
             GUI.skin = skin;
             GUI.depth = -5;
-
-            Color nGUI = Color.white;
-            nGUI.a = menuAlpha;
-            GUI.color = nGUI;
-
-            float fontSize = Mathf.Min(Screen.width, Screen.height) / 20f;
-            GUI.skin.label.fontSize = (int)fontSize;
-
-            float chunkSize = (Mathf.Min(Screen.width, Screen.height * 2f) / 10f) * scale;
+            GUI.matrix = GUIHelper.GetMatrix();
+            GUIHelper.SetGUIAlpha(menuAlpha);           
+        
             LoadOut[] choice = CurrentGameData.currentChoices;
 
-            Rect nameListRect = new Rect(0, 0, 0, 0);
-            bool canInput = true;
-
-            if (mm != null && mm.sliding)
-                canInput = false;
-
             float choicesPerColumn = 0f;
+
+            float chunkSize = 190;
 
             float nameWidth = chunkSize * 5f * scale;
             float nameHeight = (Screen.height - (chunkSize * 1.75f)) * scale;
             float nameX = 10f + (nameWidth * (1 - scale));
             float nameY = (chunkSize * 0.75f) + (nameHeight * (1 - scale));
 
+            Rect iconArea = GUIHelper.CentreRect(new Rect(10, 115, 950, 840), scale);
+
             switch (state)
             {
                 case csState.Character:
-                    nameListRect = new Rect(nameX, nameY, nameWidth, nameHeight);
-                    GUI.DrawTexture(nameListRect, nameList);
-                    GUI.Label(new Rect(10, 10, Screen.width, chunkSize / 2f), "Select A Character");
+                 
+                    GUI.Label(new Rect(10, 10, 1920, 95), "Select A Character");               
+                    GUI.DrawTexture(iconArea, nameList);
 
+                    GUI.BeginGroup(iconArea);
+                        
                     //Draw Character heads
                     choicesPerColumn = ((gd.characters.Length / 5f) / 5f) * 5f;
                     for (int i = 0; i < choicesPerColumn; i++)
@@ -174,7 +168,7 @@ public class CharacterSelect : MonoBehaviour
 
                             if (characterInt < gd.characters.Length)
                             {
-                                Rect iconRect = new Rect(10 + (j * chunkSize), nameListRect.y + (i * chunkSize), chunkSize, chunkSize);
+                                Rect iconRect = new Rect(10 + (j * chunkSize), i * chunkSize, chunkSize, chunkSize);
                                 Texture2D icon;
 
                                 if (gd.characters[characterInt].unlocked != UnlockedState.Locked)
@@ -186,14 +180,19 @@ public class CharacterSelect : MonoBehaviour
                             }
                         }
                     }
+
+                    GUI.EndGroup();
+
                     break;
                 case csState.Hat:
 
                     InputManager.allowedToChange = false;
 
-                    nameListRect = new Rect(nameX, nameY, nameWidth, nameHeight);
-                    GUI.DrawTexture(nameListRect, nameList);
-                    GUI.Label(new Rect(10, 10, Screen.width, chunkSize / 2f), "Select A Hat");
+                    GUI.Label(new Rect(10, 10, 1920, 95), "Select A Hat");
+
+                    GUI.DrawTexture(iconArea, nameList);
+
+                    GUI.BeginGroup(iconArea);
 
                     //Draw Hat icons
                     choicesPerColumn = ((gd.hats.Length / 5f) / 5f) * 5f;
@@ -205,7 +204,7 @@ public class CharacterSelect : MonoBehaviour
 
                             if (hatInt < gd.hats.Length)
                             {
-                                Rect iconRect = new Rect(10 + (j * chunkSize), nameListRect.y + (i * chunkSize), chunkSize, chunkSize);
+                                Rect iconRect = new Rect(10 + (j * chunkSize), i * chunkSize, chunkSize, chunkSize);
                                 Texture2D icon;
 
                                 if (gd.hats[hatInt].unlocked != UnlockedState.Locked)
@@ -218,398 +217,21 @@ public class CharacterSelect : MonoBehaviour
                         }
                     }
 
+                    GUI.EndGroup();
+
                     break;
                 case (csState.Kart):
-                    GUI.Label(new Rect(10, 10, Screen.width, chunkSize / 2f), "Select A Kart");
+                    GUI.Label(new Rect(10, 10, 1920, 95), "Select A Kart");
                     break;
             }
 
-            //Draw the back button
-
-            bool readyCheck = true;
             for (int s = 0; s < InputManager.controllers.Count; s++)
             {
-                Quaternion oldRot;
-                //Load Character
-                if (state == csState.Character || state == csState.Hat)
-                {
-                    if (loadedChoice[s].character != choice[s].character)
-                    {
-                        if (loadedModels[s] != null)
-                        {
-                            oldRot = loadedModels[s].rotation;
-                            Destroy(loadedModels[s].gameObject);
-                        }
-                        else
-                            oldRot = Quaternion.identity;
-
-                        if (gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
-                        {
-                            loadedModels[s] = (Transform)Instantiate(gd.characters[choice[s].character].CharacterModel_Standing, platforms[s].FindChild("Spawn").position, oldRot);
-                            loadedModels[s].GetComponent<Rigidbody>().isKinematic = true;
-                        }
-
-                        loadedChoice[s].character = choice[s].character;
-                    }
-
-                    loadedChoice[s].kart = -1;
-                    loadedChoice[s].wheel = -1;
-
-                    if (loadedChoice[s].hat != choice[s].hat)
-                    {
-                        if (loadedModels[s].GetComponent<StandingCharacter>() != null)
-                        {
-                            Transform allChildren = loadedModels[s].GetComponent<StandingCharacter>().hatHolder.GetComponentInChildren<Transform>();
-                            foreach (Transform child in allChildren)
-                            {
-                                if (child != loadedModels[s].GetComponent<StandingCharacter>().hatHolder)
-                                    Destroy(child.gameObject);
-                            }
-                        }
-
-                        if (gd.hats[choice[s].hat].model != null && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
-                        {
-                            Transform HatObject = (Transform)Instantiate(gd.hats[choice[s].hat].model, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.position, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.rotation);
-                            HatObject.parent = loadedModels[s].GetComponent<StandingCharacter>().hatHolder;
-                        }
-
-                        loadedChoice[s].character = choice[s].character;
-                        loadedChoice[s].hat = choice[s].hat;
-                    }
-                }
-
-                if (state == csState.Kart)
-                {
-                    loadedChoice[s].character = -1;
-                    loadedChoice[s].hat = -1;
-
-                    if (loadedChoice[s].kart != choice[s].kart || loadedChoice[s].wheel != choice[s].wheel)
-                    {
-                        if (loadedModels[s] != null)
-                        {
-                            oldRot = loadedModels[s].rotation;
-                            Destroy(loadedModels[s].gameObject);
-                        }
-                        else
-                            oldRot = Quaternion.identity;
-
-                        loadedModels[s] = km.SpawnKart(KartType.Display, platforms[s].FindChild("Spawn").position + Vector3.up / 2f, oldRot, choice[s].character, choice[s].hat, choice[s].kart, choice[s].wheel);
-
-                        loadedChoice[s].kart = choice[s].kart;
-                        loadedChoice[s].wheel = choice[s].wheel;
-                    }
-                }
-
-                Vector4 oldRect, newRect, nRect;
-                Camera cam;
-
-                //Default off screen
-                if (InputManager.controllers.Count == 0 || !isShowing)
-                {
-                    cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
-                    oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                    newRect = new Vector4(1.5f, 0, oldRect.z, oldRect.w);
-                    nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                    cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                }
-
-                if (InputManager.controllers.Count <= 1 || !isShowing)
-                {
-                    cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
-                    oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                    newRect = new Vector4(1.5f, 0, oldRect.z, oldRect.w);
-                    nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                    cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                }
-
-                if (InputManager.controllers.Count <= 2 || !isShowing)
-                {
-                    cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
-                    oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                    newRect = new Vector4(1.5f, 0, oldRect.z, oldRect.w);
-                    nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                    cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                }
-
-                if (InputManager.controllers.Count <= 3 || !isShowing)
-                {
-                    cam = platforms[3].FindChild("Camera").GetComponent<Camera>();
-                    oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                    newRect = new Vector4(1.5f, 0, oldRect.z, oldRect.w);
-                    nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                    cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                }
-
-                if (isShowing)
-                {
-                    if (InputManager.controllers.Count == 1)
-                    {
-                        cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
-                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                        newRect = new Vector4(0.5f, 0f, 0.5f, 1f);
-                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                    }
-
-                    if (InputManager.controllers.Count == 2)
-                    {
-                        cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
-                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                        newRect = new Vector4(0.5f, 0.5f, 0.5f, 0.5f);
-                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-
-                        cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
-                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                        newRect = new Vector4(0.5f, 0f, 0.5f, 0.5f);
-                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                    }
-
-                    if (InputManager.controllers.Count >= 3)
-                    {
-                        if (state != csState.Kart)
-                        {
-                            cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
-                            oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                            newRect = new Vector4(0.5f, 0.5f, 0.25f, 0.5f);
-                            nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                            cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-
-                            cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
-                            oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                            newRect = new Vector4(0.5f, 0f, 0.25f, 0.5f);
-                            nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                            cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                        }
-                        else
-                        {
-                            cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
-                            oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                            newRect = new Vector4(0.25f, 0.5f, 0.25f, 0.5f);
-                            nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                            cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-
-                            cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
-                            oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                            newRect = new Vector4(0.25f, 0f, 0.25f, 0.5f);
-                            nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                            cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                        }
-
-                        cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
-                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                        newRect = new Vector4(0.75f, 0.5f, 0.25f, 0.5f);
-                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-
-                    }
-
-                    if (InputManager.controllers.Count == 4)
-                    {
-                        cam = platforms[3].FindChild("Camera").GetComponent<Camera>();
-                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
-                        newRect = new Vector4(0.75f, 0f, 0.25f, 0.5f);
-                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
-                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
-                    }
-                }
-
-                if (loadedModels[s] != null)
-                    loadedModels[s].Rotate(Vector3.up, -InputManager.controllers[s].GetInput("Rotate") * Time.deltaTime * rotateSpeed);
-
-                int hori = 0, vert = 0;
-                bool submit = false, cancel = false;
-
-                if (canInput && !sliding)
-                {
-                    if (!ready[s])
-                    {
-                        hori = InputManager.controllers[s].GetMenuInput("MenuHorizontal");
-                        vert = -InputManager.controllers[s].GetMenuInput("MenuVertical");
-                    }
-
-                    submit = (InputManager.controllers[s].GetMenuInput("Submit") != 0);
-                    cancel = (InputManager.controllers[s].GetMenuInput("Cancel") != 0);
-
-                }
-
-                if (hori != 0)
-                {
-                    if (state == csState.Character)
-                    {
-                        int itemOnRow = 5;
-                        int itemsLeft = gd.characters.Length % 5;
-
-                        if (itemsLeft != 0 && choice[s].character >= gd.characters.Length - itemsLeft)
-                            itemOnRow = itemsLeft;
-
-                        if ((choice[s].character % 5) + hori >= itemOnRow)
-                            choice[s].character -= itemOnRow - 1;
-                        else if ((choice[s].character % 5) + hori < 0)
-                            choice[s].character += itemOnRow - 1;
-                        else
-                            choice[s].character += hori;
-                    }
-                    if (state == csState.Hat)
-                    {
-                        int itemOnRow = 5;
-                        int itemsLeft = gd.hats.Length % 5;
-
-                        if (itemsLeft != 0 && choice[s].hat >= gd.hats.Length - itemsLeft)
-                            itemOnRow = itemsLeft;
-
-                        if ((choice[s].hat % 5) + hori >= itemOnRow)
-                            choice[s].hat -= itemOnRow - 1;
-                        else if ((choice[s].hat % 5) + hori < 0)
-                            choice[s].hat += itemOnRow - 1;
-                        else
-                            choice[s].hat += hori;
-                    }
-                }
-
-                if (vert != 0)
-                {
-                    if (state != csState.Kart)
-                        vert *= 5;
-
-                    if (state == csState.Character)
-                    {
-
-                        int itemsLeft = gd.characters.Length % 5;
-                        int rowNumber = gd.characters.Length / 5;
-
-                        if (itemsLeft != 0)
-                            rowNumber++;
-
-                        if (choice[s].character + vert >= gd.characters.Length)
-                        {
-                            choice[s].character = (choice[s].character + vert) % 5;
-                        }
-                        else if (choice[s].character + vert < 0)
-                        {
-                            int toAdd = choice[s].character + ((rowNumber - 1) * 5);
-
-                            if (toAdd >= gd.characters.Length)
-                                choice[s].character = toAdd - 5;
-                            else
-                                choice[s].character = toAdd;
-                        }
-                        else
-                            choice[s].character += vert;
-
-                    }
-                    if (state == csState.Hat)
-                    {
-                        int itemsLeft = gd.hats.Length % 5;
-                        int rowNumber = gd.hats.Length / 5;
-
-                        if (itemsLeft != 0)
-                            rowNumber++;
-
-                        if (choice[s].hat + vert >= gd.hats.Length)
-                        {
-                            choice[s].hat = (choice[s].hat + vert) % 5;
-                        }
-                        else if (choice[s].hat + vert < 0)
-                        {
-                            int toAdd = choice[s].hat + ((rowNumber - 1) * 5);
-
-                            if (toAdd >= gd.hats.Length)
-                                choice[s].hat = toAdd - 5;
-                            else
-                                choice[s].hat = toAdd;
-                        }
-                        else
-                            choice[s].hat += vert;
-                    }
-
-                    if (state == csState.Kart && !loadedChoice[s].scrolling)
-                    {
-                        if (!kartSelected[s])
-                        {
-                            if (vert > 0)
-                            {
-                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight,choice[s]));      
-                                //choice[s].kart++;                          
-                            }
-                            else
-                            {
-                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
-                                //choice[s].kart--;
-                            }
-                            }
-                        else
-                        {
-                            if (vert > 0)
-                            {
-                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
-                                //choice[s].wheel++;
-                            }
-                            else
-                            {
-                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
-                                //choice[s].wheel--;
-                            }
-                        }
-                    }
-                }
-
-                if (submit)
-                {
-                    if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
-                    {
-                        if (gd.characters[choice[s].character].selectedSound != null)
-                            sm.PlaySFX(gd.characters[choice[s].character].selectedSound);
-
-                        loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
-
-                        ready[s] = true;
-                    }
-
-                    if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
-                    {
-                        ready[s] = true;
-                    }
-
-                    if (state == csState.Kart)
-                    {
-                        if (kartSelected[s])
-                        {
-                            ready[s] = true;
-                        }
-                        else
-                        {
-                            kartSelected[s] = true;
-                        }
-                    }
-                }
-
-                if (cancel)
-                {
-                    if (!ready[s])
-                    {
-                        if (state == csState.Character)
-                            Cancel();
-                        if (state == csState.Hat)
-                            StartCoroutine(ChangeState(csState.Character));
-                        if (state == csState.Kart)
-                        {
-                            if (kartSelected[s])
-                                kartSelected[s] = false;
-                            else
-                                StartCoroutine(ChangeState(csState.Hat));
-                        }
-                    }
-                    else
-                    {
-                        ready[s] = false;
-                    }
-                }
 
                 if (state != csState.Off && state != csState.Kart)
                 {
                     int selectedIcon = 0;
+
 
                     if (state == csState.Character)
                         selectedIcon = choice[s].character;
@@ -617,67 +239,51 @@ public class CharacterSelect : MonoBehaviour
                     if (state == csState.Hat)
                         selectedIcon = choice[s].hat;
 
-                    Vector2 iconSelection = new Vector2(selectedIcon % 5, selectedIcon / 5);
-                    cursorPosition[s] = Vector2.Lerp(cursorPosition[s], iconSelection, Time.deltaTime * cursorSpeed);
+                    GUI.BeginGroup(iconArea);
 
-                    Rect CursorRect = new Rect(10 + cursorPosition[s].x * chunkSize, nameListRect.y + cursorPosition[s].y * chunkSize, chunkSize, chunkSize);
-                    Texture2D CursorTexture = Resources.Load<Texture2D>("UI/Cursors/Cursor_" + s);
-                    GUI.DrawTexture(CursorRect, CursorTexture);
-                }
+                        Vector2 iconSelection = new Vector2(selectedIcon % 5, selectedIcon / 5);
+                        cursorPosition[s] = Vector2.Lerp(cursorPosition[s], iconSelection, Time.deltaTime * cursorSpeed);
 
+                        Rect CursorRect = new Rect(10 + cursorPosition[s].x * chunkSize, cursorPosition[s].y * chunkSize, chunkSize, chunkSize);
+                        Texture2D CursorTexture = Resources.Load<Texture2D>("UI/Cursors/Cursor_" + s);
+                        GUI.DrawTexture(CursorRect, CursorTexture);
 
-                if (!kartSelected[s])
-                {
-                    if (choice[s].kart >= gd.karts.Length)
-                        choice[s].kart = 0;
-
-                    if (choice[s].kart < 0)
-                        choice[s].kart = gd.karts.Length - 1;
-
-                }
-                else
-                {
-                    if (choice[s].wheel >= gd.wheels.Length)
-                        choice[s].wheel = 0;
-
-                    if (choice[s].wheel < 0)
-                        choice[s].wheel = gd.wheels.Length - 1;
+                    GUI.EndGroup();
                 }
 
                 Texture2D backTexture = Resources.Load<Texture2D>("UI/New Main Menu/backnew");
                 float backRatio = (Screen.width / 6f) / backTexture.width;
-                float topHeight = Screen.height * 0.05f;
+                float topHeight = 115;
                 float screenHeight = Screen.height - 10 - (backTexture.height * backRatio) - topHeight;
 
                 //Render Kart And Wheel
                 if (state == csState.Kart)
                 {
                     Rect areaRect = new Rect(0, 0, 0, 0);
+                    //Rect iconArea = GUIHelper.CentreRect(new Rect(10, 115, 950, 840), scale);
 
                     if (InputManager.controllers.Count == 1)
-                        areaRect = new Rect(0, topHeight, Screen.width, screenHeight);
+                        areaRect = GUIHelper.CentreRect(new Rect(0, topHeight, 1920, 840),scale);
 
                     if (InputManager.controllers.Count == 2)
                     {
                         if (s == 0)
-                            areaRect = new Rect(0, topHeight, Screen.width, screenHeight / 2f);
+                            areaRect = GUIHelper.CentreRect(new Rect(0, topHeight, 1920, 420), scale);
                         else
-                            areaRect = new Rect(0, topHeight + screenHeight / 2f, Screen.width, screenHeight / 2f);
+                            areaRect = GUIHelper.CentreRect(new Rect(0, topHeight + 420, 1920, 420), scale);
                     }
 
                     if (InputManager.controllers.Count > 2)
                     {
                         if (s == 0)
-                            areaRect = new Rect(0, topHeight, Screen.width / 2f, screenHeight / 2f);
+                            areaRect = GUIHelper.CentreRect(new Rect(0, topHeight, 960, 420), scale);
                         if (s == 1)
-                            areaRect = new Rect(Screen.width / 2f, topHeight, Screen.width / 2f, screenHeight / 2f);
+                            areaRect = GUIHelper.CentreRect(new Rect(960, topHeight, 960, 420), scale);
                         if (s == 2)
-                            areaRect = new Rect(0, topHeight + screenHeight / 2f, Screen.width / 2f, screenHeight / 2f);
+                            areaRect = GUIHelper.CentreRect(new Rect(0, topHeight + 420, 960, 420), scale);
                         if (s == 3)
-                            areaRect = new Rect(Screen.width / 2f, topHeight + screenHeight / 2f, Screen.width / 2f, screenHeight / 2f);
+                            areaRect = GUIHelper.CentreRect(new Rect(960, topHeight + 420, 960, 420), scale);
                     }
-
-                    areaRect = new Rect(areaRect.x + (areaRect.width * (1 - scale)), areaRect.y + (areaRect.height * (1 - scale)), areaRect.width * scale, areaRect.height * scale);
 
                     float heightChunk = areaRect.height / 6f;
 
@@ -732,9 +338,7 @@ public class CharacterSelect : MonoBehaviour
                         nColor.a = nAlpha * menuAlpha;
                         GUI.color = nColor;
 
-                        GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);
-
-                        GUI.color = nGUI;
+                        GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);                       
 
                     }
 
@@ -744,7 +348,7 @@ public class CharacterSelect : MonoBehaviour
                     Rect downArrowRect = new Rect(0, 0, 0, 0);
 
                     if (kartSelected[s] && ready[s])
-                    {                  
+                    {
                         Texture2D readyTexture = Resources.Load<Texture2D>("UI/New Main Menu/Ready");
                         GUI.DrawTexture(selectionRect, readyTexture, ScaleMode.ScaleToFit);
                     }
@@ -766,32 +370,432 @@ public class CharacterSelect : MonoBehaviour
 
                     GUI.EndGroup();
                 }
+            }
+        }
+    }
 
-                if (!ready[s])
-                    readyCheck = false;
+
+
+    //Input
+    void Update()
+    {
+        LoadOut[] choice = CurrentGameData.currentChoices;
+        //Load the Character Model
+        bool readyCheck = true;
+
+        bool canInput = true;
+        if (mm != null && mm.sliding)
+            canInput = false;
+
+        for (int s = 0; s < InputManager.controllers.Count; s++)
+        {
+            Quaternion oldRot;
+            //Load Character
+            if (state == csState.Character || state == csState.Hat)
+            {
+                if (loadedChoice[s].character != choice[s].character)
+                {
+                    if (loadedModels[s] != null)
+                    {
+                        oldRot = loadedModels[s].rotation;
+                        Destroy(loadedModels[s].gameObject);
+                    }
+                    else
+                        oldRot = Quaternion.identity;
+
+                    if (gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
+                    {
+                        loadedModels[s] = (Transform)Instantiate(gd.characters[choice[s].character].CharacterModel_Standing, platforms[s].FindChild("Spawn").position, oldRot);
+                        loadedModels[s].GetComponent<Rigidbody>().isKinematic = true;
+                    }
+
+                    loadedChoice[s].character = choice[s].character;
+                }
+
+                loadedChoice[s].kart = -1;
+                loadedChoice[s].wheel = -1;
+
+                if (loadedChoice[s].hat != choice[s].hat)
+                {
+                    if (loadedModels[s].GetComponent<StandingCharacter>() != null)
+                    {
+                        Transform allChildren = loadedModels[s].GetComponent<StandingCharacter>().hatHolder.GetComponentInChildren<Transform>();
+                        foreach (Transform child in allChildren)
+                        {
+                            if (child != loadedModels[s].GetComponent<StandingCharacter>().hatHolder)
+                                Destroy(child.gameObject);
+                        }
+                    }
+
+                    if (gd.hats[choice[s].hat].model != null && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
+                    {
+                        Transform HatObject = (Transform)Instantiate(gd.hats[choice[s].hat].model, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.position, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.rotation);
+                        HatObject.parent = loadedModels[s].GetComponent<StandingCharacter>().hatHolder;
+                    }
+
+                    loadedChoice[s].character = choice[s].character;
+                    loadedChoice[s].hat = choice[s].hat;
+                }
             }
 
-            if (InputManager.controllers.Count == 0)
-                readyCheck = false;
+            if (state == csState.Kart)
+            {
+                loadedChoice[s].character = -1;
+                loadedChoice[s].hat = -1;
 
-            if (readyCheck)
+                if (loadedChoice[s].kart != choice[s].kart || loadedChoice[s].wheel != choice[s].wheel)
+                {
+                    if (loadedModels[s] != null)
+                    {
+                        oldRot = loadedModels[s].rotation;
+                        Destroy(loadedModels[s].gameObject);
+                    }
+                    else
+                        oldRot = Quaternion.identity;
+
+                    loadedModels[s] = km.SpawnKart(KartType.Display, platforms[s].FindChild("Spawn").position + Vector3.up / 2f, oldRot, choice[s].character, choice[s].hat, choice[s].kart, choice[s].wheel);
+
+                    loadedChoice[s].kart = choice[s].kart;
+                    loadedChoice[s].wheel = choice[s].wheel;
+                }
+            }
+
+            Vector4 oldRect, newRect, nRect;
+            Camera cam;
+
+            //Default off screen
+            if (InputManager.controllers.Count == 0 || !isShowing)
+            {
+                cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
+                cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, 0f, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+            }
+
+            if (InputManager.controllers.Count <= 1 || !isShowing)
+            {
+                cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
+                cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, 0f, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+            }
+
+            if (InputManager.controllers.Count <= 2 || !isShowing)
+            {
+                cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
+                cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, 0f, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+            }
+
+            if (InputManager.controllers.Count <= 3 || !isShowing)
+            {
+                cam = platforms[3].FindChild("Camera").GetComponent<Camera>();
+                cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, 0f, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+            }
+
+            if (isShowing)
+            {
+
+                float areaX = GUIHelper.guiEdges.x / Screen.width;
+                float areaY = GUIHelper.guiEdges.y / Screen.height;
+                float areaHeight = 0.3f/((0.5f / Screen.width) * Screen.height);
+
+                // sw * r = 0.5f
+                //FIGURE OUT OK AREA
+                    Rect okayArea = new Rect(0.5f, 0f, 0.5f, 1f);
+
+                if (InputManager.controllers.Count == 1)
+                {
+                    cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
+                    if(GUIHelper.widthSmaller)
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(0.5f, 0.5f - (areaHeight/2f), 0.5f, areaHeight), Time.deltaTime * 5f);
+                    else
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(0.5f, areaY, 0.5f - areaX, 1f - areaY), Time.deltaTime * 5f);
+                }
+
+                if (InputManager.controllers.Count == 2)
+                {
+                    cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
+                    // cam.rect = GUIHelper.Lerp(cam.rect, new Rect(areaX + (halfAreaWidth * 1.5f), areaY + halfAreaHeight, halfAreaWidth, halfAreaHeight), Time.deltaTime * 5f);
+                    if (GUIHelper.widthSmaller)
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(0.5f, 0.5f - (areaHeight / 2f) + ((1f - areaY) / 2f), 0.5f, areaHeight/2f), Time.deltaTime * 5f);
+                    else
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(0.5f, areaY + ((1f - areaY) / 2f), 0.5f - areaX, (1f - areaY) / 2f), Time.deltaTime * 5f);
+
+                    cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
+                    //cam.rect = GUIHelper.Lerp(cam.rect, new Rect(areaX + (halfAreaWidth * 1.5f), areaY, halfAreaWidth, halfAreaHeight), Time.deltaTime * 5f);
+                    if (GUIHelper.widthSmaller)
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(0.5f, 0.5f - (areaHeight / 2f), 0.5f, areaHeight/2f), Time.deltaTime * 5f);
+                    else
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(0.5f, areaY, 0.5f - areaX, (1f - areaY)/2f), Time.deltaTime * 5f);
+                }
+
+                if (InputManager.controllers.Count >= 3)
+                {
+                    if (state != csState.Kart)
+                    {
+                        cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
+                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
+                        newRect = new Vector4(0.5f, 0.5f, 0.25f, 0.5f);
+                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
+                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
+
+                        cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
+                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
+                        newRect = new Vector4(0.5f, 0f, 0.25f, 0.5f);
+                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
+                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
+                    }
+                    else
+                    {
+                        cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
+                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
+                        newRect = new Vector4(0.25f, 0.5f, 0.25f, 0.5f);
+                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
+                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
+
+                        cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
+                        oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
+                        newRect = new Vector4(0.25f, 0f, 0.25f, 0.5f);
+                        nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
+                        cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
+                    }
+
+                    cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
+                    oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
+                    newRect = new Vector4(0.75f, 0.5f, 0.25f, 0.5f);
+                    nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
+                    cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
+
+                }
+
+                if (InputManager.controllers.Count == 4)
+                {
+                    cam = platforms[3].FindChild("Camera").GetComponent<Camera>();
+                    oldRect = new Vector4(cam.rect.x, cam.rect.y, cam.rect.width, cam.rect.height);
+                    newRect = new Vector4(0.75f, 0f, 0.25f, 0.5f);
+                    nRect = Vector4.Lerp(oldRect, newRect, Time.deltaTime * 5f);
+                    cam.rect = new Rect(nRect.x, nRect.y, nRect.z, nRect.w);
+                }
+            }
+
+            if (loadedModels[s] != null)
+                loadedModels[s].Rotate(Vector3.up, -InputManager.controllers[s].GetInput("Rotate") * Time.deltaTime * rotateSpeed);
+
+            int hori = 0, vert = 0;
+            bool submit = false, cancel = false;
+
+            if (canInput && !sliding)
+            {
+                if (!ready[s])
+                {
+                    hori = InputManager.controllers[s].GetMenuInput("MenuHorizontal");
+                    vert = -InputManager.controllers[s].GetMenuInput("MenuVertical");
+                }
+
+                submit = (InputManager.controllers[s].GetMenuInput("Submit") != 0);
+                cancel = (InputManager.controllers[s].GetMenuInput("Cancel") != 0);
+
+            }
+
+            if (hori != 0)
             {
                 if (state == csState.Character)
                 {
-                    StartCoroutine(ChangeState(csState.Hat));
-                    //Reset the hats
-                    loadedChoice[0].hat = -1;
-                    loadedChoice[1].hat = -1;
-                    loadedChoice[2].hat = -1;
-                    loadedChoice[3].hat = -1;
-                }
-                else if (state == csState.Hat)
-                    StartCoroutine(ChangeState(csState.Kart));
-                else if (state == csState.Kart)
-                    Finished();
+                    int itemOnRow = 5;
+                    int itemsLeft = gd.characters.Length % 5;
 
-                ResetReady();
+                    if (itemsLeft != 0 && choice[s].character >= gd.characters.Length - itemsLeft)
+                        itemOnRow = itemsLeft;
+
+                    if ((choice[s].character % 5) + hori >= itemOnRow)
+                        choice[s].character -= itemOnRow - 1;
+                    else if ((choice[s].character % 5) + hori < 0)
+                        choice[s].character += itemOnRow - 1;
+                    else
+                        choice[s].character += hori;
+                }
+                if (state == csState.Hat)
+                {
+                    int itemOnRow = 5;
+                    int itemsLeft = gd.hats.Length % 5;
+
+                    if (itemsLeft != 0 && choice[s].hat >= gd.hats.Length - itemsLeft)
+                        itemOnRow = itemsLeft;
+
+                    if ((choice[s].hat % 5) + hori >= itemOnRow)
+                        choice[s].hat -= itemOnRow - 1;
+                    else if ((choice[s].hat % 5) + hori < 0)
+                        choice[s].hat += itemOnRow - 1;
+                    else
+                        choice[s].hat += hori;
+                }
             }
+
+            if (vert != 0)
+            {
+                if (state != csState.Kart)
+                    vert *= 5;
+
+                if (state == csState.Character)
+                {
+
+                    int itemsLeft = gd.characters.Length % 5;
+                    int rowNumber = gd.characters.Length / 5;
+
+                    if (itemsLeft != 0)
+                        rowNumber++;
+
+                    if (choice[s].character + vert >= gd.characters.Length)
+                    {
+                        choice[s].character = (choice[s].character + vert) % 5;
+                    }
+                    else if (choice[s].character + vert < 0)
+                    {
+                        int toAdd = choice[s].character + ((rowNumber - 1) * 5);
+
+                        if (toAdd >= gd.characters.Length)
+                            choice[s].character = toAdd - 5;
+                        else
+                            choice[s].character = toAdd;
+                    }
+                    else
+                        choice[s].character += vert;
+
+                }
+                if (state == csState.Hat)
+                {
+                    int itemsLeft = gd.hats.Length % 5;
+                    int rowNumber = gd.hats.Length / 5;
+
+                    if (itemsLeft != 0)
+                        rowNumber++;
+
+                    if (choice[s].hat + vert >= gd.hats.Length)
+                    {
+                        choice[s].hat = (choice[s].hat + vert) % 5;
+                    }
+                    else if (choice[s].hat + vert < 0)
+                    {
+                        int toAdd = choice[s].hat + ((rowNumber - 1) * 5);
+
+                        if (toAdd >= gd.hats.Length)
+                            choice[s].hat = toAdd - 5;
+                        else
+                            choice[s].hat = toAdd;
+                    }
+                    else
+                        choice[s].hat += vert;
+                }
+
+                if (state == csState.Kart && !loadedChoice[s].scrolling)
+                {
+                    if (!kartSelected[s])
+                    {
+                        if (vert > 0)
+                            StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+                        else
+                            StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                    }
+                    else
+                    {
+                        if (vert > 0)
+
+                            StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                        else
+                            StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                    }
+                }
+            }
+
+            if (submit)
+            {
+                if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
+                {
+                    if (gd.characters[choice[s].character].selectedSound != null)
+                        sm.PlaySFX(gd.characters[choice[s].character].selectedSound);
+
+                    loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
+
+                    ready[s] = true;
+                }
+
+                if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
+                {
+                    ready[s] = true;
+                }
+
+                if (state == csState.Kart)
+                {
+                    if (kartSelected[s])
+                    {
+                        ready[s] = true;
+                    }
+                    else
+                    {
+                        kartSelected[s] = true;
+                    }
+                }
+            }
+
+            if (cancel)
+            {
+                if (!ready[s])
+                {
+                    if (state == csState.Character)
+                        Cancel();
+                    if (state == csState.Hat)
+                        StartCoroutine(ChangeState(csState.Character));
+                    if (state == csState.Kart)
+                    {
+                        if (kartSelected[s])
+                            kartSelected[s] = false;
+                        else
+                            StartCoroutine(ChangeState(csState.Hat));
+                    }
+                }
+                else
+                {
+                    ready[s] = false;
+                }
+            }
+
+            if (!kartSelected[s])
+            {
+                if (choice[s].kart >= gd.karts.Length)
+                    choice[s].kart = 0;
+
+                if (choice[s].kart < 0)
+                    choice[s].kart = gd.karts.Length - 1;
+
+            }
+            else
+            {
+                if (choice[s].wheel >= gd.wheels.Length)
+                    choice[s].wheel = 0;
+
+                if (choice[s].wheel < 0)
+                    choice[s].wheel = gd.wheels.Length - 1;
+            }
+            if (!ready[s])
+                readyCheck = false;
+        }
+
+        if (InputManager.controllers.Count == 0)
+            readyCheck = false;
+
+        if (readyCheck)
+        {
+            if (state == csState.Character)
+            {
+                StartCoroutine(ChangeState(csState.Hat));
+                //Reset the hats
+                loadedChoice[0].hat = -1;
+                loadedChoice[1].hat = -1;
+                loadedChoice[2].hat = -1;
+                loadedChoice[3].hat = -1;
+            }
+            else if (state == csState.Hat)
+                StartCoroutine(ChangeState(csState.Kart));
+            else if (state == csState.Kart)
+                Finished();
+
+            ResetReady();
         }
     }
 
@@ -909,7 +913,7 @@ public class CharacterSelectLoadOut : LoadOut
     public bool scrolling;
     public float kartChangeHeight = 0f, wheelChangeHeight = 0f, kartAlpha = 0.4f, wheelAlpha = 0.4f;
 
-    public CharacterSelectLoadOut(int ch, int ha, int ka, int wh) : base (ch,ha,ka,wh)
+    public CharacterSelectLoadOut(int ch, int ha, int ka, int wh) : base(ch, ha, ka, wh)
     {
     }
 

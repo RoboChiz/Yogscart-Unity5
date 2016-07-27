@@ -224,6 +224,13 @@ public class NetworkRaceHost : Race
         msg.players = toSend.ToArray();
         NetworkServer.SendToAll(UnetMessages.allPlayerFinishedMsg, msg);
 
+        yield return null;
+
+        foreach (NetworkRacer racer in racers)
+        {
+            NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.leaderboardPosMsg, new intMessage(racer.position));
+        }
+
         //Wait again for message to be recieved
         yield return new WaitForSeconds(1f);
 
@@ -375,7 +382,14 @@ public class NetworkRaceHost : Race
     //Called when a client disconnects from online gamemode
     public override void OnServerDisconnect(NetworkConnection conn)
     {
-
+        foreach(NetworkRacer r in racers)
+        {
+            if(r.conn == conn)
+            {
+                racers.Remove(r);
+                break;
+            }
+        }
     }
     //Called when a client connects to online gamemode
     public override void OnServerConnect(NetworkConnection conn)

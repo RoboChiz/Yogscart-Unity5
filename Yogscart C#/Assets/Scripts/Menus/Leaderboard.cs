@@ -209,7 +209,7 @@ public class Leaderboard : MonoBehaviour
                         Texture2D humanTexture;
 
                         humanTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Winner_P" + (nRacer.human + 1).ToString());
-                        Rect humanTextureRect = new Rect(0, ((i + 1) * optionHeight) - 7, BoardRect.width, optionHeight + 14);
+                        Rect humanTextureRect = new Rect(0, ((i + 1) * optionHeight) - 15, BoardRect.width, optionHeight + 30);
                         GUI.DrawTexture(humanTextureRect, humanTexture);
                     }
 

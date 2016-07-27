@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEngine.Networking.NetworkSystem;
 
 public class UnetClient : NetworkManager
 {
@@ -37,19 +38,16 @@ public class UnetClient : NetworkManager
 
         if (timerSize > 0)
         {
-
-            float centreX = Mathf.Lerp(60f, 20f, timerSize);
-            float centreY = Mathf.Lerp(35f, -5f, timerSize);
-            float guiSize = Mathf.Lerp(0f, 80f, timerSize);
             int fontSize = (int)Mathf.Lerp(0f, 35f, timerSize);
 
             GUI.skin.label.fontSize = fontSize;
+            Rect timerRect = GUIHelper.CentreRect(new Rect(20, -5, 80, 80),timerSize);
 
             GUIUtility.RotateAroundPivot(rotation, new Vector2(60, 35));
-            GUI.DrawTexture(new Rect(centreX, centreY, guiSize, guiSize), TimerIcon);
+            GUI.DrawTexture(timerRect, TimerIcon);
             GUIUtility.RotateAroundPivot(-rotation, new Vector2(60, 35));
 
-            GUIHelper.OutLineLabel(new Rect(centreX, centreY, guiSize, guiSize), ((int)Mathf.Clamp(lastValid, 0,int.MaxValue)).ToString(), 1,Color.black);
+            GUIHelper.OutLineLabel(timerRect, ((int)Mathf.Clamp(lastValid, 0,int.MaxValue)).ToString(), 1,Color.black);
         }
 
     }
@@ -60,7 +58,7 @@ public class UnetClient : NetworkManager
         gd = FindObjectOfType<CurrentGameData>();
 
         //Stop Host from registering Client messages it should never use
-        if(!NetworkServer.active)
+        if (!NetworkServer.active)
         {
             client.RegisterHandler(UnetMessages.acceptedMsg, OnClientAccepted);
             client.RegisterHandler(UnetMessages.clientErrorMsg, OnCustomError);
@@ -69,6 +67,7 @@ public class UnetClient : NetworkManager
         }
 
         //Messages for All Clients and Host
+        client.RegisterHandler(MsgType.Error, OnError);
         client.RegisterHandler(UnetMessages.displayNameUpdateMsg, OnDisplayNameUpdate);
         client.RegisterHandler(UnetMessages.loadGamemodeMsg, OnLoadGamemode);
         client.RegisterHandler(UnetMessages.timerMsg, OnTimer);
@@ -78,12 +77,11 @@ public class UnetClient : NetworkManager
         client.RegisterHandler(UnetMessages.loadLevelID, OnLoadLevelID);
 
         //Register all Power Ups as Spawn Items
-        foreach(PowerUp powerUp in gd.powerUps)
+        foreach (PowerUp powerUp in gd.powerUps)
         {
             if (powerUp.onlineModel != null)
                 ClientScene.RegisterPrefab(powerUp.onlineModel.gameObject);
-        }
-        
+        }       
     }
 
     // Called when connected to a server
@@ -123,7 +121,7 @@ public class UnetClient : NetworkManager
         }
         else if (msg.currentState == UnetHost.GameState.Lobby)
         {
-            FindObjectOfType<NetworkGUI>().state = NetworkGUI.ServerState.Lobby;
+            FindObjectOfType<NetworkGUI>().ChangeState(NetworkGUI.ServerState.Lobby);
         }       
     }
 
@@ -132,6 +130,12 @@ public class UnetClient : NetworkManager
     {
         ClientErrorMessage msg = netMsg.ReadMessage<ClientErrorMessage>();
         EndClient(msg.message);
+    }
+
+    public void OnError(NetworkMessage netMsg)
+    {
+        ErrorMessage errorMsg = netMsg.ReadMessage<ErrorMessage>();
+        EndClient(errorMsg.ToString());
     }
 
     // Called when a client needs to pick a character
@@ -269,7 +273,7 @@ public class UnetClient : NetworkManager
         yield return null;
 
         //Reload the Lobby
-        FindObjectOfType<NetworkGUI>().state = newState;
+        FindObjectOfType<NetworkGUI>().ChangeState(newState);
 
         //Turn the Main Menu off
         FindObjectOfType<MainMenu>().state = MainMenu.MenuState.Online;

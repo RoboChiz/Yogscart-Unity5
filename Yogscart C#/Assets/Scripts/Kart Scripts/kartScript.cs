@@ -65,9 +65,12 @@ public class kartScript : MonoBehaviour
     private float boostAddition, maxGrassSpeed;
 
     //Wheel Transforms
+    [HideInInspector]
     public List<WheelCollider> wheelColliders;
+    [HideInInspector]
     public List<Transform> wheelMeshes;
-    private List<Vector3> wheelStartPos;
+    [HideInInspector]
+    public List<Vector3> wheelStartPos;
 
     //Particles
     public List<ParticleSystem> flameParticles, driftParticles;
@@ -80,11 +83,18 @@ public class kartScript : MonoBehaviour
     const float snapTime = 0.1f, pushTime = 0.3f, pushAmount = 1f;
     private Vector3 relativeVelocity;
 
-    //Stop Flipping
-    private bool snapping;
-
     // Use this for initialization
     void Start()
+    {
+        SetupWheelStartPos();
+
+        //Calculate speed altering factors based on current max speed
+        boostAddition = maxSpeed * boostPercent;
+        maxGrassSpeed = maxSpeed * grassPercent;
+        driftAmount = turnSpeed / 2f;
+    }
+
+    public void SetupWheelStartPos()
     {
         //Setup the start positions of the wheels, these will be used when wheels aren't touching the ground
         wheelStartPos = new List<Vector3>();
@@ -92,11 +102,6 @@ public class kartScript : MonoBehaviour
         {
             wheelStartPos.Add(wheelMeshes[i].localPosition);
         }
-
-        //Calculate speed altering factors based on current max speed
-        boostAddition = maxSpeed * boostPercent;
-        maxGrassSpeed = maxSpeed * grassPercent;
-        driftAmount = turnSpeed / 2f;
     }
 
     // Update is called once per 60th of a second

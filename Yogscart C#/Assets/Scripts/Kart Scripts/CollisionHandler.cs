@@ -41,6 +41,12 @@ public class CollisionHandler : MonoBehaviour
                     collisions[i, j] = true;
                     otherKarts[i].KartCollision(otherKarts[j].transform);
                     otherKarts[j].KartCollision(otherKarts[i].transform);
+
+                   // Vector3 pushAmount = (2.1f - compareVect.magnitude) * compareVect;
+
+                    //otherKarts[i].transform.position -= pushAmount;
+                    //otherKarts[j].transform.position += pushAmount;
+
                 }
                 else if (collisions[i, j] && compareVect.magnitude >= 2f)
                 {
