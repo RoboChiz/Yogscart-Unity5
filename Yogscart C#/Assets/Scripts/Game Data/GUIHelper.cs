@@ -99,6 +99,18 @@ public class GUIHelper
         return new Rect(newX, newY, newWidth, newHeight);
     }
 
+    public static void CentreRectLabel(Rect originalRect, float scale, string text, Color colour)
+    {
+        GUIStyle nstyle = new GUIStyle(GUI.skin.GetStyle("Label"));
+
+        float newFontsize = nstyle.fontSize * scale;
+        nstyle.fontSize = (int)newFontsize;
+        nstyle.normal.textColor = colour;
+
+        GUI.Label(CentreRect(originalRect, scale), text, nstyle);
+    }
+
+
     public static Rect Lerp(Rect start, Rect end, float amount)
     {
         return new Rect(Mathf.Lerp(start.x, end.x, amount), Mathf.Lerp(start.y, end.y, amount), Mathf.Lerp(start.width, end.width, amount), Mathf.Lerp(start.height, end.height, amount));

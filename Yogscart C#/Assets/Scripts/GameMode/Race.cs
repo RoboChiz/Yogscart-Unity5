@@ -72,8 +72,7 @@ public class Race : GameMode
             r.timer = 0;
         }
 
-        lastcurrentRace = currentRace;
-
+        lastcurrentRace = currentRace; 
 
         //Load the Level
         SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
@@ -179,6 +178,10 @@ public class Race : GameMode
         foreach (kartItem ki in kitemes)
             ki.locked = false;
 
+        //Unlock the Pause Menu
+        PauseMenu.canPause = true;
+        PauseMenu.onlineGame = false;
+
         //Wait for the gamemode to be over
         while (!raceFinished && timer < 3600)
         {
@@ -195,6 +198,9 @@ public class Race : GameMode
         finished = true;
 
         StopTimer();
+
+        //Locl the Pause Menu
+        PauseMenu.canPause = false;
 
         foreach (kartInput ki in kines)
             ki.camLocked = false;
@@ -232,6 +238,7 @@ public class Race : GameMode
         //Tidy Up
         timer = 0;
         finished = false;
+        raceFinished = false;
 
         yield return null;
     }
@@ -728,7 +735,7 @@ public class Race : GameMode
         gd.SaveGame();
     }
 
-    void EndGamemode()
+    public override void EndGamemode()
     {
         currentCup = -1;
         currentTrack = -1;

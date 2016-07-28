@@ -135,7 +135,7 @@ public class InputManager : MonoBehaviour
         {
             foreach (InputController c in controllers)
             {
-                if (c.buttonLock != "" && c.GetInput(c.buttonLock) == 0)
+                if (c.buttonLock != "" && c.GetRawInput(c.buttonLock) == 0)
                     c.buttonLock = "";
             }
         }
@@ -323,9 +323,67 @@ public class InputController
         return value;
     }
 
+    public float GetRawInput(string axis)
+    {
+        float value = 0f;
+
+        string inputAxisOne = "", inputAxisTwo = "";
+        bool HasInputOne = controlLayout.commandsOne.TryGetValue(axis, out inputAxisOne);
+        bool HasInputTwo = controlLayout.commandsTwo.TryGetValue(axis, out inputAxisTwo);
+
+        if (!HasInputOne && !HasInputTwo)
+        {
+            Debug.LogError(axis + " is not an Axis!");
+        }
+        else
+        {
+            if (inputAxisOne != null)
+            {
+                if (controlLayout.Type == ControllerType.Xbox360)
+                    value = Input.GetAxisRaw(inputAxisOne + controllerName);
+                else
+                {
+                    if (Input.GetKey(inputAxisOne))
+                        value = 1;
+                    else
+                        value = 0;
+                }
+
+            }
+            if ((inputAxisTwo != null) && value == 0)
+            {
+                if (controlLayout.Type == ControllerType.Xbox360)
+                    value = -Input.GetAxisRaw(inputAxisTwo + controllerName);
+                else
+                {
+                    if (Input.GetKey(inputAxisTwo))
+                        value -= 1;
+                }
+            }
+
+        }
+        return value;
+    }
+
     public int GetMenuInput(string axis)
     {
         float returnValue = GetInput(axis);
+
+        if (buttonLock == "" && returnValue != 0)
+        {
+            buttonLock = axis;
+            return (int)Mathf.Sign(returnValue);
+        }
+        else
+        {
+            return 0;
+        }
+
+    }
+
+    public int GetRawMenuInput(string axis)
+    {
+        float returnValue = GetRawInput(axis);
 
         if (buttonLock == "" && returnValue != 0)
         {

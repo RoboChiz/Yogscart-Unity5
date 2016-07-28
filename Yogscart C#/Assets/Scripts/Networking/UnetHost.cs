@@ -428,6 +428,12 @@ public class UnetHost : UnetClient
             }            
         }
     }
+
+    public override void EndClient(string message)
+    {
+        StopHost();
+        base.EndClient(message);
+    }
 }
 
 [System.Serializable]

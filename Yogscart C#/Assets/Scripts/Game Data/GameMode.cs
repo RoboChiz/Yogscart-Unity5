@@ -346,6 +346,11 @@ abstract public class GameMode : MonoBehaviour
         }
     }
 
+    public virtual void EndGamemode()
+    {
+        StartCoroutine(QuitGame());
+    }
+
     protected IEnumerator QuitGame()
     {
         CurrentGameData.blackOut = true;

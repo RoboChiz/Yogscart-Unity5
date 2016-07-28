@@ -163,8 +163,7 @@ public class MainMenu : MonoBehaviour
                 InputManager.allowedToChange = false;
             break;
             case MenuState.Options:
-                options = new string[] { "Nothing Here Yet" };
-                InputManager.allowedToChange = true;
+                options = new string[] { "Nothing Here Yet" };               
             break;
             case MenuState.Difficulty:
                 //options = ["50cc - Only for little Babby!","100cc - You mother trucker!","150cc - Oh what big strong muscles!","Insane - Prepare your butts!","Back"];

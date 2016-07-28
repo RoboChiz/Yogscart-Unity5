@@ -209,19 +209,19 @@ public class Leaderboard : MonoBehaviour
                         Texture2D humanTexture;
 
                         humanTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Winner_P" + (nRacer.human + 1).ToString());
-                        Rect humanTextureRect = new Rect(0, ((i + 1) * optionHeight) - 15, BoardRect.width, optionHeight + 30);
+                        Rect humanTextureRect = new Rect(0, ((nRacer.position + 1) * optionHeight) - 15, BoardRect.width, optionHeight + 30);
                         GUI.DrawTexture(humanTextureRect, humanTexture);
                     }
 
                     //Render the Position and Character head of the Racer
-                    string posString = nRacer.finished ? ("UI/GrandPrix Positions/" + (i + 1).ToString()) : "UI/GrandPrix Positions/DNF";
+                    string posString = nRacer.finished ? ("UI/GrandPrix Positions/" + ( + 1).ToString()) : "UI/GrandPrix Positions/DNF";
                     Texture2D PosTexture = Resources.Load<Texture2D>(posString);
                     GUI.DrawTexture(new Rect(40, (i + 1) * optionHeight, optionHeight, optionHeight), PosTexture, ScaleMode.ScaleToFit);
 
                     Texture2D CharacterIcon = gd.characters[nRacer.character].icon;
-                    GUI.DrawTexture(new Rect(40 + optionHeight, (i + 1) * optionHeight, optionHeight, optionHeight), CharacterIcon, ScaleMode.ScaleToFit);
+                    GUI.DrawTexture(new Rect(40 + optionHeight, (nRacer.position + 1) * optionHeight, optionHeight, optionHeight), CharacterIcon, ScaleMode.ScaleToFit);
 
-                    Rect nameRect = new Rect(50 + (optionHeight * 2), (i + 1) * optionHeight, 576, optionHeight);
+                    Rect nameRect = new Rect(50 + (optionHeight * 2), (nRacer.position + 1) * optionHeight, 576, optionHeight);
 
                     //Draw the name of the Racer if it is available 
                     if (nRacer.human != -1 && nRacer.name != null && nRacer.name != "")
@@ -246,7 +246,7 @@ public class Leaderboard : MonoBehaviour
                         int renderPoints = (int)Mathf.Clamp(startPoints + pointCount, startPoints, endPoints);
                         int plusVal = nRacer.finished ? (15 - i) - (int)pointCount : 0;
 
-                        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 2.5f), (i + 1) * optionHeight, optionHeight, optionHeight), renderPoints.ToString(),2);
+                        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 2.5f), (nRacer.position + 1) * optionHeight, optionHeight, optionHeight), renderPoints.ToString(),2);
 
                         if (plusVal > 0)
                             GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 1.5f), (i + 1) * optionHeight, optionHeight * 1.5f, optionHeight), "+ " + plusVal,2);

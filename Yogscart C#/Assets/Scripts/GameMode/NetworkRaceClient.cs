@@ -286,6 +286,9 @@ public class NetworkRaceClient : Race
         Debug.Log("Recieved the final scores");
         DisplayNameUpdateMessage msg = netMsg.ReadMessage<DisplayNameUpdateMessage>();
 
+        //Lock the Pause Menu
+        PauseMenu.canPause = false;
+
         List<DisplayRacer> nList = new List<DisplayRacer>();
         foreach (string val in msg.players)
         {
@@ -312,6 +315,22 @@ public class NetworkRaceClient : Race
         intMessage msg = netMsg.ReadMessage<intMessage>();
 
         FindObjectOfType<Leaderboard>().racers[msg.value].human = 0;
+    }
+
+    public override void EndGamemode()
+    {
+        //If this is called but there's a host
+        if (FindObjectOfType<NetworkRaceHost>() != null)
+            FindObjectOfType<NetworkRaceHost>().EndGamemode();
+        else
+        {
+            currentCup = -1;
+            currentTrack = -1;
+            currentRace = 1;
+            lastcurrentRace = -1;
+
+            FindObjectOfType<UnetClient>().EndClient("Disconnected from Server");
+        }       
     }
 
 }

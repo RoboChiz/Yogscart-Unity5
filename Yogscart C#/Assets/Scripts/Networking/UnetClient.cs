@@ -99,7 +99,7 @@ public class UnetClient : NetworkManager
     // called when disconnected from a server
     public override void OnClientDisconnect(NetworkConnection conn)
     {
-        EndClient("You have disconnected from the server.");
+        EndClient("Disconnected from Server");
     }
 
     // Called when a network error occurs
@@ -243,6 +243,10 @@ public class UnetClient : NetworkManager
         kartItem[] kitemes = FindObjectsOfType<kartItem>();
         foreach (kartItem ki in kitemes)
             ki.locked = false;
+
+        //Unlock the Pause Menu
+        PauseMenu.canPause = true;
+        PauseMenu.onlineGame = true;
     }
 
     //Called when the gamemode has finished
@@ -287,7 +291,7 @@ public class UnetClient : NetworkManager
         Component[] comps = GetComponents(typeof(Component));
         foreach (Component comp in comps)
         {
-            if (!(comp is Transform || comp is CurrentGameData || comp is InputManager || comp is SoundManager || comp is KartMaker || comp is CollisionHandler || comp is NetworkGUI || comp is UnetClient || comp is UnetHost))
+            if (!(comp is Transform || comp is CurrentGameData || comp is InputManager || comp is SoundManager || comp is KartMaker || comp is CollisionHandler || comp is NetworkGUI || comp is UnetClient || comp is UnetHost || comp is PauseMenu))
             {
                 Destroy(comp);
             }
@@ -305,7 +309,7 @@ public class UnetClient : NetworkManager
         SceneManager.LoadScene(msg.value);
     }
 
-    public void EndClient(string message)
+    public virtual void EndClient(string message)
     {
         StartCoroutine(ActualEndClient(message));
     }
@@ -314,12 +318,17 @@ public class UnetClient : NetworkManager
     {
         StopClient();
 
-        yield return StartCoroutine(LoadMainMenu(NetworkGUI.ServerState.ServerList));
+        //Lock the Pause Menu
+        PauseMenu.canPause = false;
+        FindObjectOfType<PauseMenu>().HidePause();
+
+        FindObjectOfType<NetworkGUI>().PopUp(message);
+        yield return StartCoroutine(LoadMainMenu(NetworkGUI.ServerState.Popup));
+
+        
 
         //Kill itself
         DestroyImmediate(GetComponent<UnetClient>());
     }
-
-
 
 }

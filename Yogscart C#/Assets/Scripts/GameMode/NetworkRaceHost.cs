@@ -450,4 +450,14 @@ public class NetworkRaceHost : Race
         }
     }
 
+    public override void EndGamemode()
+    {
+        currentCup = -1;
+        currentTrack = -1;
+        currentRace = 1;
+        lastcurrentRace = -1;
+
+        FindObjectOfType<UnetHost>().EndClient("Server Closed");
+    }
+
 }

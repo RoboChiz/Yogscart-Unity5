@@ -120,7 +120,7 @@ public class NetworkGUI : MonoBehaviour
                 waitTime = 31f;
                 //GetComponent.< NetworkView > ().RPC("Countdowner", RPCMode.All, 30);
             }
-        }
+        }      
     }
 
     //Do the GUI
