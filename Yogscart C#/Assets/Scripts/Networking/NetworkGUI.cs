@@ -25,6 +25,8 @@ public class NetworkGUI : MonoBehaviour
     private Vector2 serverScroll = Vector2.zero;
 
     private int hostPort = 25000;
+    private string portString = "";
+
     public string playerName { get; private set; }
     private int finalPlayersID = -1;
 
@@ -191,7 +193,7 @@ public class NetworkGUI : MonoBehaviour
                             string newServerName = servers[i].serverName;
                             newServerName = GUI.TextField(new Rect(10, startHeight, nameListRect.width - 20 - fontSize * 2f, fontSize * 1.25f), newServerName);
 
-                            if (CheckString(newServerName, 0))
+                            if (CheckString(newServerName, 20))
                                 servers[i].serverName = newServerName;
                         }
 
@@ -240,7 +242,7 @@ public class NetworkGUI : MonoBehaviour
 
                         newDesc = GUI.TextArea(new Rect(20, 10 + fontSize * 2f, serverInfoRect.width - 40, serverInfoRect.height - fontSize * 4.5f), newDesc);
 
-                        if (CheckString(newDesc, 0))
+                        if (CheckString(newDesc, 115))
                         {
                             servers[currentSelection].description = newDesc;
                         }
@@ -259,7 +261,18 @@ public class NetworkGUI : MonoBehaviour
                             }
 
                             GUI.Label(new Rect(30 + serverInfoRect.width / 2f, serverInfoRect.height - fontSize * 1.5f, serverInfoRect.width / 2f, fontSize), "Port: ");
-                            int.TryParse(GUI.TextField(new Rect(30 + (fontSize * 2.75f) + serverInfoRect.width / 2f, serverInfoRect.height - fontSize * 1.5f, fontSize * 8f, fontSize), servers[currentSelection].port.ToString()), out servers[currentSelection].port);
+                            portString = GUI.TextField(new Rect(30 + (fontSize * 2.75f) + serverInfoRect.width / 2f, serverInfoRect.height - fontSize * 1.5f, fontSize * 8f, fontSize), portString);
+
+                            if (portString != null && portString != "")
+                            {
+                                int newPort = -1;
+                                if(int.TryParse(portString, out newPort))
+                                {
+                                    servers[currentSelection].port = newPort;
+                                }
+
+                            }
+                                
                         }
                     }
 
@@ -291,6 +304,7 @@ public class NetworkGUI : MonoBehaviour
                         if (GUI.Button(new Rect(1005, 390, 190, 95), "Edit") && !inputLock)
                         {
                             editServer = true;
+                            portString = servers[currentSelection].port.ToString();
                         }
 
                         if (GUI.Button(new Rect(1215, 390, 190, 95), "Delete") && !inputLock)
@@ -325,6 +339,8 @@ public class NetworkGUI : MonoBehaviour
                         var nServer = new ServerInfo();
                         servers.Add(nServer);
                         currentSelection = servers.Count - 1;
+
+                        portString = servers[currentSelection].port.ToString();
                     }
 
                 //Port
@@ -599,10 +615,10 @@ public class NetworkGUI : MonoBehaviour
     {
         bool nReturn = true;
 
-        if (checkString.Length == 0 || (maxLength > 0 && checkString.Length > maxLength))
+        if (maxLength > 0 && checkString.Length > maxLength)
             nReturn = false;
 
-        string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789";
+        string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789.# ";
 
         for (int i = 0; i < checkString.Length; i++)
         {
@@ -801,15 +817,21 @@ public class NetworkGUI : MonoBehaviour
 
         myUnet.networkAddress = servers[currentSelection].ip;
         myUnet.networkPort = servers[currentSelection].port;
-
+     
         try
         {
+
+            if (servers[currentSelection].ip == "" || servers[currentSelection].ip == null)
+                throw new Exception("No Ip has been entered");
+
             myUnet.StartClient();
             myUnet.RegisterHandlers();
         }
         catch
         {
             Debug.Log("Error caught!");
+
+            myUnet.EndClient("Invalid Server IP");
         }
 
     }

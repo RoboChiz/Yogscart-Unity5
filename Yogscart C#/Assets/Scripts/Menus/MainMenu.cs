@@ -13,7 +13,6 @@ public class MainMenu : MonoBehaviour
     public Texture2D logo;
     public AudioClip menuMusic;
 
-    public Color selectedColor;
     int currentSelection;
 
     public Texture2D sidePicture;
@@ -45,13 +44,15 @@ public class MainMenu : MonoBehaviour
     public enum MenuState {Start, Main, SinglePlayer, Difficulty, CharacterSelect, LevelSelect, Multiplayer, Online, Options, Popup, Credits };
     public MenuState state = MenuState.Start;
 
+    private float[] optionSizes;
+
     public static bool lockInputs = false;
 
 	// Use this for initialization
 	IEnumerator Start ()
     {
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();
+        gd = FindObjectOfType<CurrentGameData>();
+        sm = FindObjectOfType<SoundManager>();
 
         //Update as more characters are added
         randomImage = Random.Range(0, 1);
@@ -107,11 +108,35 @@ public class MainMenu : MonoBehaviour
 
         //Draw Stuff
         Rect box = new Rect(sideAmount, 0, GUIHelper.width / 2f, GUIHelper.height);
-        float optionHeight = GUI.skin.label.fontSize + 10;
+
+        Vector2 newMousePos = Input.mousePosition;
+        newMousePos.y = Screen.height - newMousePos.y;
+        newMousePos = GUIUtility.ScreenToGUIPoint(newMousePos);
+
         switch (state)
         {
             case MenuState.Start:
-                GUI.Label(new Rect(sideAmount + GUIHelper.width / 8f - 100, 680, 960, 400), "Press Start / Enter!");
+             
+                if (optionSizes == null || optionSizes.Length != 1)
+                    optionSizes = new float[] { 1f };
+
+                Rect startRect = GUIHelper.CentreRectLabel(new Rect(sideAmount + GUIHelper.width / 8f - 100, 700, 600, 100), optionSizes[0], "Press Start / Enter!", Color.white);
+                if (startRect.Contains(newMousePos))
+                {
+                    if (optionSizes[0] < 1.25f)
+                        optionSizes[0] += Time.unscaledDeltaTime * 4f;
+                }
+                else
+                {
+                    if (optionSizes[0] > 1)
+                        optionSizes[0] -= Time.unscaledDeltaTime * 4f;
+                }
+
+                if (GUI.Button(startRect, ""))
+                {
+                    FindObjectOfType<InputManager>().AddController("Key_");
+                    ChangeMenu(MenuState.Main);
+                }
 
                 GUI.Label(new Rect(210, 1010 - (sideAmount/4f), 1900, 60), gd.version);
 
@@ -162,8 +187,7 @@ public class MainMenu : MonoBehaviour
                 }
                 InputManager.allowedToChange = false;
             break;
-            case MenuState.Options:
-                options = new string[] { "Nothing Here Yet" };               
+            case MenuState.Options:            
             break;
             case MenuState.Difficulty:
                 //options = ["50cc - Only for little Babby!","100cc - You mother trucker!","150cc - Oh what big strong muscles!","Insane - Prepare your butts!","Back"];
@@ -186,25 +210,48 @@ public class MainMenu : MonoBehaviour
                 break;
         }
 
+        if (state != MenuState.Start && (optionSizes == null || optionSizes.Length != options.Length))
+        {
+            optionSizes = new float[options.Length];
+
+            for (int i = 0; i < optionSizes.Length; i++)
+                optionSizes[i] = 1f;
+        }
+
+
+        float optionHeight = (box.height * (2/3f))/8f;
+        bool mouseClick = false;
+
         GUI.BeginGroup(box);
             if (options != null && options.Length > 0)
             {
                 //Single Player is the longest word in the menu and is 13 characters long			
                 for (int i = 0; i < options.Length; i++)
 				{
-                    if (currentSelection == i)
-                        GUI.skin.label.normal.textColor = selectedColor;
-                    else
-                        GUI.skin.label.normal.textColor = Color.white;
-
-                    var labelRect = new Rect(40, 20 + (box.height / 3f) + (i * optionHeight), box.width - 20, optionHeight);
-                    GUI.Label(labelRect, options[i]);
-
-                    labelRect.x += box.x;
-                    labelRect.y += box.y;
-
+                if (currentSelection == i)
+                {
+                    if (optionSizes[i] < 1.5f)
+                        optionSizes[i] += Time.unscaledDeltaTime * 4f;
                 }
-                GUI.skin.label.normal.textColor = Color.white;
+                else
+                {
+                    if (optionSizes[i] > 1)
+                        optionSizes[i] -= Time.unscaledDeltaTime * 4f;
+                }
+                
+                Rect optionRect = GUIHelper.LeftRectLabel(new Rect(40, 20 + (box.height / 3f) + (i * optionHeight), box.width - 20, optionHeight - 20), optionSizes[i], options[i], (currentSelection == i) ? Color.yellow : Color.white);
+
+                
+
+                if (optionRect.Contains(newMousePos))
+                    currentSelection = i;
+
+                if (GUI.Button(optionRect,""))
+                {
+                    currentSelection = i;
+                    mouseClick = true;
+                }
+                }
             }
         GUI.EndGroup();
 
@@ -232,7 +279,7 @@ public class MainMenu : MonoBehaviour
             if(state == MenuState.Start && !lockInputs && InputManager.controllers[0].GetInput("Submit") != 0)
                         ChangeMenu(MenuState.Main);
 
-            if (submitBool)
+            if (submitBool || mouseClick)
             {
                 switch (state)
                 {
@@ -257,6 +304,9 @@ public class MainMenu : MonoBehaviour
                                 break;
                             case "Options":
                                 ChangeMenu(MenuState.Options);
+                                StartCoroutine(ForcePicRemove());
+                                GetComponent<Options>().enabled = true;
+                                GetComponent<Options>().ShowOptions();
                                 break;
                             case "Credits":
                                 moveTitle = true;
@@ -378,7 +428,12 @@ public class MainMenu : MonoBehaviour
                 FindObjectOfType<NetworkGUI>().CloseMenu();
             }
 
-            if (state == MenuState.Online)
+            if (state == MenuState.Options && FindObjectOfType<Options>().enabled)
+            {
+                FindObjectOfType<Options>().HideOptions();
+            }
+
+            if (state == MenuState.Online || state == MenuState.Options)
             {
                 lockPicture = false;              
             }
@@ -412,7 +467,7 @@ public class MainMenu : MonoBehaviour
 
             float endSideAmount = -GUIHelper.width/2f;
 
-            if (changeState == MenuState.Credits || changeState == MenuState.CharacterSelect || changeState == MenuState.Online)
+            if (changeState == MenuState.Credits || changeState == MenuState.CharacterSelect || changeState == MenuState.Online || changeState == MenuState.Options)
             {
                 HideTitle();
             }
@@ -436,12 +491,12 @@ public class MainMenu : MonoBehaviour
             state = changeState;
 
             //Show Title of Hidden
-            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && titleAlpha != 1)
+            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && titleAlpha != 1)
             {
                 ShowTitle();
             }
 
-            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online)
+            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options)
             {
                 moveTitle = false;
             }

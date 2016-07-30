@@ -98,8 +98,36 @@ public class GUIHelper
 
         return new Rect(newX, newY, newWidth, newHeight);
     }
+    public static Rect CentreRectLabel(Rect originalRect, float scale, string text, Color colour)
+    {
+        GUIStyle nstyle = new GUIStyle(GUI.skin.GetStyle("Label"));
 
-    public static void CentreRectLabel(Rect originalRect, float scale, string text, Color colour)
+        float newFontsize = nstyle.fontSize * scale;
+        nstyle.fontSize = (int)newFontsize;
+        nstyle.normal.textColor = colour;
+        nstyle.alignment = TextAnchor.MiddleCenter;
+
+        Rect newRect = originalRect;
+        if (scale != 1f)
+            newRect = CentreRect(originalRect, scale);
+
+        GUI.Label(newRect, text, nstyle);
+
+        return newRect;
+    }
+
+    public static Rect LeftRect(Rect originalRect, float scale)
+    {
+        float halfWidth = originalRect.width / 2f, halfHeight = originalRect.height / 2f;
+        float centreY = originalRect.y + halfHeight;
+
+        float newY = Mathf.LerpUnclamped(centreY, originalRect.y, scale);
+        float newWidth = Mathf.LerpUnclamped(0, originalRect.width, scale);
+        float newHeight = Mathf.LerpUnclamped(0, originalRect.height, scale);
+
+        return new Rect(originalRect.x, newY, newWidth, newHeight);
+    }
+    public static Rect LeftRectLabel(Rect originalRect, float scale, string text, Color colour)
     {
         GUIStyle nstyle = new GUIStyle(GUI.skin.GetStyle("Label"));
 
@@ -107,7 +135,13 @@ public class GUIHelper
         nstyle.fontSize = (int)newFontsize;
         nstyle.normal.textColor = colour;
 
-        GUI.Label(CentreRect(originalRect, scale), text, nstyle);
+        Rect newRect = originalRect;
+        if (scale != 1f)
+            newRect = LeftRect(originalRect, scale);
+
+        GUI.Label(newRect, text, nstyle);
+
+        return newRect;
     }
 
 
