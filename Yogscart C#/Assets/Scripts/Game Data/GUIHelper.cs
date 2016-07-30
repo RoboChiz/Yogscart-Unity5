@@ -150,4 +150,84 @@ public class GUIHelper
         return new Rect(Mathf.Lerp(start.x, end.x, amount), Mathf.Lerp(start.y, end.y, amount), Mathf.Lerp(start.width, end.width, amount), Mathf.Lerp(start.height, end.height, amount));
     }
 
+    public static Vector2 GetMousePosition()
+    {
+        Vector2 newMousePos = Input.mousePosition;
+        newMousePos.y = Screen.height - newMousePos.y;
+        return GUIUtility.ScreenToGUIPoint(newMousePos);
+    }
+
+}
+
+[System.Serializable]
+public class DropDown
+{
+    public bool toggled { get; private set; }
+    private Vector2 scrollPosition;
+    private Rect viewRect;
+    private float toggleScale;
+
+    public DropDown()
+    {
+        scrollPosition = new Vector2();
+        viewRect = new Rect();
+        toggled = false;
+        toggleScale = 1f;
+    }
+
+    public int Draw(Rect rect, int toggleSize, int value, string[] options)
+    {
+        //Check value
+        value = MathHelper.NumClamp(value, 0, options.Length);
+        int returnValue = value;
+
+        //Draw current selection
+        Rect boxRect = new Rect(rect.x, rect.y, rect.width - toggleSize, rect.height);
+        GUI.Box(boxRect, options[value]);
+
+        //Draw Toggle
+
+        Vector2 newMousePos = GUIHelper.GetMousePosition();
+        Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);
+
+        if(toggleRect.Contains(newMousePos))
+        {
+            if (toggleScale < 1.5f)
+                toggleScale += Time.deltaTime * 4f;
+        }
+        else
+        {
+            if (toggleScale > 1f)
+                toggleScale -= Time.deltaTime * 4f;
+        }
+
+        if (GUI.Button(toggleRect, Resources.Load<Texture2D>("UI/New Main Menu/Down_Arrow")))
+        {
+            toggled = !toggled;
+        }
+
+        //Draw Options
+        if(toggled)
+        {
+            scrollPosition = GUI.BeginScrollView(new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize/3.15f), rect.height * 5f), scrollPosition, new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 2f) - 20, rect.height * options.Length));
+
+            for (int i = 0; i < options.Length; i++)
+            {
+                Rect optionRect = new Rect(rect.x, rect.y + ((i + 1) * rect.height), rect.width - toggleSize, rect.height);
+                if (GUI.Button(optionRect, ""))
+                {
+                    returnValue = i;
+                    toggled = false;
+                }
+                   
+
+                GUI.Box(optionRect, options[i]);
+            }
+
+            GUI.EndScrollView();
+        }
+
+        return returnValue;
+    }
+
 }

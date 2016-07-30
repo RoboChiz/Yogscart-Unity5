@@ -48,6 +48,9 @@ public class MainMenu : MonoBehaviour
 
     public static bool lockInputs = false;
 
+    private bool mouseLastUsed = false;
+    private Vector2 lastMousePos;
+
 	// Use this for initialization
 	IEnumerator Start ()
     {
@@ -109,9 +112,13 @@ public class MainMenu : MonoBehaviour
         //Draw Stuff
         Rect box = new Rect(sideAmount, 0, GUIHelper.width / 2f, GUIHelper.height);
 
-        Vector2 newMousePos = Input.mousePosition;
-        newMousePos.y = Screen.height - newMousePos.y;
-        newMousePos = GUIUtility.ScreenToGUIPoint(newMousePos);
+        Vector2 newMousePos = GUIHelper.GetMousePosition();
+
+        if (lastMousePos != newMousePos)
+            mouseLastUsed = true;
+
+        lastMousePos = newMousePos;
+
 
         switch (state)
         {
@@ -121,15 +128,19 @@ public class MainMenu : MonoBehaviour
                     optionSizes = new float[] { 1f };
 
                 Rect startRect = GUIHelper.CentreRectLabel(new Rect(sideAmount + GUIHelper.width / 8f - 100, 700, 600, 100), optionSizes[0], "Press Start / Enter!", Color.white);
-                if (startRect.Contains(newMousePos))
+                if (mouseLastUsed && startRect.Contains(newMousePos))
                 {
                     if (optionSizes[0] < 1.25f)
                         optionSizes[0] += Time.unscaledDeltaTime * 4f;
+                    else
+                        optionSizes[0] = 1.25f;
                 }
                 else
                 {
                     if (optionSizes[0] > 1)
                         optionSizes[0] -= Time.unscaledDeltaTime * 4f;
+                    else
+                        optionSizes[0] = 1f;
                 }
 
                 if (GUI.Button(startRect, ""))
@@ -232,18 +243,20 @@ public class MainMenu : MonoBehaviour
                 {
                     if (optionSizes[i] < 1.5f)
                         optionSizes[i] += Time.unscaledDeltaTime * 4f;
+                    else
+                        optionSizes[i] = 1.5f;
                 }
                 else
                 {
                     if (optionSizes[i] > 1)
                         optionSizes[i] -= Time.unscaledDeltaTime * 4f;
+                    else
+                        optionSizes[i] = 1f;
                 }
                 
                 Rect optionRect = GUIHelper.LeftRectLabel(new Rect(40, 20 + (box.height / 3f) + (i * optionHeight), box.width - 20, optionHeight - 20), optionSizes[i], options[i], (currentSelection == i) ? Color.yellow : Color.white);
-
-                
-
-                if (optionRect.Contains(newMousePos))
+               
+                if (mouseLastUsed && optionRect.Contains(newMousePos))
                     currentSelection = i;
 
                 if (GUI.Button(optionRect,""))
@@ -267,6 +280,12 @@ public class MainMenu : MonoBehaviour
                 horizontal = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
                 submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
             }
+
+            if (vertical != 0 || horizontal != 0 || !submitBool)
+                mouseLastUsed = false;
+
+            if (Input.mouseScrollDelta != Vector2.zero)
+                mouseLastUsed = true;
 
             //Menu Navigation
             if (options != null && options.Length > 0)

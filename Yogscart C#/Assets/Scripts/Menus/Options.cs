@@ -11,14 +11,20 @@ public class Options : MonoBehaviour
 
     private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle;
 
-    enum OptionsTab { Game,Graphics,Input};
+    enum OptionsTab { Game, Graphics, Input };
     private OptionsTab currentTab = OptionsTab.Game;
+
+    private DropDown resDropDown;
+    private int currentResolution = 0;
+
+    private float cancelScale = 1f, applyScale = 1f;
+    private bool somethingChanged = false;
 
     // Use this for initialization
     void Start()
     {
         gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();    
+        sm = GameObject.FindObjectOfType<SoundManager>();
 
         //Load the textures
         blueTab = Resources.Load<Texture2D>("UI/Options/BlueTab");
@@ -28,10 +34,13 @@ public class Options : MonoBehaviour
         gameTitle = Resources.Load<Texture2D>("UI/Options/Game");
         graphicsTitle = Resources.Load<Texture2D>("UI/Options/Graphics");
         inputTitle = Resources.Load<Texture2D>("UI/Options/Input");
+
+        resDropDown = new DropDown();
     }
 
     public void ShowOptions()
     {
+        ResetEverything();
         StartCoroutine(ActualShowOptions());
     }
 
@@ -86,9 +95,10 @@ public class Options : MonoBehaviour
         GUIHelper.SetGUIAlpha(guiAlpha);
         GUI.matrix = GUIHelper.GetMatrix();
         GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
+        Vector2 mousePosition = GUIHelper.GetMousePosition();
 
         //Draw all the titles
-        if(currentTab != OptionsTab.Game)
+        if (currentTab != OptionsTab.Game)
         {
             Rect gameRect = new Rect(180, 90, 330, 70);
             GUI.DrawTexture(gameRect, gameTitle);
@@ -116,7 +126,7 @@ public class Options : MonoBehaviour
         }
 
         //Draw the current tab
-        Rect tabRect = new Rect(180, 90, 1550, 870);  
+        Rect tabRect = new Rect(180, 90, 1550, 870);
         Rect tabAreaRect = new Rect(180, 170, 1550, 800);
 
         switch (currentTab)
@@ -125,7 +135,7 @@ public class Options : MonoBehaviour
                 GUI.DrawTexture(tabRect, blueTab);
 
                 GUI.BeginGroup(tabAreaRect);
-          
+
                 GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:");
                 SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 100f);
                 GUI.Label(new Rect(1300, 70, 250, 100), (int)SoundManager.masterVolume + "%");
@@ -143,6 +153,65 @@ public class Options : MonoBehaviour
                 GUI.DrawTexture(tabRect, greenTab);
 
                 GUI.BeginGroup(tabAreaRect);
+
+                GUI.Label(new Rect(20, 70, 300, 100), "Resolution:");
+
+                string[] possibleScreens = new string[Screen.resolutions.Length];
+                for (int i = 0; i < possibleScreens.Length; i++)
+                    possibleScreens[i] = Screen.resolutions[i].width + " x " + Screen.resolutions[i].height;
+
+                int newRes = resDropDown.Draw(new Rect(330, 90, 1000, 50), 50, currentResolution, possibleScreens);
+                if (newRes != currentResolution)
+                    somethingChanged = true;
+                currentResolution = newRes;
+
+                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(20, 700, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f) ? Color.yellow : Color.white);
+
+                Rect cancelClickRect = new Rect(cancelRect);
+                cancelClickRect.x += tabAreaRect.x;
+                cancelClickRect.y += tabAreaRect.y;
+
+                if (cancelClickRect.Contains(mousePosition))
+                {
+                    if (cancelScale < 1.5f)
+                        cancelScale += Time.deltaTime * 4f;
+                    else
+                        cancelScale = 1.5f;
+                }
+                else
+                {
+                    if (cancelScale > 1f)
+                        cancelScale -= Time.deltaTime * 4f;
+                    else
+                        cancelScale = 1f;
+                }
+
+                if (GUI.Button(cancelRect, ""))
+                    ResetEverything();
+
+                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(250, 700, 200, 100), applyScale, "Apply", (applyScale > 1.1f) ? Color.yellow : Color.white);
+
+                Rect applyClickRect = new Rect(applyRect);
+                applyClickRect.x += tabAreaRect.x;
+                applyClickRect.y += tabAreaRect.y;
+
+                if (applyClickRect.Contains(mousePosition))
+                {
+                    if (applyScale < 1.5f)
+                        applyScale += Time.deltaTime * 4f;
+                }
+                else
+                {
+                    if (applyScale > 1f)
+                        applyScale -= Time.deltaTime * 4f;
+                }
+
+                if (GUI.Button(applyRect, ""))
+                {
+                    somethingChanged = false;
+                    SaveEverything();
+                }
+
                 break;
             case OptionsTab.Input:
                 GUI.DrawTexture(tabRect, orangeTab);
@@ -152,5 +221,24 @@ public class Options : MonoBehaviour
         }
 
         GUI.EndGroup();
+    }
+
+    private void ResetEverything()
+    {
+        //Get current resolution
+        for(int i = 0; i < Screen.resolutions.Length; i++)
+        {
+            if(Screen.resolutions[i].width == Screen.width && Screen.resolutions[i].height == Screen.height)
+            {
+                currentResolution = i;
+                break;
+            }
+        }
+
+    }
+
+    private void SaveEverything()
+    {
+        Screen.SetResolution(Screen.resolutions[currentResolution].width, Screen.resolutions[currentResolution].height, false);
     }
 }
