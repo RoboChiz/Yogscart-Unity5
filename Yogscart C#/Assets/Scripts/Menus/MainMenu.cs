@@ -13,12 +13,12 @@ public class MainMenu : MonoBehaviour
     public Texture2D logo;
     public AudioClip menuMusic;
 
-    int currentSelection;
+    private int currentSelection = 0, lastCurrentSelection = -1, lastloadedPicture = -1;
 
     public Texture2D sidePicture;
     private float sidePictureAmount = 0;
     private float sidePictureFade = 1f;
-    private bool pictureTransitioning = false, lockPicture = false;
+    private bool pictureTransitioning = false, lockPicture = false, loadPicture = true;
 
     private bool moveTitle = false;
 
@@ -34,7 +34,7 @@ public class MainMenu : MonoBehaviour
     }
     static private float sideAmount = 0f;
 
-    private float sideFade = 1f, titleAlpha = 1f;
+    private float sideFade = 1f, titleAlpha = 1f, mouseWait = 0f;
 
     private float titleAmount = 10f;
     int randomImage;
@@ -60,7 +60,6 @@ public class MainMenu : MonoBehaviour
         //Update as more characters are added
         randomImage = Random.Range(0, 1);
 
-        sidePicture = Resources.Load<Texture2D>("UI/New Main Menu/Side Images/" + randomImage.ToString());
         sidePictureAmount = GUIHelper.width / 2f;
 
         yield return new WaitForSeconds(0.5f);
@@ -119,7 +118,37 @@ public class MainMenu : MonoBehaviour
 
         lastMousePos = newMousePos;
 
+        if (state == MenuState.Main || state == MenuState.Start)
+        {
+            string randoImage = "UI/New Main Menu/Side Images/" + randomImage.ToString();
+            string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage };
 
+            if (currentSelection != lastCurrentSelection)
+            {
+                mouseWait = 1f;
+
+                if (lastCurrentSelection < 0 || possibleSideImages[currentSelection] != possibleSideImages[lastCurrentSelection])
+                    loadPicture = true;
+
+                lastCurrentSelection = currentSelection;
+            }
+
+            if (mouseWait > 0f)
+            {
+                mouseWait -= Time.deltaTime;
+            }
+            else if (loadPicture)
+            {
+                loadPicture = false;
+
+                if(lastloadedPicture < 0 || possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture])
+                    StartCoroutine(ChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
+
+                lastloadedPicture = currentSelection;
+            }
+                
+        }
+       
         switch (state)
         {
             case MenuState.Start:
@@ -154,33 +183,7 @@ public class MainMenu : MonoBehaviour
                 break;
             case MenuState.Main:
                 options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Quit" };
-                InputManager.allowedToChange = true;
-                if (sidePicture != null)
-                {
-                    switch(options[currentSelection])
-                    {
-                        case "Multiplayer":
-                            if (sidePicture.name != "Multiplayer")
-                                StartCoroutine(ChangePicture(Resources.Load<Texture2D>("UI/New Main Menu/Side Images/Multiplayer")));
-                            break;
-                        case "Online":
-                            if (sidePicture.name != "Online")
-                                StartCoroutine(ChangePicture(Resources.Load<Texture2D>("UI/New Main Menu/Side Images/Online")));
-                            break;
-                        case "Options":
-                            if (sidePicture.name != "Options")
-                                StartCoroutine(ChangePicture(Resources.Load<Texture2D>("UI/New Main Menu/Side Images/Options")));
-                            break;
-                        default:
-                            if (sidePicture.name != randomImage.ToString())
-                                StartCoroutine("ChangePicture", Resources.Load<Texture2D>("UI/New Main Menu/Side Images/" + randomImage.ToString()));
-                        break;
-                    }
-                }
-                else
-                {
-                    StartCoroutine("ChangePicture", Resources.Load<Texture2D>("UI/New Main Menu/Side Images/" + randomImage.ToString()));
-                }
+                InputManager.allowedToChange = true;              
 
                 break;
             case MenuState.SinglePlayer:
@@ -281,11 +284,8 @@ public class MainMenu : MonoBehaviour
                 submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
             }
 
-            if (vertical != 0 || horizontal != 0 || !submitBool)
+            if (vertical != 0 || horizontal != 0 || submitBool)
                 mouseLastUsed = false;
-
-            if (Input.mouseScrollDelta != Vector2.zero)
-                mouseLastUsed = true;
 
             //Menu Navigation
             if (options != null && options.Length > 0)
@@ -506,7 +506,9 @@ public class MainMenu : MonoBehaviour
             sideAmount = endSideAmount;
             sideFade = 0f;
 
-            currentSelection = 0;
+            if(changeState != MenuState.Start && (changeState == MenuState.Main && state != MenuState.Start))
+                currentSelection = 0;
+
             state = changeState;
 
             //Show Title of Hidden

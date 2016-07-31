@@ -14,11 +14,12 @@ public class Options : MonoBehaviour
     enum OptionsTab { Game, Graphics, Input };
     private OptionsTab currentTab = OptionsTab.Game;
 
-    private DropDown resDropDown;
-    private int currentResolution = 0;
+    private DropDown resDropDown, qualityDropDown;
+    private Toggle fullscreenToggle;
+    private int currentResolution = 0, currentQuality = 0;
 
     private float cancelScale = 1f, applyScale = 1f;
-    private bool somethingChanged = false;
+    private bool fullScreen, somethingChanged = false;
 
     // Use this for initialization
     void Start()
@@ -36,6 +37,9 @@ public class Options : MonoBehaviour
         inputTitle = Resources.Load<Texture2D>("UI/Options/Input");
 
         resDropDown = new DropDown();
+        qualityDropDown = new DropDown();
+
+        fullscreenToggle = new Toggle();
     }
 
     public void ShowOptions()
@@ -95,12 +99,13 @@ public class Options : MonoBehaviour
         GUIHelper.SetGUIAlpha(guiAlpha);
         GUI.matrix = GUIHelper.GetMatrix();
         GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
+
         Vector2 mousePosition = GUIHelper.GetMousePosition();
 
         //Draw all the titles
         if (currentTab != OptionsTab.Game)
         {
-            Rect gameRect = new Rect(180, 90, 330, 70);
+            Rect gameRect = new Rect(180, 95, 330, 70);
             GUI.DrawTexture(gameRect, gameTitle);
 
             if (GUI.Button(gameRect, ""))
@@ -109,7 +114,7 @@ public class Options : MonoBehaviour
 
         if (currentTab != OptionsTab.Graphics)
         {
-            Rect graphicsRect = new Rect(510, 90, 330, 70);
+            Rect graphicsRect = new Rect(510, 95, 330, 70);
             GUI.DrawTexture(graphicsRect, graphicsTitle);
 
             if (GUI.Button(graphicsRect, ""))
@@ -118,7 +123,7 @@ public class Options : MonoBehaviour
 
         if (currentTab != OptionsTab.Input)
         {
-            Rect inputRect = new Rect(840, 90, 330, 70);
+            Rect inputRect = new Rect(840, 95, 330, 70);
             GUI.DrawTexture(inputRect, inputTitle);
 
             if (GUI.Button(inputRect, ""))
@@ -154,6 +159,20 @@ public class Options : MonoBehaviour
 
                 GUI.BeginGroup(tabAreaRect);
 
+                //Fullscreen
+                bool newFullscreen = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), 50, fullScreen, "Fullscreen:");
+                if (!resDropDown.toggled)
+                    fullScreen = newFullscreen;
+                
+                //Change Quality
+                GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:");
+
+                int newQuality = qualityDropDown.Draw(new Rect(330, 250, 1000, 50), 50, currentQuality, QualitySettings.names);
+                if (newQuality != currentQuality)
+                    somethingChanged = true;
+                currentQuality = newQuality;
+
+                //Change Resolution
                 GUI.Label(new Rect(20, 70, 300, 100), "Resolution:");
 
                 string[] possibleScreens = new string[Screen.resolutions.Length];
@@ -165,7 +184,8 @@ public class Options : MonoBehaviour
                     somethingChanged = true;
                 currentResolution = newRes;
 
-                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(20, 700, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f) ? Color.yellow : Color.white);
+                //Apply and Cancel Buttons
+                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(20, 650, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f) ? Color.yellow : Color.white);
 
                 Rect cancelClickRect = new Rect(cancelRect);
                 cancelClickRect.x += tabAreaRect.x;
@@ -189,7 +209,7 @@ public class Options : MonoBehaviour
                 if (GUI.Button(cancelRect, ""))
                     ResetEverything();
 
-                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(250, 700, 200, 100), applyScale, "Apply", (applyScale > 1.1f) ? Color.yellow : Color.white);
+                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(250, 650, 200, 100), applyScale, "Apply", (applyScale > 1.1f) ? Color.yellow : Color.white);
 
                 Rect applyClickRect = new Rect(applyRect);
                 applyClickRect.x += tabAreaRect.x;
@@ -199,11 +219,15 @@ public class Options : MonoBehaviour
                 {
                     if (applyScale < 1.5f)
                         applyScale += Time.deltaTime * 4f;
+                    else
+                        applyScale = 1.5f;
                 }
                 else
                 {
                     if (applyScale > 1f)
                         applyScale -= Time.deltaTime * 4f;
+                    else
+                        applyScale = 1;
                 }
 
                 if (GUI.Button(applyRect, ""))
@@ -226,19 +250,23 @@ public class Options : MonoBehaviour
     private void ResetEverything()
     {
         //Get current resolution
-        for(int i = 0; i < Screen.resolutions.Length; i++)
+        for (int i = 0; i < Screen.resolutions.Length; i++)
         {
-            if(Screen.resolutions[i].width == Screen.width && Screen.resolutions[i].height == Screen.height)
+            if (Screen.resolutions[i].width == Screen.width && Screen.resolutions[i].height == Screen.height)
             {
                 currentResolution = i;
                 break;
             }
         }
 
+        fullScreen = Screen.fullScreen;
+        currentQuality = QualitySettings.GetQualityLevel();
+
     }
 
     private void SaveEverything()
     {
-        Screen.SetResolution(Screen.resolutions[currentResolution].width, Screen.resolutions[currentResolution].height, false);
+        Screen.SetResolution(Screen.resolutions[currentResolution].width, Screen.resolutions[currentResolution].height, fullScreen);
+        QualitySettings.SetQualityLevel(currentQuality);
     }
 }
