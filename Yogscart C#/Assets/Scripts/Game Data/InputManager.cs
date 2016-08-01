@@ -41,7 +41,7 @@ public class InputManager : MonoBehaviour
         //Load default Input
         allConfigs = new List<InputLayout>();
         allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB"));
-        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Throttle:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:a,MenuHorizontal:d,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q"));
+        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Throttle:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q"));
 
 
         bool saveNeeded = false;
@@ -131,7 +131,10 @@ public class InputManager : MonoBehaviour
 
     void Update()
     {
-        if (controllers != null && controllers.Count > 0)
+        if (controllers == null)
+            controllers = new List<InputController>();
+
+        if (controllers.Count > 0)
         {
             foreach (InputController c in controllers)
             {
@@ -149,7 +152,7 @@ public class InputManager : MonoBehaviour
         {
             if (controllers.Count < 4)
             {
-                if (Input.GetKey("return"))
+                if (Input.GetKey("return") || (Input.GetMouseButton(0) && controllers.Count == 0))
                     AddController("Key_");
 
                 if (Input.GetAxis("Start_1") != 0)

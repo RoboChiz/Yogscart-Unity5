@@ -39,16 +39,17 @@ public class CharacterSelect : MonoBehaviour
     private float menuAlpha = 0f;
     private bool sliding = false;
 
-    private bool lastAllowed = false;
+    private bool lastAllowed = false, mouseLast = false, canClick = false;
+    private Vector2 lastMousePos;
 
     public IEnumerator ShowCharacterSelect(csState state)
     {
         loading = true;
         lastAllowed = InputManager.allowedToChange;
 
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();
-        km = GameObject.FindObjectOfType<KartMaker>();
+        gd = FindObjectOfType<CurrentGameData>();
+        sm = FindObjectOfType<SoundManager>();
+        km = FindObjectOfType<KartMaker>();
 
         if (transform.GetComponent<MainMenu>() != null)
             mm = transform.GetComponent<MainMenu>();
@@ -152,12 +153,18 @@ public class CharacterSelect : MonoBehaviour
             float nameY = (chunkSize * 0.75f) + (nameHeight * (1 - scale));
 
             Rect iconArea = GUIHelper.CentreRect(new Rect(10, 115, 950, 840), scale);
+            Vector2 mousePos = GUIHelper.GetMousePosition();
+            canClick = false;
+
+            if (mousePos != lastMousePos)
+            {
+                mouseLast = true;
+                lastMousePos = mousePos;
+            }
 
             switch (state)
             {
                 case csState.Character:
-
-
                     InputManager.allowedToChange = lastAllowed;
 
                     GUI.Label(new Rect(10, 10, 1920, 95), "Select A Character");               
@@ -183,6 +190,13 @@ public class CharacterSelect : MonoBehaviour
                                 else
                                     icon = Resources.Load<Texture2D>("UI/Character Icons/question_mark");
                                 GUI.DrawTexture(iconRect, icon);
+
+                                //Mouse Controls
+                                if(choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                {
+                                    choice[0].character = characterInt;
+                                    canClick = true;
+                                }
 
                             }
                         }
@@ -220,6 +234,12 @@ public class CharacterSelect : MonoBehaviour
                                     icon = Resources.Load<Texture2D>("UI/Character Icons/question_mark");
                                 GUI.DrawTexture(iconRect, icon);
 
+                                //Mouse Controls
+                                if (choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                {
+                                    choice[0].hat = hatInt;
+                                    canClick = true;
+                                }
                             }
                         }
                     }
@@ -311,7 +331,7 @@ public class CharacterSelect : MonoBehaviour
                     for (int kartI = -2; kartI <= 2; kartI++)
                     {
                         kartIcon = gd.karts[MathHelper.NumClamp(choice[s].kart + kartI, 0, gd.karts.Length)].icon;
-                        Rect kartRect = new Rect(20, selectionRect.height / 2f - (kartHeight * (kartI + 0.5f)) - loadedChoice[s].kartChangeHeight, kartWidth, kartHeight);
+                        Rect kartRect = GUIHelper.CentreRect(new Rect(20, selectionRect.height / 2f - (kartHeight * (kartI + 0.5f)) - loadedChoice[s].kartChangeHeight, kartWidth, kartHeight), loadedChoice[s].kartScales[kartI + 2]);
 
                         float nAlpha = loadedChoice[s].kartAlpha;
                         if (kartI == 0)
@@ -329,8 +349,50 @@ public class CharacterSelect : MonoBehaviour
 
                         GUI.DrawTexture(kartRect, kartIcon, ScaleMode.ScaleToFit);
 
+                        //KartScaling
+                        if(new Rect(areaRect.x + selectionRect.x + kartRect.x, areaRect.y + selectionRect.y + kartRect.y, kartRect.width, kartRect.height).Contains(mousePos))
+                        {
+                            if (loadedChoice[s].kartScales[kartI + 2] < 1.25f)
+                                loadedChoice[s].kartScales[kartI + 2] += Time.deltaTime * 2f;
+                            else
+                                loadedChoice[s].kartScales[kartI + 2] = 1.25f;
+                        }
+                        else
+                        {
+                            if (loadedChoice[s].kartScales[kartI + 2] > 1f)
+                                loadedChoice[s].kartScales[kartI + 2] -= Time.deltaTime * 2f;
+                            else
+                                loadedChoice[s].kartScales[kartI + 2] = 1f;
+                        }
+
+                        //Kart Clicks
+                        if(s == 0 && kartI == -1 && GUI.Button(kartRect,""))
+                        {
+                            if (!kartSelected[s])
+                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+                            else
+                                kartSelected[s] = false;
+                        }                          
+
+                        if (s == 0 && kartI == 1 && GUI.Button(kartRect, ""))
+                        {
+                            if (!kartSelected[s])
+                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                            else
+                                kartSelected[s] = false;
+                        }
+                            
+                        if (s == 0 && kartI == 0 && GUI.Button(kartRect, ""))
+                        {
+                            if (!kartSelected[s])
+                                canClick = true;
+                            else
+                                kartSelected[s] = false;
+                        }
+                           
+
                         Texture2D wheelIcon = gd.wheels[MathHelper.NumClamp(choice[s].wheel + kartI, 0, gd.wheels.Length)].icon;
-                        Rect wheelRect = new Rect(30 + kartWidth, selectionRect.height / 2f - (kartHeight * (kartI + 0.5f)) - loadedChoice[s].wheelChangeHeight, kartWidth, kartHeight);
+                        Rect wheelRect = GUIHelper.CentreRect(new Rect(30 + kartWidth, selectionRect.height / 2f - (kartHeight * (kartI + 0.5f)) - loadedChoice[s].wheelChangeHeight, kartWidth, kartHeight), loadedChoice[s].wheelScales[kartI + 2]);
 
                         nAlpha = loadedChoice[s].wheelAlpha;
                         if (kartI == 0)
@@ -345,7 +407,50 @@ public class CharacterSelect : MonoBehaviour
                         nColor.a = nAlpha * menuAlpha;
                         GUI.color = nColor;
 
-                        GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);                       
+                        GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);
+
+                        //WheelScaling
+                        if (new Rect(areaRect.x + selectionRect.x + wheelRect.x, areaRect.y + selectionRect.y + wheelRect.y, wheelRect.width, wheelRect.height).Contains(mousePos))
+                        {
+                            if (loadedChoice[s].wheelScales[kartI + 2] < 1.25f)
+                                loadedChoice[s].wheelScales[kartI + 2] += Time.deltaTime * 2f;
+                            else
+                                loadedChoice[s].wheelScales[kartI + 2] = 1.25f;
+                        }
+                        else
+                        {
+                            if (loadedChoice[s].wheelScales[kartI + 2] > 1f)
+                                loadedChoice[s].wheelScales[kartI + 2] -= Time.deltaTime * 2f;
+                            else
+                                loadedChoice[s].wheelScales[kartI + 2] = 1f;
+                        }
+
+                        //Wheel Clicks
+                        if (s == 0 && kartI == -1 && GUI.Button(wheelRect, ""))
+                        {
+                            if (kartSelected[s])
+                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                            else
+                                kartSelected[s] = true;
+                        }
+                            
+
+                        if (s == 0 && kartI == 1 && GUI.Button(wheelRect, ""))
+                        {
+                            if (kartSelected[s])
+                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                            else
+                                kartSelected[s] = true;
+                        }
+
+                        if (s == 0 && kartI == 0 && GUI.Button(wheelRect, ""))
+                        {
+                            if (kartSelected[s])
+                                canClick = true;
+                            else
+                                kartSelected[s] = true;
+                        }
+                            
 
                     }
 
@@ -362,14 +467,31 @@ public class CharacterSelect : MonoBehaviour
 
                     if (!kartSelected[s])
                     {
-
                         upArrowRect = new Rect(20, 10, (selectionRect.width / 2f) - 10, heightChunk - 10);
                         downArrowRect = new Rect(20, heightChunk * 5f, (selectionRect.width / 2f) - 10, heightChunk - 10);
+
+                        if(GUI.Button(upArrowRect,""))
+                        {
+                            StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                        }
+                        if (GUI.Button(downArrowRect, ""))
+                        {
+                            StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+                        }
                     }
                     else
                     {
                         upArrowRect = new Rect(20 + (selectionRect.width / 2f), 10, (selectionRect.width / 2f) - 10, heightChunk - 10);
                         downArrowRect = new Rect(20 + (selectionRect.width / 2f), heightChunk * 5f, (selectionRect.width / 2f) - 10, heightChunk - 10);
+
+                        if (GUI.Button(upArrowRect, ""))
+                        {
+                            StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                        }
+                        if (GUI.Button(downArrowRect, ""))
+                        {
+                            StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                        }
                     }
 
                     GUI.DrawTexture(upArrowRect, arrowIcon, ScaleMode.ScaleToFit);
@@ -470,7 +592,6 @@ public class CharacterSelect : MonoBehaviour
                     }
                 }
 
-                Vector4 oldRect, newRect, nRect;
                 Camera cam;
 
                 //Default off screen
@@ -505,10 +626,7 @@ public class CharacterSelect : MonoBehaviour
                     float areaY = GUIHelper.guiEdges.y / Screen.height;
                     float areaHeight = 0.3f / ((0.5f / Screen.width) * Screen.height);
 
-                    // sw * r = 0.5f
                     //FIGURE OUT OK AREA
-                    float idealWidth, idealHeight;
-
                     Rect okayArea = new Rect(0.5f, 0f, 0.5f, 1f);
 
                     if (GUIHelper.widthSmaller)
@@ -575,12 +693,20 @@ public class CharacterSelect : MonoBehaviour
                     if (!ready[s])
                     {
                         hori = InputManager.controllers[s].GetMenuInput("MenuHorizontal");
-                        vert = -InputManager.controllers[s].GetMenuInput("MenuVertical");
+                        vert = InputManager.controllers[s].GetMenuInput("MenuVertical");
                     }
 
                     submit = (InputManager.controllers[s].GetMenuInput("Submit") != 0);
                     cancel = (InputManager.controllers[s].GetMenuInput("Cancel") != 0);
 
+                    if (s == 0)
+                    {
+                        if (hori != 0 || vert != 0 || submit || cancel)
+                            mouseLast = false;
+
+                        if (canClick && (state == csState.Kart || Input.GetMouseButton(0)))
+                            submit = true;
+                    }
                 }
 
                 if (hori != 0)
@@ -727,17 +853,7 @@ public class CharacterSelect : MonoBehaviour
                 {
                     if (!ready[s])
                     {
-                        if (state == csState.Character)
-                            Cancel();
-                        if (state == csState.Hat)
-                            StartCoroutine(ChangeState(csState.Character));
-                        if (state == csState.Kart)
-                        {
-                            if (kartSelected[s])
-                                kartSelected[s] = false;
-                            else
-                                StartCoroutine(ChangeState(csState.Hat));
-                        }
+                        Back(s);
                     }
                     else
                     {
@@ -790,6 +906,21 @@ public class CharacterSelect : MonoBehaviour
         }
     }
 
+    public void Back(int s)
+    {
+        if (state == csState.Character)
+            Cancel();
+        if (state == csState.Hat)
+            StartCoroutine(ChangeState(csState.Character));
+        if (state == csState.Kart)
+        {
+            if (kartSelected[s])
+                kartSelected[s] = false;
+            else
+                StartCoroutine(ChangeState(csState.Hat));
+        }
+    }
+
     public void Cancel()
     {
         HideCharacterSelect(csState.Off);
@@ -803,52 +934,58 @@ public class CharacterSelect : MonoBehaviour
     //Scroll Kart
     private IEnumerator ScrollKart(CharacterSelectLoadOut loadOut, float finalHeight, LoadOut choice)
     {
-        loadOut.scrolling = true;
-
-        float startTime = Time.time;
-        float scrollTime = 0.15f;
-
-        while (Time.time - startTime < scrollTime)
+        if (!loadOut.scrolling)
         {
-            loadOut.kartChangeHeight = Mathf.Lerp(0f, finalHeight, (Time.time - startTime) / scrollTime);
-            loadOut.kartAlpha = Mathf.Lerp(0.4f, 1f, (Time.time - startTime) / scrollTime);
-            yield return null;
+            loadOut.scrolling = true;
+
+            float startTime = Time.time;
+            float scrollTime = 0.15f;
+
+            while (Time.time - startTime < scrollTime)
+            {
+                loadOut.kartChangeHeight = Mathf.Lerp(0f, finalHeight, (Time.time - startTime) / scrollTime);
+                loadOut.kartAlpha = Mathf.Lerp(0.4f, 1f, (Time.time - startTime) / scrollTime);
+                yield return null;
+            }
+
+            loadOut.kartChangeHeight = finalHeight;
+            loadOut.kartAlpha = 1f;
+
+            choice.kart = MathHelper.NumClamp(choice.kart - (int)Mathf.Sign(finalHeight), 0, gd.karts.Length);
+
+            loadOut.kartChangeHeight = 0;
+            loadOut.kartAlpha = 0.4f;
+
+            loadOut.scrolling = false;
         }
-
-        loadOut.kartChangeHeight = finalHeight;
-        loadOut.kartAlpha = 1f;
-
-        choice.kart = MathHelper.NumClamp(choice.kart - (int)Mathf.Sign(finalHeight), 0, gd.karts.Length);
-
-        loadOut.kartChangeHeight = 0;
-        loadOut.kartAlpha = 0.4f;
-
-        loadOut.scrolling = false;
     }
     //Scroll Wheel
     private IEnumerator ScrollWheel(CharacterSelectLoadOut loadOut, float finalHeight, LoadOut choice)
     {
-        loadOut.scrolling = true;
-
-        float startTime = Time.time;
-        float scrollTime = 0.15f;
-
-        while (Time.time - startTime < scrollTime)
+        if (!loadOut.scrolling)
         {
-            loadOut.wheelChangeHeight = Mathf.Lerp(0f, finalHeight, (Time.time - startTime) / scrollTime);
-            loadOut.wheelAlpha = Mathf.Lerp(0.4f, 1f, (Time.time - startTime) / scrollTime);
-            yield return null;
+            loadOut.scrolling = true;
+
+            float startTime = Time.time;
+            float scrollTime = 0.15f;
+
+            while (Time.time - startTime < scrollTime)
+            {
+                loadOut.wheelChangeHeight = Mathf.Lerp(0f, finalHeight, (Time.time - startTime) / scrollTime);
+                loadOut.wheelAlpha = Mathf.Lerp(0.4f, 1f, (Time.time - startTime) / scrollTime);
+                yield return null;
+            }
+
+            loadOut.wheelChangeHeight = finalHeight;
+            loadOut.wheelAlpha = 1f;
+
+            choice.wheel = MathHelper.NumClamp(choice.wheel - (int)Mathf.Sign(finalHeight), 0, gd.wheels.Length);
+
+            loadOut.wheelChangeHeight = 0;
+            loadOut.wheelAlpha = 0.4f;
+
+            loadOut.scrolling = false;
         }
-
-        loadOut.wheelChangeHeight = finalHeight;
-        loadOut.wheelAlpha = 1f;
-
-        choice.wheel = MathHelper.NumClamp(choice.wheel - (int)Mathf.Sign(finalHeight), 0, gd.wheels.Length);
-
-        loadOut.wheelChangeHeight = 0;
-        loadOut.wheelAlpha = 0.4f;
-
-        loadOut.scrolling = false;
     }
 
     private IEnumerator ChangeState(csState nState)
@@ -904,8 +1041,12 @@ public class CharacterSelectLoadOut : LoadOut
     public bool scrolling;
     public float kartChangeHeight = 0f, wheelChangeHeight = 0f, kartAlpha = 0.4f, wheelAlpha = 0.4f;
 
+    public float[] kartScales, wheelScales;
+
     public CharacterSelectLoadOut(int ch, int ha, int ka, int wh) : base(ch, ha, ka, wh)
     {
+        kartScales = new float[] { 1f, 1f, 1f, 1f, 1f };
+        wheelScales = new float[] { 1f, 1f, 1f, 1f, 1f };
     }
 
 }

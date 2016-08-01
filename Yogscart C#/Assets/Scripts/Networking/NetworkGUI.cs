@@ -12,7 +12,7 @@ public class NetworkGUI : MonoBehaviour
     private float guiAlpha = 0f, fadeTime = 0.5f;
 
     public enum ServerState { ServerList, Connecting, Popup, Lobby, LoadingRace, LoadingLevel, Racing };
-    public ServerState state;
+    public ServerState state, nextState;
 
     public string popupText;
 
@@ -55,10 +55,9 @@ public class NetworkGUI : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();
+        gd = FindObjectOfType<CurrentGameData>();
+        sm = FindObjectOfType<SoundManager>();
         playerName = PlayerPrefs.GetString("playerName", "Player");
-        LoadServers();
 
         serverInfo = Resources.Load<Texture2D>("UI/Lobby/ServerInfo");
         nameList = Resources.Load<Texture2D>("UI/Lobby/NamesList");
@@ -560,9 +559,8 @@ public class NetworkGUI : MonoBehaviour
                     }
 
                     GUI.EndScrollView();
-                    }
-
                     GUI.EndGroup();
+                }
 
                 break;
             case ServerState.Popup:
@@ -605,6 +603,14 @@ public class NetworkGUI : MonoBehaviour
 
                 connectRot += Time.deltaTime * -50f;
 
+                if(FindObjectOfType<CharacterSelect>() != null)
+                {
+                    if(GUIHelper.DrawBack(guiAlpha))
+                    {
+                        FindObjectOfType<CharacterSelect>().Back(0);
+                    }
+                }
+
                 break;
         }
 
@@ -634,6 +640,7 @@ public class NetworkGUI : MonoBehaviour
 
     public void ShowMenu()
     {
+        LoadServers();
         StartCoroutine(ActualShowMenu());
     }
 
@@ -673,13 +680,15 @@ public class NetworkGUI : MonoBehaviour
     }
 
     public void ChangeState(ServerState nState)
-    {
+    {      
         StartCoroutine(ActualChangeState(nState));
     }
 
     private IEnumerator ActualChangeState(ServerState nState)
     {
-        if(guiAlpha != 0)
+        nextState = nState;
+
+        if (guiAlpha != 0)
             yield return StartCoroutine(ChangeGUIAlpha(guiAlpha, 0f));
 
         state = nState;

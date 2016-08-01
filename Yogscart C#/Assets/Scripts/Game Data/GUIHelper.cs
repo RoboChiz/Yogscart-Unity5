@@ -157,6 +157,95 @@ public class GUIHelper
         return GUIUtility.ScreenToGUIPoint(newMousePos);
     }
 
+    private static float nextScale = 1f, backScale = 1f;
+
+    public static bool DrawNext(float guiAlpha)
+    {
+        var lastMatrix = GUI.matrix;
+        GUI.matrix = GetMatrix();
+        SetGUIAlpha(guiAlpha);
+
+        bool returnVal = false;
+
+        Rect nextRect = CentreRect(new Rect(1620, 950, 360, 125), nextScale);
+
+        string toDraw = "UI/New Main Menu/nextKey";
+        if (InputManager.controllers != null && InputManager.controllers.Count >= 1)
+        {
+            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+                toDraw = "UI/New Main Menu/nextXbox";
+        }
+
+        GUI.DrawTexture(nextRect, Resources.Load<Texture2D>(toDraw));
+
+        if(nextRect.Contains(GetMousePosition()))
+        {
+            if (nextScale < 1.25f)
+                nextScale += Time.deltaTime * 2f;
+            else
+                nextScale = 1.25f;
+        }
+        else
+        {
+            if (nextScale > 1f)
+                nextScale -= Time.deltaTime * 2f;
+            else
+                nextScale = 1f;
+        }
+
+        if (guiAlpha >= 1f && GUI.Button(nextRect, ""))
+            returnVal = true;
+
+        ResetColor();
+        GUI.matrix = lastMatrix;
+
+        return returnVal;
+    }
+
+    public static bool DrawBack(float guiAlpha)
+    {
+        var lastMatrix = GUI.matrix;
+        GUI.matrix = GetMatrix();
+        SetGUIAlpha(guiAlpha);
+
+        bool returnVal = false;
+
+        Rect backRect = CentreRect(new Rect(-60, 950, 360, 125), backScale);
+
+        string toDraw = "UI/New Main Menu/backKey";
+        if(InputManager.controllers != null && InputManager.controllers.Count >= 1)
+        {
+            if(InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+                toDraw = "UI/New Main Menu/backXbox";
+        }
+
+        GUI.DrawTexture(backRect, Resources.Load<Texture2D>(toDraw));
+
+        if (backRect.Contains(GetMousePosition()))
+        {
+            if (backScale < 1.25f)
+                backScale += Time.deltaTime * 2f;
+            else
+                backScale = 1.25f;
+        }
+        else
+        {
+            if (backScale > 1f)
+                backScale -= Time.deltaTime * 2f;
+            else
+                backScale = 1f;
+        }
+
+        GUIStyle newButton = new GUIStyle();
+        if (guiAlpha >= 1f && GUI.Button(backRect, "", newButton))
+            returnVal = true;
+
+        ResetColor();
+        GUI.matrix = lastMatrix;
+
+        return returnVal;
+    }
+
 }
 
 [System.Serializable]

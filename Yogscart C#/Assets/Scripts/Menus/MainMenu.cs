@@ -34,7 +34,7 @@ public class MainMenu : MonoBehaviour
     }
     static private float sideAmount = 0f;
 
-    private float sideFade = 1f, titleAlpha = 1f, mouseWait = 0f;
+    private float sideFade = 1f, titleAlpha = 1f, mouseWait = 0f, nextAlpha = 0f, backAlpha = 0f;
 
     private float titleAmount = 10f;
     int randomImage;
@@ -43,6 +43,7 @@ public class MainMenu : MonoBehaviour
 
     public enum MenuState {Start, Main, SinglePlayer, Difficulty, CharacterSelect, LevelSelect, Multiplayer, Online, Options, Popup, Credits };
     public MenuState state = MenuState.Start;
+    private MenuState nextState = MenuState.Start;
 
     private float[] optionSizes;
 
@@ -106,12 +107,62 @@ public class MainMenu : MonoBehaviour
 
         GUI.DrawTexture(new Rect(titleAmount, 10, titleWidth, logo.height * ratio), logo, ScaleMode.ScaleToFit);
 
+        //Draw Next and Back Button
+        if (nextState == MenuState.Credits || nextState == MenuState.Online || nextState == MenuState.CharacterSelect || nextState == MenuState.LevelSelect || nextState == MenuState.Options || nextState == MenuState.Start)
+        {
+            if (nextAlpha > 0f)
+                nextAlpha -= Time.deltaTime * 2f;
+            else
+                nextAlpha = 0f;
+        }
+        else if(state != MenuState.Credits && state != MenuState.Online && state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && state != MenuState.Start)
+        {           
+            if (nextAlpha < 1f)
+                nextAlpha += Time.deltaTime * 2f;
+            else
+                nextAlpha = 1f;
+        }
+
+        //If Next Button Click
+        bool nextButtonPressed = GUIHelper.DrawNext(nextAlpha);
+        NetworkGUI ng = FindObjectOfType<NetworkGUI>();
+
+        if (nextState == MenuState.Start || nextState == MenuState.Popup || ng.nextState != NetworkGUI.ServerState.ServerList)
+        {
+            if (backAlpha > 0f)
+                backAlpha -= Time.deltaTime * 2f;
+            else
+                backAlpha = 0f;
+        }
+        else if (state != MenuState.Start && state != MenuState.Popup && (ng.state == NetworkGUI.ServerState.ServerList || (ng.nextState == NetworkGUI.ServerState.ServerList && ng.state == NetworkGUI.ServerState.Connecting)))
+        {
+            if (backAlpha < 1f)
+                backAlpha += Time.deltaTime * 2f;
+            else
+                backAlpha = 1f;
+        }
+
+        //If Back Button Click
+        if (GUIHelper.DrawBack(backAlpha))
+        {
+            if (state == MenuState.CharacterSelect)
+                FindObjectOfType<CharacterSelect>().Back(0);
+            else if (state == MenuState.LevelSelect)
+                FindObjectOfType<LevelSelect>().CancelLevelSelect();
+
+            if (state != MenuState.CharacterSelect)
+                BackMenu();               
+        }
+            
+
         GUI.color = new Color(1, 1, 1, sideFade);
 
         //Draw Stuff
         Rect box = new Rect(sideAmount, 0, GUIHelper.width / 2f, GUIHelper.height);
 
         Vector2 newMousePos = GUIHelper.GetMousePosition();
+        string randoImage = "UI/New Main Menu/Side Images/" + randomImage.ToString();
+        string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage };
 
         if (lastMousePos != newMousePos)
             mouseLastUsed = true;
@@ -120,8 +171,6 @@ public class MainMenu : MonoBehaviour
 
         if (state == MenuState.Main || state == MenuState.Start)
         {
-            string randoImage = "UI/New Main Menu/Side Images/" + randomImage.ToString();
-            string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage };
 
             if (currentSelection != lastCurrentSelection)
             {
@@ -174,7 +223,6 @@ public class MainMenu : MonoBehaviour
 
                 if (GUI.Button(startRect, ""))
                 {
-                    FindObjectOfType<InputManager>().AddController("Key_");
                     ChangeMenu(MenuState.Main);
                 }
 
@@ -282,10 +330,13 @@ public class MainMenu : MonoBehaviour
                 vertical = InputManager.controllers[0].GetMenuInput("MenuVertical");
                 horizontal = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
                 submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
-            }
 
-            if (vertical != 0 || horizontal != 0 || submitBool)
-                mouseLastUsed = false;
+                if (vertical != 0 || horizontal != 0 || submitBool)
+                    mouseLastUsed = false;
+
+                if (nextButtonPressed)
+                    submitBool = nextButtonPressed;
+            }
 
             //Menu Navigation
             if (options != null && options.Length > 0)
@@ -300,6 +351,10 @@ public class MainMenu : MonoBehaviour
 
             if (submitBool || mouseClick)
             {
+
+                if (lastloadedPicture < 0 || possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture])
+                    StartCoroutine(ChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
+
                 switch (state)
                 {
                     case MenuState.Main:
@@ -431,9 +486,8 @@ public class MainMenu : MonoBehaviour
     //Go Back to Previous Menu
     public void BackMenu()
     {
-        if (backStates.Count > 0)
+        if (!sliding && backStates.Count > 0)
         {
-
             sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/back"));
 
             if (state == MenuState.Credits && GetComponent<Credits>().enabled)
@@ -480,6 +534,7 @@ public class MainMenu : MonoBehaviour
         if(!sliding)
         {
             sliding = true;
+            nextState = changeState;
 
             float startTime = Time.time;
             float travelTime = 0.5f;
@@ -512,12 +567,12 @@ public class MainMenu : MonoBehaviour
             state = changeState;
 
             //Show Title of Hidden
-            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && titleAlpha != 1)
+            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && changeState != MenuState.LevelSelect && titleAlpha != 1)
             {
                 ShowTitle();
             }
 
-            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options)
+            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && changeState != MenuState.LevelSelect)
             {
                 moveTitle = false;
             }

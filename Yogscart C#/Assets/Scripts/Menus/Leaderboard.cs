@@ -214,7 +214,7 @@ public class Leaderboard : MonoBehaviour
                     }
 
                     //Render the Position and Character head of the Racer
-                    string posString = nRacer.finished ? ("UI/GrandPrix Positions/" + ( + 1).ToString()) : "UI/GrandPrix Positions/DNF";
+                    string posString = nRacer.finished ? ("UI/GrandPrix Positions/" + (i + 1).ToString()) : "UI/GrandPrix Positions/DNF";
                     Texture2D PosTexture = Resources.Load<Texture2D>(posString);
                     GUI.DrawTexture(new Rect(40, (i + 1) * optionHeight, optionHeight, optionHeight), PosTexture, ScaleMode.ScaleToFit);
 

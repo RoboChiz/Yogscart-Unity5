@@ -11,27 +11,39 @@ public class LevelSelect : MonoBehaviour
     int currentCup = 0, currentTrack = 0;
 
     //Transtition
-    private float scale = 1f;
     private float menuAlpha = 1f;
-    public bool sliding = false;
+    public bool sliding = false, canClick = false, mouseLast = false;
+    private Vector2 lastMousePos;
+    private float[] cupScales, trackScales;
 
     // Use this for initialization
     void Start()
     {
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
+        gd = FindObjectOfType<CurrentGameData>();
+
+        trackScales = new float[] { 1f, 1f, 1f, 1f };
+        cupScales = new float[gd.tournaments.Length];
+
+        for (int i = 0; i < cupScales.Length; i++)
+            cupScales[i] = 1f;
     }
 
     void OnGUI()
     {
         CurrentGameData.blackOut = false;
         GUI.matrix = GUIHelper.GetMatrix();
-        GUI.matrix *= Matrix4x4.TRS(new Vector3(GUIHelper.width * (1 - scale), GUIHelper.height * (1 - scale)), Quaternion.identity, new Vector3(scale, scale, scale));
         GUI.skin = skin;
         GUI.depth = -5;
 
-        Color nWhite = Color.white;
-        nWhite.a = menuAlpha;
-        GUI.color = nWhite;
+        canClick = false;
+
+        GUIHelper.SetGUIAlpha(menuAlpha);
+        Vector2 mousePos = GUIHelper.GetMousePosition();
+        if (mousePos != lastMousePos)
+        {
+            mouseLast = true;
+            lastMousePos = mousePos;
+        }       
 
         float cupNameHeight = GUIHelper.height / 2f;
         float individualHeight = cupNameHeight / Mathf.Clamp(gd.tournaments.Length, 4, 8);
@@ -40,21 +52,33 @@ public class LevelSelect : MonoBehaviour
         //Draw Tournaments
         for (int i = 0; i < gd.tournaments.Length; i++)
         {
-            GUI.DrawTexture(new Rect(300, 270 + (i * individualHeight) + 10, 400, individualHeight - 20), rectangle);
+            Rect rectRect = GUIHelper.CentreRect(new Rect(300, 270 + (i * individualHeight) + 10, 400, individualHeight - 20), cupScales[i]);
+            GUI.DrawTexture(rectRect, rectangle);
 
-            if (currentCup == i)
+            //Scale the Cup Names
+            bool contains = mouseLast && rectRect.Contains(mousePos);
+            if (!state && (contains || currentCup == i))
             {
-                nWhite = Color.yellow;
-                nWhite.a = menuAlpha;
-                GUI.color = nWhite;
+                if (cupScales[i] < 1.1f)
+                    cupScales[i] += Time.deltaTime;
+                else
+                    cupScales[i] = 1.1f;
+
+                if (contains)
+                {
+                    currentCup = i;
+                    canClick = true;
+                }
+            }
+            else
+            {
+                if (cupScales[i] > 1f)
+                    cupScales[i] -= Time.deltaTime;
+                else
+                    cupScales[i] = 1f;
             }
 
-            GUI.Label(new Rect(300, 270 + (i * individualHeight) + 15, 400, individualHeight - 30), gd.tournaments[i].name);
-
-            nWhite = Color.white;
-            nWhite.a = menuAlpha;
-            GUI.color = nWhite;
-
+            GUIHelper.CentreRectLabel(new Rect(300, 270 + (i * individualHeight) + 15, 400, individualHeight - 30), cupScales[i], gd.tournaments[i].name, (currentCup == i)?Color.yellow:Color.white);
         }
 
         Race gamemode = (Race)CurrentGameData.currentGamemode;
@@ -75,7 +99,30 @@ public class LevelSelect : MonoBehaviour
                 trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo;
             }
 
-            Rect previewRect = new Rect(800 + (500 * (i % 2)), 150 + (390 * (i / 2)), 400, 365);
+            Rect previewRect = GUIHelper.CentreRect(new Rect(800 + (500 * (i % 2)), 150 + (390 * (i / 2)), 400, 365), trackScales[i]);
+
+            //Scale the Track Names
+            bool contains = mouseLast && previewRect.Contains(mousePos);
+            if (state && (contains || currentTrack == i))
+            {
+                if (trackScales[i] < 1.1f)
+                    trackScales[i] += Time.deltaTime;
+                else
+                    trackScales[i] = 1.1f;
+
+                if (contains)
+                {
+                    currentTrack = i;
+                    canClick = true;
+                }
+            }
+            else
+            {
+                if (trackScales[i] > 1f)
+                    trackScales[i] -= Time.deltaTime;
+                else
+                    trackScales[i] = 1f;
+            }
 
             GUI.DrawTexture(previewRect, trackPreview, ScaleMode.ScaleToFit);
         }
@@ -106,6 +153,12 @@ public class LevelSelect : MonoBehaviour
             hori = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
             submit = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
             cancel = (InputManager.controllers[0].GetMenuInput("Cancel") != 0);
+
+            if(vert != 0 || hori != 0 || submit || cancel)
+                mouseLast = false;
+
+            if (canClick && Input.GetMouseButton(0))
+                submit = true;
 
             if (hori != 0)
             {
@@ -158,19 +211,7 @@ public class LevelSelect : MonoBehaviour
         {
             if (!state)
             {
-                //Cancel out of Level Select
-                StartCoroutine(HideLevelSelect());
-                currentCup = -1;
-                currentTrack = -1;
-
-                //If backing out of Level Select make sure Voting Screen is showed
-                if (gamemode.raceType == RaceType.Online)
-                {
-                    if (FindObjectOfType<VotingScreen>() == null)
-                        gd.gameObject.AddComponent<VotingScreen>();
-
-                    FindObjectOfType<VotingScreen>().ShowScreen();
-                }
+                CancelLevelSelect();
             }
             else
             {
@@ -182,10 +223,32 @@ public class LevelSelect : MonoBehaviour
 
     }
 
+    public void CancelLevelSelect()
+    {
+        //Cancel out of Level Select
+        StartCoroutine(HideLevelSelect());
+        currentCup = -1;
+        currentTrack = -1;
+
+        Race gamemode = (Race)CurrentGameData.currentGamemode;
+
+        //If backing out of Level Select make sure Voting Screen is showed
+        if (gamemode.raceType == RaceType.Online)
+        {
+            if (FindObjectOfType<VotingScreen>() == null)
+                gd.gameObject.AddComponent<VotingScreen>();
+
+            FindObjectOfType<VotingScreen>().ShowScreen();
+        }
+    }
+
     public void ShowLevelSelect()
     {
         currentCup = 0;
         currentTrack = 0;
+
+        if (FindObjectOfType<MainMenu>() != null)
+            FindObjectOfType<MainMenu>().ChangeMenu(MainMenu.MenuState.LevelSelect);
 
         StartCoroutine(ActualShowLevelSelect());
     }
@@ -197,17 +260,14 @@ public class LevelSelect : MonoBehaviour
         float travelTime = 0.25f;
         //Slide Off //////////////////////////////
         menuAlpha = 0f;
-        scale = 0.9f;
 
         while (Time.time - startTime < travelTime)
         {
             menuAlpha = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
-            scale = Mathf.Lerp(0.9f, 1f, (Time.time - startTime) / travelTime);
             yield return null;
         }
 
         menuAlpha = 1f;
-        scale = 1f;
 
         sliding = false;
     }
@@ -243,20 +303,16 @@ public class LevelSelect : MonoBehaviour
         float endScale = 0.9f;
         //Slide Off //////////////////////////////
         menuAlpha = 1f;
-        scale = 1f;
 
         while (Time.time - startTime < travelTime)
         {
             menuAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
-            scale = Mathf.Lerp(1f, endScale, (Time.time - startTime) / travelTime);
             yield return null;
         }
 
         menuAlpha = 0f;
-        scale = endScale;
 
         sliding = false;
-
         enabled = false;
     }
 }
