@@ -15,6 +15,9 @@ public class GUIHelper
     public static Rect guiEdges;
     public static bool widthSmaller;
 
+    private static float lastMouseTime;
+    private static Vector2 lastMousePos;
+
     public static Matrix4x4 GetMatrix()
     {
         float wScale = Screen.width / width;
@@ -152,9 +155,17 @@ public class GUIHelper
 
     public static Vector2 GetMousePosition()
     {
-        Vector2 newMousePos = Input.mousePosition;
-        newMousePos.y = Screen.height - newMousePos.y;
-        return GUIUtility.ScreenToGUIPoint(newMousePos);
+        //Only perform calculation once per frame
+        if (lastMouseTime != Time.unscaledDeltaTime)
+        {         
+            Vector2 newMousePos = Input.mousePosition;
+            newMousePos.y = Screen.height - newMousePos.y;
+            lastMousePos = GUIUtility.ScreenToGUIPoint(newMousePos);
+
+            lastMouseTime = Time.unscaledDeltaTime;
+        }
+
+        return lastMousePos;
     }
 
     private static float nextScale = 1f, backScale = 1f;
@@ -167,7 +178,7 @@ public class GUIHelper
 
         bool returnVal = false;
 
-        Rect nextRect = CentreRect(new Rect(1620, 950, 360, 125), nextScale);
+        Rect nextRect = CentreRect(new Rect(1682, 950, 288, 100), nextScale);
 
         string toDraw = "UI/New Main Menu/nextKey";
         if (InputManager.controllers != null && InputManager.controllers.Count >= 1)
@@ -177,21 +188,7 @@ public class GUIHelper
         }
 
         GUI.DrawTexture(nextRect, Resources.Load<Texture2D>(toDraw));
-
-        if(nextRect.Contains(GetMousePosition()))
-        {
-            if (nextScale < 1.25f)
-                nextScale += Time.deltaTime * 2f;
-            else
-                nextScale = 1.25f;
-        }
-        else
-        {
-            if (nextScale > 1f)
-                nextScale -= Time.deltaTime * 2f;
-            else
-                nextScale = 1f;
-        }
+        nextScale = SizeHover(nextRect, nextScale, 1f, 1.25f, 2f);
 
         if (guiAlpha >= 1f && GUI.Button(nextRect, ""))
             returnVal = true;
@@ -210,7 +207,7 @@ public class GUIHelper
 
         bool returnVal = false;
 
-        Rect backRect = CentreRect(new Rect(-60, 950, 360, 125), backScale);
+        Rect backRect = CentreRect(new Rect(-50, 950, 288, 100), backScale);
 
         string toDraw = "UI/New Main Menu/backKey";
         if(InputManager.controllers != null && InputManager.controllers.Count >= 1)
@@ -220,21 +217,7 @@ public class GUIHelper
         }
 
         GUI.DrawTexture(backRect, Resources.Load<Texture2D>(toDraw));
-
-        if (backRect.Contains(GetMousePosition()))
-        {
-            if (backScale < 1.25f)
-                backScale += Time.deltaTime * 2f;
-            else
-                backScale = 1.25f;
-        }
-        else
-        {
-            if (backScale > 1f)
-                backScale -= Time.deltaTime * 2f;
-            else
-                backScale = 1f;
-        }
+        backScale = SizeHover(backRect, backScale, 1f, 1.25f, 2f);
 
         GUIStyle newButton = new GUIStyle();
         if (guiAlpha >= 1f && GUI.Button(backRect, "", newButton))
@@ -244,6 +227,27 @@ public class GUIHelper
         GUI.matrix = lastMatrix;
 
         return returnVal;
+    }
+
+    public static float SizeHover(Rect rect,float value, float min, float max, float timeScale)
+    {
+        Vector2 mousePos = GetMousePosition();
+        if(rect.Contains(mousePos))
+        {
+            if (value < max)
+                value += Time.deltaTime * timeScale;
+            else
+                value = max;
+        }
+        else
+        {
+            if (value > min)
+                value -= Time.deltaTime * timeScale;
+            else
+                value = min;
+        }
+
+        return value;
     }
 
 }
@@ -286,19 +290,10 @@ public class DropDown
 
         //Draw Toggle      
         Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);
+        toggleScale = GUIHelper.SizeHover(toggleRect, toggleScale, 1f, 1.5f, 4f);
 
-        if(toggleRect.Contains(newMousePos))
-        {
+        if (toggleRect.Contains(newMousePos))
             staysOutside = false;
-
-            if (toggleScale < 1.5f)
-                toggleScale += Time.deltaTime * 4f;
-        }
-        else
-        {
-            if (toggleScale > 1f)
-                toggleScale -= Time.deltaTime * 4f;
-        }
 
         if (GUI.Button(toggleRect, Resources.Load<Texture2D>("UI/New Main Menu/Down_Arrow")))
             toggled = !toggled;
@@ -357,17 +352,7 @@ public class Toggle
         //Draw Toggle
         Vector2 newMousePos = GUIHelper.GetMousePosition();
         Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);
-
-        if (toggleRect.Contains(newMousePos))
-        {
-            if (toggleScale < 1.5f)
-                toggleScale += Time.deltaTime * 4f;
-        }
-        else
-        {
-            if (toggleScale > 1f)
-                toggleScale -= Time.deltaTime * 4f;
-        }
+        toggleScale = GUIHelper.SizeHover(toggleRect, toggleScale, 1f, 1.5f, 4f);
 
         if (GUI.Button(toggleRect, Resources.Load<Texture2D>("UI/New Main Menu/Toggle")))
         {

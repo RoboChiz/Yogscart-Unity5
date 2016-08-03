@@ -18,14 +18,18 @@ public class Options : MonoBehaviour
     private Toggle fullscreenToggle;
     private int currentResolution = 0, currentQuality = 0;
 
-    private float cancelScale = 1f, applyScale = 1f;
+    private float cancelScale = 1f, applyScale = 1f, plusScale = 2f;
     private bool fullScreen, somethingChanged = false;
+
+    private int currentLayoutSelection = 0;
+    private Vector2 layoutScrollPosition, configScrollPosition;
+    private float[] inputScales;
 
     // Use this for initialization
     void Start()
     {
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();
+        gd = FindObjectOfType<CurrentGameData>();
+        sm = FindObjectOfType<SoundManager>();
 
         //Load the textures
         blueTab = Resources.Load<Texture2D>("UI/Options/BlueTab");
@@ -163,7 +167,7 @@ public class Options : MonoBehaviour
                 bool newFullscreen = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), 50, fullScreen, "Fullscreen:");
                 if (!resDropDown.toggled)
                     fullScreen = newFullscreen;
-                
+
                 //Change Quality
                 GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:");
 
@@ -215,20 +219,7 @@ public class Options : MonoBehaviour
                 applyClickRect.x += tabAreaRect.x;
                 applyClickRect.y += tabAreaRect.y;
 
-                if (applyClickRect.Contains(mousePosition))
-                {
-                    if (applyScale < 1.5f)
-                        applyScale += Time.deltaTime * 4f;
-                    else
-                        applyScale = 1.5f;
-                }
-                else
-                {
-                    if (applyScale > 1f)
-                        applyScale -= Time.deltaTime * 4f;
-                    else
-                        applyScale = 1;
-                }
+                applyScale = GUIHelper.SizeHover(applyClickRect, applyScale, 1f, 1.5f, 4f);
 
                 if (GUI.Button(applyRect, ""))
                 {
@@ -239,8 +230,95 @@ public class Options : MonoBehaviour
                 break;
             case OptionsTab.Input:
                 GUI.DrawTexture(tabRect, orangeTab);
-
                 GUI.BeginGroup(tabAreaRect);
+
+                if (inputScales == null || inputScales.Length != InputManager.AllConfigs.Count)
+                {
+                    inputScales = new float[InputManager.AllConfigs.Count];
+                    for (int i = 0; i < inputScales.Length; i++)
+                        inputScales[i] = 1f;
+                }
+
+                GUI.Label(new Rect(0, 20, 450, 50), "Available Layouts");
+                GUI.DrawTexture(new Rect(450, 20, 5, tabAreaRect.height - 60), Resources.Load<Texture2D>("UI/Lobby/Line"));
+
+                Rect scrollviewRect = new Rect(30, 70, 400, tabAreaRect.height - 120);
+                GUI.DrawTexture(scrollviewRect, Resources.Load<Texture2D>("UI/Options/InputBack"));               
+
+                scrollviewRect.y += 10;
+                scrollviewRect.width += 12;
+                scrollviewRect.height -= 110;
+
+                //Draw + Gui
+                Rect addLabel = new Rect(330, 650, 100, 100);
+                GUIHelper.CentreRectLabel(addLabel, plusScale, "+", Color.white);
+
+                addLabel.x += tabAreaRect.x;
+                addLabel.y += tabAreaRect.y;
+                plusScale = GUIHelper.SizeHover(addLabel, plusScale, 2f, 2.5f, 2f);
+
+                layoutScrollPosition = GUI.BeginScrollView(scrollviewRect, layoutScrollPosition, new Rect(10, 10, 380, InputManager.AllConfigs.Count * 500));
+
+                for (int i = 0; i < InputManager.AllConfigs.Count; i++)
+                {
+                    //Draw Label
+                    Rect labelRect = GUIHelper.CentreRectLabel(new Rect(10, 40 + (70 * i), 380, 50), inputScales[i], InputManager.AllConfigs[i].Name, (currentLayoutSelection == i) ? Color.yellow : Color.white);
+
+                    Rect labelClickRect = new Rect(labelRect);
+                    if (GUI.Button(labelClickRect, ""))
+                        currentLayoutSelection = i;
+
+                    labelClickRect.x += tabAreaRect.x + scrollviewRect.x;
+                    labelClickRect.y += tabAreaRect.y + scrollviewRect.y;
+                    inputScales[i] = GUIHelper.SizeHover(labelClickRect, inputScales[i], 1f, 1.25f, 2f);
+
+                    //Draw Icon
+                    Rect iconRect = GUIHelper.CentreRect(new Rect(330, 40 + (70 * i), 50, 50), inputScales[i]);
+                    GUI.DrawTexture(iconRect, Resources.Load<Texture2D>("UI/Controls/" + ((InputManager.AllConfigs[i].Type == ControllerType.Keyboard) ? "Keyboard" : "Xbox_1")));
+                }
+                GUI.EndScrollView();
+
+                //Draw input Configuration
+                InputLayout current = InputManager.AllConfigs[currentLayoutSelection];
+
+                GUI.Label(new Rect(500, 20, 333, 50), "Action");
+                GUI.Label(new Rect(833, 20, 333, 50), (current.Type == ControllerType.Keyboard) ? "Key +" : "Button +");
+                GUI.Label(new Rect(1166, 20, 333, 50), (current.Type == ControllerType.Keyboard) ? "Key -" : "Button -");
+
+                Rect configScrollView = new Rect(500, 70, 1000, tabAreaRect.height - 120);
+                GUI.DrawTexture(configScrollView, Resources.Load<Texture2D>("UI/Options/InputBack"));
+
+                configScrollView.y += 10;
+                configScrollView.width += 10;
+                configScrollView.height -= 20;
+
+                configScrollPosition = GUI.BeginScrollView(configScrollView, configScrollPosition, new Rect(0,0,980,3000));
+
+                //"Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB
+
+                string[] availableChanges = new string[] { "Throttle","Brake", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
+
+                for(int i = 0; i < availableChanges.Length; i++)
+                {
+                    GUI.Label(new Rect(0, 20 + (i* 120), 333, 100), availableChanges[i]);
+
+                    //Change string to actual input name
+                    if (availableChanges[i] == "Look Behind")
+                        availableChanges[i] = "RearView";
+                    if (availableChanges[i] == "Steer (Right/Left)")
+                        availableChanges[i] = "Steer";
+
+                    if(current.commandsOne.ContainsKey(availableChanges[i]))
+                        GUI.Label(new Rect(333, 20 + (i * 120), 333, 100), current.commandsOne[availableChanges[i]]);
+                    if (current.commandsTwo.ContainsKey(availableChanges[i]))
+                        GUI.Label(new Rect(666, 20 + (i * 120), 333, 100), current.commandsTwo[availableChanges[i]]);
+
+                    if(i < availableChanges.Length - 1)
+                        GUI.DrawTexture(new Rect(50, 120 + (i * 120), 900, 5), Resources.Load<Texture2D>("UI/Lobby/Line"));
+                }
+
+                GUI.EndScrollView();
+
                 break;
         }
 

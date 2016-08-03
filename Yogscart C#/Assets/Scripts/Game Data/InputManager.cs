@@ -40,9 +40,8 @@ public class InputManager : MonoBehaviour
 
         //Load default Input
         allConfigs = new List<InputLayout>();
-        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB"));
-        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Throttle:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q"));
-
+        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,Steer:L_XAxis+,Steer:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB"));
+        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q"));
 
         bool saveNeeded = false;
 
@@ -301,7 +300,25 @@ public class InputController
             if (inputAxisOne != null)
             {
                 if (controlLayout.Type == ControllerType.Xbox360)
+                {
+                    int requiredSignPlus = 0;
+                    //Check for + or - Sign
+                    if (inputAxisOne[inputAxisOne.Length - 1] == '+')
+                        requiredSignPlus = 1;
+                    if (inputAxisOne[inputAxisOne.Length - 1] == '-')
+                        requiredSignPlus = -1;
+
+                    if (requiredSignPlus != 0)
+                        inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
+
                     value = Input.GetAxis(inputAxisOne + controllerName);
+
+                    //Reset value if it is not the correct sign
+                    if (requiredSignPlus > 0 && value < 0)
+                        value = 0;
+                    if (requiredSignPlus < 0 && value > 0)
+                        value = 0;
+                }
                 else
                 {
                     if (Input.GetKey(inputAxisOne))
@@ -314,7 +331,25 @@ public class InputController
             if ((inputAxisTwo != null) && value == 0)
             {
                 if (controlLayout.Type == ControllerType.Xbox360)
-                    value = -Input.GetAxis(inputAxisTwo + controllerName);
+                {
+                    int requiredSignMinus = 0;
+                    //Check for + or - Sign
+                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '+')
+                        requiredSignMinus = 1;
+                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '-')
+                        requiredSignMinus = -1;
+
+                    if (requiredSignMinus != 0)
+                        inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
+
+                    value = -Mathf.Abs(Input.GetAxis(inputAxisTwo + controllerName));
+
+                    //Reset value if it is not the correct sign
+                    if (requiredSignMinus > 0 && value < 0)
+                        value = 0;
+                    if (requiredSignMinus < 0 && value > 0)
+                        value = 0;
+                }
                 else
                 {
                     if (Input.GetKey(inputAxisTwo))
@@ -323,6 +358,7 @@ public class InputController
             }
 
         }
+
         return value;
     }
 
@@ -343,7 +379,25 @@ public class InputController
             if (inputAxisOne != null)
             {
                 if (controlLayout.Type == ControllerType.Xbox360)
+                {
+                    int requiredSign = 0;
+                    //Check for + or - Sign
+                    if (inputAxisOne[inputAxisOne.Length - 1] == '+')
+                        requiredSign = 1;
+                    if (inputAxisOne[inputAxisOne.Length - 1] == '-')
+                        requiredSign = -1;
+
+                    if (requiredSign != 0)
+                        inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
+
                     value = Input.GetAxisRaw(inputAxisOne + controllerName);
+
+                    //Reset value if it is not the correct sign
+                    if (requiredSign > 0 && value <= 0)
+                        value = 0;
+                    if (requiredSign < 0 && value >= 0)
+                        value = 0;
+                }
                 else
                 {
                     if (Input.GetKey(inputAxisOne))
@@ -356,7 +410,25 @@ public class InputController
             if ((inputAxisTwo != null) && value == 0)
             {
                 if (controlLayout.Type == ControllerType.Xbox360)
-                    value = -Input.GetAxisRaw(inputAxisTwo + controllerName);
+                {
+                    int requiredSign = 0;
+                    //Check for + or - Sign
+                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '+')
+                        requiredSign = 1;
+                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '-')
+                        requiredSign = -1;
+
+                    if (requiredSign != 0)
+                        inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
+
+                    value = -Mathf.Abs(Input.GetAxisRaw(inputAxisTwo + controllerName));
+
+                    //Reset value if it is not the correct sign
+                    if (requiredSign > 0 && value <= 0)
+                        value = 0;
+                    if (requiredSign < 0 && value >= 0)
+                        value = 0;
+                }
                 else
                 {
                     if (Input.GetKey(inputAxisTwo))
@@ -446,7 +518,7 @@ public class InputLayout
     {
         string[] splitString = contents.Split(","[0]);
 
-        List<string> validCommands = new List<string>() { "Throttle", "Steer", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange" };
+        List<string> validCommands = new List<string>() { "Throttle", "Brake", "Steer", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange" };
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
 

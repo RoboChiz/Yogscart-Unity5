@@ -206,20 +206,8 @@ public class MainMenu : MonoBehaviour
                     optionSizes = new float[] { 1f };
 
                 Rect startRect = GUIHelper.CentreRectLabel(new Rect(sideAmount + GUIHelper.width / 8f - 100, 700, 600, 100), optionSizes[0], "Press Start / Enter!", Color.white);
-                if (mouseLastUsed && startRect.Contains(newMousePos))
-                {
-                    if (optionSizes[0] < 1.25f)
-                        optionSizes[0] += Time.unscaledDeltaTime * 4f;
-                    else
-                        optionSizes[0] = 1.25f;
-                }
-                else
-                {
-                    if (optionSizes[0] > 1)
-                        optionSizes[0] -= Time.unscaledDeltaTime * 4f;
-                    else
-                        optionSizes[0] = 1f;
-                }
+                if (mouseLastUsed)
+                    optionSizes[0] = GUIHelper.SizeHover(startRect, optionSizes[0],1f,1.25f,4f);            
 
                 if (GUI.Button(startRect, ""))
                 {

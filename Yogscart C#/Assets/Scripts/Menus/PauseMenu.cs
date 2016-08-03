@@ -107,7 +107,6 @@ public class PauseMenu : MonoBehaviour
                     if(optionsSize[i] > 1f)
                         optionsSize[i] -= Time.unscaledDeltaTime * 4f;
                 }
-                    
 
                 GUIHelper.CentreRectLabel(new Rect(670, 400 + (i * 100), 580, 100), optionsSize[i], options[i], (currentSelection == i)?Color.yellow:Color.white);
 

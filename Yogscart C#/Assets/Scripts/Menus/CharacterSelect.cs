@@ -350,20 +350,8 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(kartRect, kartIcon, ScaleMode.ScaleToFit);
 
                         //KartScaling
-                        if(new Rect(areaRect.x + selectionRect.x + kartRect.x, areaRect.y + selectionRect.y + kartRect.y, kartRect.width, kartRect.height).Contains(mousePos))
-                        {
-                            if (loadedChoice[s].kartScales[kartI + 2] < 1.25f)
-                                loadedChoice[s].kartScales[kartI + 2] += Time.deltaTime * 2f;
-                            else
-                                loadedChoice[s].kartScales[kartI + 2] = 1.25f;
-                        }
-                        else
-                        {
-                            if (loadedChoice[s].kartScales[kartI + 2] > 1f)
-                                loadedChoice[s].kartScales[kartI + 2] -= Time.deltaTime * 2f;
-                            else
-                                loadedChoice[s].kartScales[kartI + 2] = 1f;
-                        }
+                        Rect kartClickArea = new Rect(areaRect.x + selectionRect.x + kartRect.x, areaRect.y + selectionRect.y + kartRect.y, kartRect.width, kartRect.height);
+                        loadedChoice[s].kartScales[kartI + 2] = GUIHelper.SizeHover(kartClickArea, loadedChoice[s].kartScales[kartI + 2], 1f, 1.25f, 2f);
 
                         //Kart Clicks
                         if(s == 0 && kartI == -1 && GUI.Button(kartRect,""))
@@ -410,20 +398,8 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);
 
                         //WheelScaling
-                        if (new Rect(areaRect.x + selectionRect.x + wheelRect.x, areaRect.y + selectionRect.y + wheelRect.y, wheelRect.width, wheelRect.height).Contains(mousePos))
-                        {
-                            if (loadedChoice[s].wheelScales[kartI + 2] < 1.25f)
-                                loadedChoice[s].wheelScales[kartI + 2] += Time.deltaTime * 2f;
-                            else
-                                loadedChoice[s].wheelScales[kartI + 2] = 1.25f;
-                        }
-                        else
-                        {
-                            if (loadedChoice[s].wheelScales[kartI + 2] > 1f)
-                                loadedChoice[s].wheelScales[kartI + 2] -= Time.deltaTime * 2f;
-                            else
-                                loadedChoice[s].wheelScales[kartI + 2] = 1f;
-                        }
+                        Rect wheelClickArea = new Rect(areaRect.x + selectionRect.x + wheelRect.x, areaRect.y + selectionRect.y + wheelRect.y, wheelRect.width, wheelRect.height);
+                        loadedChoice[s].wheelScales[kartI + 2] = GUIHelper.SizeHover(wheelClickArea, loadedChoice[s].wheelScales[kartI + 2], 1f, 1.25f, 2f);
 
                         //Wheel Clicks
                         if (s == 0 && kartI == -1 && GUI.Button(wheelRect, ""))
