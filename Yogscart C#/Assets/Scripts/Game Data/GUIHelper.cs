@@ -250,6 +250,28 @@ public class GUIHelper
         return value;
     }
 
+    public static bool CheckString(string checkString, int maxLength)
+    {
+        bool nReturn = true;
+
+        if (maxLength > 0 && checkString.Length > maxLength)
+            nReturn = false;
+
+        string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789.# ";
+
+        for (int i = 0; i < checkString.Length; i++)
+        {
+            if (!letters.Contains(checkString[i].ToString()))
+            {
+                nReturn = false;
+                break;
+            }
+        }
+
+        return nReturn;
+    }
+
+
 }
 
 [System.Serializable]
@@ -257,20 +279,17 @@ public class DropDown
 {
     public bool toggled { get; private set; }
     private Vector2 scrollPosition;
-    private Rect viewRect;
     private float toggleScale;
 
     public DropDown()
     {
         scrollPosition = new Vector2();
-        viewRect = new Rect();
         toggled = false;
         toggleScale = 1f;
     }
 
-    public int Draw(Rect rect, int toggleSize, int value, string[] options)
+    public int Draw(Rect rect,Vector2 adjuster, int toggleSize, int value, string[] options)
     {
-
         //Check value
         value = MathHelper.NumClamp(value, 0, options.Length);
         int returnValue = value;
@@ -281,31 +300,44 @@ public class DropDown
         //Draw current selection
         Rect boxRect = new Rect(rect.x, rect.y, rect.width - toggleSize, rect.height);
         GUI.Box(boxRect, options[value]);
+        if (GUI.Button(boxRect, ""))
+            toggled = !toggled;
+
+        boxRect.x += adjuster.x;
+        boxRect.y += adjuster.y;
 
         if (boxRect.Contains(newMousePos))
             staysOutside = false;
 
-        if (GUI.Button(boxRect, ""))
-            toggled = !toggled;
-
         //Draw Toggle      
         Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);
-        toggleScale = GUIHelper.SizeHover(toggleRect, toggleScale, 1f, 1.5f, 4f);
-
-        if (toggleRect.Contains(newMousePos))
-            staysOutside = false;
-
         if (GUI.Button(toggleRect, Resources.Load<Texture2D>("UI/New Main Menu/Down_Arrow")))
             toggled = !toggled;
 
-        //Draw Options
-        if(toggled)
+        toggleRect.x += adjuster.x;
+        toggleRect.y += adjuster.y;
+
+        if (toggleRect.Contains(newMousePos))
         {
-            Rect scrollRect = new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 3.15f), rect.height * Mathf.Clamp(options.Length,0,5));
+            staysOutside = false;
+
+            if (toggleScale < 1.5f)
+                toggleScale += Time.deltaTime * 4f;
+        }
+        else
+        {
+            if (toggleScale > 1f)
+                toggleScale -= Time.deltaTime * 4f;
+        }
+
+        //Draw Options
+        if (toggled)
+        {
+            Rect scrollRect = new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 3.15f), rect.height * Mathf.Clamp(options.Length, 0, 5));
             GUI.DrawTexture(scrollRect, Resources.Load<Texture2D>("UI/Options/Green"));
 
             scrollPosition = GUI.BeginScrollView(scrollRect, scrollPosition, new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 2f) - 20, rect.height * options.Length));
-         
+
             for (int i = 0; i < options.Length; i++)
             {
                 Rect optionRect = new Rect(rect.x, rect.y + ((i + 1) * rect.height), rect.width - toggleSize, rect.height);
@@ -316,17 +348,17 @@ public class DropDown
                 }
 
                 if (staysOutside && optionRect.Contains(newMousePos))
-                    staysOutside = false;                   
+                    staysOutside = false;
 
                 GUI.Box(optionRect, options[i]);
             }
 
             GUI.EndScrollView();
-
-            //Close if clicked outside
-            if (staysOutside && Input.GetMouseButton(0))
-                toggled = false;
         }
+
+        //Close if clicked outside
+        if (staysOutside && Input.GetMouseButtonDown(0))
+            toggled = false;
 
         return returnValue;
     }
@@ -343,7 +375,7 @@ public class Toggle
         toggleScale = 1f;
     }
 
-    public bool Draw(Rect rect, int toggleSize, bool toggled, string label)
+    public bool Draw(Rect rect, Vector2 adjuster, int toggleSize, bool toggled, string label)
     {
         //Draw the label
         Rect labelRect = new Rect(rect.x, rect.y, rect.width - toggleSize, rect.height);
@@ -351,8 +383,7 @@ public class Toggle
 
         //Draw Toggle
         Vector2 newMousePos = GUIHelper.GetMousePosition();
-        Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);
-        toggleScale = GUIHelper.SizeHover(toggleRect, toggleScale, 1f, 1.5f, 4f);
+        Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);      
 
         if (GUI.Button(toggleRect, Resources.Load<Texture2D>("UI/New Main Menu/Toggle")))
         {
@@ -364,6 +395,11 @@ public class Toggle
         {
             GUIHelper.CentreRectLabel(toggleRect,toggleScale, "X", Color.white);
         }
+
+        toggleRect.x += adjuster.x;
+        toggleRect.y += adjuster.y;
+
+        toggleScale = GUIHelper.SizeHover(toggleRect, toggleScale, 1f, 1.5f, 4f);
 
         return toggled;
     }

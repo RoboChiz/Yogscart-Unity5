@@ -192,7 +192,7 @@ public class NetworkGUI : MonoBehaviour
                             string newServerName = servers[i].serverName;
                             newServerName = GUI.TextField(new Rect(10, startHeight, nameListRect.width - 20 - fontSize * 2f, fontSize * 1.25f), newServerName);
 
-                            if (CheckString(newServerName, 20))
+                            if (GUIHelper.CheckString(newServerName, 20))
                                 servers[i].serverName = newServerName;
                         }
 
@@ -241,7 +241,7 @@ public class NetworkGUI : MonoBehaviour
 
                         newDesc = GUI.TextArea(new Rect(20, 10 + fontSize * 2f, serverInfoRect.width - 40, serverInfoRect.height - fontSize * 4.5f), newDesc);
 
-                        if (CheckString(newDesc, 115))
+                        if (GUIHelper.CheckString(newDesc, 115))
                         {
                             servers[currentSelection].description = newDesc;
                         }
@@ -254,7 +254,7 @@ public class NetworkGUI : MonoBehaviour
 
                             newIp = GUI.TextField(new Rect(20 + (fontSize * 1.5f), serverInfoRect.height - fontSize * 1.5f, serverInfoRect.width / 2f - fontSize * 1.5f, fontSize), newIp);
 
-                            if (CheckString(newDesc, 0))
+                            if (GUIHelper.CheckString(newDesc, 0))
                             {
                                 servers[currentSelection].ip = newIp;
                             }
@@ -351,7 +351,7 @@ public class NetworkGUI : MonoBehaviour
                 GUI.Label(new Rect(800, 625, 760, 50), "Name: ");
                 newPlayerName = GUI.TextField(new Rect(800, 675, 760, 50), newPlayerName, 16);
 
-                if (CheckString(newPlayerName, 16))
+                if (GUIHelper.CheckString(newPlayerName, 16))
                     playerName = newPlayerName;
 
                 string hostText = "Host Server";
@@ -616,28 +616,7 @@ public class NetworkGUI : MonoBehaviour
 
         GUI.color = Color.white;
     }
-
-    bool CheckString(string checkString, int maxLength)
-    {
-        bool nReturn = true;
-
-        if (maxLength > 0 && checkString.Length > maxLength)
-            nReturn = false;
-
-        string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789.# ";
-
-        for (int i = 0; i < checkString.Length; i++)
-        {
-            if (!letters.Contains(checkString[i].ToString()))
-            {
-                nReturn = false;
-                break;
-            }
-        }
-
-        return nReturn;
-    }
-
+  
     public void ShowMenu()
     {
         LoadServers();

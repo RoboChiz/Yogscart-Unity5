@@ -17,8 +17,8 @@ public class kartInput : MonoBehaviour
         if (ks == null)
             ks = GetComponent<kartScript>();
 
-        ks.throttle = InputManager.controllers[myController].GetInput("Throttle");
-        ks.throttle -= InputManager.controllers[myController].GetInput("Brake");
+        ks.throttle = Mathf.Abs(InputManager.controllers[myController].GetInput("Throttle"));
+        ks.throttle -= Mathf.Abs(InputManager.controllers[myController].GetInput("Brake"));
 
         ks.steer = InputManager.controllers[myController].GetInput("Steer");
         ks.drift = (InputManager.controllers[myController].GetInput("Drift") != 0);

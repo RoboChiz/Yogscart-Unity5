@@ -35,13 +35,13 @@ public class InputManager : MonoBehaviour
     public List<float> iconHeights = new List<float>();
 
     //Loads Saved Input Configurations
-    private static void LoadConfig()
+    public static void LoadConfig()
     {
 
         //Load default Input
         allConfigs = new List<InputLayout>();
-        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,Steer:L_XAxis+,Steer:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB"));
         allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q"));
+        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,Steer:L_XAxis+,Steer:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB"));        
 
         bool saveNeeded = false;
 
@@ -63,7 +63,7 @@ public class InputManager : MonoBehaviour
     }
 
     //Saves Current Input Configurations
-    private static void SaveConfig()
+    public static void SaveConfig()
     {
         string saveString = "";
 
@@ -276,10 +276,12 @@ public class InputController
     public InputController(string inputName)
     {
         controllerName = inputName;
+
         if(inputName == "Key_")
-            controlLayout = InputManager.AllConfigs[1];
-        else
             controlLayout = InputManager.AllConfigs[0];
+        else
+            controlLayout = InputManager.AllConfigs[1];
+
         buttonLock = "Submit";
     }
 
@@ -493,14 +495,18 @@ public class InputLayout
     public string Name
     {
         get { return name; }
-        set { }
+        set
+        {
+            if (GUIHelper.CheckString(value, 9))
+                name = value;
+        }
     }
 
     private ControllerType type = ControllerType.Xbox360;
     public ControllerType Type
     {
         get { return type; }
-        set { }
+        set { type = value; }
     }
 
     public Dictionary<string, string> commandsOne;
@@ -522,7 +528,7 @@ public class InputLayout
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
 
-        if (splitString.Length >= 3) //Must have 5 Inputs
+        if (splitString.Length >= 2) //Must have 2
         {
             name = splitString[0];
 
@@ -563,7 +569,7 @@ public class InputLayout
         return CancelLoad();
     }
 
-    private bool CancelLoad()
+    public bool CancelLoad()
     {
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
@@ -579,7 +585,7 @@ public class InputLayout
             returnString += "," + kv.Key + ":" + kv.Value;
         foreach (KeyValuePair<string, string> kv in commandsTwo)
             returnString += "," + kv.Key + ":" + kv.Value;
-        Debug.Log("returnString:" + returnString);
+        //Debug.Log("returnString:" + returnString);
         return returnString;
 
     }
