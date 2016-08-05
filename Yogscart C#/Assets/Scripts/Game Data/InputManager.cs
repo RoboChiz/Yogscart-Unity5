@@ -10,6 +10,7 @@ public class InputManager : MonoBehaviour
 {
 
     static bool ConfigLoaded = false;
+    public static bool lockEverything = false;
 
     //Checks that Configs have been loaded before being used
     static public List<InputLayout> AllConfigs
@@ -37,7 +38,6 @@ public class InputManager : MonoBehaviour
     //Loads Saved Input Configurations
     public static void LoadConfig()
     {
-
         //Load default Input
         allConfigs = new List<InputLayout>();
         allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q"));
@@ -133,56 +133,59 @@ public class InputManager : MonoBehaviour
         if (controllers == null)
             controllers = new List<InputController>();
 
-        if (controllers.Count > 0)
+        if (!lockEverything)
         {
-            foreach (InputController c in controllers)
+            if (controllers.Count > 0)
             {
-                if (c.buttonLock != "" && c.GetRawInput(c.buttonLock) == 0)
-                    c.buttonLock = "";
-            }
-        }
-
-        //Reset Mouse Lock
-        if (Input.GetMouseButtonUp(0))
-            mouseLock = false;
-
-        //Look for new Controllers
-        if (allowedToChange)
-        {
-            if (controllers.Count < 4)
-            {
-                if (Input.GetKey("return") || (Input.GetMouseButton(0) && controllers.Count == 0))
-                    AddController("Key_");
-
-                if (Input.GetAxis("Start_1") != 0)
-                    AddController("_1");
-
-                if (Input.GetAxis("Start_2") != 0)
-                    AddController("_2");
-
-                if (Input.GetAxis("Start_3") != 0)
-                    AddController("_3");
-
-                if (Input.GetAxis("Start_4") != 0)
-                    AddController("_4");
+                foreach (InputController c in controllers)
+                {
+                    if (c.buttonLock != "" && c.GetRawInput(c.buttonLock) == 0)
+                        c.buttonLock = "";
+                }
             }
 
-            if (controllers.Count >= 1)
+            //Reset Mouse Lock
+            if (Input.GetMouseButtonUp(0))
+                mouseLock = false;
+
+            //Look for new Controllers
+            if (allowedToChange)
             {
-                if (Input.GetKey("backspace"))
-                    RemoveController("Key_");
+                if (controllers.Count < 4)
+                {
+                    if (Input.GetKey("return") || (Input.GetMouseButton(0) && controllers.Count == 0))
+                        AddController("Key_");
 
-                if (Input.GetAxis("Back_1") != 0)
-                    RemoveController("_1");
+                    if (Input.GetAxis("Start_1") != 0)
+                        AddController("_1");
 
-                if (Input.GetAxis("Back_2") != 0)
-                    RemoveController("_2");
+                    if (Input.GetAxis("Start_2") != 0)
+                        AddController("_2");
 
-                if (Input.GetAxis("Back_3") != 0)
-                    RemoveController("_3");
+                    if (Input.GetAxis("Start_3") != 0)
+                        AddController("_3");
 
-                if (Input.GetAxis("Back_4") != 0)
-                    RemoveController("_4");
+                    if (Input.GetAxis("Start_4") != 0)
+                        AddController("_4");
+                }
+
+                if (controllers.Count >= 1)
+                {
+                    if (Input.GetKey("backspace"))
+                        RemoveController("Key_");
+
+                    if (Input.GetAxis("Back_1") != 0)
+                        RemoveController("_1");
+
+                    if (Input.GetAxis("Back_2") != 0)
+                        RemoveController("_2");
+
+                    if (Input.GetAxis("Back_3") != 0)
+                        RemoveController("_3");
+
+                    if (Input.GetAxis("Back_4") != 0)
+                        RemoveController("_4");
+                }
             }
         }
     }
@@ -264,6 +267,34 @@ public class InputManager : MonoBehaviour
         return false;
     }
 
+    public static string GetXboxInput()
+    {
+        string[] possibleControls = new string[] { "L_XAxis", "L_YAxis", "R_XAxis", "R_YAxis", "DPad_XAxis", "DPad_YAxis", "A", "B", "X", "Y", "LB", "RB", "Back", "LS", "RS", "TriggerR", "TriggerL" };
+        for(int i = 1; i <= 4; i++)
+        {
+            for (int j = 0; j < possibleControls.Length; j++)
+            {
+                if (j < 6)
+                {
+                    if (Input.GetAxisRaw(possibleControls[j] + "_" + i.ToString()) > 0)
+                        return possibleControls[j] + "+";
+                    else if(Input.GetAxisRaw(possibleControls[j] + "_" + i.ToString()) < 0)
+                        return possibleControls[j] + "-";
+
+                }
+                else
+                {
+                    if (Input.GetAxisRaw(possibleControls[j] + "_" + i.ToString()) != 0)
+                    {
+                        return possibleControls[j];
+                    }
+                }
+            }
+        }
+
+        return "";
+    }
+
 }
 
 public class InputController
@@ -289,78 +320,80 @@ public class InputController
     {
         float value = 0f;
 
-        string inputAxisOne = "", inputAxisTwo = "";
-        bool HasInputOne = controlLayout.commandsOne.TryGetValue(axis, out inputAxisOne);
-        bool HasInputTwo = controlLayout.commandsTwo.TryGetValue(axis, out inputAxisTwo);
+        if (!InputManager.lockEverything)
+        {
+            string inputAxisOne = "", inputAxisTwo = "";
+            bool HasInputOne = controlLayout.commandsOne.TryGetValue(axis, out inputAxisOne);
+            bool HasInputTwo = controlLayout.commandsTwo.TryGetValue(axis, out inputAxisTwo);
 
-        if (!HasInputOne && !HasInputTwo)
-        {
-            Debug.LogError(axis + " is not an Axis!");
-        }
-        else
-        {
-            if (inputAxisOne != null)
+            if (!HasInputOne && !HasInputTwo)
             {
-                if (controlLayout.Type == ControllerType.Xbox360)
+                Debug.LogError(axis + " is not an Axis!");
+            }
+            else
+            {
+                if (inputAxisOne != null)
                 {
-                    int requiredSignPlus = 0;
-                    //Check for + or - Sign
-                    if (inputAxisOne[inputAxisOne.Length - 1] == '+')
-                        requiredSignPlus = 1;
-                    if (inputAxisOne[inputAxisOne.Length - 1] == '-')
-                        requiredSignPlus = -1;
+                    if (controlLayout.Type == ControllerType.Xbox360)
+                    {
+                        int requiredSignPlus = 0;
+                        //Check for + or - Sign
+                        if (inputAxisOne[inputAxisOne.Length - 1] == '+')
+                            requiredSignPlus = 1;
+                        if (inputAxisOne[inputAxisOne.Length - 1] == '-')
+                            requiredSignPlus = -1;
 
-                    if (requiredSignPlus != 0)
-                        inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
+                        if (requiredSignPlus != 0)
+                            inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
 
-                    value = Input.GetAxis(inputAxisOne + controllerName);
+                        value = Input.GetAxis(inputAxisOne + controllerName);
 
-                    //Reset value if it is not the correct sign
-                    if (requiredSignPlus > 0 && value < 0)
-                        value = 0;
-                    if (requiredSignPlus < 0 && value > 0)
-                        value = 0;
-                }
-                else
-                {
-                    if (Input.GetKey(inputAxisOne))
-                        value = 1;
+                        //Reset value if it is not the correct sign
+                        if (requiredSignPlus > 0 && value < 0)
+                            value = 0;
+                        if (requiredSignPlus < 0 && value > 0)
+                            value = 0;
+                    }
                     else
-                        value = 0;
+                    {
+                        if (Input.GetKey(inputAxisOne))
+                            value = 1;
+                        else
+                            value = 0;
+                    }
+
                 }
-                    
-            }
-            if ((inputAxisTwo != null) && value == 0)
-            {
-                if (controlLayout.Type == ControllerType.Xbox360)
+                if ((inputAxisTwo != null) && value == 0)
                 {
-                    int requiredSignMinus = 0;
-                    //Check for + or - Sign
-                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '+')
-                        requiredSignMinus = 1;
-                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '-')
-                        requiredSignMinus = -1;
+                    if (controlLayout.Type == ControllerType.Xbox360)
+                    {
+                        int requiredSignMinus = 0;
+                        //Check for + or - Sign
+                        if (inputAxisTwo[inputAxisTwo.Length - 1] == '+')
+                            requiredSignMinus = 1;
+                        if (inputAxisTwo[inputAxisTwo.Length - 1] == '-')
+                            requiredSignMinus = -1;
 
-                    if (requiredSignMinus != 0)
-                        inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
+                        if (requiredSignMinus != 0)
+                            inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
 
-                    value = -Mathf.Abs(Input.GetAxis(inputAxisTwo + controllerName));
+                        value = -Mathf.Abs(Input.GetAxis(inputAxisTwo + controllerName));
 
-                    //Reset value if it is not the correct sign
-                    if (requiredSignMinus > 0 && value < 0)
-                        value = 0;
-                    if (requiredSignMinus < 0 && value > 0)
-                        value = 0;
+                        //Reset value if it is not the correct sign
+                        if (requiredSignMinus > 0 && value < 0)
+                            value = 0;
+                        if (requiredSignMinus < 0 && value > 0)
+                            value = 0;
+                    }
+                    else
+                    {
+                        if (Input.GetKey(inputAxisTwo))
+                            value -= 1;
+                    }
                 }
-                else
-                {
-                    if (Input.GetKey(inputAxisTwo))
-                        value -= 1;
-                }
+
             }
-
         }
-
         return value;
     }
 
@@ -368,76 +401,79 @@ public class InputController
     {
         float value = 0f;
 
-        string inputAxisOne = "", inputAxisTwo = "";
-        bool HasInputOne = controlLayout.commandsOne.TryGetValue(axis, out inputAxisOne);
-        bool HasInputTwo = controlLayout.commandsTwo.TryGetValue(axis, out inputAxisTwo);
+        if (!InputManager.lockEverything)
+        {
+            string inputAxisOne = "", inputAxisTwo = "";
+            bool HasInputOne = controlLayout.commandsOne.TryGetValue(axis, out inputAxisOne);
+            bool HasInputTwo = controlLayout.commandsTwo.TryGetValue(axis, out inputAxisTwo);
 
-        if (!HasInputOne && !HasInputTwo)
-        {
-            Debug.LogError(axis + " is not an Axis!");
-        }
-        else
-        {
-            if (inputAxisOne != null)
+            if (!HasInputOne && !HasInputTwo)
             {
-                if (controlLayout.Type == ControllerType.Xbox360)
+                Debug.LogError(axis + " is not an Axis!");
+            }
+            else
+            {
+                if (inputAxisOne != null)
                 {
-                    int requiredSign = 0;
-                    //Check for + or - Sign
-                    if (inputAxisOne[inputAxisOne.Length - 1] == '+')
-                        requiredSign = 1;
-                    if (inputAxisOne[inputAxisOne.Length - 1] == '-')
-                        requiredSign = -1;
+                    if (controlLayout.Type == ControllerType.Xbox360)
+                    {
+                        int requiredSign = 0;
+                        //Check for + or - Sign
+                        if (inputAxisOne[inputAxisOne.Length - 1] == '+')
+                            requiredSign = 1;
+                        if (inputAxisOne[inputAxisOne.Length - 1] == '-')
+                            requiredSign = -1;
 
-                    if (requiredSign != 0)
-                        inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
+                        if (requiredSign != 0)
+                            inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
 
-                    value = Input.GetAxisRaw(inputAxisOne + controllerName);
+                        value = Input.GetAxisRaw(inputAxisOne + controllerName);
 
-                    //Reset value if it is not the correct sign
-                    if (requiredSign > 0 && value <= 0)
-                        value = 0;
-                    if (requiredSign < 0 && value >= 0)
-                        value = 0;
-                }
-                else
-                {
-                    if (Input.GetKey(inputAxisOne))
-                        value = 1;
+                        //Reset value if it is not the correct sign
+                        if (requiredSign > 0 && value <= 0)
+                            value = 0;
+                        if (requiredSign < 0 && value >= 0)
+                            value = 0;
+                    }
                     else
-                        value = 0;
+                    {
+                        if (Input.GetKey(inputAxisOne))
+                            value = 1;
+                        else
+                            value = 0;
+                    }
+
+                }
+                if ((inputAxisTwo != null) && value == 0)
+                {
+                    if (controlLayout.Type == ControllerType.Xbox360)
+                    {
+                        int requiredSign = 0;
+                        //Check for + or - Sign
+                        if (inputAxisTwo[inputAxisTwo.Length - 1] == '+')
+                            requiredSign = 1;
+                        if (inputAxisTwo[inputAxisTwo.Length - 1] == '-')
+                            requiredSign = -1;
+
+                        if (requiredSign != 0)
+                            inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
+
+                        value = -Mathf.Abs(Input.GetAxisRaw(inputAxisTwo + controllerName));
+
+                        //Reset value if it is not the correct sign
+                        if (requiredSign > 0 && value <= 0)
+                            value = 0;
+                        if (requiredSign < 0 && value >= 0)
+                            value = 0;
+                    }
+                    else
+                    {
+                        if (Input.GetKey(inputAxisTwo))
+                            value -= 1;
+                    }
                 }
 
             }
-            if ((inputAxisTwo != null) && value == 0)
-            {
-                if (controlLayout.Type == ControllerType.Xbox360)
-                {
-                    int requiredSign = 0;
-                    //Check for + or - Sign
-                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '+')
-                        requiredSign = 1;
-                    if (inputAxisTwo[inputAxisTwo.Length - 1] == '-')
-                        requiredSign = -1;
-
-                    if (requiredSign != 0)
-                        inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
-
-                    value = -Mathf.Abs(Input.GetAxisRaw(inputAxisTwo + controllerName));
-
-                    //Reset value if it is not the correct sign
-                    if (requiredSign > 0 && value <= 0)
-                        value = 0;
-                    if (requiredSign < 0 && value >= 0)
-                        value = 0;
-                }
-                else
-                {
-                    if (Input.GetKey(inputAxisTwo))
-                        value -= 1;
-                }
-            }
-
         }
         return value;
     }

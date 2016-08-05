@@ -338,7 +338,7 @@ public class Options : MonoBehaviour
                         inputScales[i] = 1f;
                 }
 
-                layoutScrollPosition = GUI.BeginScrollView(scrollviewRect, layoutScrollPosition, new Rect(10, 10, 380, InputManager.AllConfigs.Count * 500));
+                layoutScrollPosition = GUI.BeginScrollView(scrollviewRect, layoutScrollPosition, new Rect(10, 10, 380, InputManager.AllConfigs.Count * 70));
 
                 for (int i = 0; i < InputManager.AllConfigs.Count; i++)
                 {
@@ -403,7 +403,7 @@ public class Options : MonoBehaviour
                 configScrollPosition = GUI.BeginScrollView(configScrollView, configScrollPosition, new Rect(0, 0, 980, 20 + (availableChanges.Length * 120)));
 
                 //"Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB            
-                availableChanges = new string[] { "Throttle", "Brake", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
+                availableChanges = new string[] { "Throttle", "Brake / Reverse", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
 
                 for (int i = 0; i < availableChanges.Length; i++)
                 {
@@ -414,6 +414,8 @@ public class Options : MonoBehaviour
                         availableChanges[i] = "RearView";
                     if (availableChanges[i] == "Steer (Right/Left)")
                         availableChanges[i] = "Steer";
+                    if (availableChanges[i] == "Brake & Reverse")
+                        availableChanges[i] = "Brake";
 
                     //Draw Plus Command
                     Rect labelRect = new Rect(333, 20 + (i * 120), 333, 100);
@@ -426,7 +428,7 @@ public class Options : MonoBehaviour
                         else
                             labelText = "Press any Button";
 
-                        commandSizes[(i * 2)] = 0.5f;
+                        commandSizes[(i * 2)] = 0.7f;
 
                         GUI.DrawTexture(new Rect(333, 35 + (i * 120), 333, 65), Resources.Load<Texture2D>("UI/Options/Button"), ScaleMode.ScaleToFit);
                     }
@@ -465,7 +467,7 @@ public class Options : MonoBehaviour
                         else
                             labelText = "Press any Button";
 
-                        commandSizes[(i * 2) + 1] = 0.5f;
+                        commandSizes[(i * 2) + 1] = 0.7f;
 
                         GUI.DrawTexture(new Rect(666, 35 + (i * 120), 333, 65), Resources.Load<Texture2D>("UI/Options/Button"), ScaleMode.ScaleToFit);
                     }
@@ -502,6 +504,7 @@ public class Options : MonoBehaviour
                 if (selectedInput != -1)
                 {
                     lockInputs = true;
+                    InputManager.lockEverything = true;
 
                     if (current.Type == ControllerType.Keyboard)
                     {
@@ -534,18 +537,41 @@ public class Options : MonoBehaviour
                             }
 
                             InputManager.SaveConfig();
-                            selectedInput = -1;
+                            selectedInput = -1;                         
                         }
                     }
                     else
                     {
+                        string newInput = InputManager.GetXboxInput();
+                        if(newInput != "")
+                        {
+                            string inputToChange = availableChanges[selectedInput / 2];
+                            //Set command to new input
+                            if (selectedInput % 2 == 0)
+                            {
+                                //Check that this input isn't used for minus
+                                if (!current.commandsTwo.ContainsKey(inputToChange) || current.commandsTwo[inputToChange] != newInput)
+                                    current.commandsOne[inputToChange] = newInput;
+                            }
+                            else
+                            {
+                                //Check that this input isn't used for plus
+                                if (!current.commandsOne.ContainsKey(inputToChange) || current.commandsOne[inputToChange] != newInput)
+                                    current.commandsTwo[inputToChange] = newInput;
+                            }
 
+                            InputManager.SaveConfig();
+                            selectedInput = -1;                            
+                        }
                     }
                 }
                 else
                 {
                     if (lockInputs && !Input.anyKey)
+                    {
                         lockInputs = false;
+                        InputManager.lockEverything = false;
+                    }
                 }
 
                 break;
