@@ -8,7 +8,6 @@ using System.Collections.Generic;
 
 public class InputManager : MonoBehaviour
 {
-
     static bool ConfigLoaded = false;
     public static bool lockEverything = false;
 
@@ -26,22 +25,24 @@ public class InputManager : MonoBehaviour
         }
         set { }
     }
+    static public List<List<InputLayout>> splitConfigs;
     static private List<InputLayout> allConfigs;
 
-    static public bool allowedToChange = true;
+    static public bool allowedToChange = false;//Set to false
 
     static public List<InputController> controllers = new List<InputController>();
     static private bool mouseLock = false;
 
     public List<float> iconHeights = new List<float>();
+    public static readonly List<string> menuInputs = new List<string>(new string[] { "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle" });
 
     //Loads Saved Input Configurations
     public static void LoadConfig()
     {
         //Load default Input
         allConfigs = new List<InputLayout>();
-        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q"));
-        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,Steer:L_XAxis+,Steer:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB"));        
+        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q,Toggle:space"));
+        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,Steer:L_XAxis+,Steer:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB,Toggle:X"));        
 
         bool saveNeeded = false;
 
@@ -59,6 +60,19 @@ public class InputManager : MonoBehaviour
 
         if (saveNeeded)
             SaveConfig();
+
+        //Setup Split Configs
+        splitConfigs = new List<List<InputLayout>>();
+
+        foreach (InputLayout inputLayout in allConfigs)
+        {
+            int controllerType = (int)inputLayout.Type;
+
+            while(splitConfigs.Count <= controllerType)
+                splitConfigs.Add(new List<InputLayout>());
+
+            splitConfigs[controllerType].Add(inputLayout);
+        }
 
     }
 
@@ -270,7 +284,7 @@ public class InputManager : MonoBehaviour
     public static string GetXboxInput()
     {
         string[] possibleControls = new string[] { "L_XAxis", "L_YAxis", "R_XAxis", "R_YAxis", "DPad_XAxis", "DPad_YAxis", "A", "B", "X", "Y", "LB", "RB", "Back", "LS", "RS", "TriggerR", "TriggerL" };
-        for(int i = 1; i <= 4; i++)
+        for (int i = 1; i <= 4; i++)
         {
             for (int j = 0; j < possibleControls.Length; j++)
             {
@@ -318,6 +332,16 @@ public class InputController
 
     public float GetInput(string axis)
     {
+        return actualGetInput(axis, false);
+    }
+
+    public float GetRawInput(string axis)
+    {
+        return actualGetInput(axis, true);
+    }
+
+    private float actualGetInput(string axis, bool getRaw)
+    {
         float value = 0f;
 
         if (!InputManager.lockEverything)
@@ -326,6 +350,15 @@ public class InputController
             bool HasInputOne = controlLayout.commandsOne.TryGetValue(axis, out inputAxisOne);
             bool HasInputTwo = controlLayout.commandsTwo.TryGetValue(axis, out inputAxisTwo);
 
+            //Check Default Inputs if the axis is a menu command
+            if (!HasInputOne && !HasInputTwo && InputManager.menuInputs.Contains(axis))
+            {
+                //OH NO! Better check the Default Inputs
+                HasInputOne = InputManager.splitConfigs[(int)controlLayout.Type][0].commandsOne.TryGetValue(axis, out inputAxisOne);
+                HasInputTwo = InputManager.splitConfigs[(int)controlLayout.Type][0].commandsTwo.TryGetValue(axis, out inputAxisTwo);
+            }
+
+            //Lets check again
             if (!HasInputOne && !HasInputTwo)
             {
                 Debug.LogError(axis + " is not an Axis!");
@@ -346,7 +379,10 @@ public class InputController
                         if (requiredSignPlus != 0)
                             inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
 
-                        value = Input.GetAxis(inputAxisOne + controllerName);
+                        if(!getRaw)
+                            value = Input.GetAxis(inputAxisOne + controllerName);
+                        else
+                            value = Input.GetAxisRaw(inputAxisOne + controllerName);
 
                         //Reset value if it is not the correct sign
                         if (requiredSignPlus > 0 && value < 0)
@@ -377,93 +413,14 @@ public class InputController
                         if (requiredSignMinus != 0)
                             inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
 
-                        value = -Mathf.Abs(Input.GetAxis(inputAxisTwo + controllerName));
-
+                        if (!getRaw)
+                            value = -Mathf.Abs(Input.GetAxis(inputAxisTwo + controllerName));
+                        else
+                            value = -Mathf.Abs(Input.GetAxisRaw(inputAxisTwo + controllerName));
                         //Reset value if it is not the correct sign
                         if (requiredSignMinus > 0 && value < 0)
                             value = 0;
                         if (requiredSignMinus < 0 && value > 0)
-                            value = 0;
-                    }
-                    else
-                    {
-                        if (Input.GetKey(inputAxisTwo))
-                            value -= 1;
-                    }
-                }
-
-            }
-        }
-        return value;
-    }
-
-    public float GetRawInput(string axis)
-    {
-        float value = 0f;
-
-        if (!InputManager.lockEverything)
-        {
-            string inputAxisOne = "", inputAxisTwo = "";
-            bool HasInputOne = controlLayout.commandsOne.TryGetValue(axis, out inputAxisOne);
-            bool HasInputTwo = controlLayout.commandsTwo.TryGetValue(axis, out inputAxisTwo);
-
-            if (!HasInputOne && !HasInputTwo)
-            {
-                Debug.LogError(axis + " is not an Axis!");
-            }
-            else
-            {
-                if (inputAxisOne != null)
-                {
-                    if (controlLayout.Type == ControllerType.Xbox360)
-                    {
-                        int requiredSign = 0;
-                        //Check for + or - Sign
-                        if (inputAxisOne[inputAxisOne.Length - 1] == '+')
-                            requiredSign = 1;
-                        if (inputAxisOne[inputAxisOne.Length - 1] == '-')
-                            requiredSign = -1;
-
-                        if (requiredSign != 0)
-                            inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
-
-                        value = Input.GetAxisRaw(inputAxisOne + controllerName);
-
-                        //Reset value if it is not the correct sign
-                        if (requiredSign > 0 && value <= 0)
-                            value = 0;
-                        if (requiredSign < 0 && value >= 0)
-                            value = 0;
-                    }
-                    else
-                    {
-                        if (Input.GetKey(inputAxisOne))
-                            value = 1;
-                        else
-                            value = 0;
-                    }
-
-                }
-                if ((inputAxisTwo != null) && value == 0)
-                {
-                    if (controlLayout.Type == ControllerType.Xbox360)
-                    {
-                        int requiredSign = 0;
-                        //Check for + or - Sign
-                        if (inputAxisTwo[inputAxisTwo.Length - 1] == '+')
-                            requiredSign = 1;
-                        if (inputAxisTwo[inputAxisTwo.Length - 1] == '-')
-                            requiredSign = -1;
-
-                        if (requiredSign != 0)
-                            inputAxisTwo = inputAxisTwo.Remove(inputAxisTwo.Length - 1);
-
-                        value = -Mathf.Abs(Input.GetAxisRaw(inputAxisTwo + controllerName));
-
-                        //Reset value if it is not the correct sign
-                        if (requiredSign > 0 && value <= 0)
-                            value = 0;
-                        if (requiredSign < 0 && value >= 0)
                             value = 0;
                     }
                     else
@@ -560,7 +517,7 @@ public class InputLayout
     {
         string[] splitString = contents.Split(","[0]);
 
-        List<string> validCommands = new List<string>() { "Throttle", "Brake", "Steer", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange" };
+        List<string> validCommands = new List<string>() { "Throttle", "Brake", "Steer", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle" };
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
 

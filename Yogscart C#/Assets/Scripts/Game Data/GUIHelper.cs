@@ -121,7 +121,7 @@ public class GUIHelper
 
     public static Rect LeftRect(Rect originalRect, float scale)
     {
-        float halfWidth = originalRect.width / 2f, halfHeight = originalRect.height / 2f;
+        float halfHeight = originalRect.height / 2f;
         float centreY = originalRect.y + halfHeight;
 
         float newY = Mathf.LerpUnclamped(centreY, originalRect.y, scale);
@@ -271,7 +271,6 @@ public class GUIHelper
         return nReturn;
     }
 
-
 }
 
 [System.Serializable]
@@ -382,7 +381,6 @@ public class Toggle
         GUI.Label(labelRect, label);
 
         //Draw Toggle
-        Vector2 newMousePos = GUIHelper.GetMousePosition();
         Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);      
 
         if (GUI.Button(toggleRect, Resources.Load<Texture2D>("UI/New Main Menu/Toggle")))

@@ -147,7 +147,7 @@ public class LevelSelect : MonoBehaviour
         int vert = 0, hori = 0;
         bool submit = false, cancel = false;
 
-        if (!sliding)
+        if (!sliding && (FindObjectOfType<MainMenu>() == null || !FindObjectOfType<MainMenu>().sliding))
         {
             vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
             hori = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
@@ -300,7 +300,6 @@ public class LevelSelect : MonoBehaviour
 
         float startTime = Time.time;
         float travelTime = 0.25f;
-        float endScale = 0.9f;
         //Slide Off //////////////////////////////
         menuAlpha = 1f;
 

@@ -150,10 +150,9 @@ public class MainMenu : MonoBehaviour
             else if (state == MenuState.LevelSelect)
                 FindObjectOfType<LevelSelect>().CancelLevelSelect();
 
-            if (state != MenuState.CharacterSelect)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)
                 BackMenu();               
-        }
-            
+        }            
 
         GUI.color = new Color(1, 1, 1, sideFade);
 
@@ -455,12 +454,11 @@ public class MainMenu : MonoBehaviour
                     break;
                 }
             }
-            if (state != MenuState.CharacterSelect && !lockInputs && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && !lockInputs && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
             {
                 BackMenu();
             }
         }
-
         GUI.color = Color.white;
     }
 
@@ -513,8 +511,9 @@ public class MainMenu : MonoBehaviour
     public void ChangeMenu(MenuState changeState)
     { 
         sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
-        StartCoroutine("ChangeMenuPhysical", changeState);
         backStates.Add(state);
+
+        StartCoroutine("ChangeMenuPhysical", changeState);      
     }
 
     IEnumerator ChangeMenuPhysical(MenuState changeState)
@@ -535,21 +534,24 @@ public class MainMenu : MonoBehaviour
             }
 
             //Slide Off //////////////////////////////
-            sideAmount = 0f;
-            sideFade = 1f;
-
-            while (Time.time - startTime < travelTime)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)//Nothing to fade out
             {
-                sideAmount = Mathf.Lerp(0f, endSideAmount, (Time.time - startTime) / travelTime);
-                sideFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
-                yield return null;
+                sideAmount = 0f;
+                sideFade = 1f;
+
+                while (Time.time - startTime < travelTime)
+                {
+                    sideAmount = Mathf.Lerp(0f, endSideAmount, (Time.time - startTime) / travelTime);
+                    sideFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
+                    yield return null;
+                }
             }
 
             //Pause at Top///////////////////////////////////////
             sideAmount = endSideAmount;
             sideFade = 0f;
-
-            if(changeState != MenuState.Start && (changeState == MenuState.Main && state != MenuState.Start))
+         
+            if(state != MenuState.Start && changeState != MenuState.Start)
                 currentSelection = 0;
 
             state = changeState;
@@ -566,16 +568,19 @@ public class MainMenu : MonoBehaviour
             }
 
             //Slide Down/////////////////////
-            startTime = Time.time;
-            while (Time.time - startTime < travelTime)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)//Nothing to fade in
             {
-                sideAmount = Mathf.Lerp(endSideAmount, 0f, (Time.time - startTime) / travelTime);
-                sideFade = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
-                yield return null;
-            }
+                startTime = Time.time;
+                while (Time.time - startTime < travelTime)
+                {
+                    sideAmount = Mathf.Lerp(endSideAmount, 0f, (Time.time - startTime) / travelTime);
+                    sideFade = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
+                    yield return null;
+                }
 
-            sideAmount = 0f;
-            sideFade = 1f;
+                sideAmount = 0f;
+                sideFade = 1f;
+            }
 
             sliding = false;
         }

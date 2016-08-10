@@ -72,18 +72,18 @@ public class Race : GameMode
             r.timer = 0;
         }
 
-        lastcurrentRace = currentRace; 
+        lastcurrentRace = currentRace;
 
         //Load the Level
         SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
         yield return null;
 
         //Get rid of Item Boxes
-        if(raceType == RaceType.TimeTrial)
+        if (raceType == RaceType.TimeTrial)
         {
             ItemBox[] itemBoxes = GameObject.FindObjectsOfType<ItemBox>();
 
-            foreach(ItemBox ib in itemBoxes)
+            foreach (ItemBox ib in itemBoxes)
             {
                 Destroy(ib.gameObject);
             }
@@ -111,7 +111,7 @@ public class Race : GameMode
 
                 ki.cameras = cameras;
 
-                if(raceType == RaceType.TimeTrial)
+                if (raceType == RaceType.TimeTrial)
                 {
                     racers[i].ingameObj.GetComponent<kartItem>().RecieveItem(2);
                 }
@@ -124,7 +124,7 @@ public class Race : GameMode
             }
         }
 
-        if(InputManager.controllers.Count == 2)
+        if (InputManager.controllers.Count == 2)
         {
             racers[racers.Count - 1].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.Top;
             racers[racers.Count - 2].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.Bottom;
@@ -140,7 +140,7 @@ public class Race : GameMode
         if (InputManager.controllers.Count == 4)
             racers[racers.Count - 4].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.BottomRight;
 
-            yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(1f);
 
         //Do the intro to the Map
         yield return StartCoroutine("DoIntro");
@@ -207,7 +207,7 @@ public class Race : GameMode
 
         DisplayRacer[] sortedRacers = new DisplayRacer[racers.Count];
 
-        while(sortedRacers.Length != racers.Count)
+        while (sortedRacers.Length != racers.Count)
             yield return null;
 
         foreach (Racer r in racers)
@@ -279,24 +279,29 @@ public class Race : GameMode
                 yield return null;
             }
 
+            MainMenu mm = FindObjectOfType<MainMenu>();
+
             if (cs.State == CharacterSelect.csState.Off)
             {
-                //Cancel everything!
-                MainMenu mm = GameObject.FindObjectOfType<MainMenu>();
-                if (mm != null && mm.enabled)
+                //Cancel everything!               
+                if (mm != null)
+                {
                     mm.BackMenu();
+                }
+
+                Debug.Log("It didn't worked");
 
                 //Stop all Gamemode Coroutines
                 ForceStop();
+
                 //Wait a Frame for Coroutines to stop
                 yield return null;
 
-                Debug.Log("It didn't worked");
             }
 
             //Everything worked out perfect!
             Debug.Log("It worked");
-            LevelSelect ls = GameObject.FindObjectOfType<LevelSelect>();
+            LevelSelect ls = FindObjectOfType<LevelSelect>();
 
             if (ls != null)
             {
@@ -312,6 +317,8 @@ public class Race : GameMode
             if (currentCup == -1 || currentTrack == -1)
             {
                 Debug.Log("Back out of Level Select");
+                if(mm != null)
+                    mm.BackMenu();
             }
             else
             {
@@ -441,7 +448,7 @@ public class Race : GameMode
 
                 Leaderboard lb = GetComponent<Leaderboard>();
 
-                if(raceType != RaceType.Online)
+                if (raceType != RaceType.Online)
                 {
                     if (!changingState && (InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick()))
                     {
@@ -455,7 +462,7 @@ public class Race : GameMode
                             lb.SecondStep();
                         }
                     }
-                }               
+                }
                 break;
             case RaceGUI.NextMenu:
 
@@ -519,7 +526,7 @@ public class Race : GameMode
 
                 if (!changingState && (submitBool || (mouseSelecting && InputManager.GetClick())))
                 {
-                
+
                     switch (options[currentSelection])
                     {
                         case "Quit":
@@ -632,12 +639,12 @@ public class Race : GameMode
         racer.ingameObj.gameObject.AddComponent<RacerAI>();
         Destroy(racer.ingameObj.GetComponent<kartInput>());
         //Hide Kart Item
-        if(racer.ingameObj.GetComponent<kartItem>() != null)
+        if (racer.ingameObj.GetComponent<kartItem>() != null)
         {
             racer.ingameObj.GetComponent<kartItem>().locked = true;
             racer.ingameObj.GetComponent<kartItem>().hidden = true;
         }
-        
+
         racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");
 
         racer.cameras.GetChild(0).GetComponent<Camera>().enabled = false;
@@ -678,9 +685,9 @@ public class Race : GameMode
             List<Racer> pointsSorted = SortingScript.CalculatePoints(racers);
 
             Racer bestHuman = racers[racers.Count - 1];
-            for(int i = 0; i < pointsSorted.Count; i++)
+            for (int i = 0; i < pointsSorted.Count; i++)
             {
-                if(pointsSorted[i].Human != -1)
+                if (pointsSorted[i].Human != -1)
                 {
                     bestHuman = pointsSorted[i];
                     break;
@@ -694,7 +701,7 @@ public class Race : GameMode
             if (points == 60)
             {
                 rankString = "Perfect";
-                if(raceType == RaceType.GrandPrix)
+                if (raceType == RaceType.GrandPrix)
                     gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty] = Rank.Perfect;
             }
             else if (bestHuman.overallPosition == 0)
@@ -720,12 +727,12 @@ public class Race : GameMode
                 rankString = "No Rank";
             }
         }
-        
-        if(raceType == RaceType.TimeTrial)
+
+        if (raceType == RaceType.TimeTrial)
         {
             float bestTime = gd.tournaments[currentCup].tracks[currentTrack].bestTime;
 
-            if(racers[0].timer <= bestTime || bestTime == 0)
+            if (racers[0].timer <= bestTime || bestTime == 0)
             {
                 gd.tournaments[currentCup].tracks[currentTrack].bestTime = racers[0].timer;
 

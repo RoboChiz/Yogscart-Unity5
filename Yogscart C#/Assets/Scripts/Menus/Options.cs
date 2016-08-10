@@ -4,12 +4,11 @@ using System.Collections;
 public class Options : MonoBehaviour
 {
     CurrentGameData gd;
-    SoundManager sm;
 
     private float guiAlpha = 0;
     private const float fadeTime = 0.5f;
 
-    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, button, line, inputBack;
+    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, button, line, inputBack, inputBackHori, lbTexture, rbTexture, qTexture, eTexture;
 
     enum OptionsTab { Game, Graphics, Input };
     private OptionsTab currentTab = OptionsTab.Game;
@@ -32,7 +31,6 @@ public class Options : MonoBehaviour
     void Start()
     {
         gd = FindObjectOfType<CurrentGameData>();
-        sm = FindObjectOfType<SoundManager>();
 
         //Load the textures
         blueTab = Resources.Load<Texture2D>("UI/Options/BlueTab");
@@ -52,6 +50,13 @@ public class Options : MonoBehaviour
         button = Resources.Load<Texture2D>("UI/Options/Button");
         line = Resources.Load<Texture2D>("UI/Lobby/Line");
         inputBack = Resources.Load<Texture2D>("UI/Options/InputBack");
+        inputBackHori = Resources.Load<Texture2D>("UI/Options/InputBackHori");
+
+        lbTexture = Resources.Load<Texture2D>("UI/Options/LB");
+        rbTexture = Resources.Load<Texture2D>("UI/Options/RB");
+        qTexture = Resources.Load<Texture2D>("UI/Options/Q");
+        eTexture = Resources.Load<Texture2D>("UI/Options/E");
+
         availableChanges = new string[] { "Throttle", "Brake", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
     }
 
@@ -155,6 +160,17 @@ public class Options : MonoBehaviour
                 currentTab = OptionsTab.Input;
         }
 
+        //Draw Q/E or LB/RB
+        bool drawKeyboard = true;
+        Rect leftIcon = new Rect(70, 107, 100, 50);
+        Rect rightIcon = new Rect(1750, 107, 100, 50);
+
+        if (InputManager.controllers != null && InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            drawKeyboard = false;
+
+        GUI.DrawTexture(leftIcon, drawKeyboard ? qTexture : lbTexture);
+        GUI.DrawTexture(rightIcon, drawKeyboard ? eTexture : rbTexture);
+
         //Draw the current tab
         Rect tabRect = new Rect(180, 90, 1550, 870);
         Rect tabAreaRect = new Rect(180, 170, 1550, 800);
@@ -163,6 +179,7 @@ public class Options : MonoBehaviour
         {
             case OptionsTab.Game:
                 GUI.DrawTexture(tabRect, blueTab);
+                GUI.DrawTexture(new Rect(190,200,1520,400), inputBackHori);
 
                 GUI.BeginGroup(tabAreaRect);
 
@@ -281,6 +298,7 @@ public class Options : MonoBehaviour
                         //Add New Layout
                         InputManager.AllConfigs.Add(new InputLayout("Layout " + (InputManager.AllConfigs.Count - 1).ToString() + ",Keyboard"));
                         selectedInput = -1;
+                        currentLayoutSelection = InputManager.AllConfigs.Count - 1;
                         editName = false;
                     }
 
@@ -403,7 +421,7 @@ public class Options : MonoBehaviour
                 configScrollPosition = GUI.BeginScrollView(configScrollView, configScrollPosition, new Rect(0, 0, 980, 20 + (availableChanges.Length * 120)));
 
                 //"Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB            
-                availableChanges = new string[] { "Throttle", "Brake / Reverse", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
+                availableChanges = new string[] { "Throttle", "Brake & Reverse", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
 
                 for (int i = 0; i < availableChanges.Length; i++)
                 {
@@ -510,7 +528,30 @@ public class Options : MonoBehaviour
                     {
                         string newInput = Input.inputString;
 
-                        if (newInput != "")//Input pressed
+                        if(newInput == "")//Check for Arrow keys, ctrls, alts and shifts
+                        {
+                            if (Input.GetKey(KeyCode.LeftArrow))
+                                newInput = "leftarrow";
+                            else if (Input.GetKey(KeyCode.RightArrow))
+                                newInput = "rightarrow";
+                            else if (Input.GetKey(KeyCode.UpArrow))
+                                newInput = "uparrow";
+                            else if (Input.GetKey(KeyCode.DownArrow))
+                                newInput = "downarrow";
+                            else if (Input.GetKey(KeyCode.LeftControl))
+                                newInput = "leftcontrol";
+                            else if (Input.GetKey(KeyCode.RightControl))
+                                newInput = "rightcontrol";
+                            else if (Input.GetKey(KeyCode.LeftShift))
+                                newInput = "leftshift";
+                            else if (Input.GetKey(KeyCode.RightShift))
+                                newInput = "rightshift";
+                            else if (Input.GetKey(KeyCode.LeftAlt))
+                                newInput = "leftalt";
+                            else if (Input.GetKey(KeyCode.RightAlt))
+                                newInput = "rightalt";
+                        }
+                        else
                         {
                             if (newInput == "\r")
                                 newInput = "return";
@@ -520,7 +561,10 @@ public class Options : MonoBehaviour
                                 newInput = "space";
                             else if (newInput.Length > 0)
                                 newInput = newInput[0].ToString();
+                        }
 
+                        if (newInput != "")//Input pressed
+                        {                         
                             string inputToChange = availableChanges[selectedInput / 2];
                             //Set command to new input
                             if (selectedInput % 2 == 0)

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class CharacterSelect : MonoBehaviour
 {
@@ -25,7 +26,7 @@ public class CharacterSelect : MonoBehaviour
     private const float cursorSpeed = 5f, rotateSpeed = 60f;
 
     public Transform[] platforms;
-    public bool[] ready, kartSelected;
+    public bool[] ready, kartSelected, showLayout;
 
     public CharacterSelectLoadOut[] loadedChoice;
     public Transform[] loadedModels;
@@ -36,11 +37,17 @@ public class CharacterSelect : MonoBehaviour
 
     //Transtition
     private float scale = 0.9f;
-    private float menuAlpha = 0f;
+    private float menuAlpha = 0f, overallAlpha = 0f;
     private bool sliding = false;
 
     private bool lastAllowed = false, mouseLast = false, canClick = false;
     private Vector2 lastMousePos;
+
+    //Controller Layouts
+    private float[] controlLayoutBoxHeights;
+    private int[] selectedLayout;
+    private Vector2[] layoutScrollPositions;
+    private const int layoutBoxStartHeight = 75;
 
     public IEnumerator ShowCharacterSelect(csState state)
     {
@@ -83,11 +90,13 @@ public class CharacterSelect : MonoBehaviour
         while (Time.time - startTime < travelTime)
         {
             menuAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
+            overallAlpha = menuAlpha;
             scale = Mathf.Lerp(1f, endScale, (Time.time - startTime) / travelTime);
             yield return null;
         }
 
         menuAlpha = 0f;
+        overallAlpha = menuAlpha;
         scale = endScale;
 
         if (loadedModels != null)
@@ -125,10 +134,16 @@ public class CharacterSelect : MonoBehaviour
         loadedModels = new Transform[4];
         loadedChoice = new CharacterSelectLoadOut[4];
         kartSelected = new bool[4];
+        showLayout = new bool[4];
+        selectedLayout = new int[4];
+        layoutScrollPositions = new Vector2[4];
+
+        controlLayoutBoxHeights = new float[4];
 
         for (int i = 0; i < 4; i++)
         {
             loadedChoice[i] = new CharacterSelectLoadOut(-1, -1, -1, -1);
+            controlLayoutBoxHeights[i] = layoutBoxStartHeight;
         }
     }
 
@@ -139,20 +154,15 @@ public class CharacterSelect : MonoBehaviour
             GUI.skin = skin;
             GUI.depth = -5;
             GUI.matrix = GUIHelper.GetMatrix();
-            GUIHelper.SetGUIAlpha(menuAlpha);           
-        
+            GUIHelper.SetGUIAlpha(menuAlpha);
+
             LoadOut[] choice = CurrentGameData.currentChoices;
 
             float choicesPerColumn = 0f;
 
-            float chunkSize = 190;
+            Rect iconArea = GUIHelper.CentreRect(new Rect(10, 115, 950, 800), scale);
+            float chunkSize = iconArea.height / 4.5f;
 
-            float nameWidth = chunkSize * 5f * scale;
-            float nameHeight = (Screen.height - (chunkSize * 1.75f)) * scale;
-            float nameX = 10f + (nameWidth * (1 - scale));
-            float nameY = (chunkSize * 0.75f) + (nameHeight * (1 - scale));
-
-            Rect iconArea = GUIHelper.CentreRect(new Rect(10, 115, 950, 840), scale);
             Vector2 mousePos = GUIHelper.GetMousePosition();
             canClick = false;
 
@@ -162,16 +172,18 @@ public class CharacterSelect : MonoBehaviour
                 lastMousePos = mousePos;
             }
 
+            //Make character text lookat camera
+
             switch (state)
             {
                 case csState.Character:
                     InputManager.allowedToChange = lastAllowed;
 
-                    GUI.Label(new Rect(10, 10, 1920, 95), "Select A Character");               
+                    GUI.Label(new Rect(10, 10, 1920, 95), "Select A Character");
                     GUI.DrawTexture(iconArea, nameList);
 
                     GUI.BeginGroup(iconArea);
-                        
+
                     //Draw Character heads
                     choicesPerColumn = ((gd.characters.Length / 5f) / 5f) * 5f;
                     for (int i = 0; i < choicesPerColumn; i++)
@@ -192,7 +204,7 @@ public class CharacterSelect : MonoBehaviour
                                 GUI.DrawTexture(iconRect, icon);
 
                                 //Mouse Controls
-                                if(choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                if (!showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
                                 {
                                     choice[0].character = characterInt;
                                     canClick = true;
@@ -235,7 +247,7 @@ public class CharacterSelect : MonoBehaviour
                                 GUI.DrawTexture(iconRect, icon);
 
                                 //Mouse Controls
-                                if (choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                if (!showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
                                 {
                                     choice[0].hat = hatInt;
                                     canClick = true;
@@ -268,20 +280,17 @@ public class CharacterSelect : MonoBehaviour
 
                     GUI.BeginGroup(iconArea);
 
-                        Vector2 iconSelection = new Vector2(selectedIcon % 5, selectedIcon / 5);
-                        cursorPosition[s] = Vector2.Lerp(cursorPosition[s], iconSelection, Time.deltaTime * cursorSpeed);
+                    Vector2 iconSelection = new Vector2(selectedIcon % 5, selectedIcon / 5);
+                    cursorPosition[s] = Vector2.Lerp(cursorPosition[s], iconSelection, Time.deltaTime * cursorSpeed);
 
-                        Rect CursorRect = new Rect(10 + cursorPosition[s].x * chunkSize, cursorPosition[s].y * chunkSize, chunkSize, chunkSize);
-                        Texture2D CursorTexture = Resources.Load<Texture2D>("UI/Cursors/Cursor_" + s);
-                        GUI.DrawTexture(CursorRect, CursorTexture);
+                    Rect CursorRect = new Rect(10 + cursorPosition[s].x * chunkSize, cursorPosition[s].y * chunkSize, chunkSize, chunkSize);
+                    Texture2D CursorTexture = Resources.Load<Texture2D>("UI/Cursors/Cursor_" + s);
+                    GUI.DrawTexture(CursorRect, CursorTexture);
 
                     GUI.EndGroup();
                 }
 
-                Texture2D backTexture = Resources.Load<Texture2D>("UI/New Main Menu/backnew");
-                float backRatio = (Screen.width / 6f) / backTexture.width;
                 float topHeight = 115;
-                float screenHeight = Screen.height - 10 - (backTexture.height * backRatio) - topHeight;
 
                 //Render Kart And Wheel
                 if (state == csState.Kart)
@@ -290,7 +299,7 @@ public class CharacterSelect : MonoBehaviour
                     //Rect iconArea = GUIHelper.CentreRect(new Rect(10, 115, 950, 840), scale);
 
                     if (InputManager.controllers.Count == 1)
-                        areaRect = GUIHelper.CentreRect(new Rect(0, topHeight, 1920, 840),scale);
+                        areaRect = GUIHelper.CentreRect(new Rect(0, topHeight, 1920, 840), scale);
 
                     if (InputManager.controllers.Count == 2)
                     {
@@ -350,34 +359,39 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(kartRect, kartIcon, ScaleMode.ScaleToFit);
 
                         //KartScaling
-                        Rect kartClickArea = new Rect(areaRect.x + selectionRect.x + kartRect.x, areaRect.y + selectionRect.y + kartRect.y, kartRect.width, kartRect.height);
-                        loadedChoice[s].kartScales[kartI + 2] = GUIHelper.SizeHover(kartClickArea, loadedChoice[s].kartScales[kartI + 2], 1f, 1.25f, 2f);
+                        if (s == 0 && !showLayout[s])
+                        {
+                            Rect kartClickArea = new Rect(areaRect.x + selectionRect.x + kartRect.x, areaRect.y + selectionRect.y + kartRect.y, kartRect.width, kartRect.height);
+                            //Only scale if icon is onscreen and is yours
+                            if (kartI != -2 && kartI != 2)
+                                loadedChoice[s].kartScales[kartI + 2] = GUIHelper.SizeHover(kartClickArea, loadedChoice[s].kartScales[kartI + 2], 1f, 1.25f, 2f);
 
-                        //Kart Clicks
-                        if(s == 0 && kartI == -1 && GUI.Button(kartRect,""))
-                        {
-                            if (!kartSelected[s])
-                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
-                            else
-                                kartSelected[s] = false;
-                        }                          
+                            //Kart Clicks
+                            if (kartI == -1 && GUI.Button(kartRect, ""))
+                            {
+                                if (!kartSelected[s])
+                                    StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+                                else
+                                    kartSelected[s] = false;
+                            }
 
-                        if (s == 0 && kartI == 1 && GUI.Button(kartRect, ""))
-                        {
-                            if (!kartSelected[s])
-                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
-                            else
-                                kartSelected[s] = false;
+                            if (kartI == 1 && GUI.Button(kartRect, ""))
+                            {
+                                if (!kartSelected[s])
+                                    StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                                else
+                                    kartSelected[s] = false;
+                            }
+
+                            if (kartI == 0 && GUI.Button(kartRect, ""))
+                            {
+                                if (!kartSelected[s])
+                                    canClick = true;
+                                else
+                                    kartSelected[s] = false;
+                            }
                         }
-                            
-                        if (s == 0 && kartI == 0 && GUI.Button(kartRect, ""))
-                        {
-                            if (!kartSelected[s])
-                                canClick = true;
-                            else
-                                kartSelected[s] = false;
-                        }
-                           
+
 
                         Texture2D wheelIcon = gd.wheels[MathHelper.NumClamp(choice[s].wheel + kartI, 0, gd.wheels.Length)].icon;
                         Rect wheelRect = GUIHelper.CentreRect(new Rect(30 + kartWidth, selectionRect.height / 2f - (kartHeight * (kartI + 0.5f)) - loadedChoice[s].wheelChangeHeight, kartWidth, kartHeight), loadedChoice[s].wheelScales[kartI + 2]);
@@ -398,35 +412,40 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);
 
                         //WheelScaling
-                        Rect wheelClickArea = new Rect(areaRect.x + selectionRect.x + wheelRect.x, areaRect.y + selectionRect.y + wheelRect.y, wheelRect.width, wheelRect.height);
-                        loadedChoice[s].wheelScales[kartI + 2] = GUIHelper.SizeHover(wheelClickArea, loadedChoice[s].wheelScales[kartI + 2], 1f, 1.25f, 2f);
-
-                        //Wheel Clicks
-                        if (s == 0 && kartI == -1 && GUI.Button(wheelRect, ""))
+                        if (!showLayout[s] && s == 0)
                         {
-                            if (kartSelected[s])
-                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
-                            else
-                                kartSelected[s] = true;
-                        }
-                            
+                            Rect wheelClickArea = new Rect(areaRect.x + selectionRect.x + wheelRect.x, areaRect.y + selectionRect.y + wheelRect.y, wheelRect.width, wheelRect.height);
+                            //Only scale if icon is onscreen and is yours
+                            if (kartI != -2 && kartI != 2)
+                                loadedChoice[s].wheelScales[kartI + 2] = GUIHelper.SizeHover(wheelClickArea, loadedChoice[s].wheelScales[kartI + 2], 1f, 1.25f, 2f);
 
-                        if (s == 0 && kartI == 1 && GUI.Button(wheelRect, ""))
-                        {
-                            if (kartSelected[s])
-                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
-                            else
-                                kartSelected[s] = true;
+                            //Wheel Clicks
+                            if (kartI == -1 && GUI.Button(wheelRect, ""))
+                            {
+                                if (kartSelected[s])
+                                    StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                                else
+                                    kartSelected[s] = true;
+                            }
+
+
+                            if (kartI == 1 && GUI.Button(wheelRect, ""))
+                            {
+                                if (kartSelected[s])
+                                    StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                                else
+                                    kartSelected[s] = true;
+                            }
+
+                            if (kartI == 0 && GUI.Button(wheelRect, ""))
+                            {
+                                if (kartSelected[s])
+                                    canClick = true;
+                                else
+                                    kartSelected[s] = true;
+                            }
                         }
 
-                        if (s == 0 && kartI == 0 && GUI.Button(wheelRect, ""))
-                        {
-                            if (kartSelected[s])
-                                canClick = true;
-                            else
-                                kartSelected[s] = true;
-                        }
-                            
 
                     }
 
@@ -446,13 +465,16 @@ public class CharacterSelect : MonoBehaviour
                         upArrowRect = new Rect(20, 10, (selectionRect.width / 2f) - 10, heightChunk - 10);
                         downArrowRect = new Rect(20, heightChunk * 5f, (selectionRect.width / 2f) - 10, heightChunk - 10);
 
-                        if(GUI.Button(upArrowRect,""))
+                        if (s == 0 && !showLayout[0])
                         {
-                            StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
-                        }
-                        if (GUI.Button(downArrowRect, ""))
-                        {
-                            StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+                            if (GUI.Button(upArrowRect, ""))
+                            {
+                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                            }
+                            if (GUI.Button(downArrowRect, ""))
+                            {
+                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+                            }
                         }
                     }
                     else
@@ -460,13 +482,16 @@ public class CharacterSelect : MonoBehaviour
                         upArrowRect = new Rect(20 + (selectionRect.width / 2f), 10, (selectionRect.width / 2f) - 10, heightChunk - 10);
                         downArrowRect = new Rect(20 + (selectionRect.width / 2f), heightChunk * 5f, (selectionRect.width / 2f) - 10, heightChunk - 10);
 
-                        if (GUI.Button(upArrowRect, ""))
+                        if (s == 0 && !showLayout[0])
                         {
-                            StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
-                        }
-                        if (GUI.Button(downArrowRect, ""))
-                        {
-                            StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                            if (GUI.Button(upArrowRect, ""))
+                            {
+                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                            }
+                            if (GUI.Button(downArrowRect, ""))
+                            {
+                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                            }
                         }
                     }
 
@@ -476,6 +501,111 @@ public class CharacterSelect : MonoBehaviour
                     GUI.EndGroup();
                 }
             }
+
+            GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
+            GUIHelper.SetGUIAlpha(overallAlpha);
+
+            //Draw Input Layouts
+            if (InputManager.controllers != null)
+            {
+                float maxAlpha = overallAlpha * 0.5f;
+
+                for (int i = 0; i < InputManager.controllers.Count; i++)
+                {
+                    //Detect if Toggle is pressed
+                    if (InputManager.controllers[i].GetMenuInput("Toggle") != 0)
+                    {
+                        showLayout[i] = !showLayout[i];
+                    }
+
+                    //Draw closed box if closed
+                    if (showLayout[i])
+                    {
+                        if (controlLayoutBoxHeights[i] < 450f)
+                            controlLayoutBoxHeights[i] += Time.deltaTime * 350f;
+                        else
+                            controlLayoutBoxHeights[i] = 450f;
+                    }
+                    else
+                    {
+                        if (controlLayoutBoxHeights[i] > layoutBoxStartHeight)
+                            controlLayoutBoxHeights[i] -= Time.deltaTime * 350f;
+                        else
+                            controlLayoutBoxHeights[i] = layoutBoxStartHeight;
+                    }
+
+                    float startX = 300 + (i * 370);
+
+                    Color rectangleColour;
+
+                    if (i == 0)
+                        rectangleColour = new Color(0.53f, 0.64f, 0.80f, maxAlpha);
+                    else if (i == 1)
+                        rectangleColour = new Color(0.48f, 0.8f, 0.47f, maxAlpha);
+                    else if (i == 2)
+                        rectangleColour = new Color(0.83f, 0.63f, 0.31f, maxAlpha);
+                    else
+                        rectangleColour = new Color(0.95f, 0.37f, 0.37f, maxAlpha);
+
+                    float boxHeight = controlLayoutBoxHeights[i];
+
+                    Rect roundedRectangleRect = new Rect(startX, 1050 - boxHeight, 350, boxHeight);
+                    GUIShape.RoundedRectangle(roundedRectangleRect, 25, rectangleColour);
+
+                    //Open box if clicked
+                    if (i == 0 && !showLayout[i] && GUI.Button(roundedRectangleRect, ""))
+                        showLayout[i] = true;
+
+                    GUI.Label(new Rect(startX + 20, 1060 - boxHeight, 250, 50), InputManager.controllers[i].controlLayout.Name);
+                    GUI.DrawTexture(new Rect(startX + 270, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Controls/" + ((InputManager.controllers[i].controlLayout.Type == ControllerType.Keyboard) ? "Keyboard" : "Xbox_1")));
+
+                    if (boxHeight != layoutBoxStartHeight)
+                    {
+                        GUI.DrawTexture(new Rect(startX + 20, 1110 - boxHeight, 310, 5), Resources.Load<Texture2D>("UI/Lobby/Line"));
+
+                        int controllerType = (int)InputManager.controllers[i].controlLayout.Type;
+
+                        Rect scrollViewRect = new Rect(startX + 10, 1125 - boxHeight, 330, boxHeight - 75);
+                        layoutScrollPositions[i] = GUI.BeginScrollView(scrollViewRect, layoutScrollPositions[i], new Rect(0, 0, 310, (boxHeight == 450f) ? InputManager.splitConfigs[controllerType].Count * 70 : boxHeight - 85));
+
+                        //Scroll to Current Selection
+                        if (i != 0 || !mouseLast)
+                        {
+                            float diff = (selectedLayout[i] * 70f) - layoutScrollPositions[i].y;
+                            if(Mathf.Abs(diff) > 10f)
+                                layoutScrollPositions[i].y += Mathf.Sign(diff) * Time.deltaTime * 200f;
+                        }
+
+                        for (int j = 0; j < InputManager.splitConfigs[controllerType].Count; j++)
+                        {
+                            Rect labelRect = new Rect(0, j * 70, 250, 70);
+
+                            GUIHelper.CentreRectLabel(labelRect, 1f, InputManager.splitConfigs[controllerType][j].Name, (selectedLayout[i] == j) ? Color.yellow : Color.white);
+                            GUI.DrawTexture(new Rect(250, j * 70, 50, 50), Resources.Load<Texture2D>("UI/Controls/" + ((InputManager.splitConfigs[controllerType][j].Type == ControllerType.Keyboard) ? "Keyboard" : "Xbox_1")));
+
+                            if (i == 0 && mouseLast)
+                            {
+                                labelRect.width += 50;
+
+                                if (GUI.Button(labelRect, ""))
+                                {
+                                    InputManager.controllers[i].controlLayout = InputManager.splitConfigs[controllerType][selectedLayout[i]];
+                                    showLayout[i] = false;
+                                }
+
+                                labelRect.x += scrollViewRect.x - layoutScrollPositions[i].x;
+                                labelRect.y += scrollViewRect.y - layoutScrollPositions[i].y;
+
+                                if (labelRect.Contains(GUIHelper.GetMousePosition()))
+                                    selectedLayout[i] = j;
+                            }
+                        }
+
+                        GUI.EndScrollView();
+                    }                 
+                }
+            }
+
         }
     }
 
@@ -666,7 +796,7 @@ public class CharacterSelect : MonoBehaviour
 
                 if (canInput && !sliding)
                 {
-                    if (!ready[s])
+                    if (!ready[s] || showLayout[s])
                     {
                         hori = InputManager.controllers[s].GetMenuInput("MenuHorizontal");
                         vert = InputManager.controllers[s].GetMenuInput("MenuVertical");
@@ -685,177 +815,197 @@ public class CharacterSelect : MonoBehaviour
                     }
                 }
 
-                if (hori != 0)
+                if (!showLayout[s])
                 {
-                    if (state == csState.Character)
+
+                    if (hori != 0)
                     {
-                        int itemOnRow = 5;
-                        int itemsLeft = gd.characters.Length % 5;
-
-                        if (itemsLeft != 0 && choice[s].character >= gd.characters.Length - itemsLeft)
-                            itemOnRow = itemsLeft;
-
-                        if ((choice[s].character % 5) + hori >= itemOnRow)
-                            choice[s].character -= itemOnRow - 1;
-                        else if ((choice[s].character % 5) + hori < 0)
-                            choice[s].character += itemOnRow - 1;
-                        else
-                            choice[s].character += hori;
-                    }
-                    if (state == csState.Hat)
-                    {
-                        int itemOnRow = 5;
-                        int itemsLeft = gd.hats.Length % 5;
-
-                        if (itemsLeft != 0 && choice[s].hat >= gd.hats.Length - itemsLeft)
-                            itemOnRow = itemsLeft;
-
-                        if ((choice[s].hat % 5) + hori >= itemOnRow)
-                            choice[s].hat -= itemOnRow - 1;
-                        else if ((choice[s].hat % 5) + hori < 0)
-                            choice[s].hat += itemOnRow - 1;
-                        else
-                            choice[s].hat += hori;
-                    }
-                }
-
-                if (vert != 0)
-                {
-                    if (state != csState.Kart)
-                        vert *= 5;
-
-                    if (state == csState.Character)
-                    {
-
-                        int itemsLeft = gd.characters.Length % 5;
-                        int rowNumber = gd.characters.Length / 5;
-
-                        if (itemsLeft != 0)
-                            rowNumber++;
-
-                        if (choice[s].character + vert >= gd.characters.Length)
+                        if (state == csState.Character)
                         {
-                            choice[s].character = (choice[s].character + vert) % 5;
-                        }
-                        else if (choice[s].character + vert < 0)
-                        {
-                            int toAdd = choice[s].character + ((rowNumber - 1) * 5);
+                            int itemOnRow = 5;
+                            int itemsLeft = gd.characters.Length % 5;
 
-                            if (toAdd >= gd.characters.Length)
-                                choice[s].character = toAdd - 5;
+                            if (itemsLeft != 0 && choice[s].character >= gd.characters.Length - itemsLeft)
+                                itemOnRow = itemsLeft;
+
+                            if ((choice[s].character % 5) + hori >= itemOnRow)
+                                choice[s].character -= itemOnRow - 1;
+                            else if ((choice[s].character % 5) + hori < 0)
+                                choice[s].character += itemOnRow - 1;
                             else
-                                choice[s].character = toAdd;
+                                choice[s].character += hori;
                         }
-                        else
-                            choice[s].character += vert;
-
-                    }
-                    if (state == csState.Hat)
-                    {
-                        int itemsLeft = gd.hats.Length % 5;
-                        int rowNumber = gd.hats.Length / 5;
-
-                        if (itemsLeft != 0)
-                            rowNumber++;
-
-                        if (choice[s].hat + vert >= gd.hats.Length)
+                        if (state == csState.Hat)
                         {
-                            choice[s].hat = (choice[s].hat + vert) % 5;
-                        }
-                        else if (choice[s].hat + vert < 0)
-                        {
-                            int toAdd = choice[s].hat + ((rowNumber - 1) * 5);
+                            int itemOnRow = 5;
+                            int itemsLeft = gd.hats.Length % 5;
 
-                            if (toAdd >= gd.hats.Length)
-                                choice[s].hat = toAdd - 5;
+                            if (itemsLeft != 0 && choice[s].hat >= gd.hats.Length - itemsLeft)
+                                itemOnRow = itemsLeft;
+
+                            if ((choice[s].hat % 5) + hori >= itemOnRow)
+                                choice[s].hat -= itemOnRow - 1;
+                            else if ((choice[s].hat % 5) + hori < 0)
+                                choice[s].hat += itemOnRow - 1;
                             else
-                                choice[s].hat = toAdd;
+                                choice[s].hat += hori;
                         }
-                        else
-                            choice[s].hat += vert;
                     }
 
-                    if (state == csState.Kart && !loadedChoice[s].scrolling)
+                    if (vert != 0)
                     {
-                        if (!kartSelected[s])
+                        if (state != csState.Kart)
+                            vert *= 5;
+
+                        if (state == csState.Character)
                         {
-                            if (vert > 0)
-                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+
+                            int itemsLeft = gd.characters.Length % 5;
+                            int rowNumber = gd.characters.Length / 5;
+
+                            if (itemsLeft != 0)
+                                rowNumber++;
+
+                            if (choice[s].character + vert >= gd.characters.Length)
+                            {
+                                choice[s].character = (choice[s].character + vert) % 5;
+                            }
+                            else if (choice[s].character + vert < 0)
+                            {
+                                int toAdd = choice[s].character + ((rowNumber - 1) * 5);
+
+                                if (toAdd >= gd.characters.Length)
+                                    choice[s].character = toAdd - 5;
+                                else
+                                    choice[s].character = toAdd;
+                            }
                             else
-                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                                choice[s].character += vert;
+
                         }
-                        else
+                        if (state == csState.Hat)
                         {
-                            if (vert > 0)
+                            int itemsLeft = gd.hats.Length % 5;
+                            int rowNumber = gd.hats.Length / 5;
 
-                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                            if (itemsLeft != 0)
+                                rowNumber++;
+
+                            if (choice[s].hat + vert >= gd.hats.Length)
+                            {
+                                choice[s].hat = (choice[s].hat + vert) % 5;
+                            }
+                            else if (choice[s].hat + vert < 0)
+                            {
+                                int toAdd = choice[s].hat + ((rowNumber - 1) * 5);
+
+                                if (toAdd >= gd.hats.Length)
+                                    choice[s].hat = toAdd - 5;
+                                else
+                                    choice[s].hat = toAdd;
+                            }
                             else
-                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                                choice[s].hat += vert;
+                        }
+
+                        if (state == csState.Kart && !loadedChoice[s].scrolling)
+                        {
+                            if (!kartSelected[s])
+                            {
+                                if (vert > 0)
+                                    StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
+                                else
+                                    StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
+                            }
+                            else
+                            {
+                                if (vert > 0)
+
+                                    StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                                else
+                                    StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
+                            }
                         }
                     }
-                }
 
-                if (submit)
-                {
-                    if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
+                    if (submit)
                     {
-                        if (gd.characters[choice[s].character].selectedSound != null)
-                            sm.PlaySFX(gd.characters[choice[s].character].selectedSound);
+                        if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
+                        {
+                            if (gd.characters[choice[s].character].selectedSound != null)
+                                sm.PlaySFX(gd.characters[choice[s].character].selectedSound);
 
-                        loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
+                            loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
 
-                        ready[s] = true;
-                    }
+                            ready[s] = true;
+                        }
 
-                    if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
-                    {
-                        ready[s] = true;
-                    }
-
-                    if (state == csState.Kart)
-                    {
-                        if (kartSelected[s])
+                        if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
                         {
                             ready[s] = true;
                         }
-                        else
+
+                        if (state == csState.Kart)
                         {
-                            kartSelected[s] = true;
+                            if (kartSelected[s])
+                            {
+                                ready[s] = true;
+                            }
+                            else
+                            {
+                                kartSelected[s] = true;
+                            }
                         }
                     }
-                }
 
-                if (cancel)
-                {
-                    if (!ready[s])
+                    if (cancel)
                     {
-                        Back(s);
+                        if (!ready[s])
+                        {
+                            Back(s);
+                        }
+                        else
+                        {
+                            ready[s] = false;
+                        }
+                    }
+
+                    if (!kartSelected[s])
+                    {
+                        if (choice[s].kart >= gd.karts.Length)
+                            choice[s].kart = 0;
+
+                        if (choice[s].kart < 0)
+                            choice[s].kart = gd.karts.Length - 1;
+
                     }
                     else
                     {
-                        ready[s] = false;
+                        if (choice[s].wheel >= gd.wheels.Length)
+                            choice[s].wheel = 0;
+
+                        if (choice[s].wheel < 0)
+                            choice[s].wheel = gd.wheels.Length - 1;
                     }
+                    if (!ready[s])
+                        readyCheck = false;
                 }
-
-                if (!kartSelected[s])
+                else //Change Input Layout Controls
                 {
-                    if (choice[s].kart >= gd.karts.Length)
-                        choice[s].kart = 0;
 
-                    if (choice[s].kart < 0)
-                        choice[s].kart = gd.karts.Length - 1;
-
-                }
-                else
-                {
-                    if (choice[s].wheel >= gd.wheels.Length)
-                        choice[s].wheel = 0;
-
-                    if (choice[s].wheel < 0)
-                        choice[s].wheel = gd.wheels.Length - 1;
-                }
-                if (!ready[s])
                     readyCheck = false;
+
+                    int currentInputType = (int)InputManager.controllers[s].controlLayout.Type;
+                    if (vert != 0)
+                        selectedLayout[s] = MathHelper.NumClamp(selectedLayout[s] + vert, 0, InputManager.splitConfigs[currentInputType].Count);
+                    if (submit)
+                    {
+                        InputManager.controllers[s].controlLayout = InputManager.splitConfigs[currentInputType][selectedLayout[s]];
+                        showLayout[s] = false;
+                    }
+                    if (cancel)
+                        showLayout[s] = false;
+                }
             }
 
             if (InputManager.controllers.Count == 0)
@@ -999,11 +1149,14 @@ public class CharacterSelect : MonoBehaviour
             while (Time.time - startTime < travelTime)
             {
                 menuAlpha = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
+                if (overallAlpha < 1f)
+                    overallAlpha = menuAlpha;
                 scale = Mathf.Lerp(endScale, 1f, (Time.time - startTime) / travelTime);
                 yield return null;
             }
 
             menuAlpha = 1f;
+            overallAlpha = menuAlpha;
             scale = 1f;
 
             sliding = false;
