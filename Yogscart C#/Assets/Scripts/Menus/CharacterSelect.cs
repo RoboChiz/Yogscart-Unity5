@@ -359,7 +359,7 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(kartRect, kartIcon, ScaleMode.ScaleToFit);
 
                         //KartScaling
-                        if (s == 0 && !showLayout[s])
+                        if (s == 0 && !showLayout[s] && mouseLast)
                         {
                             Rect kartClickArea = new Rect(areaRect.x + selectionRect.x + kartRect.x, areaRect.y + selectionRect.y + kartRect.y, kartRect.width, kartRect.height);
                             //Only scale if icon is onscreen and is yours
@@ -391,6 +391,13 @@ public class CharacterSelect : MonoBehaviour
                                     kartSelected[s] = false;
                             }
                         }
+                        else if(s== 0)
+                        {
+                            if (loadedChoice[s].kartScales[kartI + 2] > 1f)
+                                loadedChoice[s].kartScales[kartI + 2] -= Time.deltaTime * 2f;
+                            else
+                                loadedChoice[s].kartScales[kartI + 2] = 1f;
+                        }
 
 
                         Texture2D wheelIcon = gd.wheels[MathHelper.NumClamp(choice[s].wheel + kartI, 0, gd.wheels.Length)].icon;
@@ -412,7 +419,7 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);
 
                         //WheelScaling
-                        if (!showLayout[s] && s == 0)
+                        if (!showLayout[s] && s == 0 && mouseLast)
                         {
                             Rect wheelClickArea = new Rect(areaRect.x + selectionRect.x + wheelRect.x, areaRect.y + selectionRect.y + wheelRect.y, wheelRect.width, wheelRect.height);
                             //Only scale if icon is onscreen and is yours
@@ -444,6 +451,13 @@ public class CharacterSelect : MonoBehaviour
                                 else
                                     kartSelected[s] = true;
                             }
+                        }
+                        else if (s == 0)
+                        {
+                            if (loadedChoice[s].wheelScales[kartI + 2] > 1f)
+                                loadedChoice[s].wheelScales[kartI + 2] -= Time.deltaTime * 2f;
+                            else
+                                loadedChoice[s].wheelScales[kartI + 2] = 1f;
                         }
 
 
@@ -596,7 +610,7 @@ public class CharacterSelect : MonoBehaviour
                                 labelRect.x += scrollViewRect.x - layoutScrollPositions[i].x;
                                 labelRect.y += scrollViewRect.y - layoutScrollPositions[i].y;
 
-                                if (labelRect.Contains(GUIHelper.GetMousePosition()))
+                                if (labelRect.Contains(mousePos))
                                     selectedLayout[i] = j;
                             }
                         }

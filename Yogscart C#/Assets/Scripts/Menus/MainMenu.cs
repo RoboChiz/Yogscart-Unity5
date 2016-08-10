@@ -16,9 +16,9 @@ public class MainMenu : MonoBehaviour
     private int currentSelection = 0, lastCurrentSelection = -1, lastloadedPicture = -1;
 
     public Texture2D sidePicture;
-    private float sidePictureAmount = 0;
-    private float sidePictureFade = 1f;
-    private bool pictureTransitioning = false, lockPicture = false, loadPicture = true;
+    public float sidePicAlpha = 1f, sidePicX = 0f;
+    private int sidePicMoving = 0;
+    private bool loadPicture = false, hidePicture = false;
 
     private bool moveTitle = false;
 
@@ -26,6 +26,7 @@ public class MainMenu : MonoBehaviour
     public bool sliding = false;
 
     public List<MenuState> backStates = new List<MenuState>();
+    public List<int> backSelection = new List<int>();
 
     static public float SideAmount
     {
@@ -41,7 +42,7 @@ public class MainMenu : MonoBehaviour
 
     private string popupText = "";
 
-    public enum MenuState {Start, Main, SinglePlayer, Difficulty, CharacterSelect, LevelSelect, Multiplayer, Online, Options, Popup, Credits };
+    public enum MenuState {Start, Main, SinglePlayer, Difficulty, Multiplayer, CharacterSelect, LevelSelect, Online, Options, Popup, Credits };
     public MenuState state = MenuState.Start;
     private MenuState nextState = MenuState.Start;
 
@@ -61,8 +62,6 @@ public class MainMenu : MonoBehaviour
         //Update as more characters are added
         randomImage = Random.Range(0, 1);
 
-        sidePictureAmount = GUIHelper.width / 2f;
-
         yield return new WaitForSeconds(0.5f);
 
         CurrentGameData.blackOut = false;
@@ -70,6 +69,8 @@ public class MainMenu : MonoBehaviour
 
         if (menuMusic != null)
             sm.PlayMusic(menuMusic);
+
+        lastMousePos = GUIHelper.GetMousePosition();
 
     }
 	
@@ -82,10 +83,10 @@ public class MainMenu : MonoBehaviour
 
         string[] options = new string[] { };
 
-        GUI.color = new Color(1, 1, 1, sidePictureFade);
+        GUI.color = new Color(1, 1, 1, sidePicAlpha);
 
         if (sidePicture != null)
-            GUI.DrawTexture(new Rect(sidePictureAmount, 40, GUIHelper.width / 2f - 30, GUIHelper.height - 20), sidePicture, ScaleMode.ScaleToFit);
+            GUI.DrawTexture(new Rect((GUIHelper.width / 2f) + sidePicX, 40, GUIHelper.width / 2f - 30, GUIHelper.height - 20), sidePicture, ScaleMode.ScaleToFit);
 
         GUI.color = new Color(1, 1, 1, titleAlpha);
 
@@ -164,9 +165,10 @@ public class MainMenu : MonoBehaviour
         string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage };
 
         if (lastMousePos != newMousePos)
+        {
             mouseLastUsed = true;
-
-        lastMousePos = newMousePos;
+            lastMousePos = newMousePos;
+        }
 
         if (state == MenuState.Main || state == MenuState.Start)
         {
@@ -190,7 +192,7 @@ public class MainMenu : MonoBehaviour
                 loadPicture = false;
 
                 if(lastloadedPicture < 0 || possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture])
-                    StartCoroutine(ChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
+                    StartCoroutine(ActualChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
 
                 lastloadedPicture = currentSelection;
             }
@@ -208,7 +210,7 @@ public class MainMenu : MonoBehaviour
                 if (mouseLastUsed)
                     optionSizes[0] = GUIHelper.SizeHover(startRect, optionSizes[0],1f,1.25f,4f);            
 
-                if (GUI.Button(startRect, ""))
+                if (!sliding && GUI.Button(startRect, ""))
                 {
                     ChangeMenu(MenuState.Main);
                 }
@@ -230,10 +232,6 @@ public class MainMenu : MonoBehaviour
                 InputManager.allowedToChange = true;
             break;
             case MenuState.Online:
-                if (sidePicture != null)
-                {
-                    StartCoroutine(ChangePicture(null));
-                }
                 InputManager.allowedToChange = false;
             break;
             case MenuState.Options:            
@@ -250,10 +248,6 @@ public class MainMenu : MonoBehaviour
                 GUI.Label(new Rect(box.x + 40, 20 + (box.height / 4f), box.width - 20, box.height - 20 - (box.height / 4f)), popupText);
              break;
             case MenuState.Credits:
-                if (sidePicture != null)
-                {
-                    StartCoroutine(ChangePicture(null));
-                }
                 break;
             case MenuState.CharacterSelect:
                 break;
@@ -293,14 +287,17 @@ public class MainMenu : MonoBehaviour
                 }
                 
                 Rect optionRect = GUIHelper.LeftRectLabel(new Rect(40, 20 + (box.height / 3f) + (i * optionHeight), box.width - 20, optionHeight - 20), optionSizes[i], options[i], (currentSelection == i) ? Color.yellow : Color.white);
-               
-                if (mouseLastUsed && optionRect.Contains(newMousePos))
-                    currentSelection = i;
 
-                if (GUI.Button(optionRect,""))
+                if (!sliding)
                 {
-                    currentSelection = i;
-                    mouseClick = true;
+                    if (mouseLastUsed && optionRect.Contains(newMousePos))
+                        currentSelection = i;
+
+                    if (GUI.Button(optionRect, ""))
+                    {
+                        currentSelection = i;
+                        mouseClick = true;
+                    }
                 }
                 }
             }
@@ -340,7 +337,7 @@ public class MainMenu : MonoBehaviour
             {
 
                 if (lastloadedPicture < 0 || possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture])
-                    StartCoroutine(ChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
+                    StartCoroutine(ActualChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
 
                 switch (state)
                 {
@@ -358,21 +355,18 @@ public class MainMenu : MonoBehaviour
                                 break;
                             case "Online":
                                 ChangeMenu(MenuState.Online);
-                                StartCoroutine(ForcePicRemove());
                                 gd.GetComponent<InputManager>().RemoveOtherControllers();
                                 FindObjectOfType<NetworkGUI>().enabled = true;
                                 FindObjectOfType<NetworkGUI>().ShowMenu();
                                 break;
                             case "Options":
                                 ChangeMenu(MenuState.Options);
-                                StartCoroutine(ForcePicRemove());
                                 GetComponent<Options>().enabled = true;
                                 GetComponent<Options>().ShowOptions();
                                 break;
                             case "Credits":
                                 moveTitle = true;
                                 ChangeMenu(MenuState.Credits);
-                                StartCoroutine(ForcePicRemove());
                                 GetComponent<Credits>().enabled = true;
                                 GetComponent<Credits>().StartCredits();
                                 break;
@@ -465,7 +459,6 @@ public class MainMenu : MonoBehaviour
     private void StartGameMode()
     {
         ChangeMenu(MenuState.CharacterSelect);
-        StartCoroutine(ForcePicRemove());
         CurrentGameData.currentGamemode.StartGameMode();
     }
 
@@ -479,7 +472,6 @@ public class MainMenu : MonoBehaviour
             if (state == MenuState.Credits && GetComponent<Credits>().enabled)
             {
                 GetComponent<Credits>().StartCoroutine("StopCredits");
-                lockPicture = false;
             }
 
             if(state == MenuState.Online && FindObjectOfType<NetworkGUI>().enabled)
@@ -492,31 +484,26 @@ public class MainMenu : MonoBehaviour
                 FindObjectOfType<Options>().HideOptions();
             }
 
-            if (state == MenuState.Online || state == MenuState.Options)
-            {
-                lockPicture = false;              
-            }
+            StartCoroutine(ChangeMenuPhysical(backStates[backStates.Count - 1],true));
 
-            if (state == MenuState.CharacterSelect)
-            {
-                lockPicture = false;
-                StartCoroutine("ChangePicture", Resources.Load<Texture2D>("UI/New Main Menu/Side Images/" + randomImage.ToString()));
-            }
-
-            StartCoroutine("ChangeMenuPhysical", backStates[backStates.Count - 1]);
             backStates.RemoveAt(backStates.Count - 1);
+           
         }
     }
 
     public void ChangeMenu(MenuState changeState)
     { 
         sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
+
         backStates.Add(state);
 
-        StartCoroutine("ChangeMenuPhysical", changeState);      
+        if(state != MenuState.Start)
+            backSelection.Add(currentSelection);
+
+        StartCoroutine(ChangeMenuPhysical(changeState, false));      
     }
 
-    IEnumerator ChangeMenuPhysical(MenuState changeState)
+    IEnumerator ChangeMenuPhysical(MenuState changeState, bool backing)
     {
         if(!sliding)
         {
@@ -528,9 +515,10 @@ public class MainMenu : MonoBehaviour
 
             float endSideAmount = -GUIHelper.width/2f;
 
-            if (changeState == MenuState.Credits || changeState == MenuState.CharacterSelect || changeState == MenuState.Online || changeState == MenuState.Options)
+            if (changeState == MenuState.Credits || changeState == MenuState.CharacterSelect || changeState == MenuState.Online || changeState == MenuState.Options || changeState == MenuState.LevelSelect)
             {
                 HideTitle();
+                HidePicture();
             }
 
             //Slide Off //////////////////////////////
@@ -550,9 +538,15 @@ public class MainMenu : MonoBehaviour
             //Pause at Top///////////////////////////////////////
             sideAmount = endSideAmount;
             sideFade = 0f;
-         
-            if(state != MenuState.Start && changeState != MenuState.Start)
+
+            if (state != MenuState.Start && changeState != MenuState.Start && !backing)
                 currentSelection = 0;
+
+            if (backing && backSelection.Count > 1)
+            {
+                currentSelection = backSelection[backSelection.Count - 1];
+                backSelection.RemoveAt(backSelection.Count - 1);
+            }
 
             state = changeState;
 
@@ -560,6 +554,7 @@ public class MainMenu : MonoBehaviour
             if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && changeState != MenuState.LevelSelect && titleAlpha != 1)
             {
                 ShowTitle();
+                ShowPicture();
             }
 
             if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && changeState != MenuState.LevelSelect)
@@ -586,76 +581,6 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    IEnumerator ChangePicture(Texture2D texture)
-    {
-        if (!pictureTransitioning && !lockPicture)
-        {
-            pictureTransitioning = true;
-
-            float startTime = Time.time;
-            float travelTime = 0.35f;
-
-            float endSideAmount = GUIHelper.width;
-
-            sidePictureFade = 1f;
-
-            while (Time.time - startTime < travelTime)
-            {
-                sidePictureAmount = Mathf.Lerp(GUIHelper.width / 2f, endSideAmount, (Time.time - startTime) / travelTime);
-                sidePictureFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
-                yield return null;
-            }
-
-            sidePicture = texture;
-            sidePictureAmount = endSideAmount;
-            sidePictureFade = 0f;
-
-            if (!lockPicture)
-            {
-                startTime = Time.time;
-                while (Time.time - startTime < travelTime)
-                {
-                    sidePictureAmount = Mathf.Lerp(endSideAmount, GUIHelper.width / 2f, (Time.time - startTime) / travelTime);
-                    sidePictureFade = Mathf.Lerp(0f,1f, (Time.time - startTime) / travelTime);
-                    yield return null;
-                }
-
-                sidePictureAmount = GUIHelper.width / 2f;
-                sidePictureFade = 1f;
-            }
-
-            pictureTransitioning = false;
-        }
-    }
-
-    IEnumerator ForcePicRemove()
-    {
-        StopCoroutine("ChangePicture");
-
-        pictureTransitioning = true;
-        lockPicture = true;
-
-        float startTime = Time.time;
-        float startX = sidePictureAmount; 
-
-        float endSideAmount = GUIHelper.width;
-
-        float travelTime = 0.35f * (startX / endSideAmount);
-
-        while (Time.time - startTime < travelTime)
-        {
-            sidePictureAmount = Mathf.Lerp(startX, endSideAmount, (Time.time - startTime) / travelTime);
-            sidePictureFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
-            yield return null;
-        }
-
-        sidePicture = null;
-        sidePictureAmount = endSideAmount;
-        sidePictureFade = 0f;
-
-        pictureTransitioning = false;
-    }
-
     private const float fadeTime = 0.5f;
 
     public void ShowTitle() {StartCoroutine(TitleFade(0f,1f));}
@@ -673,5 +598,55 @@ public class MainMenu : MonoBehaviour
         titleAlpha = finish;
     }
 
+    private IEnumerator ActualChangePicture(Texture2D nTexture)
+    {
+        if (nTexture != sidePicture)
+        {
+            int myFunction = sidePicMoving + 1;
+            yield return StartCoroutine(TransitionPicture(960, 0f));
+
+            if (sidePicMoving == myFunction && !hidePicture)
+            {
+                sidePicture = nTexture;
+                yield return StartCoroutine(TransitionPicture(0, 1f));
+            }
+        }
+    }
+
+    public void ShowPicture()
+    {
+        //If Hiding wait till end of Hiding
+        StartCoroutine(TransitionPicture(0, 1f));
+        hidePicture = false;
+    }
+
+    public void HidePicture()
+    {
+        StartCoroutine(TransitionPicture(960f, 0f));
+        hidePicture = true;
+    }
+
+    private IEnumerator TransitionPicture(float endX, float endAlpha)
+    {
+        sidePicMoving ++;
+        int myFunction = sidePicMoving;
+
+        //Slide Picture Off
+        float travelTime = 0.4f * Mathf.Abs((endX - sidePicX)/ 960f), startTime = Time.time, startX = sidePicX, startAlpha = sidePicAlpha;
+
+        while (Time.time - startTime < travelTime && sidePicMoving == myFunction)
+        {
+            sidePicX = Mathf.Lerp(startX, endX, (Time.time - startTime) / travelTime);
+            sidePicAlpha = Mathf.Lerp(startAlpha, endAlpha, (Time.time - startTime) / travelTime);
+            yield return null;
+        }
+
+        if (sidePicMoving == myFunction)
+        {
+            sidePicX = endX;
+            sidePicAlpha = endAlpha;
+        }
+
+    }
 }
 
