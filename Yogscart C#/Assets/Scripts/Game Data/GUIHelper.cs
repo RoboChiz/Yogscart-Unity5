@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 //GUI Helper V1.0
 //Created by Robert (Robo_Chiz)
@@ -17,6 +18,9 @@ public class GUIHelper
 
     private static float lastMouseTime;
     private static Vector2 lastMousePos;
+
+    public static Vector2 groupOffset;
+    private static List<Vector2> offsets;
 
     public static Matrix4x4 GetMatrix()
     {
@@ -229,9 +233,51 @@ public class GUIHelper
         return returnVal;
     }
 
+    public static void BeginGroup(Rect position)
+    {
+        if (offsets == null)
+            offsets = new List<Vector2>();
+
+        Vector2 nOffset = new Vector2(position.x, position.y);
+        offsets.Add(nOffset);
+
+        groupOffset += nOffset;
+
+        GUI.BeginGroup(position);
+    }
+    public static void EndGroup()
+    {
+        groupOffset -= offsets[offsets.Count - 1];
+        offsets.RemoveAt(offsets.Count - 1);
+
+        GUI.EndGroup();
+    }
+    public static Vector2 BeginScrollView(Rect position, Vector2 scrollPosition, Rect viewRect)
+    {
+        if (offsets == null)
+            offsets = new List<Vector2>();
+
+        Vector2 nOffset = new Vector2(position.x - scrollPosition.x, position.y - scrollPosition.y);
+        offsets.Add(nOffset);
+        groupOffset += nOffset;
+
+        return GUI.BeginScrollView(position,scrollPosition,viewRect);
+    }
+    public static void EndScrollView()
+    {
+        groupOffset -= offsets[offsets.Count - 1];
+        offsets.RemoveAt(offsets.Count - 1);
+
+        GUI.EndScrollView();
+    }
+
     public static float SizeHover(Rect rect,float value, float min, float max, float timeScale)
     {
         Vector2 mousePos = GetMousePosition();
+
+        rect.x += groupOffset.x;
+        rect.y += groupOffset.y;
+
         if(rect.Contains(mousePos))
         {
             if (value < max)

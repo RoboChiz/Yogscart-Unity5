@@ -182,7 +182,7 @@ public class CharacterSelect : MonoBehaviour
                     GUI.Label(new Rect(10, 10, 1920, 95), "Select A Character");
                     GUI.DrawTexture(iconArea, nameList);
 
-                    GUI.BeginGroup(iconArea);
+                    GUIHelper.BeginGroup(iconArea);
 
                     //Draw Character heads
                     choicesPerColumn = ((gd.characters.Length / 5f) / 5f) * 5f;
@@ -214,7 +214,7 @@ public class CharacterSelect : MonoBehaviour
                         }
                     }
 
-                    GUI.EndGroup();
+                    GUIHelper.EndGroup();
 
                     break;
                 case csState.Hat:
@@ -225,7 +225,7 @@ public class CharacterSelect : MonoBehaviour
 
                     GUI.DrawTexture(iconArea, nameList);
 
-                    GUI.BeginGroup(iconArea);
+                    GUIHelper.BeginGroup(iconArea);
 
                     //Draw Hat icons
                     choicesPerColumn = ((gd.hats.Length / 5f) / 5f) * 5f;
@@ -256,7 +256,7 @@ public class CharacterSelect : MonoBehaviour
                         }
                     }
 
-                    GUI.EndGroup();
+                    GUIHelper.EndGroup();
 
                     break;
                 case (csState.Kart):
@@ -278,7 +278,7 @@ public class CharacterSelect : MonoBehaviour
                     if (state == csState.Hat)
                         selectedIcon = choice[s].hat;
 
-                    GUI.BeginGroup(iconArea);
+                    GUIHelper.BeginGroup(iconArea);
 
                     Vector2 iconSelection = new Vector2(selectedIcon % 5, selectedIcon / 5);
                     cursorPosition[s] = Vector2.Lerp(cursorPosition[s], iconSelection, Time.deltaTime * cursorSpeed);
@@ -287,7 +287,7 @@ public class CharacterSelect : MonoBehaviour
                     Texture2D CursorTexture = Resources.Load<Texture2D>("UI/Cursors/Cursor_" + s);
                     GUI.DrawTexture(CursorRect, CursorTexture);
 
-                    GUI.EndGroup();
+                    GUIHelper.EndGroup();
                 }
 
                 float topHeight = 115;
@@ -323,12 +323,12 @@ public class CharacterSelect : MonoBehaviour
 
                     float heightChunk = areaRect.height / 6f;
 
-                    GUI.BeginGroup(areaRect);
+                    GUIHelper.BeginGroup(areaRect);
 
                     Rect selectionRect = new Rect(10, heightChunk, (areaRect.width / 2f) - 10, heightChunk * 4f);
                     GUI.DrawTexture(selectionRect, nameList);
 
-                    GUI.BeginGroup(selectionRect);
+                    GUIHelper.BeginGroup(selectionRect);
 
                     Texture2D kartIcon = gd.karts[choice[s].kart].icon;
                     Texture2D arrowIcon = Resources.Load<Texture2D>("UI/New Character Select/Arrow");
@@ -361,10 +361,9 @@ public class CharacterSelect : MonoBehaviour
                         //KartScaling
                         if (s == 0 && !showLayout[s] && mouseLast)
                         {
-                            Rect kartClickArea = new Rect(areaRect.x + selectionRect.x + kartRect.x, areaRect.y + selectionRect.y + kartRect.y, kartRect.width, kartRect.height);
                             //Only scale if icon is onscreen and is yours
                             if (kartI != -2 && kartI != 2)
-                                loadedChoice[s].kartScales[kartI + 2] = GUIHelper.SizeHover(kartClickArea, loadedChoice[s].kartScales[kartI + 2], 1f, 1.25f, 2f);
+                                loadedChoice[s].kartScales[kartI + 2] = GUIHelper.SizeHover(kartRect, loadedChoice[s].kartScales[kartI + 2], 1f, 1.25f, 2f);
 
                             //Kart Clicks
                             if (kartI == -1 && GUI.Button(kartRect, ""))
@@ -421,10 +420,9 @@ public class CharacterSelect : MonoBehaviour
                         //WheelScaling
                         if (!showLayout[s] && s == 0 && mouseLast)
                         {
-                            Rect wheelClickArea = new Rect(areaRect.x + selectionRect.x + wheelRect.x, areaRect.y + selectionRect.y + wheelRect.y, wheelRect.width, wheelRect.height);
                             //Only scale if icon is onscreen and is yours
                             if (kartI != -2 && kartI != 2)
-                                loadedChoice[s].wheelScales[kartI + 2] = GUIHelper.SizeHover(wheelClickArea, loadedChoice[s].wheelScales[kartI + 2], 1f, 1.25f, 2f);
+                                loadedChoice[s].wheelScales[kartI + 2] = GUIHelper.SizeHover(wheelRect, loadedChoice[s].wheelScales[kartI + 2], 1f, 1.25f, 2f);
 
                             //Wheel Clicks
                             if (kartI == -1 && GUI.Button(wheelRect, ""))
@@ -463,7 +461,7 @@ public class CharacterSelect : MonoBehaviour
 
                     }
 
-                    GUI.EndGroup();
+                    GUIHelper.EndGroup();
 
                     Rect upArrowRect = new Rect(0, 0, 0, 0);
                     Rect downArrowRect = new Rect(0, 0, 0, 0);
@@ -512,7 +510,7 @@ public class CharacterSelect : MonoBehaviour
                     GUI.DrawTexture(upArrowRect, arrowIcon, ScaleMode.ScaleToFit);
                     GUI.DrawTexture(downArrowRect, downArrowIcon, ScaleMode.ScaleToFit);
 
-                    GUI.EndGroup();
+                    GUIHelper.EndGroup();
                 }
             }
 
@@ -580,7 +578,7 @@ public class CharacterSelect : MonoBehaviour
                         int controllerType = (int)InputManager.controllers[i].controlLayout.Type;
 
                         Rect scrollViewRect = new Rect(startX + 10, 1125 - boxHeight, 330, boxHeight - 75);
-                        layoutScrollPositions[i] = GUI.BeginScrollView(scrollViewRect, layoutScrollPositions[i], new Rect(0, 0, 310, (boxHeight == 450f) ? InputManager.splitConfigs[controllerType].Count * 70 : boxHeight - 85));
+                        layoutScrollPositions[i] = GUIHelper.BeginScrollView(scrollViewRect, layoutScrollPositions[i], new Rect(0, 0, 310, (boxHeight == 450f) ? InputManager.splitConfigs[controllerType].Count * 70 : boxHeight - 85));
 
                         //Scroll to Current Selection
                         if (i != 0 || !mouseLast)
@@ -607,15 +605,12 @@ public class CharacterSelect : MonoBehaviour
                                     showLayout[i] = false;
                                 }
 
-                                labelRect.x += scrollViewRect.x - layoutScrollPositions[i].x;
-                                labelRect.y += scrollViewRect.y - layoutScrollPositions[i].y;
-
-                                if (labelRect.Contains(mousePos))
+                                if (labelRect.Contains(mousePos - GUIHelper.groupOffset))
                                     selectedLayout[i] = j;
                             }
                         }
 
-                        GUI.EndScrollView();
+                        GUIHelper.EndScrollView();
                     }                 
                 }
             }

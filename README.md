@@ -2,6 +2,9 @@
 
 ## Changelog : Started 04/08/2016
 
+## 16/08/2016
+* Implemented Group and Scrollview controls into GUIHelper to help improve efficiency of code
+
 ## 10/08/2016
 
 * Fixed icon scaling when using keyboard in Character Select

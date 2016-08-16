@@ -22,7 +22,7 @@ public class kartScript : MonoBehaviour
     public int lapisAmount;
 
     //Driving Stuff
-    private float expectedSpeed, actualSpeed;
+    public float expectedSpeed, actualSpeed;
 
     public float ActualSpeed { get; private set; }
     public float ExpectedSpeed
@@ -107,7 +107,6 @@ public class kartScript : MonoBehaviour
     // Update is called once per 60th of a second
     void FixedUpdate()
     {
-
         float lastTime = Time.fixedDeltaTime;
         lastTime = Mathf.Clamp(lastTime, 0f, 0.034f);
 

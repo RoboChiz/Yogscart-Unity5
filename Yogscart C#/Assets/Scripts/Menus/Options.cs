@@ -8,7 +8,7 @@ public class Options : MonoBehaviour
     private float guiAlpha = 0;
     private const float fadeTime = 0.5f;
 
-    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, button, line, inputBack, inputBackHori, lbTexture, rbTexture, qTexture, eTexture;
+    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, button, line, lbTexture, rbTexture, qTexture, eTexture;
 
     enum OptionsTab { Game, Graphics, Input };
     private OptionsTab currentTab = OptionsTab.Game;
@@ -49,8 +49,6 @@ public class Options : MonoBehaviour
         //Load Textures
         button = Resources.Load<Texture2D>("UI/Options/Button");
         line = Resources.Load<Texture2D>("UI/Lobby/Line");
-        inputBack = Resources.Load<Texture2D>("UI/Options/InputBack");
-        inputBackHori = Resources.Load<Texture2D>("UI/Options/InputBackHori");
 
         lbTexture = Resources.Load<Texture2D>("UI/Options/LB");
         rbTexture = Resources.Load<Texture2D>("UI/Options/RB");
@@ -179,9 +177,9 @@ public class Options : MonoBehaviour
         {
             case OptionsTab.Game:
                 GUI.DrawTexture(tabRect, blueTab);
-                GUI.DrawTexture(new Rect(190,200,1520,400), inputBackHori);
+                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 400), 25, new Color(0, 0, 0, 0.25f));
 
-                GUI.BeginGroup(tabAreaRect);
+                GUIHelper.BeginGroup(tabAreaRect);
 
                 GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:");
                 SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 100f);
@@ -199,7 +197,9 @@ public class Options : MonoBehaviour
             case OptionsTab.Graphics:
                 GUI.DrawTexture(tabRect, greenTab);
 
-                GUI.BeginGroup(tabAreaRect);
+                GUIShape.RoundedRectangle(new Rect(210, 820, 400, 100), 25, new Color(0, 0, 0, 0.25f));
+
+                GUIHelper.BeginGroup(tabAreaRect);
 
                 //Fullscreen
                 bool newFullscreen = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, fullScreen, "Fullscreen:");
@@ -227,7 +227,7 @@ public class Options : MonoBehaviour
                 currentResolution = newRes;
 
                 //Apply and Cancel Buttons
-                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(20, 650, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f) ? Color.yellow : Color.white);
+                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(30, 650, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f) ? Color.yellow : Color.white);
 
                 Rect cancelClickRect = new Rect(cancelRect);
                 cancelClickRect.x += tabAreaRect.x;
@@ -251,13 +251,8 @@ public class Options : MonoBehaviour
                 if (GUI.Button(cancelRect, ""))
                     ResetEverything();
 
-                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(250, 650, 200, 100), applyScale, "Apply", (applyScale > 1.1f) ? Color.yellow : Color.white);
-
-                Rect applyClickRect = new Rect(applyRect);
-                applyClickRect.x += tabAreaRect.x;
-                applyClickRect.y += tabAreaRect.y;
-
-                applyScale = GUIHelper.SizeHover(applyClickRect, applyScale, 1f, 1.5f, 4f);
+                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(240, 650, 200, 100), applyScale, "Apply", (applyScale > 1.1f) ? Color.yellow : Color.white);
+                applyScale = GUIHelper.SizeHover(applyRect, applyScale, 1f, 1.5f, 4f);
 
                 if (GUI.Button(applyRect, ""))
                 {
@@ -268,7 +263,7 @@ public class Options : MonoBehaviour
                 break;
             case OptionsTab.Input:
                 GUI.DrawTexture(tabRect, orangeTab);
-                GUI.BeginGroup(tabAreaRect);
+                GUIHelper.BeginGroup(tabAreaRect);
 
                 if (commandSizes == null || commandSizes.Length != availableChanges.Length * 2)
                 {
@@ -281,7 +276,7 @@ public class Options : MonoBehaviour
                 GUI.DrawTexture(new Rect(450, 20, 5, tabAreaRect.height - 60), line);
 
                 Rect scrollviewRect = new Rect(30, 70, 400, tabAreaRect.height - 120);
-                GUI.DrawTexture(scrollviewRect, inputBack);
+                GUIShape.RoundedRectangle(scrollviewRect,25, new Color(0,0,0,0.25f));
 
                 scrollviewRect.y += 10;
                 scrollviewRect.width += 12;
@@ -302,8 +297,6 @@ public class Options : MonoBehaviour
                         editName = false;
                     }
 
-                    addLabel.x += tabAreaRect.x;
-                    addLabel.y += tabAreaRect.y;
                     plusScale = GUIHelper.SizeHover(addLabel, plusScale, 2f, 2.5f, 2f);
                 }
 
@@ -321,9 +314,6 @@ public class Options : MonoBehaviour
                         selectedInput = -1;
                         editName = false;
                     }
-
-                    minusRect.x += tabAreaRect.x;
-                    minusRect.y += tabAreaRect.y;
                     minusScale = GUIHelper.SizeHover(minusRect, minusScale, 2f, 2.5f, 2f);
                 }
 
@@ -342,8 +332,6 @@ public class Options : MonoBehaviour
                         selectedInput = -1;
                     }
 
-                    editRect.x += tabAreaRect.x;
-                    editRect.y += tabAreaRect.y;
                     editScale = GUIHelper.SizeHover(editRect, editScale, 1f, 1.25f, 2f);
                 }
 
@@ -356,7 +344,7 @@ public class Options : MonoBehaviour
                         inputScales[i] = 1f;
                 }
 
-                layoutScrollPosition = GUI.BeginScrollView(scrollviewRect, layoutScrollPosition, new Rect(10, 10, 380, InputManager.AllConfigs.Count * 70));
+                layoutScrollPosition = GUIHelper.BeginScrollView(scrollviewRect, layoutScrollPosition, new Rect(10, 10, 380, InputManager.AllConfigs.Count * 70));
 
                 for (int i = 0; i < InputManager.AllConfigs.Count; i++)
                 {
@@ -382,9 +370,6 @@ public class Options : MonoBehaviour
                             InputManager.LoadConfig();
                         }
                     }
-
-                    labelClickRect.x += tabAreaRect.x + scrollviewRect.x - layoutScrollPosition.x;
-                    labelClickRect.y += tabAreaRect.y + scrollviewRect.y - layoutScrollPosition.y;
                     inputScales[i] = GUIHelper.SizeHover(labelClickRect, inputScales[i], 1f, 1.25f, 2f);
 
                     //Draw Icon
@@ -402,7 +387,7 @@ public class Options : MonoBehaviour
                     }
 
                 }
-                GUI.EndScrollView();
+                GUIHelper.EndScrollView();
 
                 //Draw input Configuration
                 InputLayout current = InputManager.AllConfigs[currentLayoutSelection];
@@ -412,13 +397,10 @@ public class Options : MonoBehaviour
                 GUI.Label(new Rect(1166, 20, 333, 50), (current.Type == ControllerType.Keyboard) ? "Key -" : "Button -");
 
                 Rect configScrollView = new Rect(500, 70, 1000, tabAreaRect.height - 120);
-                GUI.DrawTexture(configScrollView, inputBack);
+                GUIShape.RoundedRectangle(configScrollView, 25, new Color(0, 0, 0, 0.25f));
 
-                configScrollView.y += 10;
-                configScrollView.width += 10;
-                configScrollView.height -= 20;
-
-                configScrollPosition = GUI.BeginScrollView(configScrollView, configScrollPosition, new Rect(0, 0, 980, 20 + (availableChanges.Length * 120)));
+                configScrollView.width += 25;
+                configScrollPosition = GUIHelper.BeginScrollView(configScrollView, configScrollPosition, new Rect(0, 0, 980, 20 + (availableChanges.Length * 120)));
 
                 //"Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB            
                 availableChanges = new string[] { "Throttle", "Brake & Reverse", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
@@ -469,9 +451,6 @@ public class Options : MonoBehaviour
 
                     }
 
-                    labelRect.x += configScrollView.x + tabAreaRect.x - configScrollPosition.x;
-                    labelRect.y += configScrollView.y + tabAreaRect.y - configScrollPosition.y;
-
                     commandSizes[(i * 2)] = GUIHelper.SizeHover(labelRect, commandSizes[(i * 2)], 1f, 1.3f, 2f);
 
                     //Draw Minus Command
@@ -507,16 +486,13 @@ public class Options : MonoBehaviour
                         }
                     }
 
-                    labelRect.x += configScrollView.x + tabAreaRect.x - configScrollPosition.x;
-                    labelRect.y += configScrollView.y + tabAreaRect.y - configScrollPosition.y;
-
                     commandSizes[(i * 2) + 1] = GUIHelper.SizeHover(labelRect, commandSizes[(i * 2) + 1], 1f, 1.3f, 2f);
 
                     if (i < availableChanges.Length - 1)
                         GUI.DrawTexture(new Rect(50, 120 + (i * 120), 900, 5), line);
                 }
 
-                GUI.EndScrollView();
+                GUIHelper.EndScrollView();
 
                 //Do Input Changes
                 if (selectedInput != -1)
@@ -621,7 +597,7 @@ public class Options : MonoBehaviour
                 break;
         }
 
-        GUI.EndGroup();
+        GUIHelper.EndGroup();
     }
 
     private void RemoveInput(int toRemove)
