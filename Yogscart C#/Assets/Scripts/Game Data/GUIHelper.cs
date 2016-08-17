@@ -322,9 +322,9 @@ public class GUIHelper
 [System.Serializable]
 public class DropDown
 {
-    public bool toggled { get; private set; }
+    public bool toggled;
     private Vector2 scrollPosition;
-    private float toggleScale;
+    private float toggleScale, optionHeight;
 
     public DropDown()
     {
@@ -333,8 +333,17 @@ public class DropDown
         toggleScale = 1f;
     }
 
+    public void SetScroll(int value)
+    {
+        float diff = (value * optionHeight) - scrollPosition.y;
+        if (Mathf.Abs(diff) > 10f)
+            scrollPosition.y += Mathf.Sign(diff) * Time.deltaTime * 200f;
+    }
+
     public int Draw(Rect rect,Vector2 adjuster, int toggleSize, int value, string[] options)
     {
+        optionHeight = rect.height;
+
         //Check value
         value = MathHelper.NumClamp(value, 0, options.Length);
         int returnValue = value;
@@ -381,7 +390,13 @@ public class DropDown
             Rect scrollRect = new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 3.15f), rect.height * Mathf.Clamp(options.Length, 0, 5));
             GUI.DrawTexture(scrollRect, Resources.Load<Texture2D>("UI/Options/Green"));
 
-            scrollPosition = GUI.BeginScrollView(scrollRect, scrollPosition, new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 2f) - 20, rect.height * options.Length));
+            if (scrollRect.Contains(newMousePos - GUIHelper.groupOffset))
+            {
+                staysOutside = false;
+                Debug.Log("Stays Outside!");
+            }              
+
+            scrollPosition = GUIHelper.BeginScrollView(scrollRect, scrollPosition, new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 2f) - 20, rect.height * options.Length));
 
             for (int i = 0; i < options.Length; i++)
             {
@@ -392,13 +407,10 @@ public class DropDown
                     toggled = false;
                 }
 
-                if (staysOutside && optionRect.Contains(newMousePos))
-                    staysOutside = false;
-
                 GUI.Box(optionRect, options[i]);
             }
 
-            GUI.EndScrollView();
+            GUIHelper.EndScrollView();
         }
 
         //Close if clicked outside

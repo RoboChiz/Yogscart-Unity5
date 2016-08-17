@@ -2,6 +2,10 @@
 
 ## Changelog : Started 04/08/2016
 
+## 17/08/2016
+* Added Controller Support to Game and Graphics Menu
+* Fixed bug where dropdown menu wouldn't count selection
+
 ## 16/08/2016
 * Implemented Group and Scrollview controls into GUIHelper to help improve efficiency of code
 

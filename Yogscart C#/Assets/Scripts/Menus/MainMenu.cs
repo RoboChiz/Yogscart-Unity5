@@ -144,16 +144,19 @@ public class MainMenu : MonoBehaviour
         }
 
         //If Back Button Click
-        if (GUIHelper.DrawBack(backAlpha))
+        if (state != MenuState.Options)
         {
-            if (state == MenuState.CharacterSelect)
-                FindObjectOfType<CharacterSelect>().Back(0);
-            else if (state == MenuState.LevelSelect)
-                FindObjectOfType<LevelSelect>().CancelLevelSelect();
+            if (GUIHelper.DrawBack(backAlpha))
+            {
+                if (state == MenuState.CharacterSelect)
+                    FindObjectOfType<CharacterSelect>().Back(0);
+                else if (state == MenuState.LevelSelect)
+                    FindObjectOfType<LevelSelect>().CancelLevelSelect();
 
-            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)
-                BackMenu();               
-        }            
+                if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)
+                    BackMenu();
+            }
+        }       
 
         GUI.color = new Color(1, 1, 1, sideFade);
 
@@ -164,7 +167,7 @@ public class MainMenu : MonoBehaviour
         string randoImage = "UI/New Main Menu/Side Images/" + randomImage.ToString();
         string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage };
 
-        if (lastMousePos != newMousePos)
+        if ((lastMousePos - newMousePos).sqrMagnitude > 10)
         {
             mouseLastUsed = true;
             lastMousePos = newMousePos;
@@ -309,7 +312,7 @@ public class MainMenu : MonoBehaviour
             int vertical = 0, horizontal = 0;
             bool submitBool = false;
 
-            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && !lockInputs)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs)
             {
                 vertical = InputManager.controllers[0].GetMenuInput("MenuVertical");
                 horizontal = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
@@ -448,7 +451,7 @@ public class MainMenu : MonoBehaviour
                     break;
                 }
             }
-            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && !lockInputs && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
             {
                 BackMenu();
             }

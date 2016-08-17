@@ -27,6 +27,16 @@ public class Options : MonoBehaviour
     [SerializeField]
     private string[] availableChanges;
 
+    //Keyboard / Controller Controls
+    private Vector2 lastMouse;
+    private bool mouseLastUsed;
+    private int currentSelection = 0;
+
+    //Used for Volume Options
+    bool changingSlider = false;
+    private float sliderChangeRate = 50f;
+    private int lastInput;
+
     // Use this for initialization
     void Start()
     {
@@ -56,6 +66,8 @@ public class Options : MonoBehaviour
         eTexture = Resources.Load<Texture2D>("UI/Options/E");
 
         availableChanges = new string[] { "Throttle", "Brake", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
+
+        lastMouse = GUIHelper.GetMousePosition();
     }
 
     public void ShowOptions()
@@ -110,25 +122,179 @@ public class Options : MonoBehaviour
         //Handle Input
         if (!lockInputs && InputManager.controllers != null && InputManager.controllers.Count > 0 && guiAlpha == 1)
         {
-            int vertical = InputManager.controllers[0].GetMenuInput("MenuVertical");
-            int tabChange = InputManager.controllers[0].GetMenuInput("TabChange");
-            bool submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
+            int vertical = InputManager.controllers[0].GetRawMenuInput("MenuVertical");
+            float horizontal = 0;
+
+            if(currentTab != OptionsTab.Graphics || currentSelection != 3)
+                horizontal = InputManager.controllers[0].GetRawInput("MenuHorizontal");
+            else
+                horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal");
+
+            int tabChange = InputManager.controllers[0].GetRawMenuInput("TabChange");
+            bool submitBool = (InputManager.controllers[0].GetRawMenuInput("Submit") != 0);
+            bool cancelBool = (InputManager.controllers[0].GetRawMenuInput("Cancel") != 0);
+
+            if (horizontal != 0 || vertical != 0 || tabChange != 0 || submitBool || cancelBool)
+            {
+                mouseLastUsed = false;
+            }
 
             if (tabChange != 0)
             {
                 currentTab += tabChange;
                 currentTab = (OptionsTab)MathHelper.NumClamp((int)currentTab, 0, 3);
+                ResetControllerOptions();
+            }
+
+            if (!mouseLastUsed)
+            {
+                switch (currentTab)
+                {
+                    case OptionsTab.Game:
+
+                        if (submitBool)
+                            changingSlider = !changingSlider;
+
+                        if (!changingSlider)
+                        {
+                            if (vertical != 0)
+                                currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 3);
+                            if (cancelBool)
+                                FindObjectOfType<MainMenu>().BackMenu();
+                        }
+                        else
+                        {
+                            if (horizontal != 0)
+                            {
+                                float toChange = horizontal * Time.deltaTime * sliderChangeRate;
+                                if (currentSelection == 0)
+                                    SoundManager.masterVolume = Mathf.Clamp(SoundManager.masterVolume + toChange, 0, 100);
+                                else if (currentSelection == 1)
+                                    SoundManager.musicVolume = Mathf.Clamp(SoundManager.musicVolume + toChange, 0, 100);
+                                else if (currentSelection == 2)
+                                    SoundManager.sfxVolume = Mathf.Clamp(SoundManager.sfxVolume + toChange, 0, 100);
+                            }
+                            if (cancelBool)
+                                changingSlider = false;
+                        }
+                        break;
+                    case OptionsTab.Graphics:
+
+                        if (submitBool)
+                        {
+                            if (currentSelection == 0)
+                            {
+                                lastInput = currentResolution;
+                                resDropDown.toggled = !resDropDown.toggled;
+                                changingSlider = !changingSlider;
+                            }
+                            else if(currentSelection == 1)
+                                fullScreen = !fullScreen;
+                            else if (currentSelection == 2)
+                            {
+                                lastInput = currentQuality;
+                                qualityDropDown.toggled = !qualityDropDown.toggled;
+                                changingSlider = !changingSlider;
+                            }
+                            else if (currentSelection == 3) //Do Apply and Cancel Stuff
+                            {
+                                if(changingSlider)
+                                {
+                                    somethingChanged = false;
+                                    SaveEverything();
+                                }
+                                else
+                                {
+                                    ResetEverything();
+                                }
+                            }                               
+                        }
+
+                        if (currentSelection == 3 && horizontal != 0f)
+                            changingSlider = !changingSlider;
+
+                        if ((currentSelection == 3 || !changingSlider) && vertical != 0)
+                        {
+                            if (currentSelection == 3)
+                                changingSlider = false;
+
+                            currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 4);
+                        }
+                            
+
+                        if (!changingSlider)
+                        {                            
+                            if (cancelBool)
+                                FindObjectOfType<MainMenu>().BackMenu();
+
+                            if (resDropDown.toggled)
+                                resDropDown.toggled = false;
+                            else if (qualityDropDown.toggled)
+                                qualityDropDown.toggled = false;
+                        }
+                        else
+                        {
+                            if (cancelBool)
+                            {
+                                if (currentSelection == 3)
+                                    FindObjectOfType<MainMenu>().BackMenu();
+                                else
+                                {
+                                    changingSlider = false;
+
+                                    if (resDropDown.toggled)
+                                        currentResolution = lastInput;
+                                    else if (qualityDropDown.toggled)
+                                        currentQuality = lastInput;
+                                }
+
+                            }
+
+                            if (resDropDown.toggled)
+                                resDropDown.SetScroll(currentResolution);
+                            else if (qualityDropDown.toggled)
+                                qualityDropDown.SetScroll(currentQuality);
+
+                            if (vertical != 0)
+                                if (resDropDown.toggled)
+                                    currentResolution += vertical;
+                                else if (qualityDropDown.toggled)
+                                    currentQuality += vertical;
+                        }
+                        break;
+                }
             }
         }
     }
 
+    //Called when variables used for Controller inputs need to be reset
+    private void ResetControllerOptions()
+    {
+        //Reset Controller Values
+        currentSelection = 0;
+        changingSlider = false;
+    }
+
     void OnGUI()
     {
+        if (GUIHelper.DrawBack(1f))
+        {
+            FindObjectOfType<MainMenu>().BackMenu();
+        }
+
         GUIHelper.SetGUIAlpha(guiAlpha);
         GUI.matrix = GUIHelper.GetMatrix();
         GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
 
         Vector2 mousePosition = GUIHelper.GetMousePosition();
+
+        //Do Mouse Input Checks
+        if (!mouseLastUsed && (lastMouse - mousePosition).sqrMagnitude > 10)
+        {
+            mouseLastUsed = true;
+            lastMouse = mousePosition;
+            ResetControllerOptions();
+        }
 
         //Draw all the titles
         if (currentTab != OptionsTab.Game)
@@ -172,42 +338,52 @@ public class Options : MonoBehaviour
         //Draw the current tab
         Rect tabRect = new Rect(180, 90, 1550, 870);
         Rect tabAreaRect = new Rect(180, 170, 1550, 800);
+        //Required GUIStyles
+        GUIStyle normalLabel = GUI.skin.label;
+        GUIStyle selectedLabel = new GUIStyle(GUI.skin.label);
+        selectedLabel.normal.textColor = Color.yellow;
 
         switch (currentTab)
         {
             case OptionsTab.Game:
                 GUI.DrawTexture(tabRect, blueTab);
-                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 400), 25, new Color(0, 0, 0, 0.25f));
+                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 400), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
 
                 GUIHelper.BeginGroup(tabAreaRect);
 
-                GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:");
-                SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 100f);
+                GUIStyle normalSlider = GUI.skin.horizontalSlider;
+                GUIStyle normalSliderThumb = GUI.skin.horizontalSliderThumb;
+                GUIStyle selectedSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb);
+                selectedSliderThumb.normal.background = selectedSliderThumb.active.background;
+
+                GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:", (currentSelection == 0 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
+                SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 100f, normalSlider, (currentSelection == 0 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 70, 250, 100), (int)SoundManager.masterVolume + "%");
 
-                GUI.Label(new Rect(20, 180, 300, 100), "Music Volume:");
-                SoundManager.musicVolume = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), SoundManager.musicVolume, 0f, 100f);
+                GUI.Label(new Rect(20, 180, 300, 100), "Music Volume:", (currentSelection == 1 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
+                SoundManager.musicVolume = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), SoundManager.musicVolume, 0f, 100f, normalSlider, (currentSelection == 1 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 180, 250, 100), (int)SoundManager.musicVolume + "%");
 
-                GUI.Label(new Rect(20, 290, 300, 100), "SFX Volume:");
-                SoundManager.sfxVolume = GUI.HorizontalSlider(new Rect(330, 330, 1000, 100), SoundManager.sfxVolume, 0f, 100f);
+                GUI.Label(new Rect(20, 290, 300, 100), "SFX Volume:", (currentSelection == 2 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
+                SoundManager.sfxVolume = GUI.HorizontalSlider(new Rect(330, 330, 1000, 100), SoundManager.sfxVolume, 0f, 100f, normalSlider, (currentSelection == 2 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 290, 250, 100), (int)SoundManager.sfxVolume + "%");
 
                 break;
             case OptionsTab.Graphics:
                 GUI.DrawTexture(tabRect, greenTab);
 
-                GUIShape.RoundedRectangle(new Rect(210, 820, 400, 100), 25, new Color(0, 0, 0, 0.25f));
+                GUIShape.RoundedRectangle(new Rect(210, 820, 400, 100), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
 
                 GUIHelper.BeginGroup(tabAreaRect);
 
                 //Fullscreen
-                bool newFullscreen = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, fullScreen, "Fullscreen:");
+                GUI.Label(new Rect(20, 145, 300, 100), "Fullscreen:", (currentSelection == 1 && !mouseLastUsed) ? selectedLabel : normalLabel);
+                bool newFullscreen = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, fullScreen, "");
                 if (!resDropDown.toggled)
                     fullScreen = newFullscreen;
 
                 //Change Quality
-                GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:");
+                GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:", (currentSelection == 2 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
 
                 int newQuality = qualityDropDown.Draw(new Rect(330, 250, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentQuality, QualitySettings.names);
                 if (newQuality != currentQuality)
@@ -215,7 +391,7 @@ public class Options : MonoBehaviour
                 currentQuality = newQuality;
 
                 //Change Resolution
-                GUI.Label(new Rect(20, 70, 300, 100), "Resolution:");
+                GUI.Label(new Rect(20, 70, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
 
                 string[] possibleScreens = new string[Screen.resolutions.Length];
                 for (int i = 0; i < possibleScreens.Length; i++)
@@ -227,32 +403,14 @@ public class Options : MonoBehaviour
                 currentResolution = newRes;
 
                 //Apply and Cancel Buttons
-                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(30, 650, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f) ? Color.yellow : Color.white);
-
-                Rect cancelClickRect = new Rect(cancelRect);
-                cancelClickRect.x += tabAreaRect.x;
-                cancelClickRect.y += tabAreaRect.y;
-
-                if (cancelClickRect.Contains(mousePosition))
-                {
-                    if (cancelScale < 1.5f)
-                        cancelScale += Time.deltaTime * 4f;
-                    else
-                        cancelScale = 1.5f;
-                }
-                else
-                {
-                    if (cancelScale > 1f)
-                        cancelScale -= Time.deltaTime * 4f;
-                    else
-                        cancelScale = 1f;
-                }
+                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(30, 650, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 3 && !changingSlider)) ? Color.yellow : Color.white);
+                cancelScale = GUIHelper.SizeHover(cancelRect, cancelScale, 1f, 1.3f, 3f);
 
                 if (GUI.Button(cancelRect, ""))
                     ResetEverything();
 
-                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(240, 650, 200, 100), applyScale, "Apply", (applyScale > 1.1f) ? Color.yellow : Color.white);
-                applyScale = GUIHelper.SizeHover(applyRect, applyScale, 1f, 1.5f, 4f);
+                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(240, 650, 200, 100), applyScale, "Apply", (applyScale > 1.1f || (currentSelection == 3 && changingSlider)) ? Color.yellow : Color.white);
+                applyScale = GUIHelper.SizeHover(applyRect, applyScale, 1f, 1.3f, 3f);
 
                 if (GUI.Button(applyRect, ""))
                 {
@@ -276,7 +434,7 @@ public class Options : MonoBehaviour
                 GUI.DrawTexture(new Rect(450, 20, 5, tabAreaRect.height - 60), line);
 
                 Rect scrollviewRect = new Rect(30, 70, 400, tabAreaRect.height - 120);
-                GUIShape.RoundedRectangle(scrollviewRect,25, new Color(0,0,0,0.25f));
+                GUIShape.RoundedRectangle(scrollviewRect, 25, new Color(0, 0, 0, 0.25f * guiAlpha));
 
                 scrollviewRect.y += 10;
                 scrollviewRect.width += 12;
@@ -397,7 +555,7 @@ public class Options : MonoBehaviour
                 GUI.Label(new Rect(1166, 20, 333, 50), (current.Type == ControllerType.Keyboard) ? "Key -" : "Button -");
 
                 Rect configScrollView = new Rect(500, 70, 1000, tabAreaRect.height - 120);
-                GUIShape.RoundedRectangle(configScrollView, 25, new Color(0, 0, 0, 0.25f));
+                GUIShape.RoundedRectangle(configScrollView, 25, new Color(0, 0, 0, 0.25f * guiAlpha));
 
                 configScrollView.width += 25;
                 configScrollPosition = GUIHelper.BeginScrollView(configScrollView, configScrollPosition, new Rect(0, 0, 980, 20 + (availableChanges.Length * 120)));
@@ -504,7 +662,7 @@ public class Options : MonoBehaviour
                     {
                         string newInput = Input.inputString;
 
-                        if(newInput == "")//Check for Arrow keys, ctrls, alts and shifts
+                        if (newInput == "")//Check for Arrow keys, ctrls, alts and shifts
                         {
                             if (Input.GetKey(KeyCode.LeftArrow))
                                 newInput = "leftarrow";
@@ -540,30 +698,6 @@ public class Options : MonoBehaviour
                         }
 
                         if (newInput != "")//Input pressed
-                        {                         
-                            string inputToChange = availableChanges[selectedInput / 2];
-                            //Set command to new input
-                            if (selectedInput % 2 == 0)
-                            {
-                                //Check that this input isn't used for minus
-                                if (!current.commandsTwo.ContainsKey(inputToChange) || current.commandsTwo[inputToChange] != newInput)
-                                    current.commandsOne[inputToChange] = newInput;
-                            }
-                            else
-                            {
-                                //Check that this input isn't used for plus
-                                if (!current.commandsOne.ContainsKey(inputToChange) || current.commandsOne[inputToChange] != newInput)
-                                    current.commandsTwo[inputToChange] = newInput;
-                            }
-
-                            InputManager.SaveConfig();
-                            selectedInput = -1;                         
-                        }
-                    }
-                    else
-                    {
-                        string newInput = InputManager.GetXboxInput();
-                        if(newInput != "")
                         {
                             string inputToChange = availableChanges[selectedInput / 2];
                             //Set command to new input
@@ -581,7 +715,31 @@ public class Options : MonoBehaviour
                             }
 
                             InputManager.SaveConfig();
-                            selectedInput = -1;                            
+                            selectedInput = -1;
+                        }
+                    }
+                    else
+                    {
+                        string newInput = InputManager.GetXboxInput();
+                        if (newInput != "")
+                        {
+                            string inputToChange = availableChanges[selectedInput / 2];
+                            //Set command to new input
+                            if (selectedInput % 2 == 0)
+                            {
+                                //Check that this input isn't used for minus
+                                if (!current.commandsTwo.ContainsKey(inputToChange) || current.commandsTwo[inputToChange] != newInput)
+                                    current.commandsOne[inputToChange] = newInput;
+                            }
+                            else
+                            {
+                                //Check that this input isn't used for plus
+                                if (!current.commandsOne.ContainsKey(inputToChange) || current.commandsOne[inputToChange] != newInput)
+                                    current.commandsTwo[inputToChange] = newInput;
+                            }
+
+                            InputManager.SaveConfig();
+                            selectedInput = -1;
                         }
                     }
                 }
