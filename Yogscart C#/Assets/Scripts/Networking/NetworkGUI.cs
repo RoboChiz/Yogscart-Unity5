@@ -367,7 +367,7 @@ public class NetworkGUI : MonoBehaviour
                 if (xboxController)
                     GUI.DrawTexture(new Rect(1275, 765, fontSize * 1.5f, fontSize * 1.5f), Resources.Load<Texture2D>("UI/Main Menu/X"));
 
-                if (MainMenu.SideAmount == 0 && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
+                if (FindObjectOfType<MainMenu>().SideAmount == 0 && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
                 {
                     PlayerPrefs.SetString("playerName", playerName);
                     FindObjectOfType<MainMenu>().BackMenu();

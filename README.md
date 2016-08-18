@@ -2,6 +2,15 @@
 
 ## Changelog : Started 04/08/2016
 
+## 18/08/2016
+* Added Right Stick icon to Layout Scrollbar
+* Fixed bug where menu wouldn't activate mouse mode correctly
+* Fixed bug where side image would slide in after main menu had faded in
+* Fixed bug where quiting race would break main menu
+* Fixed bug where input menu required double tap to exit mouse mode.
+* Deleted some not needed textures
+* Added Controller Support to Input Menu
+
 ## 17/08/2016
 * Added Controller Support to Game and Graphics Menu
 * Fixed bug where dropdown menu wouldn't count selection

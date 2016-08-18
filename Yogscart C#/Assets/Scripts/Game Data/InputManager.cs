@@ -34,15 +34,15 @@ public class InputManager : MonoBehaviour
     static private bool mouseLock = false;
 
     public List<float> iconHeights = new List<float>();
-    public static readonly List<string> menuInputs = new List<string>(new string[] { "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle" });
+    public static readonly List<string> menuInputs = new List<string>(new string[] { "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle", "Edit", "Minus", "ViewScroll" });
 
     //Loads Saved Input Configurations
     public static void LoadConfig()
     {
         //Load default Input
         allConfigs = new List<InputLayout>();
-        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,Steer:d,Steer:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q,Toggle:space"));
-        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,Steer:L_XAxis+,Steer:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB,Toggle:X"));        
+        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,SteerRight:d,SteerLeft:a,Drift:space,Item:e,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q,Toggle:space"));
+        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,SteerRight:L_XAxis+,SteerLeft:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB,Toggle:X,Minus:Y,Edit:X,ViewScroll:R_YAxis+,ViewScroll:R_YAxis-"));
 
         bool saveNeeded = false;
 
@@ -68,7 +68,7 @@ public class InputManager : MonoBehaviour
         {
             int controllerType = (int)inputLayout.Type;
 
-            while(splitConfigs.Count <= controllerType)
+            while (splitConfigs.Count <= controllerType)
                 splitConfigs.Add(new List<InputLayout>());
 
             splitConfigs[controllerType].Add(inputLayout);
@@ -216,7 +216,7 @@ public class InputManager : MonoBehaviour
         {
             if (controllers.Count > i && controllers[i] != null)
             {
-                if(controllers[i].controlLayout.Type == ControllerType.Xbox360)
+                if (controllers[i].controlLayout.Type == ControllerType.Xbox360)
                     icon = Resources.Load<Texture2D>("UI/Controls/Xbox" + controllers[i].controllerName);
                 else
                     icon = Resources.Load<Texture2D>("UI/Controls/Keyboard");
@@ -229,7 +229,7 @@ public class InputManager : MonoBehaviour
     }
 
     IEnumerator ShowInput(int toShow)
-    {        
+    {
         float iconSize = Screen.height / 6f;
         float startTime = Time.time;
         float travelTime = 0.5f;
@@ -292,7 +292,7 @@ public class InputManager : MonoBehaviour
                 {
                     if (Input.GetAxisRaw(possibleControls[j] + "_" + i.ToString()) > 0)
                         return possibleControls[j] + "+";
-                    else if(Input.GetAxisRaw(possibleControls[j] + "_" + i.ToString()) < 0)
+                    else if (Input.GetAxisRaw(possibleControls[j] + "_" + i.ToString()) < 0)
                         return possibleControls[j] + "-";
 
                 }
@@ -322,7 +322,7 @@ public class InputController
     {
         controllerName = inputName;
 
-        if(inputName == "Key_")
+        if (inputName == "Key_")
             controlLayout = InputManager.AllConfigs[0];
         else
             controlLayout = InputManager.AllConfigs[1];
@@ -379,7 +379,7 @@ public class InputController
                         if (requiredSignPlus != 0)
                             inputAxisOne = inputAxisOne.Remove(inputAxisOne.Length - 1);
 
-                        if(!getRaw)
+                        if (!getRaw)
                             value = Input.GetAxis(inputAxisOne + controllerName);
                         else
                             value = Input.GetAxisRaw(inputAxisOne + controllerName);
@@ -517,7 +517,7 @@ public class InputLayout
     {
         string[] splitString = contents.Split(","[0]);
 
-        List<string> validCommands = new List<string>() { "Throttle", "Brake", "Steer", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle" };
+        List<string> validCommands = new List<string>() { "Throttle", "Brake", "SteerLeft", "SteerRight", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle", "Minus", "Edit", "ViewScroll" };
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
 

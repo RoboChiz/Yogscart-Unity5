@@ -584,7 +584,7 @@ public class CharacterSelect : MonoBehaviour
                         if (i != 0 || !mouseLast)
                         {
                             float diff = (selectedLayout[i] * 70f) - layoutScrollPositions[i].y;
-                            if(Mathf.Abs(diff) > 10f)
+                            if(Mathf.Abs(diff) > 1f)
                                 layoutScrollPositions[i].y += Mathf.Sign(diff) * Time.deltaTime * 200f;
                         }
 

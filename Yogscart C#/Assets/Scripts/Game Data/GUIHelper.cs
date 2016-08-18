@@ -336,7 +336,7 @@ public class DropDown
     public void SetScroll(int value)
     {
         float diff = (value * optionHeight) - scrollPosition.y;
-        if (Mathf.Abs(diff) > 10f)
+        if (Mathf.Abs(diff) > 1f)
             scrollPosition.y += Mathf.Sign(diff) * Time.deltaTime * 200f;
     }
 

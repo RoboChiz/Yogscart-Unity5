@@ -28,14 +28,14 @@ public class MainMenu : MonoBehaviour
     public List<MenuState> backStates = new List<MenuState>();
     public List<int> backSelection = new List<int>();
 
-    static public float SideAmount
+    public float SideAmount
     {
         get { return sideAmount; }
         set { }
     }
-    static private float sideAmount = 0f;
+    private float sideAmount = 0f;
 
-    private float sideFade = 1f, titleAlpha = 1f, mouseWait = 0f, nextAlpha = 0f, backAlpha = 0f;
+    private float guiAlpha = 1f, titleAlpha = 1f, mouseWait = 0f, nextAlpha = 0f, backAlpha = 0f;
 
     private float titleAmount = 10f;
     int randomImage;
@@ -61,6 +61,10 @@ public class MainMenu : MonoBehaviour
 
         //Update as more characters are added
         randomImage = Random.Range(0, 1);
+        
+        string randoImage = "UI/New Main Menu/Side Images/" + randomImage.ToString();
+        sidePicture = Resources.Load<Texture2D>(randoImage);
+        lastloadedPicture = 0;
 
         yield return new WaitForSeconds(0.5f);
 
@@ -156,9 +160,9 @@ public class MainMenu : MonoBehaviour
                 if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)
                     BackMenu();
             }
-        }       
+        }
 
-        GUI.color = new Color(1, 1, 1, sideFade);
+        GUIHelper.SetGUIAlpha(guiAlpha);
 
         //Draw Stuff
         Rect box = new Rect(sideAmount, 0, GUIHelper.width / 2f, GUIHelper.height);
@@ -528,19 +532,19 @@ public class MainMenu : MonoBehaviour
             if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)//Nothing to fade out
             {
                 sideAmount = 0f;
-                sideFade = 1f;
+                guiAlpha = 1f;
 
                 while (Time.time - startTime < travelTime)
                 {
                     sideAmount = Mathf.Lerp(0f, endSideAmount, (Time.time - startTime) / travelTime);
-                    sideFade = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
+                    guiAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
                     yield return null;
                 }
             }
 
             //Pause at Top///////////////////////////////////////
             sideAmount = endSideAmount;
-            sideFade = 0f;
+            guiAlpha = 0f;
 
             if (state != MenuState.Start && changeState != MenuState.Start && !backing)
                 currentSelection = 0;
@@ -572,12 +576,12 @@ public class MainMenu : MonoBehaviour
                 while (Time.time - startTime < travelTime)
                 {
                     sideAmount = Mathf.Lerp(endSideAmount, 0f, (Time.time - startTime) / travelTime);
-                    sideFade = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
+                    guiAlpha = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
                     yield return null;
                 }
 
                 sideAmount = 0f;
-                sideFade = 1f;
+                guiAlpha = 1f;
             }
 
             sliding = false;
@@ -649,7 +653,12 @@ public class MainMenu : MonoBehaviour
             sidePicX = endX;
             sidePicAlpha = endAlpha;
         }
+    }
 
+    public void ReturnFromGame()
+    {
+        state = MenuState.Main;
+        backStates.Add(MenuState.Start);
     }
 }
 

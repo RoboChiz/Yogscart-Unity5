@@ -81,7 +81,7 @@ public class Race : GameMode
         //Get rid of Item Boxes
         if (raceType == RaceType.TimeTrial)
         {
-            ItemBox[] itemBoxes = GameObject.FindObjectsOfType<ItemBox>();
+            ItemBox[] itemBoxes = FindObjectsOfType<ItemBox>();
 
             foreach (ItemBox ib in itemBoxes)
             {

@@ -8,7 +8,7 @@ public class Options : MonoBehaviour
     private float guiAlpha = 0;
     private const float fadeTime = 0.5f;
 
-    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, button, line, lbTexture, rbTexture, qTexture, eTexture;
+    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, button, line, lbTexture, rbTexture, qTexture, eTexture, xTexture, yTexture, aTexture, rsTexture;
 
     enum OptionsTab { Game, Graphics, Input };
     private OptionsTab currentTab = OptionsTab.Game;
@@ -20,12 +20,12 @@ public class Options : MonoBehaviour
     private float cancelScale = 1f, applyScale = 1f, plusScale = 2f, minusScale = 2f, editScale;
     private bool fullScreen, somethingChanged = false, editName = false;
 
-    private int currentLayoutSelection = 0, selectedInput = -1;
+    public int currentLayoutSelection = 0, selectedInput = -1;
     private Vector2 layoutScrollPosition, configScrollPosition;
     private float[] inputScales, commandSizes;
-    private bool lockInputs = false;
+    private bool lockInputs = false, noInput = false;
     [SerializeField]
-    private string[] availableChanges;
+    private string[] availableChanges, availableNames;
 
     //Keyboard / Controller Controls
     private Vector2 lastMouse;
@@ -33,9 +33,9 @@ public class Options : MonoBehaviour
     private int currentSelection = 0;
 
     //Used for Volume Options
-    bool changingSlider = false;
+    private bool changingSlider = false, currentX = false;
     private float sliderChangeRate = 50f;
-    private int lastInput;
+    private int lastInput, currentY;
 
     // Use this for initialization
     void Start()
@@ -64,8 +64,13 @@ public class Options : MonoBehaviour
         rbTexture = Resources.Load<Texture2D>("UI/Options/RB");
         qTexture = Resources.Load<Texture2D>("UI/Options/Q");
         eTexture = Resources.Load<Texture2D>("UI/Options/E");
+        xTexture = Resources.Load<Texture2D>("UI/Options/X");
+        yTexture = Resources.Load<Texture2D>("UI/Options/Y");
+        aTexture = Resources.Load<Texture2D>("UI/Options/A");
+        rsTexture = Resources.Load<Texture2D>("UI/Options/RS");
 
-        availableChanges = new string[] { "Throttle", "Brake", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
+        availableChanges = new string[] { "Throttle", "Brake", "SteerLeft", "SteerRight", "Drift", "Item", "RearView" };
+        availableNames = new string[] { "Throttle", "Brake / Reverse", "Steer Left", "Steer Right", "Drift", "Item", "Look Behind" };
 
         lastMouse = GUIHelper.GetMousePosition();
     }
@@ -81,6 +86,8 @@ public class Options : MonoBehaviour
         layoutScrollPosition = new Vector2();
         configScrollPosition = new Vector2();
         lockInputs = false;
+
+        ResetControllerOptions();
     }
 
     public IEnumerator ActualShowOptions()
@@ -118,25 +125,26 @@ public class Options : MonoBehaviour
     }
 
     void Update()
-    {
+    {      
         //Handle Input
         if (!lockInputs && InputManager.controllers != null && InputManager.controllers.Count > 0 && guiAlpha == 1)
         {
             int vertical = InputManager.controllers[0].GetRawMenuInput("MenuVertical");
             float horizontal = 0;
 
-            if(currentTab != OptionsTab.Graphics || currentSelection != 3)
-                horizontal = InputManager.controllers[0].GetRawInput("MenuHorizontal");
-            else
+            if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider))
                 horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal");
+            else
+                horizontal = InputManager.controllers[0].GetRawInput("MenuHorizontal");
 
             int tabChange = InputManager.controllers[0].GetRawMenuInput("TabChange");
             bool submitBool = (InputManager.controllers[0].GetRawMenuInput("Submit") != 0);
             bool cancelBool = (InputManager.controllers[0].GetRawMenuInput("Cancel") != 0);
 
-            if (horizontal != 0 || vertical != 0 || tabChange != 0 || submitBool || cancelBool)
+            if (mouseLastUsed && (horizontal != 0 || vertical != 0 || tabChange != 0 || submitBool || cancelBool))
             {
                 mouseLastUsed = false;
+                ResetControllerOptions();
             }
 
             if (tabChange != 0)
@@ -188,7 +196,7 @@ public class Options : MonoBehaviour
                                 resDropDown.toggled = !resDropDown.toggled;
                                 changingSlider = !changingSlider;
                             }
-                            else if(currentSelection == 1)
+                            else if (currentSelection == 1)
                                 fullScreen = !fullScreen;
                             else if (currentSelection == 2)
                             {
@@ -198,7 +206,7 @@ public class Options : MonoBehaviour
                             }
                             else if (currentSelection == 3) //Do Apply and Cancel Stuff
                             {
-                                if(changingSlider)
+                                if (changingSlider)
                                 {
                                     somethingChanged = false;
                                     SaveEverything();
@@ -207,7 +215,7 @@ public class Options : MonoBehaviour
                                 {
                                     ResetEverything();
                                 }
-                            }                               
+                            }
                         }
 
                         if (currentSelection == 3 && horizontal != 0f)
@@ -220,10 +228,10 @@ public class Options : MonoBehaviour
 
                             currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 4);
                         }
-                            
+
 
                         if (!changingSlider)
-                        {                            
+                        {
                             if (cancelBool)
                                 FindObjectOfType<MainMenu>().BackMenu();
 
@@ -262,6 +270,87 @@ public class Options : MonoBehaviour
                                     currentQuality += vertical;
                         }
                         break;
+                    case OptionsTab.Input:
+
+                        int configCount = InputManager.AllConfigs.Count;
+
+                        if (cancelBool && (!changingSlider || currentSelection >= configCount) && !editName)
+                            FindObjectOfType<MainMenu>().BackMenu();
+
+                        if (!changingSlider)
+                        {
+                            if (!editName && vertical != 0)
+                                currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, Mathf.Min(configCount + 1, 12));
+
+                            if (currentSelection < configCount)
+                            {
+                                currentLayoutSelection = currentSelection;
+
+                                if (currentSelection > 1 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+                                {
+                                    if (InputManager.controllers[0].GetRawMenuInput("Edit") != 0)
+                                        EditPressed();
+                                    else if (InputManager.controllers[0].GetRawMenuInput("Minus") != 0)
+                                        MinusPressed();
+                                }
+                            }
+
+                            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+                            {
+                                configScrollPosition.y += InputManager.controllers[0].GetRawInput("ViewScroll") * Time.deltaTime * 300f;
+                            }
+
+                            if (submitBool && currentSelection > 1)
+                            {
+                                if (currentSelection < configCount)
+                                {
+                                    if (!editName)
+                                    {
+                                        changingSlider = !changingSlider;
+                                        currentX = false;
+                                        currentY = 0;
+                                    }
+                                    else
+                                    {
+                                        ChangeType(currentLayoutSelection);
+                                    }
+                                }
+                                else// + Button has been pressed
+                                    PlusPressed();
+                            }
+
+                            float diff = (currentLayoutSelection * 70f) - layoutScrollPosition.y;
+                            if (Mathf.Abs(diff) > 1f)
+                                layoutScrollPosition.y += Mathf.Sign(diff) * Time.deltaTime * 300f;
+                        }
+                        else
+                        {
+                            if (submitBool)
+                            {
+                                if (currentSelection < configCount)
+                                {
+                                    if (!currentX)
+                                        selectedInput = (currentY * 2);
+                                    else
+                                        selectedInput = (currentY * 2) + 1;
+                                }
+                            }
+
+                            if (horizontal != 0)
+                                currentX = !currentX;
+
+                            if (vertical != 0)
+                                currentY = MathHelper.NumClamp(currentY + vertical, 0, availableChanges.Length);
+
+                            //Scroll Scrollview with input
+                            float diff = (currentY * 120) - configScrollPosition.y;
+                            if (Mathf.Abs(diff) > 1f)
+                                configScrollPosition.y += Mathf.Sign(diff) * Time.deltaTime * 200f;
+
+                            if (cancelBool)
+                                changingSlider = false;
+                        }
+                        break;
                 }
             }
         }
@@ -271,30 +360,75 @@ public class Options : MonoBehaviour
     private void ResetControllerOptions()
     {
         //Reset Controller Values
-        currentSelection = 0;
+        if (currentTab == OptionsTab.Input)
+            currentSelection = currentLayoutSelection;
+        else
+            currentSelection = 0;
+
         changingSlider = false;
+        currentX = false;
+        currentY = 0;
+        selectedInput = -1;
+    }
+
+    private void PlusPressed()
+    {
+        string toAdd = "Keyboard";
+
+        //Add an Xbox Layout if that controller pressed the plus
+        if (InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            toAdd = "Xbox360";
+
+        InputManager.AllConfigs.Add(new InputLayout("Layout " + (InputManager.AllConfigs.Count - 1).ToString() + "," + toAdd));
+        InputManager.SaveConfig();
+        selectedInput = -1;
+        currentLayoutSelection = InputManager.AllConfigs.Count - 1;
+        editName = false;
+    }
+
+    private void MinusPressed()
+    {
+        InputManager.AllConfigs.RemoveAt(currentLayoutSelection);
+        InputManager.SaveConfig();
+        currentLayoutSelection -= 1;
+
+        if (!mouseLastUsed)
+            currentSelection -= 1;
+
+        selectedInput = -1;
+        editName = false;
+    }
+
+    private void EditPressed()
+    {
+        if (editName)
+            InputManager.SaveConfig();
+
+        editName = !editName;
+        selectedInput = -1;
     }
 
     void OnGUI()
     {
-        if (GUIHelper.DrawBack(1f))
+        if (guiAlpha > 0f && GUIHelper.DrawBack(1f))
         {
             FindObjectOfType<MainMenu>().BackMenu();
         }
 
-        GUIHelper.SetGUIAlpha(guiAlpha);
-        GUI.matrix = GUIHelper.GetMatrix();
-        GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
-
         Vector2 mousePosition = GUIHelper.GetMousePosition();
 
         //Do Mouse Input Checks
-        if (!mouseLastUsed && (lastMouse - mousePosition).sqrMagnitude > 10)
+        if (!mouseLastUsed && (lastMouse != mousePosition || Input.GetMouseButton(0) || Input.GetMouseButton(1)))
         {
             mouseLastUsed = true;
-            lastMouse = mousePosition;
             ResetControllerOptions();
         }
+
+        lastMouse = mousePosition;
+
+        GUIHelper.SetGUIAlpha(guiAlpha);
+        GUI.matrix = GUIHelper.GetMatrix();
+        GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
 
         //Draw all the titles
         if (currentTab != OptionsTab.Game)
@@ -403,13 +537,13 @@ public class Options : MonoBehaviour
                 currentResolution = newRes;
 
                 //Apply and Cancel Buttons
-                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(30, 650, 200, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 3 && !changingSlider)) ? Color.yellow : Color.white);
+                Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(50, 650, 150, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 3 && !changingSlider)) ? Color.yellow : Color.white);
                 cancelScale = GUIHelper.SizeHover(cancelRect, cancelScale, 1f, 1.3f, 3f);
 
                 if (GUI.Button(cancelRect, ""))
                     ResetEverything();
 
-                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(240, 650, 200, 100), applyScale, "Apply", (applyScale > 1.1f || (currentSelection == 3 && changingSlider)) ? Color.yellow : Color.white);
+                Rect applyRect = GUIHelper.CentreRectLabel(new Rect(270, 650, 150, 100), applyScale, "Apply", (applyScale > 1.1f || (currentSelection == 3 && changingSlider)) ? Color.yellow : Color.white);
                 applyScale = GUIHelper.SizeHover(applyRect, applyScale, 1f, 1.3f, 3f);
 
                 if (GUI.Button(applyRect, ""))
@@ -421,6 +555,12 @@ public class Options : MonoBehaviour
                 break;
             case OptionsTab.Input:
                 GUI.DrawTexture(tabRect, orangeTab);
+
+                bool showXbox = !mouseLastUsed && InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360 && !changingSlider;
+
+                if (showXbox)
+                    GUI.DrawTexture(new Rect(1725, 250 + (configScrollPosition.y * 3.4f), 50, 50), rsTexture);
+
                 GUIHelper.BeginGroup(tabAreaRect);
 
                 if (commandSizes == null || commandSizes.Length != availableChanges.Length * 2)
@@ -443,55 +583,57 @@ public class Options : MonoBehaviour
                 //Draw + Gui
                 if (InputManager.AllConfigs.Count < 12)
                 {
-                    Rect addLabel = new Rect(70, 675, 50, 50);
-                    GUIHelper.CentreRectLabel(addLabel, plusScale, "+", Color.white);
+                    Rect addLabel = new Rect(50, 700, 30, 50);
+                    GUIHelper.CentreRectLabel(addLabel, plusScale, "+", (!mouseLastUsed && currentSelection == InputManager.AllConfigs.Count && !changingSlider) ? Color.yellow : Color.white);
 
                     if (GUI.Button(addLabel, ""))
                     {
                         //Add New Layout
-                        InputManager.AllConfigs.Add(new InputLayout("Layout " + (InputManager.AllConfigs.Count - 1).ToString() + ",Keyboard"));
-                        selectedInput = -1;
-                        currentLayoutSelection = InputManager.AllConfigs.Count - 1;
-                        editName = false;
+                        PlusPressed();
                     }
 
                     plusScale = GUIHelper.SizeHover(addLabel, plusScale, 2f, 2.5f, 2f);
                 }
 
                 //Draw - Gui
-                if (currentLayoutSelection >= 2)
+                if (currentLayoutSelection >= 2 && (mouseLastUsed || (currentSelection < InputManager.AllConfigs.Count && !changingSlider)))
                 {
-                    Rect minusRect = new Rect(170, 675, 50, 50);
+                    Rect minusRect = new Rect(140, 700, 30, 50);
                     GUIHelper.CentreRectLabel(minusRect, minusScale, "-", Color.white);
 
                     if (GUI.Button(minusRect, ""))
                     {
-                        InputManager.AllConfigs.RemoveAt(currentLayoutSelection);
-                        InputManager.SaveConfig();
-                        currentLayoutSelection -= 1;
-                        selectedInput = -1;
-                        editName = false;
+                        MinusPressed();
                     }
                     minusScale = GUIHelper.SizeHover(minusRect, minusScale, 2f, 2.5f, 2f);
+
+                    if (showXbox && currentSelection < InputManager.AllConfigs.Count)
+                        GUI.DrawTexture(new Rect(130, 650, 50, 50), yTexture);
                 }
 
                 //Draw Edit Gui
-                if (currentLayoutSelection >= 2)
+                if (currentLayoutSelection >= 2 && (mouseLastUsed || (currentSelection < InputManager.AllConfigs.Count && !changingSlider)))
                 {
-                    Rect editRect = new Rect(240, 650, 100, 100);
+                    Rect editRect = new Rect(210, 675, 100, 100);
                     GUIHelper.CentreRectLabel(editRect, editScale, !editName ? "edit" : "save", Color.white);
 
                     if (GUI.Button(editRect, ""))
                     {
-                        if (editName)
-                            InputManager.SaveConfig();
-
-                        editName = !editName;
-                        selectedInput = -1;
+                        EditPressed();
                     }
 
                     editScale = GUIHelper.SizeHover(editRect, editScale, 1f, 1.25f, 2f);
+
+                    if (showXbox && currentSelection < InputManager.AllConfigs.Count)
+                        GUI.DrawTexture(new Rect(235, 650, 50, 50), xTexture);
                 }
+
+                if (currentLayoutSelection >= 2 && showXbox && currentSelection < InputManager.AllConfigs.Count)
+                {
+                    GUI.Label(new Rect(320, 675, 100, 100), !editName ? "bind" : "type");
+                    GUI.DrawTexture(new Rect(345, 650, 50, 50), aTexture);
+                }
+                    
 
 
 
@@ -510,7 +652,7 @@ public class Options : MonoBehaviour
                     Rect labelRect;
                     if (currentLayoutSelection != i || !editName)
                     {
-                        labelRect = GUIHelper.CentreRectLabel(new Rect(10, 40 + (70 * i), 380, 50), inputScales[i], InputManager.AllConfigs[i].Name, (currentLayoutSelection == i) ? Color.yellow : Color.white);
+                        labelRect = GUIHelper.CentreRectLabel(new Rect(10, 40 + (70 * i), 380, 50), inputScales[i], InputManager.AllConfigs[i].Name, ((mouseLastUsed && currentLayoutSelection == i) || (!mouseLastUsed && currentSelection == i && !changingSlider)) ? Color.yellow : Color.white);
                     }
                     else
                     {
@@ -536,12 +678,7 @@ public class Options : MonoBehaviour
 
                     if (editName && currentLayoutSelection == i && GUI.Button(iconRect, ""))
                     {
-                        InputManager.AllConfigs[i].Type++;
-                        if ((int)InputManager.AllConfigs[i].Type >= 2)
-                            InputManager.AllConfigs[i].Type = 0;
-
-                        InputManager.AllConfigs[i].CancelLoad();
-                        InputManager.SaveConfig();
+                        ChangeType(i);
                     }
 
                 }
@@ -560,20 +697,11 @@ public class Options : MonoBehaviour
                 configScrollView.width += 25;
                 configScrollPosition = GUIHelper.BeginScrollView(configScrollView, configScrollPosition, new Rect(0, 0, 980, 20 + (availableChanges.Length * 120)));
 
-                //"Default,Xbox360,Throttle:A,Throttle:B,Steer:L_XAxis,Drift:TriggersL,Drift:TriggersR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB            
-                availableChanges = new string[] { "Throttle", "Brake & Reverse", "Steer (Right/Left)", "Drift", "Item", "Look Behind" };
-
                 for (int i = 0; i < availableChanges.Length; i++)
                 {
-                    GUI.Label(new Rect(30, 20 + (i * 120), 303, 100), availableChanges[i]);
+                    GUI.Label(new Rect(30, 20 + (i * 120), 303, 100), availableNames[i]);
 
                     //Change string to actual input name
-                    if (availableChanges[i] == "Look Behind")
-                        availableChanges[i] = "RearView";
-                    if (availableChanges[i] == "Steer (Right/Left)")
-                        availableChanges[i] = "Steer";
-                    if (availableChanges[i] == "Brake & Reverse")
-                        availableChanges[i] = "Brake";
 
                     //Draw Plus Command
                     Rect labelRect = new Rect(333, 20 + (i * 120), 333, 100);
@@ -595,7 +723,7 @@ public class Options : MonoBehaviour
                         labelText = current.commandsOne[availableChanges[i]];
                     }
 
-                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2)], labelText, Color.white);
+                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2)], labelText, (!mouseLastUsed && changingSlider && !currentX && currentY == i) ? Color.yellow : Color.white);
 
                     if (currentLayoutSelection > 1 && GUI.Button(labelRect, ""))
                     {
@@ -631,7 +759,7 @@ public class Options : MonoBehaviour
                         labelText = current.commandsTwo[availableChanges[i]];
                     }
 
-                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2) + 1], labelText, Color.white);
+                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2) + 1], labelText, (!mouseLastUsed && changingSlider && currentX && currentY == i) ? Color.yellow : Color.white);
 
                     if (currentLayoutSelection > 1 && GUI.Button(labelRect, ""))
                     {
@@ -653,99 +781,123 @@ public class Options : MonoBehaviour
                 GUIHelper.EndScrollView();
 
                 //Do Input Changes
+                string xboxInput = InputManager.GetXboxInput();
+
+                if (selectedInput != -1 && noInput && lockInputs && current.Type == ControllerType.Keyboard && xboxInput != "")
+                {
+                    RemoveInput(selectedInput);
+                    selectedInput = -1;
+                }
+
+                if (selectedInput != -1 && noInput && lockInputs && current.Type == ControllerType.Xbox360 && InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard && Input.GetKeyDown(KeyCode.Escape))
+                    {
+                        RemoveInput(selectedInput);
+                        selectedInput = -1;
+                    }
+
                 if (selectedInput != -1)
                 {
-                    lockInputs = true;
-                    InputManager.lockEverything = true;
-
-                    if (current.Type == ControllerType.Keyboard)
+                    if (!noInput)
                     {
-                        string newInput = Input.inputString;
-
-                        if (newInput == "")//Check for Arrow keys, ctrls, alts and shifts
-                        {
-                            if (Input.GetKey(KeyCode.LeftArrow))
-                                newInput = "leftarrow";
-                            else if (Input.GetKey(KeyCode.RightArrow))
-                                newInput = "rightarrow";
-                            else if (Input.GetKey(KeyCode.UpArrow))
-                                newInput = "uparrow";
-                            else if (Input.GetKey(KeyCode.DownArrow))
-                                newInput = "downarrow";
-                            else if (Input.GetKey(KeyCode.LeftControl))
-                                newInput = "leftcontrol";
-                            else if (Input.GetKey(KeyCode.RightControl))
-                                newInput = "rightcontrol";
-                            else if (Input.GetKey(KeyCode.LeftShift))
-                                newInput = "leftshift";
-                            else if (Input.GetKey(KeyCode.RightShift))
-                                newInput = "rightshift";
-                            else if (Input.GetKey(KeyCode.LeftAlt))
-                                newInput = "leftalt";
-                            else if (Input.GetKey(KeyCode.RightAlt))
-                                newInput = "rightalt";
-                        }
-                        else
-                        {
-                            if (newInput == "\r")
-                                newInput = "return";
-                            else if (newInput == "\b")
-                                newInput = "backspace";
-                            else if (newInput == " ")
-                                newInput = "space";
-                            else if (newInput.Length > 0)
-                                newInput = newInput[0].ToString();
-                        }
-
-                        if (newInput != "")//Input pressed
-                        {
-                            string inputToChange = availableChanges[selectedInput / 2];
-                            //Set command to new input
-                            if (selectedInput % 2 == 0)
-                            {
-                                //Check that this input isn't used for minus
-                                if (!current.commandsTwo.ContainsKey(inputToChange) || current.commandsTwo[inputToChange] != newInput)
-                                    current.commandsOne[inputToChange] = newInput;
-                            }
-                            else
-                            {
-                                //Check that this input isn't used for plus
-                                if (!current.commandsOne.ContainsKey(inputToChange) || current.commandsOne[inputToChange] != newInput)
-                                    current.commandsTwo[inputToChange] = newInput;
-                            }
-
-                            InputManager.SaveConfig();
-                            selectedInput = -1;
-                        }
+                        if (!Input.anyKey && xboxInput == "")
+                            noInput = true;
                     }
                     else
                     {
-                        string newInput = InputManager.GetXboxInput();
-                        if (newInput != "")
+                        lockInputs = true;
+                        InputManager.lockEverything = true;
+
+                        if (current.Type == ControllerType.Keyboard)
                         {
-                            string inputToChange = availableChanges[selectedInput / 2];
-                            //Set command to new input
-                            if (selectedInput % 2 == 0)
+                            string newInput = Input.inputString;
+
+                            if (newInput == "")//Check for Arrow keys, ctrls, alts and shifts
                             {
-                                //Check that this input isn't used for minus
-                                if (!current.commandsTwo.ContainsKey(inputToChange) || current.commandsTwo[inputToChange] != newInput)
-                                    current.commandsOne[inputToChange] = newInput;
+                                if (Input.GetKey(KeyCode.LeftArrow))
+                                    newInput = "leftarrow";
+                                else if (Input.GetKey(KeyCode.RightArrow))
+                                    newInput = "rightarrow";
+                                else if (Input.GetKey(KeyCode.UpArrow))
+                                    newInput = "uparrow";
+                                else if (Input.GetKey(KeyCode.DownArrow))
+                                    newInput = "downarrow";
+                                else if (Input.GetKey(KeyCode.LeftControl))
+                                    newInput = "leftcontrol";
+                                else if (Input.GetKey(KeyCode.RightControl))
+                                    newInput = "rightcontrol";
+                                else if (Input.GetKey(KeyCode.LeftShift))
+                                    newInput = "leftshift";
+                                else if (Input.GetKey(KeyCode.RightShift))
+                                    newInput = "rightshift";
+                                else if (Input.GetKey(KeyCode.LeftAlt))
+                                    newInput = "leftalt";
+                                else if (Input.GetKey(KeyCode.RightAlt))
+                                    newInput = "rightalt";
                             }
                             else
                             {
-                                //Check that this input isn't used for plus
-                                if (!current.commandsOne.ContainsKey(inputToChange) || current.commandsOne[inputToChange] != newInput)
-                                    current.commandsTwo[inputToChange] = newInput;
+                                if (newInput == "\r")
+                                    newInput = "return";
+                                else if (newInput == "\b")
+                                    newInput = "backspace";
+                                else if (newInput == " ")
+                                    newInput = "space";
+                                else if (newInput.Length > 0)
+                                    newInput = newInput[0].ToString();
                             }
 
-                            InputManager.SaveConfig();
-                            selectedInput = -1;
+                            if (newInput != "")//Input pressed
+                            {
+                                string inputToChange = availableChanges[selectedInput / 2];
+                                //Set command to new input
+                                if (selectedInput % 2 == 0)
+                                {
+                                    //Check that this input isn't used for minus
+                                    if (!current.commandsTwo.ContainsKey(inputToChange) || current.commandsTwo[inputToChange] != newInput)
+                                        current.commandsOne[inputToChange] = newInput;
+                                }
+                                else
+                                {
+                                    //Check that this input isn't used for plus
+                                    if (!current.commandsOne.ContainsKey(inputToChange) || current.commandsOne[inputToChange] != newInput)
+                                        current.commandsTwo[inputToChange] = newInput;
+                                }
+
+                                InputManager.SaveConfig();
+                                selectedInput = -1;
+                            }
+                        }
+                        else
+                        {
+                            string newInput = xboxInput;
+                            if (newInput != "")
+                            {
+                                string inputToChange = availableChanges[selectedInput / 2];
+                                //Set command to new input
+                                if (selectedInput % 2 == 0)
+                                {
+                                    //Check that this input isn't used for minus
+                                    if (!current.commandsTwo.ContainsKey(inputToChange) || current.commandsTwo[inputToChange] != newInput)
+                                        current.commandsOne[inputToChange] = newInput;
+                                }
+                                else
+                                {
+                                    //Check that this input isn't used for plus
+                                    if (!current.commandsOne.ContainsKey(inputToChange) || current.commandsOne[inputToChange] != newInput)
+                                        current.commandsTwo[inputToChange] = newInput;
+                                }
+
+                                InputManager.SaveConfig();
+                                selectedInput = -1;
+                            }
                         }
                     }
                 }
                 else
                 {
-                    if (lockInputs && !Input.anyKey)
+                    noInput = false;
+
+                    if (lockInputs && !Input.anyKey && xboxInput == "")
                     {
                         lockInputs = false;
                         InputManager.lockEverything = false;
@@ -796,5 +948,15 @@ public class Options : MonoBehaviour
     {
         Screen.SetResolution(Screen.resolutions[currentResolution].width, Screen.resolutions[currentResolution].height, fullScreen);
         QualitySettings.SetQualityLevel(currentQuality);
+    }
+
+    private void ChangeType(int i)
+    {
+        InputManager.AllConfigs[i].Type++;
+        if ((int)InputManager.AllConfigs[i].Type >= 2)
+            InputManager.AllConfigs[i].Type = 0;
+
+        InputManager.AllConfigs[i].CancelLoad();
+        InputManager.SaveConfig();
     }
 }

@@ -26,7 +26,7 @@ public class Leaderboard : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
-        gd = GameObject.FindObjectOfType<CurrentGameData>();
+        gd = FindObjectOfType<CurrentGameData>();
         BoardTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Backing");
 
         if (hidden)

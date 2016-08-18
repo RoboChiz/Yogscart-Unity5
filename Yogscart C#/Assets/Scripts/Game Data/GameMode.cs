@@ -359,6 +359,8 @@ abstract public class GameMode : MonoBehaviour
 
         yield return null;
 
+        FindObjectOfType<MainMenu>().ReturnFromGame();
+
         Destroy(this);
     }
 

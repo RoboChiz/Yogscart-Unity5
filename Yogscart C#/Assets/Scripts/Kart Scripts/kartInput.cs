@@ -20,7 +20,7 @@ public class kartInput : MonoBehaviour
         ks.throttle = Mathf.Abs(InputManager.controllers[myController].GetInput("Throttle"));
         ks.throttle -= Mathf.Abs(InputManager.controllers[myController].GetInput("Brake"));
 
-        ks.steer = InputManager.controllers[myController].GetInput("Steer");
+        ks.steer = Mathf.Abs(InputManager.controllers[myController].GetInput("SteerRight")) - Mathf.Abs(InputManager.controllers[myController].GetInput("SteerLeft"));
         ks.drift = (InputManager.controllers[myController].GetInput("Drift") != 0);
 
         bool lookBehind = (InputManager.controllers[myController].GetInput("RearView") != 0);
