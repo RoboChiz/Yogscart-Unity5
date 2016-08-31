@@ -28,7 +28,7 @@ public class RacerAI : MonoBehaviour
     void Awake()
     {
         ks = GetComponent<kartScript>();
-        td = GameObject.FindObjectOfType<TrackData>();
+        td = FindObjectOfType<TrackData>();
         pf = GetComponent<PositionFinding>();
 
         if (ks.locked)
@@ -130,7 +130,8 @@ public class RacerAI : MonoBehaviour
 
             var checkPos = transform.position + Vector3.up;
 
-            if (!Physics.Raycast(checkPos, transform.forward, reverseDistance) && !Physics.Raycast(checkPos + transform.right, transform.forward, reverseDistance) && !Physics.Raycast(checkPos - transform.right, transform.forward, reverseDistance))
+            int layermask = 1 << 9;
+            if (!Physics.Raycast(checkPos, transform.forward, reverseDistance, layermask) && !Physics.Raycast(checkPos + transform.right, transform.forward, reverseDistance, layermask) && !Physics.Raycast(checkPos - transform.right, transform.forward, reverseDistance, layermask))
                 reversing = false;
         }
 

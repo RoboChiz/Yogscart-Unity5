@@ -6,7 +6,6 @@ public class kartInput : MonoBehaviour
 {
 
     private kartScript ks;
-
     public int myController;
     public bool camLocked = false;
     public Camera frontCamera, backCamera;

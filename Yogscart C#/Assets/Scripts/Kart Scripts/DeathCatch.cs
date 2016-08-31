@@ -41,6 +41,7 @@ public class DeathCatch : MonoBehaviour {
             transform.position = nPos;
             transform.rotation = Quaternion.Euler(0, 0, 0);
             transform.rotation = Quaternion.LookRotation(nPos1 - nPos, Vector3.up);
+            transform.GetComponent<kartScript>().tricking = false;
 
         }
 

@@ -2,6 +2,9 @@
 
 ## Changelog : Started 04/08/2016
 
+## 31/08/2016
+* Started working on the new AI system
+
 ## 18/08/2016
 * Added Right Stick icon to Layout Scrollbar
 * Fixed bug where menu wouldn't activate mouse mode correctly

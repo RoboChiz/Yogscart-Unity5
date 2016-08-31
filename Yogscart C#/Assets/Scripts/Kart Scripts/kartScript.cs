@@ -39,7 +39,7 @@ public class kartScript : MonoBehaviour
     }
 
     //Drifting Stuff
-    private int driftSteer;
+    public int driftSteer { get; private set; }
     private bool driftStarted, applyingDrift;
     const float kartbodyRot = 20f; //Amount that the kartbody rotates during drifting
     private float driftTime, blueTime = 2f, orangeTime = 4f;
@@ -58,7 +58,8 @@ public class kartScript : MonoBehaviour
     public static int startBoostVal = -1;
 
     //Tricking off Ramps
-    private bool tricking, trickPotential, trickLock;
+    public bool tricking;
+    private bool trickPotential, trickLock;
 
     //Speed Altering factors
     static private float boostPercent = 0.4f, grassPercent = 0.45f;
@@ -266,32 +267,47 @@ public class kartScript : MonoBehaviour
 
     public void KartCollision(Transform otherKart)
     {
+        StartCoroutine(DoCollision(otherKart));      
+    }
+
+    private IEnumerator DoCollision(Transform otherKart)
+    {
+
         //Stop the karts from colliding
         Vector3 compareVect = otherKart.position - transform.position;
+        Vector3 localVel = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
 
-        /*
-        𝑣1 = (((𝑚1−𝑚2)/(𝑚1+𝑚2)) × 𝑢1) + ((2𝑚2)/(𝑚1+𝑚2)× 𝑢2) 
-        */
         Rigidbody me = GetComponent<Rigidbody>();
         Rigidbody them = otherKart.GetComponent<Rigidbody>();
 
-        Vector3 newVelocity = ((2f * them.mass) / (me.mass + them.mass)) * them.velocity;
+        Vector3 newVelocity = transform.InverseTransformDirection(((2f * them.mass) / (me.mass + them.mass)) * them.velocity);
+            
+        //Do Collision
+        localVel = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
 
         if (Vector3.Angle(transform.forward, compareVect) < 25)
         {
             if (Vector3.Angle(transform.right, compareVect) < 90)
-                newVelocity = -transform.right * newVelocity.magnitude;
+                localVel.x = -newVelocity.x;
             else
-                newVelocity = transform.right * newVelocity.magnitude;
+                localVel.x = newVelocity.x;
         }
 
-        if(newVelocity.magnitude > 20)
+        localVel.x *= 0.5f;
+
+        while ((otherKart.position - transform.position).magnitude < 2f)
         {
-            newVelocity = newVelocity.normalized * 20f;
+            GetComponent<Rigidbody>().velocity = transform.TransformDirection(localVel);
+            GetComponent<Rigidbody>().freezeRotation = true;
+            yield return null;
         }
 
-        me.velocity += newVelocity;
-       
+        GetComponent<Rigidbody>().freezeRotation = false;
+
+        //Stop Collision
+        Vector3 nLocalVel = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
+        nLocalVel.x = 0;
+        GetComponent<Rigidbody>().velocity = transform.TransformDirection(nLocalVel);
     }
 
     void DoTrick()
@@ -439,7 +455,10 @@ public class kartScript : MonoBehaviour
                 }
                 else if (driftTime >= blueTime)
                 {
-                    driftParticles[f].GetComponent<ParticleSystem>().Play();
+                    //Turn Particles on if they're not
+                    if(!driftParticles[f].GetComponent<ParticleSystem>().isPlaying)
+                        driftParticles[f].GetComponent<ParticleSystem>().Play();
+
                     driftParticles[f].GetComponent<Renderer>().material = Resources.Load<Material>("Particles/Drift Particles/Spark_Blue");
                 }
             }

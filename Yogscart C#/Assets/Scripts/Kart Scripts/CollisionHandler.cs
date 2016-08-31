@@ -42,11 +42,9 @@ public class CollisionHandler : MonoBehaviour
                     otherKarts[i].KartCollision(otherKarts[j].transform);
                     otherKarts[j].KartCollision(otherKarts[i].transform);
 
-                   // Vector3 pushAmount = (2.1f - compareVect.magnitude) * compareVect;
-
-                    //otherKarts[i].transform.position -= pushAmount;
-                    //otherKarts[j].transform.position += pushAmount;
-
+                   // Vector3 pushAmount = (2f - compareVect.magnitude) * compareVect;
+                    //StartCoroutine(DoPush(otherKarts[i].transform, -pushAmount));
+                    //StartCoroutine(DoPush(otherKarts[j].transform, pushAmount));
                 }
                 else if (collisions[i, j] && compareVect.magnitude >= 2f)
                 {
@@ -74,5 +72,19 @@ public class CollisionHandler : MonoBehaviour
             }
         }
 
+    }
+
+    private IEnumerator DoPush(Transform kart, Vector3 pushDir)
+    {
+        float startTime = Time.time, travelTime = 0.2f;
+        Vector3 lastPush = Vector3.zero;
+
+        while(Time.time - startTime < travelTime)
+        {
+            Vector3 actualPush = Vector3.Slerp(Vector3.zero, pushDir, (Time.time - startTime) / travelTime);
+            kart.position += actualPush - lastPush;
+            lastPush = actualPush;
+            yield return null;
+        }
     }
 }
