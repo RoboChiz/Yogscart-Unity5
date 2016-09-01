@@ -2,6 +2,11 @@
 
 ## Changelog : Started 04/08/2016
 
+## 1/09/2016
+* Fixed bug where drifting didn't steer a lot
+* Added Boosting to AI
+* Improved quality of "Perfect" AI
+
 ## 31/08/2016
 * Started working on the new AI system
 

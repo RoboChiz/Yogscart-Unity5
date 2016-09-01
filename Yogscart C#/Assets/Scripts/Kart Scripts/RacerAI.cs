@@ -155,7 +155,7 @@ public class RacerAI : MonoBehaviour
         if (angle > turnAngle)
         {
             //Slow down to make turn
-            if (stupidity < 5f)
+            if (stupidity > 5f)
             {
                 if (ks.ActualSpeed >= turnSpeed)
                     ks.throttle = 0;

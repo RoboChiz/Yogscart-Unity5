@@ -40,7 +40,8 @@ public class kartScript : MonoBehaviour
 
     //Drifting Stuff
     public int driftSteer { get; private set; }
-    private bool driftStarted, applyingDrift;
+    public bool driftStarted { get; private set; }
+    private bool applyingDrift;
     const float kartbodyRot = 20f; //Amount that the kartbody rotates during drifting
     private float driftTime, blueTime = 2f, orangeTime = 4f;
     public bool onlineMode = false; //Stops local boosting and spinning out. This is handled by the server (These are handled by server)
@@ -390,8 +391,13 @@ public class kartScript : MonoBehaviour
         }
         else
         {
-            wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle, (driftSteer * turnSpeed) + (steer * driftAmount), lastTime * 500f);
-            wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle, (driftSteer * turnSpeed) + (steer * driftAmount), lastTime * 500f);
+            nSteer = Mathf.Sign(driftSteer);
+            nSteer *= Mathf.Lerp(2f, 0.8f, Mathf.Abs(actualSpeed) / (maxSpeed + boostAddition));
+
+            float nDriftAmount = Mathf.Lerp(1f, 1.5f, Mathf.Abs(driftSteer + steer));
+
+            wheelColliders[0].steerAngle = Mathf.Lerp(wheelColliders[0].steerAngle, (nSteer * turnSpeed) + (steer * nDriftAmount), lastTime * 50f);
+            wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle, (nSteer * turnSpeed) + (steer * nDriftAmount), lastTime * 50f);
         }
 
         if (isColliding || isFalling)
@@ -487,6 +493,7 @@ public class kartScript : MonoBehaviour
             }
 
             driftTime = 0f;
+            driftSteer = 0;
             driftParticles[0].GetComponent<ParticleSystem>().Stop();
             driftParticles[1].GetComponent<ParticleSystem>().Stop();
         }
@@ -497,6 +504,7 @@ public class kartScript : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
         applyingDrift = false;
+        driftSteer = 0;
     }
 
     public void Boost(float t, BoostMode type)
