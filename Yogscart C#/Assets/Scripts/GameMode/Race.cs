@@ -118,9 +118,9 @@ public class Race : GameMode
             }
             else
             {
-                RacerAI ai = racers[i].ingameObj.gameObject.AddComponent<RacerAI>();
-                ai.stupidity = racers[i].AiStupidity;
-                ai.adjusterFloat = Mathf.Lerp(-5f, 5f, (i % 3) / 2f);
+                AI ai = racers[i].ingameObj.gameObject.AddComponent<AI>();
+                ai.intelligence = (AI.AIStupidity)racers[i].AiStupidity;
+                ai.canDrive = false;
             }
         }
 
@@ -150,7 +150,7 @@ public class Race : GameMode
 
         yield return new WaitForSeconds(3f);
 
-        kartInfo[] kies = GameObject.FindObjectsOfType<kartInfo>();
+        kartInfo[] kies = FindObjectsOfType<kartInfo>();
         foreach (kartInfo ki in kies)
             ki.hidden = false;
 
@@ -158,7 +158,7 @@ public class Race : GameMode
         foreach (kartItem ki in kitemes)
             ki.hidden = false;
 
-        kartInput[] kines = GameObject.FindObjectsOfType<kartInput>();
+        kartInput[] kines = FindObjectsOfType<kartInput>();
         foreach (kartInput ki in kines)
             ki.camLocked = false;
 
@@ -171,7 +171,7 @@ public class Race : GameMode
         StartTimer();
 
         //Unlock the karts
-        kartScript[] kses = GameObject.FindObjectsOfType<kartScript>();
+        kartScript[] kses = FindObjectsOfType<kartScript>();
         foreach (kartScript ks in kses)
             ks.locked = false;
 
@@ -636,7 +636,7 @@ public class Race : GameMode
 
     protected IEnumerator FinishKart(Racer racer)
     {
-        racer.ingameObj.gameObject.AddComponent<RacerAI>();
+        racer.ingameObj.gameObject.AddComponent<AI>();
         Destroy(racer.ingameObj.GetComponent<kartInput>());
         //Hide Kart Item
         if (racer.ingameObj.GetComponent<kartItem>() != null)

@@ -29,7 +29,12 @@ public class AI : MonoBehaviour
     public enum PathCorrecting { Fine, Turning, Straightening };
     public PathCorrecting pc = PathCorrecting.Fine;
 
+    public enum StartType { WillBoost, WontBoost, WillSpin };
+    public StartType myStartType;
+
     public float angle = 0f, nextAngle = 0f;
+    private bool canDrift = true;
+    public bool canDrive = true;
 
     // Use this for initialization
     void Start()
@@ -38,180 +43,253 @@ public class AI : MonoBehaviour
         pf = FindObjectOfType<PositionFinding>();
 
         AnalyseTrack();
+
+        //Decide my Start Boost
+        myStartType = StartType.WontBoost;
+        if (intelligence == AIStupidity.Stupid) //Will always Spin Out
+            myStartType = StartType.WillSpin;
+        if (intelligence == AIStupidity.Bad && Random.Range(0, 10) >= 5) //50% chance of Spinning Out
+            myStartType = StartType.WillSpin;
+        if (intelligence == AIStupidity.Good && Random.Range(0, 10) >= 4) //40% chance of Boosting at Start
+            myStartType = StartType.WillBoost;
+        if (intelligence == AIStupidity.Great && Random.Range(0, 10) >= 7)//70% chance of Boosting at Start
+            myStartType = StartType.WillBoost;
+        if (intelligence == AIStupidity.Perfect)//Will always of Boost at Start
+            myStartType = StartType.WillBoost;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Debug.DrawLine(transform.position, td.positionPoints[currentNode].position, Color.green);
-
-        if (percent > 1)
-        {
-            currentNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-            nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-            nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
-
-            currentPercent = 0;
-        }
-        if (percent < 0)
-        {
-            currentNode = MathHelper.NumClamp(currentNode - 1, 0, td.positionPoints.Count);
-            nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-            nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
-
-            currentPercent = 0;
-        }
-
-        Vector3 startPos = td.positionPoints[currentNode].position, endPos = td.positionPoints[nextNode].position;
-        Vector3 vecBetweenPoints = (endPos - startPos);
-
-        Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(vecBetweenPoints), Vector3.one).inverse;
-
-        localPos = matrix * (transform.position - startPos);
-        percent = localPos.z / vecBetweenPoints.magnitude;
-
         kartScript ks = GetComponent<kartScript>();
 
-        //Do Driving
-        angle = -MathHelper.Angle(transform.forward, vecBetweenPoints);
-        nextAngle = -MathHelper.Angle(transform.forward, (td.positionPoints[nextnextNode].position - td.positionPoints[nextNode].position));
+        //Handles Start Boosting
+        if (kartScript.startBoostVal != -1)
+        {            
+            if ((myStartType == StartType.WillBoost && kartScript.startBoostVal <= 2) || (myStartType == StartType.WillSpin && kartScript.startBoostVal <= 3))
+                ks.throttle = 1;
 
-        if (Mathf.Abs(angle) < 45)
+            if (kartScript.startBoostVal <= 1)
+                canDrive = true;
+
+        }
+
+        if (canDrive)
         {
-            //We're going the right way
-            ks.throttle = 1f;
+            Debug.DrawLine(transform.position, td.positionPoints[currentNode].position, Color.green);
 
-            //Find the current Percent
-            for (int i = 0; i < AITrackInfo[currentNode].Count; i++)
+            if (percent > 1)
             {
-                if (AITrackInfo[currentNode][i].percent < percent)
-                {
-                    currentPercent = i;
-                }
+                currentNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+                nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
+
+                currentPercent = 0;
+            }
+            if (percent < 0)
+            {
+                currentNode = MathHelper.NumClamp(currentNode - 1, 0, td.positionPoints.Count);
+                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+                nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
+
+                currentPercent = 0;
             }
 
-            //On the right path, follow the track analysis
-            if (percent >= AITrackInfo[currentNode][currentPercent].percent)
+            Vector3 startPos = td.positionPoints[currentNode].position, endPos = td.positionPoints[nextNode].position;
+            Vector3 vecBetweenPoints = (endPos - startPos);
+
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(vecBetweenPoints), Vector3.one).inverse;
+
+            localPos = matrix * (transform.position - startPos);
+            percent = localPos.z / vecBetweenPoints.magnitude;
+         
+            //Do Driving
+            angle = -MathHelper.Angle(transform.forward, vecBetweenPoints);
+            nextAngle = -MathHelper.Angle(transform.forward, (td.positionPoints[nextnextNode].position - td.positionPoints[nextNode].position));
+
+            if (Mathf.Abs(angle) < 45)
             {
-                ks.steer = AITrackInfo[currentNode][currentPercent].turnAmount;
+                //We're going the right way
+                ks.throttle = 1f;
 
-                if (ks.steer != 0)
-                    pc = PathCorrecting.Fine;
-
-                if ((ks.steer > 0 && localPos.x > maxXDistance * 2f) || (ks.steer < 0 && localPos.x < -maxXDistance * 2f))
-                    pc = PathCorrecting.Turning;
-
-                float nExpectedSpeed = Mathf.Lerp(ks.maxSpeed, (ks.driftStarted) ? ks.maxSpeed : 17f, 10 / pathLengths[currentNode]);
-                if (ks.expectedSpeed > nExpectedSpeed)
-                    ks.throttle = 0;
-                else
-                    ks.throttle = 1;
-
-                if (AITrackInfo[currentNode][currentPercent].drift)
+                //Find the current Percent
+                for (int i = 0; i < AITrackInfo[currentNode].Count; i++)
                 {
-                    if (MathHelper.Sign(ks.steer) == MathHelper.Sign(angles[currentNode]))
-                        ks.drift = true;
+                    if (AITrackInfo[currentNode][i].percent < percent)
+                    {
+                        currentPercent = i;
+                    }
                 }
-                else
+
+                //On the right path, follow the track analysis
+                if (percent >= AITrackInfo[currentNode][currentPercent].percent)
+                {
+                    ks.steer = AITrackInfo[currentNode][currentPercent].turnAmount;
+
+                    if (ks.steer != 0)
+                        pc = PathCorrecting.Fine;
+
+
+                    float nExpectedSpeed = Mathf.Lerp(ks.maxSpeed, (ks.driftStarted) ? ks.maxSpeed : 17f, 10 / pathLengths[currentNode]);
+                    if (ks.expectedSpeed > nExpectedSpeed)
+                        ks.throttle = 0;
+                    else
+                        ks.throttle = 1;
+
+                    if (AITrackInfo[currentNode][currentPercent].drift)
+                    {
+                        if (MathHelper.Sign(ks.steer) == MathHelper.Sign(angles[currentNode]))
+                        {
+                            if (!canDrift)
+                            {
+                                canDrift = true;
+                                ShouldDoDrift();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ks.drift = false;
+                        canDrift = false;
+                    }
+
+                }
+                else if (Mathf.Abs(angle) < minAngle)
+                {
+                    ks.steer = 0;
                     ks.drift = false;
+                    canDrift = false;
+                }
+                else
+                {
+                    ks.drift = false;
+                    canDrift = false;
+                }
 
-            }
-            else if (Mathf.Abs(angle) < minAngle)
-            {
-                ks.steer = 0;
-                ks.drift = false;
+                if (ks.driftStarted && ks.driftSteer != 0)
+                {
+                    pc = PathCorrecting.Fine;
+                    float tempMinAngle = 30f, tempMaxAngle = 10f, minX = 4f, maxX = 5f;
+
+                    //We're drifting right
+                    if (ks.driftSteer > 0)
+                    {
+                        //Stay on the right side of the path
+                        if ((localPos.x < minX && angle < tempMinAngle) || angle < -minAngle || (percent > 0.5f && nextAngle < -minAngle))
+                            ks.steer = 1;
+                        else if ((localPos.x > maxX && angle > -tempMaxAngle) || angle > minAngle)
+                            ks.steer = -1;
+                        else
+                            ks.steer = 0;
+                    }
+                    else //We're drifting Left
+                    {
+                        //Stay on the left side of the path
+                        if ((localPos.x > -minX && angle > -tempMinAngle) || angle > minAngle || (percent > 0.5f && nextAngle > minAngle))
+                            ks.steer = -1;
+                        else if ((localPos.x < -maxX && angle < tempMaxAngle) || angle < -minAngle)
+                            ks.steer = 1;
+                        else
+                            ks.steer = 0;
+                    }
+                }
+
+                //Straighten Up if you need to
+                if (!ks.drift && (Mathf.Abs(localPos.x) > maxXDistance || ks.steer == 0 || pc != PathCorrecting.Fine))
+                {
+                    switch (pc)
+                    {
+                        case PathCorrecting.Fine:
+                            //If we're too far from the line, everything is not okay!
+                            if (Mathf.Abs(localPos.x) > maxXDistance || Mathf.Abs(angle) > minAngle)
+                                pc = PathCorrecting.Turning;
+                            break;
+                        case PathCorrecting.Turning:
+
+                            float aimPoint = percent + 0.2f, offset = 0f;
+                            Vector3 rightVec = Vector3.zero;
+
+                            //Only do this offset if smarter then Bad
+                            if (intelligence > AIStupidity.Bad)
+                            {
+                                offset = Mathf.Abs(angles[currentNode]) >= turnAngleRequired ? MathHelper.Sign(angles[currentNode]) : 0f * 4f;
+                                if (offset != 0f)
+                                    rightVec = (Quaternion.AngleAxis(90, Vector3.up) * vecBetweenPoints).normalized;
+                            }
+
+                            Vector3 attackPoint = startPos + (vecBetweenPoints * aimPoint) + (rightVec * offset);
+                            Debug.DrawLine(transform.position, attackPoint, Color.yellow);
+
+                            Vector3 attackFoward = attackPoint - transform.position, myForward = transform.forward;
+                            attackFoward.y = 0;
+                            myForward.y = 0;
+
+                            if (Mathf.Abs(localPos.x) < maxXDistance)
+                                pc = PathCorrecting.Straightening;
+
+                            float nAngle = MathHelper.Angle(myForward, attackFoward);
+                            if (nAngle > minAngle)
+                                ks.steer = 1;
+                            else if (nAngle < -minAngle)
+                                ks.steer = -1;
+                            else if (Mathf.Abs(angle) < minAngle)
+                                pc = PathCorrecting.Straightening;
+                            break;
+                        case PathCorrecting.Straightening:
+                            if (angle > minAngle)
+                                ks.steer = -1;
+                            else if (angle < -minAngle)
+                                ks.steer = 1;
+                            else
+                            {
+                                ks.steer = 0;
+                                pc = PathCorrecting.Fine;
+                            }
+
+                            break;
+                    }
+                }
+
             }
             else
             {
-                ks.drift = false;
+                //We're going the wrong way
+                ks.throttle = 1;
             }
-
-            if (ks.driftStarted && ks.driftSteer != 0)
-            {
-                pc = PathCorrecting.Fine;
-                float tempMinAngle = 30f, tempMaxAngle = 10f, minX = 4f, maxX = 5f;
-
-                //We're drifting right
-                if (ks.driftSteer > 0)
-                {
-                    //Stay on the right side of the path
-                    if ((localPos.x < minX && angle < tempMinAngle) || angle < -minAngle || (percent > 0.5f && nextAngle < -minAngle))
-                        ks.steer = 1;
-                    else if ((localPos.x > maxX && angle > -tempMaxAngle) || angle > minAngle)
-                        ks.steer = -1;
-                    else
-                        ks.steer = 0;
-                }
-                else //We're drifting Left
-                {
-                    //Stay on the left side of the path
-                    if ((localPos.x > -minX && angle > -tempMinAngle) || angle > minAngle || (percent > 0.5f && nextAngle > minAngle))
-                        ks.steer = -1;
-                    else if ((localPos.x < -maxX && angle < tempMaxAngle) || angle < -minAngle)
-                        ks.steer = 1;
-                    else
-                        ks.steer = 0;
-                }
-            }
-
-            //Straighten Up if you need to
-            if (!ks.drift && (Mathf.Abs(localPos.x) > maxXDistance || ks.steer == 0 || pc != PathCorrecting.Fine))
-            {
-                switch (pc)
-                {
-                    case PathCorrecting.Fine:
-                        //If we're too far from the line, everything is not okay!
-                        if (Mathf.Abs(localPos.x) > maxXDistance || Mathf.Abs(angle) > minAngle)
-                            pc = PathCorrecting.Turning;
-                        break;
-                    case PathCorrecting.Turning:
-
-                        float aimPoint = percent + 0.2f;
-
-                        float offset = Mathf.Abs(angles[currentNode]) >= turnAngleRequired ? MathHelper.Sign(angles[currentNode]) : 0f * 4f;
-
-                        Vector3 rightVec = Vector3.zero;
-                        if (offset != 0f)
-                            rightVec = (Quaternion.AngleAxis(90, Vector3.up) * vecBetweenPoints).normalized;
-
-                        Vector3 attackPoint = startPos + (vecBetweenPoints * aimPoint) + (rightVec * offset);
-                        Debug.DrawLine(transform.position, attackPoint, Color.yellow);
-
-                        Vector3 attackFoward = attackPoint - transform.position, myForward = transform.forward;
-                        attackFoward.y = 0;
-                        myForward.y = 0;
-
-                        if (Mathf.Abs(localPos.x) < maxXDistance)
-                            pc = PathCorrecting.Straightening;
-
-                        float nAngle = MathHelper.Angle(myForward, attackFoward);
-                        if (nAngle > minAngle)
-                            ks.steer = 1;
-                        else if (nAngle < -minAngle)
-                            ks.steer = -1;
-                        else if (Mathf.Abs(angle) < minAngle)
-                            pc = PathCorrecting.Straightening;
-                        break;
-                    case PathCorrecting.Straightening:
-                        if (angle > minAngle)
-                            ks.steer = -1;
-                        else if (angle < -minAngle)
-                            ks.steer = 1;
-                        else
-                        {
-                            ks.steer = 0;
-                            pc = PathCorrecting.Fine;
-                        }
-
-                        break;
-                }
-            }
-
         }
-        else
+    }
+
+    private void ShouldDoDrift()
+    {
+        kartScript ks = GetComponent<kartScript>();
+
+        //Calculate if the kart should do a drift
+       switch(intelligence)
         {
-            //We're going the wrong way
-            ks.throttle = 1;
+            case AIStupidity.Perfect:
+                ks.drift = true;
+                break;
+            case AIStupidity.Great:
+                int randomNum = Random.Range(0, 100);
+                Debug.Log("Random:" + randomNum);
+                if (randomNum < 75) //75% chance of drifting
+                    ks.drift = true;
+                break;
+            case AIStupidity.Good:
+                randomNum = Random.Range(0, 100);
+                Debug.Log("Random:" + randomNum);
+                if (randomNum < 50) //50% chance of drifting
+                    ks.drift = true;
+                break;
+            case AIStupidity.Bad:
+                randomNum = Random.Range(0, 100);
+                Debug.Log("Random:" + randomNum);
+                if (randomNum < 25) //25% chance of drifting
+                    ks.drift = true;
+                break;
+            case AIStupidity.Stupid:
+                ks.drift = false;
+                break;
         }
     }
 

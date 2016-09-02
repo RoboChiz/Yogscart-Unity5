@@ -2,6 +2,11 @@
 
 ## Changelog : Started 04/08/2016
 
+## 2/09/2016
+* Added Start Boosting to AI
+* Added (basic) AI changing playstyle depending on Intelligence
+* Replace old AI code with new AI
+
 ## 1/09/2016
 * Fixed bug where drifting didn't steer a lot
 * Added Boosting to AI

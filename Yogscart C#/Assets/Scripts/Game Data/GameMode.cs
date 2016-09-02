@@ -74,20 +74,20 @@ abstract public class GameMode : MonoBehaviour
             switch (diff)
             {
                 case 0:
-                    maxVal = 10;
-                    minVal = 7;
+                    maxVal = 2;
+                    minVal = 0;
                     break;
                 case 1:
-                    maxVal = 8;
-                    minVal = 4;
+                    maxVal = 3;
+                    minVal = 1;
                     break;
                 case 2:
-                    maxVal = 5;
-                    minVal = 0;
+                    maxVal = 4;
+                    minVal = 2;
                     break;
                 default:
-                    maxVal = 3;
-                    minVal = 0;
+                    maxVal = 4;
+                    minVal = 4;
                     break;
             }
 
