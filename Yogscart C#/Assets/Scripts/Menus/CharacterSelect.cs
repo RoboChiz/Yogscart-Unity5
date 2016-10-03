@@ -568,8 +568,14 @@ public class CharacterSelect : MonoBehaviour
                     if (i == 0 && !showLayout[i] && GUI.Button(roundedRectangleRect, ""))
                         showLayout[i] = true;
 
-                    GUI.Label(new Rect(startX + 20, 1060 - boxHeight, 250, 50), InputManager.controllers[i].controlLayout.Name);
+                    GUIStyle nstyle = new GUIStyle(GUI.skin.label);
+                    nstyle.alignment = TextAnchor.MiddleCenter;
+
+                    Rect otherLabelRect = new Rect(startX + 60, 1060 - boxHeight, 210, 50);
+                    GUI.Label(otherLabelRect, InputManager.controllers[i].controlLayout.Name, nstyle);
+
                     GUI.DrawTexture(new Rect(startX + 270, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Controls/" + ((InputManager.controllers[i].controlLayout.Type == ControllerType.Keyboard) ? "Keyboard" : "Xbox_1")));
+                    GUI.DrawTexture(new Rect(startX + 10, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Options/X"));
 
                     if (boxHeight != layoutBoxStartHeight)
                     {

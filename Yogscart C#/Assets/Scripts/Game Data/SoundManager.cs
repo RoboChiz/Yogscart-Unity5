@@ -31,6 +31,17 @@ public class SoundManager : MonoBehaviour
     void Update ()
     {
         UpdateSound();
+
+        AudioSource[] allSound = FindObjectsOfType<AudioSource>();
+
+        foreach(AudioSource sound in allSound)
+        {
+            //If Audio Source is not one of ours, set it's volume to SFX volume
+            if(sound != mSource && sound != sfxSource && sound != dSource)
+            {
+                sound.volume = sound.volume * sfxSource.volume;
+            }
+        }
     }
 
     void UpdateSound()

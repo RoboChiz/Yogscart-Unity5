@@ -306,7 +306,7 @@ public class NetworkRaceClient : Race
     private IEnumerator OnAllPlayerFinishedWait()
     {
         yield return new WaitForSeconds(5);
-        GetComponent<Leaderboard>().SecondStep();
+        GetComponent<Leaderboard>().DoInput();
     }
 
     //Sent by server, contains the client's position on the leaderboard

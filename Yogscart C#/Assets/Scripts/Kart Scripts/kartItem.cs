@@ -5,7 +5,6 @@ public enum ItemOwner { Mine, Ai, Online };
 
 public class kartItem : MonoBehaviour
 {
-
     private CurrentGameData gd;
     private kartInfo ki;
     private kartInput kaI;
@@ -254,7 +253,7 @@ public class kartItem : MonoBehaviour
         if(ki == null)
             ki = GetComponent<kartInfo>();
 
-        if (GetComponent<RacerAI>())//If AI detected must be AI
+        if (GetComponent<AI>())//If AI detected must be AI
             itemOwner = ItemOwner.Ai;
 
         if(kaI == null)

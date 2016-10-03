@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public enum LBType { Points, NoPoints, Sorted, TimeTrial };
+public enum LBType { AddingPoints, AddedPoints, NoPoints, Sorted, TimeTrial };
 
 public class Leaderboard : MonoBehaviour
 {
@@ -14,14 +14,15 @@ public class Leaderboard : MonoBehaviour
     const float slideTime = 0.5f;
     private float sideAmount = 0, guiAlpha = 0f;
 
-    public LBType state = LBType.Points;
+    public LBType state = LBType.AddingPoints;
 
     public List<DisplayRacer> racers;
 
     //Textures that can be loaded
     private Texture2D BoardTexture;
 
-    private float pointCount;
+    private float pointCount, pcSpeed = 2f;
+    private bool startedSecond = false;
 
     // Use this for initialization
     void Awake()
@@ -34,7 +35,7 @@ public class Leaderboard : MonoBehaviour
         else
             sideAmount = 960;
 
-        racers = new List<DisplayRacer>();
+        pcSpeed = 2f;
     }
 
     public void StartLeaderBoard()
@@ -51,7 +52,7 @@ public class Leaderboard : MonoBehaviour
             yield return null;
         }
 
-        state = LBType.Points;
+        state = LBType.AddingPoints;
         pointCount = 0;
     }
 
@@ -67,18 +68,36 @@ public class Leaderboard : MonoBehaviour
         state = LBType.NoPoints;
     }
 
-    public void SecondStep()
+    public void DoInput()
     {
-        List<DisplayRacer> holder = SortingScript.CalculatePoints(racers);
-
-        for (var j = 0; j < holder.Count; j++)
+        if(state == LBType.AddingPoints && !startedSecond)
         {
-            StartCoroutine(ChangePosition(holder[j], j));
+            startedSecond = true;
+            StartCoroutine(SpeedUpPoints());
         }
+        else if(state == LBType.AddedPoints)
+        {
+            List<DisplayRacer> holder = SortingScript.CalculatePoints(racers);
+            for (var j = 0; j < holder.Count; j++)
+            {
+                StartCoroutine(ChangePosition(holder[j], j));
+            }
 
-        Debug.Log("Sorted!");
-        //Debug.Log("The best human Racer is " + BestHuman());
-        state = LBType.Sorted;
+            Debug.Log("Sorted!");
+            //Debug.Log("The best human Racer is " + BestHuman());
+            state = LBType.Sorted;
+        }
+    }
+
+    private IEnumerator SpeedUpPoints()
+    {
+        if (pointCount < 15f)
+            pcSpeed = 20f;
+
+        while (pointCount < 15f)
+            yield return null;
+
+        state = LBType.AddedPoints;       
     }
 
     void Update()
@@ -181,7 +200,7 @@ public class Leaderboard : MonoBehaviour
         switch (state)
         {
             case LBType.TimeTrial:
-                if (racers.Count > 0)
+                if (racers != null && racers.Count > 0)
                 {
                     float bestTime = gd.tournaments[Race.currentCup].tracks[Race.currentTrack].bestTime;
                     float playerTime = racers[0].timer;
@@ -199,57 +218,62 @@ public class Leaderboard : MonoBehaviour
                 }
                 break;
             default:
-                for (int i = 0; i < racers.Count; i++)
+                if (racers != null)
                 {
-                    DisplayRacer nRacer = racers[i];
-
-                    //Render Bars showing what place you came
-                    if (nRacer.human >= 0)
+                    for (int i = 0; i < racers.Count; i++)
                     {
-                        Texture2D humanTexture;
+                        DisplayRacer nRacer = racers[i];
 
-                        humanTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Winner_P" + (nRacer.human + 1).ToString());
-                        Rect humanTextureRect = new Rect(0, ((nRacer.position + 1) * optionHeight) - 15, BoardRect.width, optionHeight + 30);
-                        GUI.DrawTexture(humanTextureRect, humanTexture);
-                    }
-
-                    //Render the Position and Character head of the Racer
-                    string posString = nRacer.finished ? ("UI/GrandPrix Positions/" + (i + 1).ToString()) : "UI/GrandPrix Positions/DNF";
-                    Texture2D PosTexture = Resources.Load<Texture2D>(posString);
-                    GUI.DrawTexture(new Rect(40, (i + 1) * optionHeight, optionHeight, optionHeight), PosTexture, ScaleMode.ScaleToFit);
-
-                    Texture2D CharacterIcon = gd.characters[nRacer.character].icon;
-                    GUI.DrawTexture(new Rect(40 + optionHeight, (nRacer.position + 1) * optionHeight, optionHeight, optionHeight), CharacterIcon, ScaleMode.ScaleToFit);
-
-                    Rect nameRect = new Rect(50 + (optionHeight * 2), (nRacer.position + 1) * optionHeight, 576, optionHeight);
-
-                    //Draw the name of the Racer if it is available 
-                    if (nRacer.human != -1 && nRacer.name != null && nRacer.name != "")
-                        GUI.Label(nameRect, nRacer.name);
-                    else
-                    {
-                        Texture2D nameTexture;
+                        //Render Bars showing what place you came
                         if (nRacer.human >= 0)
-                            nameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name + "_Sel");
+                        {
+                            Texture2D humanTexture;
+
+                            humanTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Winner_P" + (nRacer.human + 1).ToString());
+                            Rect humanTextureRect = new Rect(0, ((nRacer.position + 1) * optionHeight) - 15, BoardRect.width, optionHeight + 30);
+                            GUI.DrawTexture(humanTextureRect, humanTexture);
+                        }
+
+                        //Render the Position and Character head of the Racer
+                        string posString = nRacer.finished ? ("UI/GrandPrix Positions/" + (i + 1).ToString()) : "UI/GrandPrix Positions/DNF";
+                        Texture2D PosTexture = Resources.Load<Texture2D>(posString);
+                        GUI.DrawTexture(new Rect(40, (i + 1) * optionHeight, optionHeight, optionHeight), PosTexture, ScaleMode.ScaleToFit);
+
+                        Texture2D CharacterIcon = gd.characters[nRacer.character].icon;
+                        GUI.DrawTexture(new Rect(40 + optionHeight, (nRacer.position + 1) * optionHeight, optionHeight, optionHeight), CharacterIcon, ScaleMode.ScaleToFit);
+
+                        Rect nameRect = new Rect(50 + (optionHeight * 2), (nRacer.position + 1) * optionHeight, 576, optionHeight);
+
+                        //Draw the name of the Racer if it is available 
+                        if (nRacer.human != -1 && nRacer.name != null && nRacer.name != "")
+                            GUI.Label(nameRect, nRacer.name);
                         else
-                            nameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name);
+                        {
+                            Texture2D nameTexture;
+                            if (nRacer.human >= 0)
+                                nameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name + "_Sel");
+                            else
+                                nameTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/" + gd.characters[nRacer.character].name);
 
-                        GUI.DrawTexture(nameRect, nameTexture, ScaleMode.ScaleToFit);
-                    }
+                            GUI.DrawTexture(nameRect, nameTexture, ScaleMode.ScaleToFit);
+                        }
 
-                    //Draw the overall points for the Racer
-                    if (state != LBType.NoPoints)
-                    {
-                        int endPoints = nRacer.points;
-                        int startPoints = nRacer.finished ? endPoints - 15 + i : endPoints;
+                        //Draw the overall points for the Racer
+                        if (state != LBType.NoPoints)
+                        {
+                            int endPoints = nRacer.points;
+                            int startPoints = nRacer.finished ? endPoints - 15 + i : endPoints;
 
-                        int renderPoints = (int)Mathf.Clamp(startPoints + pointCount, startPoints, endPoints);
-                        int plusVal = nRacer.finished ? (15 - i) - (int)pointCount : 0;
+                            int renderPoints = (int)Mathf.Clamp(startPoints + pointCount, startPoints, endPoints);
+                            int plusVal = nRacer.finished ? (15 - i) - (int)pointCount : 0;
 
-                        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 2.5f), (nRacer.position + 1) * optionHeight, optionHeight, optionHeight), renderPoints.ToString(),2);
+                            GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 2.5f), (nRacer.position + 1) * optionHeight, optionHeight, optionHeight), renderPoints.ToString(), 2);
 
-                        if (plusVal > 0)
-                            GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 1.5f), (i + 1) * optionHeight, optionHeight * 1.5f, optionHeight), "+ " + plusVal,2);
+                            if (plusVal > 0)
+                                GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 1.5f), (i + 1) * optionHeight, optionHeight * 1.5f, optionHeight), "+ " + plusVal, 2);
+                            else if(state == LBType.AddingPoints)
+                                state = LBType.AddedPoints;
+                        }
                     }
                 }
                 break;
@@ -258,7 +282,7 @@ public class Leaderboard : MonoBehaviour
 
         if (state != LBType.TimeTrial && pointCount < 15)
         {
-            pointCount += Time.deltaTime * 2;
+            pointCount += Time.deltaTime * pcSpeed;
         }
 
         pointCount = Mathf.Clamp(pointCount, 0f, 15f);

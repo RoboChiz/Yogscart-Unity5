@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 public class SortingScript : MonoBehaviour
 {
@@ -24,6 +25,20 @@ public class SortingScript : MonoBehaviour
         for (int i = 0; i < sortedArray.Count; i++)
         {
             sortedArray[i].position = finished + i;
+        }
+
+        //Check if two racers have the same position
+        List<int> collectedPositions = new List<int>();
+        for (int i = 0; i < array.Count; i++)
+        {
+            if (!collectedPositions.Contains(array[i].position))
+            {
+                collectedPositions.Add(array[i].position);
+            }
+            else
+            {
+                throw new Exception("Same position appears twice!!!");
+            }
         }
 
     }

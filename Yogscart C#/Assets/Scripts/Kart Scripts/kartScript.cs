@@ -266,7 +266,7 @@ public class kartScript : MonoBehaviour
         }
     }
 
-    public void KartCollision(Transform otherKart)
+    /*public void KartCollision(Transform otherKart)
     {
         StartCoroutine(DoCollision(otherKart));      
     }
@@ -309,7 +309,7 @@ public class kartScript : MonoBehaviour
         Vector3 nLocalVel = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
         nLocalVel.x = 0;
         GetComponent<Rigidbody>().velocity = transform.TransformDirection(nLocalVel);
-    }
+    }*/
 
     void DoTrick()
     {

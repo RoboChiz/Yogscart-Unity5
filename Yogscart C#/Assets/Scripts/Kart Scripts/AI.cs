@@ -271,19 +271,19 @@ public class AI : MonoBehaviour
                 break;
             case AIStupidity.Great:
                 int randomNum = Random.Range(0, 100);
-                Debug.Log("Random:" + randomNum);
+                //Debug.Log("Random:" + randomNum);
                 if (randomNum < 75) //75% chance of drifting
                     ks.drift = true;
                 break;
             case AIStupidity.Good:
                 randomNum = Random.Range(0, 100);
-                Debug.Log("Random:" + randomNum);
+                //Debug.Log("Random:" + randomNum);
                 if (randomNum < 50) //50% chance of drifting
                     ks.drift = true;
                 break;
             case AIStupidity.Bad:
                 randomNum = Random.Range(0, 100);
-                Debug.Log("Random:" + randomNum);
+                //Debug.Log("Random:" + randomNum);
                 if (randomNum < 25) //25% chance of drifting
                     ks.drift = true;
                 break;

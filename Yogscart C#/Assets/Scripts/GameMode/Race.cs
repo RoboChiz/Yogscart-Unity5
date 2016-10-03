@@ -57,8 +57,7 @@ public class Race : GameMode
     }
 
     protected IEnumerator StartRace()
-    {
-
+    {  
         CurrentGameData.blackOut = true;
 
         yield return new WaitForSeconds(0.5f);
@@ -205,14 +204,19 @@ public class Race : GameMode
         foreach (kartInput ki in kines)
             ki.camLocked = false;
 
+        //Give any operations time to stop
+        yield return new WaitForSeconds(1);
+
         DisplayRacer[] sortedRacers = new DisplayRacer[racers.Count];
 
         while (sortedRacers.Length != racers.Count)
             yield return null;
 
-        foreach (Racer r in racers)
+        for(int i = 0; i < racers.Count; i++)
         {
+            Racer r = racers[i];
             r.points += 15 - r.position;
+
             sortedRacers[r.position] = new DisplayRacer(r);
             sortedRacers[r.position].finished = true;
         }
@@ -225,10 +229,7 @@ public class Race : GameMode
         StartCoroutine(ChangeState(RaceGUI.ScoreBoard));
 
         Leaderboard lb = gameObject.AddComponent<Leaderboard>();
-
         lb.racers = new List<DisplayRacer>(sortedRacers);
-
-        yield return null;
 
         if (raceType == RaceType.TimeTrial)
             lb.StartTimeTrial();
@@ -452,14 +453,14 @@ public class Race : GameMode
                 {
                     if (!changingState && (InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick()))
                     {
-                        if (lb.state != LBType.Points || currentRace == 1)
+                        if ((lb.state != LBType.AddedPoints && lb.state != LBType.AddingPoints) || (lb.state == LBType.AddedPoints && currentRace == 1))
                         {
                             StartCoroutine(ChangeState(RaceGUI.NextMenu));
                             lb.hidden = true;
                         }
                         else
                         {
-                            lb.SecondStep();
+                            lb.DoInput();
                         }
                     }
                 }

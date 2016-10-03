@@ -595,14 +595,17 @@ public class MainMenu : MonoBehaviour
 
     private IEnumerator TitleFade(float start, float finish)
     {
-        float startTime = Time.time;
-        while (Time.time - startTime < fadeTime)
+        if (titleAlpha != finish)
         {
-            titleAlpha = Mathf.Lerp(start, finish, (Time.time - startTime) / fadeTime);
-            yield return null;
-        }
+            float startTime = Time.time;
+            while (Time.time - startTime < fadeTime)
+            {
+                titleAlpha = Mathf.Lerp(start, finish, (Time.time - startTime) / fadeTime);
+                yield return null;
+            }
 
-        titleAlpha = finish;
+            titleAlpha = finish;
+        }
     }
 
     private IEnumerator ActualChangePicture(Texture2D nTexture)
