@@ -159,6 +159,8 @@ public class KartMaker : MonoBehaviour
 
             kb.AddComponent<kartItem>();
             kb.GetComponent<kartItem>().itemDistance = kartSkel.ItemDrop;
+
+            kb.AddComponent<KartCollider>();
         }
 
         Destroy(kartSkel);
@@ -177,7 +179,7 @@ public class KartMaker : MonoBehaviour
     {
         WheelCollider wheelCollider = collider.gameObject.AddComponent<WheelCollider>();
 
-        wheelCollider.mass = 100f;
+        wheelCollider.mass = 20f;
 
         if (collider.GetComponent<Wheel_Skeleton>() != null)
         {
@@ -185,21 +187,21 @@ public class KartMaker : MonoBehaviour
             Destroy(collider.GetComponent<Wheel_Skeleton>());
         }
         else
-            wheelCollider.radius = 0.15f;
+            wheelCollider.radius = 0.2f;
 
 
-        wheelCollider.wheelDampingRate = 0.01f;
+        wheelCollider.wheelDampingRate = 0.25f;
         wheelCollider.suspensionDistance = 0.3f;
-        wheelCollider.forceAppPointDistance = 1f;
+        wheelCollider.forceAppPointDistance = 0f;
 
         JointSpring suspensionSpring = new JointSpring();
-        suspensionSpring.spring = 100000f;
-        suspensionSpring.damper = 5000f;
-        suspensionSpring.targetPosition = 0.8f;
+        suspensionSpring.spring = 35000;
+        suspensionSpring.damper = 4500;
+        suspensionSpring.targetPosition = 0.9f;
         wheelCollider.suspensionSpring = suspensionSpring;
 
         WheelFrictionCurve forwardFriction = new WheelFrictionCurve();
-        forwardFriction.extremumSlip = 0.1f;
+        forwardFriction.extremumSlip = 0.4f;
         forwardFriction.extremumValue = 1f;
         forwardFriction.asymptoteSlip = 0.8f;
         forwardFriction.asymptoteValue = 0.5f;
@@ -207,11 +209,11 @@ public class KartMaker : MonoBehaviour
         wheelCollider.forwardFriction = forwardFriction;
 
         WheelFrictionCurve sidewaysFriction = new WheelFrictionCurve();
-        sidewaysFriction.extremumSlip = 0.8f;
-        sidewaysFriction.extremumValue = 3f;
-        sidewaysFriction.asymptoteSlip = 1.5f;
-        sidewaysFriction.asymptoteValue = 2.25f;
-        sidewaysFriction.stiffness = 3;
+        sidewaysFriction.extremumSlip = 0.2f;
+        sidewaysFriction.extremumValue = 1f;
+        sidewaysFriction.asymptoteSlip = 0.5f;
+        sidewaysFriction.asymptoteValue = 0.75f;
+        sidewaysFriction.stiffness = 2;
         wheelCollider.sidewaysFriction = sidewaysFriction;
 
         Destroy(collider.GetComponent<MeshFilter>());

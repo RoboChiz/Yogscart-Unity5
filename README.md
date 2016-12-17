@@ -2,6 +2,29 @@
 
 ## Changelog : Started 04/08/2016
 
+## 17/12/2016
+* FINALLY Fixed the Kart Suspension
+
+## 26/11/2016
+* Fixed Leaderboard fast forwarding
+* Improve Suspension so start boost dosen't break everything
+* Stop collision from stopping Kart
+
+## 25/11/2016
+* Fixed(???) Suspension of Karts
+* Implemented Basic Kart Collision
+
+## 26/09/2016
+* FIX Soundmanger now controls all Audio Source Volumes
+* Fixed bug where leaderboard would break randomly
+* Fixed bug where input was required twice to go to page afetr leaderboard if point adding had not been skipped
+
+## 20/09/2016
+* Added X icon to Layout Select
+* Fixed Kart Item rendering GUI for AI
+* Fixed Title fading back in after Character Select
+* Added skip function to leaderboard.
+
 ## 2/09/2016
 * Added Start Boosting to AI
 * Added (basic) AI changing playstyle depending on Intelligence

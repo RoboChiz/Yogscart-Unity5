@@ -1,0 +1,123 @@
+fileFormatVersion: 2
+guid: 3a230d31dc693ac4ba7e9e95f6fe3bb0
+timeCreated: 1444144822
+licenseType: Free
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: HoneyBee_Case
+    100004: HoneyBee_Honey
+    100006: Cylinder001
+    100008: Cylinder002
+    100010: Box001
+    100012: Building
+    100014: HoneyBee_Stripes
+    100016: HoneyBee_Wings
+    100018: Building_Roof
+    100020: Fence
+    400000: //RootNode
+    400002: HoneyBee_Case
+    400004: HoneyBee_Honey
+    400006: Cylinder001
+    400008: Cylinder002
+    400010: Box001
+    400012: Building
+    400014: HoneyBee_Stripes
+    400016: HoneyBee_Wings
+    400018: Building_Roof
+    400020: Fence
+    2300000: HoneyBee_Case
+    2300002: HoneyBee_Honey
+    2300004: Cylinder001
+    2300006: Cylinder002
+    2300008: Box001
+    2300010: Building
+    2300012: HoneyBee_Stripes
+    2300014: HoneyBee_Wings
+    2300016: Building_Roof
+    2300018: Fence
+    3300000: HoneyBee_Case
+    3300002: HoneyBee_Honey
+    3300004: Cylinder001
+    3300006: Cylinder002
+    3300008: Box001
+    3300010: Building
+    3300012: HoneyBee_Stripes
+    3300014: HoneyBee_Wings
+    3300016: Building_Roof
+    3300018: Fence
+    4300000: HoneyBee_Honey
+    4300002: HoneyBee_Case
+    4300004: Cylinder001
+    4300006: Cylinder002
+    4300008: Box001
+    4300010: HoneyBee_Stripes
+    4300012: HoneyBee_Wings
+    4300014: Building
+    4300016: Building_Roof
+    4300018: Fence
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 5
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

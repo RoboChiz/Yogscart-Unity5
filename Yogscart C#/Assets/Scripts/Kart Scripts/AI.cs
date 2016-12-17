@@ -23,7 +23,6 @@ public class AI : MonoBehaviour
     private List<float> pathLengths;
     private float[] angles;
 
-    private int currentNode = 0, nextNode = 1, nextnextNode = 2, currentPercent = 0;
     private const float maxXDistance = 2f, minAngle = 3f;
 
     public enum PathCorrecting { Fine, Turning, Straightening };
@@ -65,7 +64,7 @@ public class AI : MonoBehaviour
 
         //Handles Start Boosting
         if (kartScript.startBoostVal != -1)
-        {            
+        {
             if ((myStartType == StartType.WillBoost && kartScript.startBoostVal <= 2) || (myStartType == StartType.WillSpin && kartScript.startBoostVal <= 3))
                 ks.throttle = 1;
 
@@ -75,25 +74,13 @@ public class AI : MonoBehaviour
         }
 
         if (canDrive)
-        {
+        {          
+            int currentNode = pf.currentPos;
+            int nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+            int nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
+            int currentPercent = 0;
+
             Debug.DrawLine(transform.position, td.positionPoints[currentNode].position, Color.green);
-
-            if (percent > 1)
-            {
-                currentNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-                nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
-
-                currentPercent = 0;
-            }
-            if (percent < 0)
-            {
-                currentNode = MathHelper.NumClamp(currentNode - 1, 0, td.positionPoints.Count);
-                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-                nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
-
-                currentPercent = 0;
-            }
 
             Vector3 startPos = td.positionPoints[currentNode].position, endPos = td.positionPoints[nextNode].position;
             Vector3 vecBetweenPoints = (endPos - startPos);
@@ -102,7 +89,7 @@ public class AI : MonoBehaviour
 
             localPos = matrix * (transform.position - startPos);
             percent = localPos.z / vecBetweenPoints.magnitude;
-         
+
             //Do Driving
             angle = -MathHelper.Angle(transform.forward, vecBetweenPoints);
             nextAngle = -MathHelper.Angle(transform.forward, (td.positionPoints[nextnextNode].position - td.positionPoints[nextNode].position));
@@ -122,7 +109,7 @@ public class AI : MonoBehaviour
                 }
 
                 //On the right path, follow the track analysis
-                if (percent >= AITrackInfo[currentNode][currentPercent].percent)
+                if (AITrackInfo[currentNode].Count > 0 && percent >= AITrackInfo[currentNode][currentPercent].percent)
                 {
                     ks.steer = AITrackInfo[currentNode][currentPercent].turnAmount;
 
@@ -195,59 +182,9 @@ public class AI : MonoBehaviour
                 }
 
                 //Straighten Up if you need to
-                if (!ks.drift && (Mathf.Abs(localPos.x) > maxXDistance || ks.steer == 0 || pc != PathCorrecting.Fine))
+                if(angle > turnAngleRequired)
                 {
-                    switch (pc)
-                    {
-                        case PathCorrecting.Fine:
-                            //If we're too far from the line, everything is not okay!
-                            if (Mathf.Abs(localPos.x) > maxXDistance || Mathf.Abs(angle) > minAngle)
-                                pc = PathCorrecting.Turning;
-                            break;
-                        case PathCorrecting.Turning:
-
-                            float aimPoint = percent + 0.2f, offset = 0f;
-                            Vector3 rightVec = Vector3.zero;
-
-                            //Only do this offset if smarter then Bad
-                            if (intelligence > AIStupidity.Bad)
-                            {
-                                offset = Mathf.Abs(angles[currentNode]) >= turnAngleRequired ? MathHelper.Sign(angles[currentNode]) : 0f * 4f;
-                                if (offset != 0f)
-                                    rightVec = (Quaternion.AngleAxis(90, Vector3.up) * vecBetweenPoints).normalized;
-                            }
-
-                            Vector3 attackPoint = startPos + (vecBetweenPoints * aimPoint) + (rightVec * offset);
-                            Debug.DrawLine(transform.position, attackPoint, Color.yellow);
-
-                            Vector3 attackFoward = attackPoint - transform.position, myForward = transform.forward;
-                            attackFoward.y = 0;
-                            myForward.y = 0;
-
-                            if (Mathf.Abs(localPos.x) < maxXDistance)
-                                pc = PathCorrecting.Straightening;
-
-                            float nAngle = MathHelper.Angle(myForward, attackFoward);
-                            if (nAngle > minAngle)
-                                ks.steer = 1;
-                            else if (nAngle < -minAngle)
-                                ks.steer = -1;
-                            else if (Mathf.Abs(angle) < minAngle)
-                                pc = PathCorrecting.Straightening;
-                            break;
-                        case PathCorrecting.Straightening:
-                            if (angle > minAngle)
-                                ks.steer = -1;
-                            else if (angle < -minAngle)
-                                ks.steer = 1;
-                            else
-                            {
-                                ks.steer = 0;
-                                pc = PathCorrecting.Fine;
-                            }
-
-                            break;
-                    }
+                    ks.steer = Mathf.Sign(angle);
                 }
 
             }
@@ -264,7 +201,7 @@ public class AI : MonoBehaviour
         kartScript ks = GetComponent<kartScript>();
 
         //Calculate if the kart should do a drift
-       switch(intelligence)
+        switch (intelligence)
         {
             case AIStupidity.Perfect:
                 ks.drift = true;
@@ -293,7 +230,7 @@ public class AI : MonoBehaviour
         }
     }
 
-    const float turnAngleRequired = 10f, roadNeededtoStraightenOut = 15f;
+    const float turnAngleRequired = 5f, roadNeededtoStraightenOut = 15f;
 
     /// <summary>
     /// Scan the entire track and find places to turn .etc
@@ -348,13 +285,11 @@ public class AI : MonoBehaviour
 
         for (int i = 0; i < td.positionPoints.Count; i++)
         {
+            angles[i] = GetAngle(i, i + 1, i + 2);
+
             int nextPoint = MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count);
-            int nextNextPoint = MathHelper.NumClamp(i + 2, 0, td.positionPoints.Count);
-
             Vector3 currentDir = td.positionPoints[nextPoint].position - td.positionPoints[i].position;
-            Vector3 nextDir = td.positionPoints[nextNextPoint].position - td.positionPoints[nextPoint].position;
 
-            angles[i] = MathHelper.Angle(currentDir, nextDir);
             pathLengths.Add(currentDir.magnitude);
         }
 
@@ -414,6 +349,17 @@ public class AI : MonoBehaviour
 
             AITrackInfo.Add(newTrackList);
         }
+    }
+
+    private float GetAngle(int i, int iPlusOne, int iPlusTwo)
+    {
+        int nextPoint = MathHelper.NumClamp(iPlusOne, 0, td.positionPoints.Count);
+        int nextNextPoint = MathHelper.NumClamp(iPlusTwo, 0, td.positionPoints.Count);
+
+        Vector3 currentDir = td.positionPoints[nextPoint].position - td.positionPoints[i].position;
+        Vector3 nextDir = td.positionPoints[nextNextPoint].position - td.positionPoints[nextPoint].position;
+
+        return MathHelper.Angle(currentDir, nextDir);
     }
 
     private class TrackRoadInfo

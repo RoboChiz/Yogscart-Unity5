@@ -147,6 +147,10 @@ public class Race : GameMode
         //Show what race we're on
         yield return StartCoroutine(ChangeState(RaceGUI.RaceInfo));
 
+        kartInput[] kines = FindObjectsOfType<kartInput>();
+        foreach (kartInput ki in kines)
+            ki.camLocked = false;
+
         yield return new WaitForSeconds(3f);
 
         kartInfo[] kies = FindObjectsOfType<kartInfo>();
@@ -156,10 +160,6 @@ public class Race : GameMode
         kartItem[] kitemes = FindObjectsOfType<kartItem>();
         foreach (kartItem ki in kitemes)
             ki.hidden = false;
-
-        kartInput[] kines = FindObjectsOfType<kartInput>();
-        foreach (kartInput ki in kines)
-            ki.camLocked = false;
 
         yield return StartCoroutine(ChangeState(RaceGUI.Countdown));
 
@@ -180,6 +180,8 @@ public class Race : GameMode
         //Unlock the Pause Menu
         PauseMenu.canPause = true;
         PauseMenu.onlineGame = false;
+
+        yield return null;
 
         //Wait for the gamemode to be over
         while (!raceFinished && timer < 3600)
@@ -451,9 +453,9 @@ public class Race : GameMode
 
                 if (raceType != RaceType.Online)
                 {
-                    if (!changingState && (InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick()))
+                    if (InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick())
                     {
-                        if ((lb.state != LBType.AddedPoints && lb.state != LBType.AddingPoints) || (lb.state == LBType.AddedPoints && currentRace == 1))
+                        if (lb.state != LBType.AddedPoints && lb.state != LBType.AddingPoints)
                         {
                             StartCoroutine(ChangeState(RaceGUI.NextMenu));
                             lb.hidden = true;

@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 Shader "Explosions/Low Quality" {
 	Properties {
 		_RampTex ("Ramp", Rect) = "white"
@@ -89,7 +91,7 @@ Shader "Explosions/Low Quality" {
 			v2f vert (appdata_base v) {
 				v2f o;
 				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-				o.worldPos = mul(_Object2World, v.vertex).xyz;
+				o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
 				o.viewVec = WorldSpaceViewDir(v.vertex);
 				return o;
 			}

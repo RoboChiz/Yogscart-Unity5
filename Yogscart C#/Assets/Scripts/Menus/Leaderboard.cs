@@ -22,7 +22,7 @@ public class Leaderboard : MonoBehaviour
     private Texture2D BoardTexture;
 
     private float pointCount, pcSpeed = 2f;
-    private bool startedSecond = false;
+    private bool startedSecond = false, speeding = false;
 
     // Use this for initialization
     void Awake()
@@ -75,7 +75,7 @@ public class Leaderboard : MonoBehaviour
             startedSecond = true;
             StartCoroutine(SpeedUpPoints());
         }
-        else if(state == LBType.AddedPoints)
+        else if(state == LBType.AddedPoints && !speeding)
         {
             List<DisplayRacer> holder = SortingScript.CalculatePoints(racers);
             for (var j = 0; j < holder.Count; j++)
@@ -91,13 +91,35 @@ public class Leaderboard : MonoBehaviour
 
     private IEnumerator SpeedUpPoints()
     {
+        speeding = true;
+
         if (pointCount < 15f)
             pcSpeed = 20f;
 
         while (pointCount < 15f)
             yield return null;
 
-        state = LBType.AddedPoints;       
+        state = LBType.AddedPoints;
+
+        //Check to see if List is sorted
+        bool sorted = true;
+        for (var j = 0; j < racers.Count; j++)
+        {
+            if(j < racers.Count - 1)
+            {
+                if (racers[j].points < racers[j + 1].points)
+                {
+                    sorted = false;
+                    break;
+                }
+            }
+        }
+
+        if (sorted)
+            state = LBType.Sorted;
+
+        speeding = false;
+
     }
 
     void Update()
@@ -271,8 +293,6 @@ public class Leaderboard : MonoBehaviour
 
                             if (plusVal > 0)
                                 GUIHelper.OutLineLabel(new Rect(BoardRect.width - 30 - (optionHeight * 1.5f), (i + 1) * optionHeight, optionHeight * 1.5f, optionHeight), "+ " + plusVal, 2);
-                            else if(state == LBType.AddingPoints)
-                                state = LBType.AddedPoints;
                         }
                     }
                 }
@@ -283,6 +303,10 @@ public class Leaderboard : MonoBehaviour
         if (state != LBType.TimeTrial && pointCount < 15)
         {
             pointCount += Time.deltaTime * pcSpeed;
+        }
+        else if(state == LBType.AddingPoints)
+        {
+            state = LBType.AddedPoints;
         }
 
         pointCount = Mathf.Clamp(pointCount, 0f, 15f);

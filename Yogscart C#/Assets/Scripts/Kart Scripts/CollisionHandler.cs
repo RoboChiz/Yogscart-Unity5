@@ -5,152 +5,115 @@ using System.Collections;
 
 public class CollisionHandler : MonoBehaviour
 {
-    private int kartCount = 0;
+   
     bool[,] collisions;
-    int lastKartCount = -1, lastOtherCount;
+    private int thingCount = 0;
 
-    private const float distance = 2.75f;
+    private const float distance = 2f, pushUpAmount = 3f, pushAcrossAmount = 10f;
 
     void LateUpdate()
     {
-        kartScript[] otherKarts = FindObjectsOfType<kartScript>();
-        kartCollider[] otherThings = FindObjectsOfType<kartCollider>();
+        KartCollider[] things = FindObjectsOfType<KartCollider>();
 
-        if(kartCount != otherKarts.Length)
+        if(things.Length != thingCount)
         {
-            if (otherKarts != null)
-                kartCount = otherKarts.Length;
-            else
-                kartCount = 0;
+            thingCount = things.Length;
+            collisions = new bool[thingCount, thingCount];
         }
 
-        if (lastKartCount != kartCount || lastOtherCount != otherThings.Length)
-        {
-            lastKartCount = kartCount;
-            lastOtherCount = otherThings.Length;
-            collisions = new bool[kartCount, kartCount + otherThings.Length];
-        }
-
-        for(int i = 0; i < kartCount; i++)//For every kart on Screen
+        for(int i = 0; i < thingCount; i++)//For every kart on Screen
         {
             //Checks against every kart after the current kart
-            for (int j = i + 1; j < kartCount; j++)
+            for (int j = i + 1; j < thingCount; j++)
             {
-                Vector3 compareVect = otherKarts[j].transform.position - otherKarts[i].transform.position;
-
-                if (!collisions[i, j] && compareVect.magnitude < distance)
+                //Check that both things weren't in GodMode
+                if (!things[i].godMode && !things[j].godMode)
                 {
-                    collisions[i, j] = true;
-                    //Do Collision between i & j
+                    Vector3 compareVect = things[j].transform.position - things[i].transform.position;
 
-                    kartScript ksI = otherKarts[i].GetComponent<kartScript>();
-                    kartScript ksJ = otherKarts[j].GetComponent<kartScript>();
-                    float originalSpeedI = ksI.expectedSpeed, originalSpeedJ = ksJ.expectedSpeed;
-
-                    //I is moving, but J is not reduce I's speed by alot
-                    if (Mathf.Abs(ksI.expectedSpeed) > Mathf.Abs(ksJ.expectedSpeed) && Mathf.Abs(ksJ.expectedSpeed) <4f)
+                    if (!collisions[i, j] && compareVect.magnitude < distance)
                     {
-                        ksI.expectedSpeed -= Mathf.Sign(ksI.expectedSpeed) * 12f;
+                        //Do Collision between i & j
+                        collisions[i, j] = true;
+
+                        kartScript thingI = things[i].GetComponent<kartScript>(), thingJ = things[j].GetComponent<kartScript>();
+                        //Find out which object was travelling fastest or was in God Mode
+                        if (thingI != null && thingJ != null)
+                        {
+                            DoKartCollision(thingI, thingJ);
+                        }
+                        else if (thingI != null && things[j].godMode)
+                        {
+                            DoKartGodCollision(thingI, things[j]);
+                        }
+                        else if (thingJ != null && things[i].godMode)
+                        {
+                            DoKartGodCollision(thingJ, things[i]);
+                        }
+
+                        StartCoroutine(WaitForCollision(i, j));
                     }
-                    //J is mobing, but I is not reduce J's speed by alot
-                    else if (Mathf.Abs(ksJ.expectedSpeed) > Mathf.Abs(ksI.expectedSpeed) && Mathf.Abs(ksI.expectedSpeed) < 4f)
-                    {
-                        ksJ.expectedSpeed -= Mathf.Sign(ksJ.expectedSpeed) * 12f;
-                    }
-                    //I is moving, and so is J
-                    else if(Mathf.Abs(ksI.expectedSpeed) >4f && Mathf.Abs(ksJ.expectedSpeed) > 4f)
-                    {
-                        ksI.expectedSpeed -= Mathf.Sign(ksI.expectedSpeed) * 6f;
-                        ksJ.expectedSpeed -= Mathf.Sign(ksJ.expectedSpeed) * 6f;
-                    }
-
-                    int fastestKart = -1, slowestKart = -1;
-                    float fastestSpeed = -1;
-
-                    if (Mathf.Abs(ksI.expectedSpeed) >= Mathf.Abs(ksJ.expectedSpeed))
-                    {
-                        fastestKart = i;
-                        fastestSpeed = originalSpeedI;
-
-                        slowestKart = j;
-                    }
-                    else
-                    {
-                        fastestKart = j;
-                        fastestSpeed = originalSpeedJ;
-
-                        slowestKart = i;
-                    }
-
-                    StartCoroutine(PushKarts(otherKarts[fastestKart].transform, otherKarts[slowestKart].transform, Mathf.Abs(fastestSpeed)));
-
-                }
-                else if (collisions[i, j] && compareVect.magnitude >= distance)
-                {
-                    collisions[i, j] = false;
-                }
-            }
-
-            //Check for SpinoutObject
-            for (int j = 0; j < otherThings.Length; j++)// Checks against every kart after the current kart
-            {
-                Vector3 compareVect = otherThings[j].transform.position - otherKarts[i].transform.position;
-
-                if (!collisions[i, kartCount + j] && compareVect.magnitude < 2f)
-                {
-                    collisions[i, kartCount + j] = true;
-                    otherKarts[i].SpinOut();
-                    Debug.Log("Spin Out");
-                }
-                else if (collisions[i, kartCount + j] && compareVect.magnitude >= 2f)
-                {
-                    collisions[i, kartCount + j] = false;
-                    Debug.Log("Stop spin Out");
                 }
             }
         }
+    }
+    
+    private void DoKartCollision(kartScript kartA, kartScript kartB)
+    {
+        //Find the fastest Kart
+        bool aFastest = Mathf.Abs(kartA.actualSpeed) > Mathf.Abs(kartB.actualSpeed);
+
+        kartScript fastest, slowest;
+        if(aFastest)
+        {
+            fastest = kartA;
+            slowest = kartB;
+        }
+        else
+        {
+            fastest = kartB;
+            slowest = kartA;
+        }
+
+        //Push the slowest
+        float leftSpace = ((fastest.transform.position - fastest.transform.right) - slowest.transform.position).magnitude;
+        float rightSpace = ((fastest.transform.position + fastest.transform.right) - slowest.transform.position).magnitude;
+
+        Vector3 sidePush = fastest.transform.right;
+        if (leftSpace < rightSpace)
+            sidePush *= -1f;
+
+        slowest.GetComponent<Rigidbody>().AddForce((Vector3.up * pushUpAmount) + (sidePush * pushAcrossAmount), ForceMode.VelocityChange);
+        StartCoroutine(WaitForKartCollision(slowest));
+    } 
+
+    private void DoKartGodCollision(kartScript kart, KartCollider god)
+    {
 
     }
 
-    private IEnumerator PushKarts(Transform fastestKart, Transform slowestKart, float fastestSpeed)
+    private IEnumerator WaitForCollision(int i, int j)
     {
-        //Move I and J apart
-        kartScript ksFast = fastestKart.GetComponent<kartScript>();
-        kartScript ksSlow = slowestKart.GetComponent<kartScript>();
-        Rigidbody rbFast = fastestKart.GetComponent<Rigidbody>();
-        Rigidbody rbSlow = slowestKart.GetComponent<Rigidbody>();
+        yield return new WaitForSeconds(1f);
+        collisions[i, j] = false;
+    }
 
-        //Find what side slower kart is on
-        Vector3 between = rbSlow.position - rbFast.position, fastPushDir;
-        if (Vector3.Angle(rbFast.transform.right, between) > 45) //Slow kart is on the left side
-            fastPushDir = rbFast.transform.right;
-        else
-            fastPushDir = -rbFast.transform.right;
+    private IEnumerator WaitForKartCollision(kartScript slowest)
+    {
+        slowest.isColliding = true;
 
-        //Push slowest car further
-        Vector3 pushAmount = (fastPushDir * Mathf.Clamp(fastestSpeed,0,12));
-        //Debug.Log("Before:" + rbFast.transform.InverseTransformDirection((rbFast.velocity)));
-
-        rbFast.freezeRotation = true;
-        rbSlow.freezeRotation = true;
-
-        for (int i = 0; i < 2; i++)
+        foreach (WheelCollider collider in slowest.wheelColliders)
         {
-            rbFast.AddForceAtPosition(pushAmount / 2f, rbFast.transform.position, ForceMode.VelocityChange);
-            rbSlow.AddForceAtPosition(-pushAmount, rbSlow.transform.position, ForceMode.VelocityChange);
-
-            //Debug.Log("During " + i +":" + rbFast.transform.InverseTransformDirection((rbFast.velocity)));
-            yield return null;
+            collider.enabled = false;
         }
 
-        for (int i = 0; i < 8; i++)
+        yield return new WaitForSeconds(0.1f);
+
+        foreach (WheelCollider collider in slowest.wheelColliders)
         {
-            //Debug.Log("After " + i + ":" + rbFast.transform.InverseTransformDirection((rbFast.velocity)));
-            yield return null;
+            collider.enabled = true;
         }
 
-        rbFast.freezeRotation = false;
-        rbSlow.freezeRotation = false;
-
+        slowest.isColliding = false;
     }
 }

@@ -1,0 +1,230 @@
+fileFormatVersion: 2
+guid: 3dd409716e77ebf41b6721442116bfee
+timeCreated: 1443801979
+licenseType: Free
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: Front
+    100004: L_B_1
+    100006: L_B_2
+    100008: L_B_3
+    100010: L_F_1
+    100012: L_F_2
+    100014: L_F_3
+    100016: L_R_1
+    100018: L_R_2
+    100020: L_R_3
+    100022: PigMesh
+    100024: R_B_1
+    100026: R_B_2
+    100028: R_B_3
+    100030: Snout
+    100032: Spine
+    400000: //RootNode
+    400002: Front
+    400004: L_B_1
+    400006: L_B_2
+    400008: L_B_3
+    400010: L_F_1
+    400012: L_F_2
+    400014: L_F_3
+    400016: L_R_1
+    400018: L_R_2
+    400020: L_R_3
+    400022: PigMesh
+    400024: R_B_1
+    400026: R_B_2
+    400028: R_B_3
+    400030: Snout
+    400032: Spine
+    4300000: PigMesh
+    7400000: Run
+    7400002: Idle
+    9500000: //RootNode
+    13700000: PigMesh
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Run
+      takeName: Take 001
+      firstFrame: 0
+      lastFrame: 75
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: PigMesh
+        weight: 1
+      - path: Spine
+        weight: 1
+      - path: Spine/Front
+        weight: 1
+      - path: Spine/Front/L_F_1
+        weight: 1
+      - path: Spine/Front/L_F_1/L_F_2
+        weight: 1
+      - path: Spine/Front/L_F_1/L_F_2/L_F_3
+        weight: 1
+      - path: Spine/Front/L_R_1
+        weight: 1
+      - path: Spine/Front/L_R_1/L_R_2
+        weight: 1
+      - path: Spine/Front/L_R_1/L_R_2/L_R_3
+        weight: 1
+      - path: Spine/Front/Snout
+        weight: 1
+      - path: Spine/L_B_1
+        weight: 1
+      - path: Spine/L_B_1/L_B_2
+        weight: 1
+      - path: Spine/L_B_1/L_B_2/L_B_3
+        weight: 1
+      - path: Spine/R_B_1
+        weight: 1
+      - path: Spine/R_B_1/R_B_2
+        weight: 1
+      - path: Spine/R_B_1/R_B_2/R_B_3
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: Idle
+      takeName: Take 001
+      firstFrame: 76
+      lastFrame: 224
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: PigMesh
+        weight: 1
+      - path: Spine
+        weight: 1
+      - path: Spine/Front
+        weight: 1
+      - path: Spine/Front/L_F_1
+        weight: 1
+      - path: Spine/Front/L_F_1/L_F_2
+        weight: 1
+      - path: Spine/Front/L_F_1/L_F_2/L_F_3
+        weight: 1
+      - path: Spine/Front/L_R_1
+        weight: 1
+      - path: Spine/Front/L_R_1/L_R_2
+        weight: 1
+      - path: Spine/Front/L_R_1/L_R_2/L_R_3
+        weight: 1
+      - path: Spine/Front/Snout
+        weight: 1
+      - path: Spine/L_B_1
+        weight: 1
+      - path: Spine/L_B_1/L_B_2
+        weight: 1
+      - path: Spine/L_B_1/L_B_2/L_B_3
+        weight: 1
+      - path: Spine/R_B_1
+        weight: 1
+      - path: Spine/R_B_1/R_B_2
+        weight: 1
+      - path: Spine/R_B_1/R_B_2/R_B_3
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 10
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

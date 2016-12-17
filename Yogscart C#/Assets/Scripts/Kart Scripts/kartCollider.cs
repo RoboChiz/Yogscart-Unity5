@@ -2,8 +2,10 @@
 using System.Collections;
 
 //Use this script to cause a kart to bounce off the object as if it was a Kart
-public class kartCollider : MonoBehaviour
+public class KartCollider : MonoBehaviour
 {
+    //Makes the object invulnerable
+    public bool godMode;
 
 	// Update is called once per frame
 	void Update ()

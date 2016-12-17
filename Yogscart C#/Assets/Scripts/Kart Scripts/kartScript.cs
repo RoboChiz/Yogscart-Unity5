@@ -12,7 +12,32 @@ public class kartScript : MonoBehaviour
     public bool drift;
 
     //Physics Stuff
-    private bool isFalling, isColliding;
+    private bool isFallingValue;
+    public bool isFalling
+    {
+        get
+        {
+            return isFallingValue;
+        }
+        private set
+        {
+            isFallingValue = value;
+            if (value)
+            {
+                foreach (WheelCollider collider in wheelColliders)
+                {
+                    collider.suspensionDistance = 0.1f;
+                }
+            }
+            else
+            {
+                foreach (WheelCollider collider in wheelColliders)
+                {
+                    collider.suspensionDistance = 0.35f;
+                }
+            }
+        }
+    }
 
     //Kart Stats
     public float maxSpeed = 20f;
@@ -33,8 +58,7 @@ public class kartScript : MonoBehaviour
         }
         set
         {
-            if (!isColliding)
-                expectedSpeed = value;
+            expectedSpeed = value;
         }
     }
 
@@ -82,7 +106,8 @@ public class kartScript : MonoBehaviour
     public AudioClip engineSound;
 
     //Collisions
-    const float snapTime = 0.1f, pushTime = 0.3f, pushAmount = 1f;
+    public bool isColliding = false;
+
     private Vector3 relativeVelocity;
 
     // Use this for initialization
@@ -94,6 +119,8 @@ public class kartScript : MonoBehaviour
         boostAddition = maxSpeed * boostPercent;
         maxGrassSpeed = maxSpeed * grassPercent;
         driftAmount = turnSpeed / 2f;
+
+        GetComponent<Rigidbody>().centerOfMass = new Vector3(0f, -0.5f, 0f);
     }
 
     public void SetupWheelStartPos()
@@ -109,8 +136,7 @@ public class kartScript : MonoBehaviour
     // Update is called once per 60th of a second
     void FixedUpdate()
     {
-        float lastTime = Time.fixedDeltaTime;
-        lastTime = Mathf.Clamp(lastTime, 0f, 0.034f);
+        float lastTime = Time.deltaTime;
 
         if (Time.timeScale != 0)
         {
@@ -140,9 +166,38 @@ public class kartScript : MonoBehaviour
             actualSpeed = relativeVelocity.z;
 
             float nA = (ExpectedSpeed - actualSpeed) / lastTime;
-            if (!isFalling && !isColliding && Mathf.Abs(nA) > 0.1f)
+            if (!isFalling || isColliding)
             {
-                GetComponent<Rigidbody>().AddForce(transform.forward * nA, ForceMode.Acceleration);
+
+                float absExp = Mathf.Abs(expectedSpeed), absAct = Mathf.Abs(actualSpeed);
+
+                if (absAct > 1)
+                {
+                    GetComponent<Rigidbody>().AddForce(transform.forward * nA, ForceMode.Acceleration);
+
+                    foreach (WheelCollider collider in wheelColliders)
+                    {
+                        collider.motorTorque = 0f;
+                        collider.brakeTorque = 0f;
+                    }
+                    
+                }
+                else
+                {
+                    foreach (WheelCollider collider in wheelColliders)
+                    {
+                        if (absExp > absAct)
+                        {
+                            collider.motorTorque = MathHelper.Sign(expectedSpeed) * 5000f * nA;
+                            collider.brakeTorque = 0f;
+                        }
+                        else if (absExp < absAct)
+                        {
+                            collider.motorTorque = 0f;
+                            collider.brakeTorque = 5000f;
+                        }
+                    }
+                }
             }
 
             lastMaxSpeed = nMaxSpeed;
@@ -151,17 +206,6 @@ public class kartScript : MonoBehaviour
             if(isFalling)
             {
                 transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(0, transform.localRotation.eulerAngles.y, 0), lastTime * 5f);
-
-               /* if(Vector3.Angle(transform.forward,GetComponent<Rigidbody>().velocity) > 20f)
-                {
-                    Vector3 horiVel = GetComponent<Rigidbody>().velocity;
-                    horiVel.y = 0f;
-                    float scale = horiVel.magnitude;
-
-                    horiVel = Vector3.Lerp(horiVel, transform.forward * scale, lastTime * 5f);
-
-                    GetComponent<Rigidbody>().velocity = new Vector3(horiVel.x, GetComponent<Rigidbody>().velocity.y, horiVel.z);
-                }*/
             }
         }
     }
@@ -266,51 +310,6 @@ public class kartScript : MonoBehaviour
         }
     }
 
-    /*public void KartCollision(Transform otherKart)
-    {
-        StartCoroutine(DoCollision(otherKart));      
-    }
-
-    private IEnumerator DoCollision(Transform otherKart)
-    {
-
-        //Stop the karts from colliding
-        Vector3 compareVect = otherKart.position - transform.position;
-        Vector3 localVel = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
-
-        Rigidbody me = GetComponent<Rigidbody>();
-        Rigidbody them = otherKart.GetComponent<Rigidbody>();
-
-        Vector3 newVelocity = transform.InverseTransformDirection(((2f * them.mass) / (me.mass + them.mass)) * them.velocity);
-            
-        //Do Collision
-        localVel = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
-
-        if (Vector3.Angle(transform.forward, compareVect) < 25)
-        {
-            if (Vector3.Angle(transform.right, compareVect) < 90)
-                localVel.x = -newVelocity.x;
-            else
-                localVel.x = newVelocity.x;
-        }
-
-        localVel.x *= 0.5f;
-
-        while ((otherKart.position - transform.position).magnitude < 2f)
-        {
-            GetComponent<Rigidbody>().velocity = transform.TransformDirection(localVel);
-            GetComponent<Rigidbody>().freezeRotation = true;
-            yield return null;
-        }
-
-        GetComponent<Rigidbody>().freezeRotation = false;
-
-        //Stop Collision
-        Vector3 nLocalVel = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
-        nLocalVel.x = 0;
-        GetComponent<Rigidbody>().velocity = transform.TransformDirection(nLocalVel);
-    }*/
-
     void DoTrick()
     {
         if (isFalling || locked)
@@ -372,8 +371,8 @@ public class kartScript : MonoBehaviour
             }
         }
 
-        if (Mathf.Abs(actualSpeed) < Mathf.Abs(ExpectedSpeed) - 5)
-            ExpectedSpeed = actualSpeed;
+       // if (Mathf.Abs(actualSpeed) < Mathf.Abs(ExpectedSpeed) - 5)
+         //   ExpectedSpeed = actualSpeed;
     }
 
     void ApplySteering(float lastTime)
@@ -400,7 +399,7 @@ public class kartScript : MonoBehaviour
             wheelColliders[1].steerAngle = Mathf.Lerp(wheelColliders[1].steerAngle, (nSteer * turnSpeed) + (steer * nDriftAmount), lastTime * 50f);
         }
 
-        if (isColliding || isFalling)
+        if (isFalling)
         {
             wheelColliders[0].steerAngle = 0;
             wheelColliders[1].steerAngle = 0;
@@ -606,32 +605,6 @@ public class kartScript : MonoBehaviour
     bool HaveTheSameSign(float first, float second)
     {
         return (Mathf.Sign(first) == Mathf.Sign(second));
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.rigidbody == null)
-            StartCoroutine("Collided", collision);
-    }
-
-    IEnumerator Collided(Collision collision)
-    {
-        RaycastHit hit;
-        if (!Physics.Raycast(transform.position, transform.right * 4f) && !Physics.Raycast(transform.position, -transform.right * 4f))
-        {
-            if (Physics.Raycast(transform.position, transform.forward * Mathf.Sign(ExpectedSpeed), out hit))
-            {
-                if (hit.collider == collision.collider)
-                {
-                    ExpectedSpeed /= 2f;
-                    ExpectedSpeed = -ExpectedSpeed;
-                }
-            }
-        }
-
-        isColliding = true;
-        yield return new WaitForSeconds(0.2f);
-        isColliding = false;
     }
 
 }

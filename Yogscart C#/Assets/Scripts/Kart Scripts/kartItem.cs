@@ -44,6 +44,9 @@ public class kartItem : MonoBehaviour
         pf = GetComponent<PositionFinding>();
 
         frame = Resources.Load<Texture2D>("UI/Power Ups/item frame");
+
+        if (GetComponent<AI>())//If AI detected must be AI
+            itemOwner = ItemOwner.Ai;
     }
 
     //Informs all clients that this kart has recieved an item
@@ -250,15 +253,6 @@ public class kartItem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(ki == null)
-            ki = GetComponent<kartInfo>();
-
-        if (GetComponent<AI>())//If AI detected must be AI
-            itemOwner = ItemOwner.Ai;
-
-        if(kaI == null)
-            kaI = GetComponent<kartInput>();
-
         if (kaI != null)
         {
             input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;
