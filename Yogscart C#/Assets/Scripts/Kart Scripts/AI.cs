@@ -16,24 +16,24 @@ public class AI : MonoBehaviour
     private TrackData td;
     private PositionFinding pf;
 
-    public Vector3 localPos;
-    public float percent;
-
-    private List<List<TrackRoadInfo>> AITrackInfo;
-    private List<float> pathLengths;
-    private float[] angles;
-
+    private int currentNode = 0, nextNode = 1, currentPercent = 0;
     private const float maxXDistance = 2f, minAngle = 3f;
-
-    public enum PathCorrecting { Fine, Turning, Straightening };
-    public PathCorrecting pc = PathCorrecting.Fine;
 
     public enum StartType { WillBoost, WontBoost, WillSpin };
     public StartType myStartType;
 
-    public float angle = 0f, nextAngle = 0f;
-    private bool canDrift = true;
+    public enum DriveState { Centring, Turning, Nothing};
+    public DriveState driveState = DriveState.Centring;
+
     public bool canDrive = true;
+
+    public Vector3 localPos;
+    public float percent;
+    private bool reversing = false;
+
+    private static List<List<TrackRoadInfo>> AITrackInfo;
+    private List<float> pathLengths;
+    private float[] angles;
 
     // Use this for initialization
     void Start()
@@ -74,125 +74,120 @@ public class AI : MonoBehaviour
         }
 
         if (canDrive)
-        {          
-            int currentNode = pf.currentPos;
-            int nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-            int nextnextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
-            int currentPercent = 0;
-
-            Debug.DrawLine(transform.position, td.positionPoints[currentNode].position, Color.green);
-
-            Vector3 startPos = td.positionPoints[currentNode].position, endPos = td.positionPoints[nextNode].position;
-            Vector3 vecBetweenPoints = (endPos - startPos);
-
-            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(vecBetweenPoints), Vector3.one).inverse;
-
-            localPos = matrix * (transform.position - startPos);
-            percent = localPos.z / vecBetweenPoints.magnitude;
-
-            //Do Driving
-            angle = -MathHelper.Angle(transform.forward, vecBetweenPoints);
-            nextAngle = -MathHelper.Angle(transform.forward, (td.positionPoints[nextnextNode].position - td.positionPoints[nextNode].position));
-
-            if (Mathf.Abs(angle) < 45)
+        {
+            if (percent > 1)
             {
-                //We're going the right way
+                currentNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+
+                currentPercent = 0;
+            }
+            if (percent < 0)
+            {
+                currentNode = MathHelper.NumClamp(currentNode - 1, 0, td.positionPoints.Count);
+                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+
+                currentPercent = 0;
+            }
+
+            Vector3 currentNodePos = td.positionPoints[currentNode].position;
+            Vector3 nextNodePos = td.positionPoints[nextNode].position;
+            Vector3 finalDir = nextNodePos - currentNodePos;
+
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(finalDir), Vector3.one).inverse;
+            localPos = matrix * (transform.position - currentNodePos);
+            percent = localPos.z / finalDir.magnitude;
+
+            Vector3 myForward = transform.forward;
+            myForward.y = 0f;
+            myForward.Normalize();
+
+            //Get Current Instruction
+            int currentInstruction = -1;
+            for (int i = 0; i < AITrackInfo[currentNode].Count; i++)
+            {
+                if (localPos.z > AITrackInfo[currentNode][i].distance)
+                    currentInstruction = i;
+            }
+
+            bool doNothing = true;
+
+            ks.throttle = 1f;
+
+            //Follow Current Instruction
+            if (currentInstruction != -1)
+            {
+                TrackRoadInfo instruction = AITrackInfo[currentNode][currentInstruction];
+
+                //If Angle is not what we need to be follow instructions
+                float angle = MathHelper.Angle(myForward, instruction.finalDir);
+                if (Mathf.Abs(angle) > minAngle && Mathf.Sign(angle) == Mathf.Sign(instruction.turnAmount))
+                {
+                    ks.steer = instruction.turnAmount;
+                    driveState = DriveState.Turning;
+                    doNothing = false;
+                }
+
+            }
+
+            //Do Straightening
+            int straightenTurn = 0;
+            float finalDirAngle = -MathHelper.Angle(myForward, finalDir);
+
+            //Turn towards Centre if we are far away from it
+            if (localPos.x > maxXDistance && finalDirAngle > -minAngle)
+                straightenTurn = -1;
+            if (localPos.x < -maxXDistance && finalDirAngle < minAngle)
+                straightenTurn = 1;
+
+            //If we are close to centre, but off course
+            if(Mathf.Abs(localPos.x) < maxXDistance)
+            {
+                if (finalDirAngle > minAngle)
+                    straightenTurn = -1;
+                if (finalDirAngle < -minAngle)
+                    straightenTurn = 1;
+            }
+
+            //If Straighten turn exact opposite of current turn then don't follow through
+            //If doNothing or if current turn is 0 or if current turn is same as Straighten Turn then follow through
+            //If past left minXDistance and told to turn left, then allowed to straighten
+            if (straightenTurn != 0 &&  (doNothing || ks.steer == 0 || (ks.drift && ((localPos.x < -maxXDistance && ks.steer == -1) || (localPos.x > maxXDistance && ks.steer == 1)))))
+            {
+                ks.steer = straightenTurn;
+                driveState = DriveState.Centring;
+                doNothing = false;
+            }
+
+            //No Instructions to follow, so just drive straight
+            if (doNothing)
+            {           
                 ks.throttle = 1f;
-
-                //Find the current Percent
-                for (int i = 0; i < AITrackInfo[currentNode].Count; i++)
-                {
-                    if (AITrackInfo[currentNode][i].percent < percent)
-                    {
-                        currentPercent = i;
-                    }
-                }
-
-                //On the right path, follow the track analysis
-                if (AITrackInfo[currentNode].Count > 0 && percent >= AITrackInfo[currentNode][currentPercent].percent)
-                {
-                    ks.steer = AITrackInfo[currentNode][currentPercent].turnAmount;
-
-                    if (ks.steer != 0)
-                        pc = PathCorrecting.Fine;
+                ks.steer = 0f;
+                driveState = DriveState.Nothing;
+            }
 
 
-                    float nExpectedSpeed = Mathf.Lerp(ks.maxSpeed, (ks.driftStarted) ? ks.maxSpeed : 17f, 10 / pathLengths[currentNode]);
-                    if (ks.expectedSpeed > nExpectedSpeed)
-                        ks.throttle = 0;
-                    else
-                        ks.throttle = 1;
+            //Reverse if Driving into a Wall
+            Debug.DrawRay(transform.position, transform.forward * 1.5f, Color.red);
+            RaycastHit raycastHit;
 
-                    if (AITrackInfo[currentNode][currentPercent].drift)
-                    {
-                        if (MathHelper.Sign(ks.steer) == MathHelper.Sign(angles[currentNode]))
-                        {
-                            if (!canDrift)
-                            {
-                                canDrift = true;
-                                ShouldDoDrift();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        ks.drift = false;
-                        canDrift = false;
-                    }
+            float distance = 1.5f;
+            if (reversing)
+                distance = 3f;
 
-                }
-                else if (Mathf.Abs(angle) < minAngle)
-                {
-                    ks.steer = 0;
-                    ks.drift = false;
-                    canDrift = false;
-                }
-                else
-                {
-                    ks.drift = false;
-                    canDrift = false;
-                }
-
-                if (ks.driftStarted && ks.driftSteer != 0)
-                {
-                    pc = PathCorrecting.Fine;
-                    float tempMinAngle = 30f, tempMaxAngle = 10f, minX = 4f, maxX = 5f;
-
-                    //We're drifting right
-                    if (ks.driftSteer > 0)
-                    {
-                        //Stay on the right side of the path
-                        if ((localPos.x < minX && angle < tempMinAngle) || angle < -minAngle || (percent > 0.5f && nextAngle < -minAngle))
-                            ks.steer = 1;
-                        else if ((localPos.x > maxX && angle > -tempMaxAngle) || angle > minAngle)
-                            ks.steer = -1;
-                        else
-                            ks.steer = 0;
-                    }
-                    else //We're drifting Left
-                    {
-                        //Stay on the left side of the path
-                        if ((localPos.x > -minX && angle > -tempMinAngle) || angle > minAngle || (percent > 0.5f && nextAngle > minAngle))
-                            ks.steer = -1;
-                        else if ((localPos.x < -maxX && angle < tempMaxAngle) || angle < -minAngle)
-                            ks.steer = 1;
-                        else
-                            ks.steer = 0;
-                    }
-                }
-
-                //Straighten Up if you need to
-                if(angle > turnAngleRequired)
-                {
-                    ks.steer = Mathf.Sign(angle);
-                }
-
+            if(Physics.Raycast(transform.position, transform.forward,out raycastHit, distance) && raycastHit.transform.GetComponent<Rigidbody>() == null)
+            {
+                reversing = true;
+                ks.throttle = -1;
+                ks.steer *= -1f;
             }
             else
             {
-                //We're going the wrong way
-                ks.throttle = 1;
+                reversing = false;
             }
+
+
         }
     }
 
@@ -230,7 +225,7 @@ public class AI : MonoBehaviour
         }
     }
 
-    const float turnAngleRequired = 5f, roadNeededtoStraightenOut = 15f;
+    const float turnAngleRequired = 2f, roadNeededtoStraightenOut = 10f, angleForDrift = 6f;
 
     /// <summary>
     /// Scan the entire track and find places to turn .etc
@@ -281,14 +276,19 @@ public class AI : MonoBehaviour
 
         //Find out the angles and lengths of all the paths
         angles = new float[td.positionPoints.Count];
+        Vector3[] directions = new Vector3[td.positionPoints.Count];
         pathLengths = new List<float>();
 
         for (int i = 0; i < td.positionPoints.Count; i++)
         {
-            angles[i] = GetAngle(i, i + 1, i + 2);
-
             int nextPoint = MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count);
+            int nextNextPoint = MathHelper.NumClamp(i + 2, 0, td.positionPoints.Count);
+
             Vector3 currentDir = td.positionPoints[nextPoint].position - td.positionPoints[i].position;
+            Vector3 nextDir = td.positionPoints[nextNextPoint].position - td.positionPoints[nextPoint].position;
+
+            angles[i] = MathHelper.Angle(currentDir, nextDir);
+            directions[i] = currentDir;
 
             pathLengths.Add(currentDir.magnitude);
         }
@@ -297,7 +297,6 @@ public class AI : MonoBehaviour
         for (int i = 0; i < td.positionPoints.Count; i++)
         {
             List<TrackRoadInfo> newTrackList = new List<TrackRoadInfo>();
-            float percentChunk = 15f / pathLengths[i];
 
             //Check behind me, was I turning last
             int lastPoint = MathHelper.NumClamp(i - 1, 0, td.positionPoints.Count);
@@ -310,31 +309,31 @@ public class AI : MonoBehaviour
                     if (MathHelper.Sign(angles[lastPoint]) == MathHelper.Sign(angles[i]))
                     {
                         //How Long is this path? Do I have time to straighten out?
-                        if (pathLengths[i] >= roadNeededtoStraightenOut)
+                        if (pathLengths[i] >= roadNeededtoStraightenOut * 2f)
                         {
                             // Set Steer to zero at 20%
-                            newTrackList.Add(new TrackRoadInfo(percentChunk, 0, false));
+                            newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, false, directions[i]));
                             // Set Steer to old turn direction at 80 %
-                            newTrackList.Add(new TrackRoadInfo(1 - percentChunk, MathHelper.Sign(angles[i]), true));
+                            newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), angles[i] > angleForDrift, directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
                         }
                         else
                         {
                             // Add turn at 0%
-                            newTrackList.Add(new TrackRoadInfo(0, MathHelper.Sign(angles[i]), true));
+                            newTrackList.Add(new TrackRoadInfo(0, MathHelper.Sign(angles[i]), angles[i] > angleForDrift, directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
                         }
                     }
                     else
                     {
                         // Set Steer to zero at 20%
-                        newTrackList.Add(new TrackRoadInfo(percentChunk, 0, false));
+                        newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, false, directions[i]));
                         //Set Steer to new turn direction at 80 %
-                        newTrackList.Add(new TrackRoadInfo(1 - percentChunk, MathHelper.Sign(angles[i]), true));
+                        newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), angles[i] > angleForDrift, directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
                     }
                 }
                 else
                 {
                     // Set Steer to zero at 20%
-                    newTrackList.Add(new TrackRoadInfo(percentChunk, 0, false));
+                    newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, false, directions[i]));
                 }
             }
             else
@@ -343,7 +342,7 @@ public class AI : MonoBehaviour
                 if (Mathf.Abs(angles[i]) > turnAngleRequired)
                 {
                     // Set Steer to new turn direction at 80 %
-                    newTrackList.Add(new TrackRoadInfo(1 - percentChunk, MathHelper.Sign(angles[i]), true));
+                    newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), angles[i] > angleForDrift, directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
                 }
             }
 
@@ -351,30 +350,22 @@ public class AI : MonoBehaviour
         }
     }
 
-    private float GetAngle(int i, int iPlusOne, int iPlusTwo)
-    {
-        int nextPoint = MathHelper.NumClamp(iPlusOne, 0, td.positionPoints.Count);
-        int nextNextPoint = MathHelper.NumClamp(iPlusTwo, 0, td.positionPoints.Count);
-
-        Vector3 currentDir = td.positionPoints[nextPoint].position - td.positionPoints[i].position;
-        Vector3 nextDir = td.positionPoints[nextNextPoint].position - td.positionPoints[nextPoint].position;
-
-        return MathHelper.Angle(currentDir, nextDir);
-    }
-
     private class TrackRoadInfo
     {
-        public float percent { get; private set; }
+        public float distance { get; private set; }
         //0 if no turn is needed
         public float turnAmount { get; private set; }
         //This turn is started before the end of a straight path
         public bool drift { get; private set; }
+        //The direction should stop following the instruction in
+        public Vector3 finalDir { get; private set; }
 
-        public TrackRoadInfo(float _percent, float _turnAmount, bool _drift)
+        public TrackRoadInfo(float _distance, float _turnAmount, bool _drift, Vector3 _finalDir)
         {
-            percent = _percent;
+            distance = _distance;
             turnAmount = _turnAmount;
             drift = _drift;
+            finalDir = _finalDir;
         }
     }
 }

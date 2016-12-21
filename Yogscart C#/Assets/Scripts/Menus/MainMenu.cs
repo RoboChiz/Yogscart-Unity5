@@ -76,6 +76,8 @@ public class MainMenu : MonoBehaviour
 
         lastMousePos = GUIHelper.GetMousePosition();
 
+        InputManager.lockEverything = false;
+
     }
 	
 	// Update is called once per GUI Frame
