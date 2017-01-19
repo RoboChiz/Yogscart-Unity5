@@ -63,7 +63,6 @@ public class CharacterSelect : MonoBehaviour
 
         cursorPosition = new Vector2[4];
         nameList = Resources.Load<Texture2D>("UI/Lobby/NamesList");
-
         ResetEverything();
 
         yield return new WaitForSeconds(0.5f);
@@ -575,7 +574,7 @@ public class CharacterSelect : MonoBehaviour
                     GUI.Label(otherLabelRect, InputManager.controllers[i].controlLayout.Name, nstyle);
 
                     GUI.DrawTexture(new Rect(startX + 270, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Controls/" + ((InputManager.controllers[i].controlLayout.Type == ControllerType.Keyboard) ? "Keyboard" : "Xbox_1")));
-                    GUI.DrawTexture(new Rect(startX + 10, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Options/X"));
+                    GUI.DrawTexture(new Rect(startX + 10, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[i].controlLayout.Type == ControllerType.Keyboard) ? "Space" : "X")),ScaleMode.ScaleToFit);
 
                     if (boxHeight != layoutBoxStartHeight)
                     {

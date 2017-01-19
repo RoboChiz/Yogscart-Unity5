@@ -18,30 +18,31 @@ public class KartMaker : MonoBehaviour
     public Transform SpawnKart(KartType type, Vector3 pos, Quaternion rot,int c, int h, int k, int w)
     {
         //Spawn Kart and Wheels
-        Transform kartBody = (Transform)Instantiate(gd.karts[k].model, Vector3.zero, Quaternion.identity);
+        Transform kartBody = Instantiate(gd.karts[k].model, Vector3.zero, Quaternion.identity);
         Kart_Skeleton kartSkel = kartBody.GetComponent<Kart_Skeleton>();
 
         Transform frontlWheel, frontrWheel, backlWheel, backrWheel;
 
-        frontlWheel = (Transform)Instantiate(gd.wheels[w].model, kartSkel.FrontLPosition, Quaternion.Euler(0, 0, 0));
+        frontlWheel = Instantiate(gd.wheels[w].model, kartSkel.FrontLPosition, Quaternion.Euler(0, 0, 0));
         frontlWheel.parent = kartBody.FindChild("Kart Body");
         frontlWheel.name = "FrontL Wheel";
 
-        frontrWheel = (Transform)Instantiate(gd.wheels[w].model, kartSkel.FrontRPosition, Quaternion.Euler(0, 180, 0));
+        frontrWheel = Instantiate(gd.wheels[w].model, kartSkel.FrontRPosition, Quaternion.Euler(0, 180, 0));
         frontrWheel.parent = kartBody.FindChild("Kart Body");
         frontrWheel.name = "FrontR Wheel";
 
-        backlWheel = (Transform)Instantiate(gd.wheels[w].model, kartSkel.BackLPosition, Quaternion.Euler(0, 0, 0));
+        backlWheel = Instantiate(gd.wheels[w].model, kartSkel.BackLPosition, Quaternion.Euler(0, 0, 0));
         backlWheel.parent = kartBody.FindChild("Kart Body");
         backlWheel.name = "BackL Wheel";
 
-        backrWheel = (Transform)Instantiate(gd.wheels[w].model, kartSkel.BackRPosition, Quaternion.Euler(0, 180, 0));
+        backrWheel = Instantiate(gd.wheels[w].model, kartSkel.BackRPosition, Quaternion.Euler(0, 180, 0));
         backrWheel.parent = kartBody.FindChild("Kart Body");
         backrWheel.name = "BackR Wheel";
 
         //Spawn Character and Hat
-        Transform characterMesh = (Transform)Instantiate(gd.characters[c].model, Vector3.zero, Quaternion.identity);
+        Transform characterMesh = Instantiate(gd.characters[c].model, Vector3.zero, Quaternion.identity);
         characterMesh.name = "Character";
+
 
         Character_Skeleton charSkel = characterMesh.GetComponent<Character_Skeleton>();
 
@@ -50,12 +51,19 @@ public class KartMaker : MonoBehaviour
 
         if (h != 0)//Don't spawn a hat if hat value equals zero
         {
-            Transform hatMesh = (Transform)Instantiate(gd.hats[h].model, charSkel.HatHolder.position, Quaternion.identity);
+            Transform hatMesh = Instantiate(gd.hats[h].model, charSkel.HatHolder.position, Quaternion.identity);
             hatMesh.parent = charSkel.HatHolder;
             hatMesh.localRotation = Quaternion.Euler(0, 0, 0);
         }
 
-        if(type == KartType.Online)
+        //Setup IK Animation
+        DrivingIK ikComponent = characterMesh.gameObject.AddComponent<DrivingIK>();
+        ikComponent.leftHandTarget = kartSkel.leftHandTarget;
+        ikComponent.rightHandTarget = kartSkel.rightHandTarget;
+        ikComponent.leftFoorTarget = kartSkel.leftFoorTarget;
+        ikComponent.rightFootTarget = kartSkel.rightFootTarget;
+
+        if (type == KartType.Online)
         {
             kartBody.gameObject.AddComponent<NetworkIdentity>();
         }

@@ -29,8 +29,8 @@ public class kartInfo : MonoBehaviour
 
     void Start()
     {
-        td = GameObject.FindObjectOfType<TrackData>();
-        sm = GameObject.FindObjectOfType<SoundManager>();
+        td = FindObjectOfType<TrackData>();
+        sm = FindObjectOfType<SoundManager>();
     }
 
     // Update is called once per frame

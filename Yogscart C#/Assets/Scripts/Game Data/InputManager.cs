@@ -9,7 +9,7 @@ using System.Collections.Generic;
 public class InputManager : MonoBehaviour
 {
     static bool ConfigLoaded = false;
-    public static bool lockEverything = true;
+    public static bool lockEverything = false;
 
     //Checks that Configs have been loaded before being used
     static public List<InputLayout> AllConfigs

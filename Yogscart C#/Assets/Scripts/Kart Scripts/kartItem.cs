@@ -68,6 +68,10 @@ public class kartItem : MonoBehaviour
             {
                 myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
                 myItem.parent = transform;
+
+                if (myItem.GetComponent<Projectile>() != null)
+                    myItem.GetComponent<Projectile>().Setup(transform.forward * inputDirection,false);
+
                 itemSpawned = true;
             }       
 
@@ -87,7 +91,13 @@ public class kartItem : MonoBehaviour
             {
                 myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
                 myItem.parent = transform;
-                myItem.GetComponent<Rigidbody>().isKinematic = true;
+
+                if(myItem.GetComponent<Rigidbody>() != null)
+                    myItem.GetComponent<Rigidbody>().isKinematic = true;
+
+                if (myItem.GetComponent<Projectile>() != null)
+                    myItem.GetComponent<Projectile>().Setup(transform.forward, true);
+
                 itemSpawned = true;
             }
         }
@@ -103,8 +113,21 @@ public class kartItem : MonoBehaviour
 
             inputDirection = dir;
 
+            //Fire the Item if it's a Projectile
+            if (myItem.GetComponent<Projectile>() != null)
+            {
+                //Move Item
+                if(inputDirection >= 0)
+                    myItem.position = transform.position + (transform.forward * itemDistance * 2f);
+
+                //Start Projectile Behaviour
+                myItem.GetComponent<Projectile>().Setup(transform.forward * inputDirection, false);
+            }
+
             myItem.parent = null;
-            myItem.GetComponent<Rigidbody>().isKinematic = false;
+
+            if(myItem.GetComponent<Rigidbody>() != null)
+                myItem.GetComponent<Rigidbody>().isKinematic = false;
 
             myItem = null;        
 
@@ -253,6 +276,9 @@ public class kartItem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (itemOwner != ItemOwner.Ai && GetComponent<AI>())//If AI detected must be AI
+            itemOwner = ItemOwner.Ai;
+
         if (kaI != null)
         {
             input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;

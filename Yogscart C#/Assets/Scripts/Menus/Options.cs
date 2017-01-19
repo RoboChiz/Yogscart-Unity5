@@ -132,7 +132,7 @@ public class Options : MonoBehaviour
             int vertical = InputManager.controllers[0].GetRawMenuInput("MenuVertical");
             float horizontal = 0;
 
-            if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider))
+            if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider) || (currentTab == OptionsTab.Game))
                 horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal");
             else
                 horizontal = InputManager.controllers[0].GetRawInput("MenuHorizontal");

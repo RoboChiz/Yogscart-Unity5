@@ -67,7 +67,9 @@ public class kartScript : MonoBehaviour
     public bool driftStarted { get; private set; }
     private bool applyingDrift;
     const float kartbodyRot = 20f; //Amount that the kartbody rotates during drifting
-    private float driftTime, blueTime = 2f, orangeTime = 4f;
+    public float driftTime { get; private set; }
+    public float blueTime { get{ return 2f; } }
+    public float orangeTime { get { return 4f; } }
     public bool onlineMode = false; //Stops local boosting and spinning out. This is handled by the server (These are handled by server)
 
     //Spinning Out
@@ -165,13 +167,16 @@ public class kartScript : MonoBehaviour
 
             actualSpeed = relativeVelocity.z;
 
+            if (Mathf.Abs(actualSpeed) < 0.1f)
+                actualSpeed = 0f;
+
             float nA = (ExpectedSpeed - actualSpeed) / lastTime;
             if (!isFalling || isColliding)
             {
 
                 float absExp = Mathf.Abs(expectedSpeed), absAct = Mathf.Abs(actualSpeed);
 
-                if (absAct > 1)
+                if (absAct > 1 || (expectedSpeed < -2f && actualSpeed == 0f))
                 {
                     GetComponent<Rigidbody>().AddForce(transform.forward * nA, ForceMode.Acceleration);
 

@@ -90,6 +90,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Resources\Animations\DrivingIK.cs" />
     <Compile Include="Assets\Scripts\Character Scripts\StandingCharacter.cs" />
     <Compile Include="Assets\Scripts\Game Data\CurrentGameData.cs" />
     <Compile Include="Assets\Scripts\Game Data\GUIHelper.cs" />
@@ -136,9 +137,11 @@
     <Compile Include="Assets\Scripts\Networking\UnetClient.cs" />
     <Compile Include="Assets\Scripts\Networking\UnetHost.cs" />
     <Compile Include="Assets\Scripts\Networking\UnetMessages.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\Egg.cs" />
     <Compile Include="Assets\Scripts\Power Ups\ItemBox.cs" />
     <Compile Include="Assets\Scripts\Power Ups\Lapis.cs" />
     <Compile Include="Assets\Scripts\Power Ups\LapisItem.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\Projectile.cs" />
     <Compile Include="Assets\Scripts\Power Ups\Rotate.cs" />
     <Compile Include="Assets\Scripts\Power Ups\SpeedBoost.cs" />
     <Compile Include="Assets\Scripts\Track Editor\BoostPad.cs" />

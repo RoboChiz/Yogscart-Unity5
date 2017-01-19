@@ -298,6 +298,11 @@ public class Leaderboard : MonoBehaviour
                 }
                 break;
         }
+
+        //Render Continue Icon in Corner
+        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 175, BoardRect.height - 80, 150, 50), "Next", 2);
+        GUI.DrawTexture(new Rect(BoardRect.width - 225, BoardRect.height - 80, 50, 50), Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard) ? "Return" : "A")), ScaleMode.ScaleToFit);
+
         GUI.EndGroup();
 
         if (state != LBType.TimeTrial && pointCount < 15)
