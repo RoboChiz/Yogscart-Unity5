@@ -328,7 +328,9 @@ public class AI : MonoBehaviour
             if (reversing)
                 distance = 15f;
 
-            if(Physics.Raycast(transform.position, transform.forward,out raycastHit, distance) && raycastHit.transform.GetComponent<Rigidbody>() == null)
+            if((Physics.Raycast(transform.position, transform.forward,out raycastHit, distance) || 
+                Physics.Raycast(transform.position + (transform.right/2f), transform.forward, out raycastHit, distance) || 
+                Physics.Raycast(transform.position - (transform.right / 2f), transform.forward, out raycastHit, distance)) && raycastHit.transform.GetComponent<Rigidbody>() == null)
             {
                 reversing = true;
                 ks.throttle = -1;

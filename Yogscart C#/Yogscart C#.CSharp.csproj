@@ -137,8 +137,10 @@
     <Compile Include="Assets\Scripts\Networking\UnetClient.cs" />
     <Compile Include="Assets\Scripts\Networking\UnetHost.cs" />
     <Compile Include="Assets\Scripts\Networking\UnetMessages.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\Dirtblock.cs" />
     <Compile Include="Assets\Scripts\Power Ups\Egg.cs" />
     <Compile Include="Assets\Scripts\Power Ups\ItemBox.cs" />
+    <Compile Include="Assets\Scripts\Power Ups\JR.cs" />
     <Compile Include="Assets\Scripts\Power Ups\Lapis.cs" />
     <Compile Include="Assets\Scripts\Power Ups\LapisItem.cs" />
     <Compile Include="Assets\Scripts\Power Ups\Projectile.cs" />

@@ -67,8 +67,6 @@ Please don't sue us! XXX
 This is an Alpha build of the C# Version 
 of the game for testing and debugging.
 Not all feautres have been ported over! 
-For a more complete version of the game, 
-go play the offical release.
 
 We hope you enjoy the Game!
 From the Yogscart Team");

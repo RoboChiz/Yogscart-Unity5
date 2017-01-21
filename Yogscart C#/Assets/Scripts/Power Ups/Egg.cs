@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class Egg : Projectile
 {
-    public const float travelSpeed = 25f;
+    public const float travelSpeed = 30f;
     private float desiredY = 0f;
-    private int bounces = 3;
+    protected float offset = 1f;
+    protected int bounces = 3;
 
     public override void Setup(Vector3 _direction, bool _actingShield)
     {
@@ -21,7 +22,7 @@ public class Egg : Projectile
 	}
 	
 	// Update is called once per frame
-	void Update ()
+	protected virtual void Update ()
     {
         if (!actingShield)
         {
@@ -32,13 +33,13 @@ public class Egg : Projectile
 
             if (Physics.Raycast(transform.position + Vector3.up,Vector3.down,out hit, Mathf.Infinity, layerMask))
             {
-                desiredY = hit.point.y + 1f;
+                desiredY = hit.point.y + offset;
             }
 
             Vector3 newPosition = transform.position;
 
             newPosition += new Vector3(direction.x, 0f, direction.z) * travelSpeed * Time.deltaTime;
-            newPosition.y = Mathf.Lerp(newPosition.y, desiredY, Time.deltaTime * 15f);
+            newPosition.y = Mathf.Lerp(newPosition.y, desiredY, Time.deltaTime * 20f);
 
             transform.position = newPosition;
 
