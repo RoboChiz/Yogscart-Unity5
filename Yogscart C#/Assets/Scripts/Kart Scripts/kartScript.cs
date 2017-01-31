@@ -39,6 +39,8 @@ public class kartScript : MonoBehaviour
         }
     }
 
+    private bool allFourWheelsOffGround = false;
+
     //Kart Stats
     public float maxSpeed = 20f;
     private float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f, turnSpeed = 2f, driftAmount = 1f;
@@ -144,15 +146,7 @@ public class kartScript : MonoBehaviour
         {
             CalculateExpectedSpeed(lastTime);
 
-            if (!isFalling)
-            {
-                ApplySteering(lastTime);
-            }
-            else
-            {
-                wheelColliders[0].steerAngle = 0;
-                wheelColliders[1].steerAngle = 0;
-            }
+            ApplySteering(lastTime);
 
             ApplyDrift(lastTime);
 
@@ -170,14 +164,42 @@ public class kartScript : MonoBehaviour
             if (Mathf.Abs(actualSpeed) < 0.1f)
                 actualSpeed = 0f;
 
+            bool wallInFront = false;
+            if (isFalling)
+            {
+                Vector3 forward = Vector3.Scale(transform.forward, new Vector3(1, 0f, 1f));
+                RaycastHit hit;
+
+                wallInFront = Physics.Raycast(transform.position, forward, out hit, 1.5f) && hit.transform.GetComponent<Rigidbody>() == null;
+
+                if (wallInFront && expectedSpeed > 0)
+                {
+                    expectedSpeed = -1;
+                    CancelBoost();
+                }
+
+                //Stop Extreme Boosting when in the Air
+                if (!wallInFront && actualSpeed < expectedSpeed)
+                    expectedSpeed = actualSpeed;
+            }
+
+
             float nA = (ExpectedSpeed - actualSpeed) / lastTime;
-            if (!isFalling || isColliding)
+
+            if (!isFalling || wallInFront || isColliding)
             {
 
                 float absExp = Mathf.Abs(expectedSpeed), absAct = Mathf.Abs(actualSpeed);
 
                 if (absAct > 1 || (expectedSpeed < -2f && actualSpeed == 0f))
                 {
+                   /*if(GetComponent<Rigidbody>().velocity.magnitude > maxSpeed)
+                    {
+                        Vector3 velocity = GetComponent<Rigidbody>().velocity;
+                        velocity = Vector3.Cross(velocity, transform.forward);
+
+                    }*/
+                        
                     GetComponent<Rigidbody>().AddForce(transform.forward * nA, ForceMode.Acceleration);
 
                     foreach (WheelCollider collider in wheelColliders)
@@ -317,7 +339,7 @@ public class kartScript : MonoBehaviour
 
     void DoTrick()
     {
-        if (isFalling || locked)
+        if (allFourWheelsOffGround || locked)
         {
             if (trickPotential)
             {
@@ -414,17 +436,21 @@ public class kartScript : MonoBehaviour
 
     bool CheckGravity()
     {
-        bool grounded = false;
+        bool grounded = true;
+        allFourWheelsOffGround = true;
+
         for (int i = 0; i < 4; i++)
         {
-            if (wheelColliders[i].isGrounded)
+            if (!wheelColliders[i].isGrounded)
             {
-                grounded = true;
+                grounded = false;
                 break;
             }
+            else
+                allFourWheelsOffGround = false;
         }
 
-        if (grounded || Physics.Raycast(transform.position, -transform.up, 1))
+        if (grounded && Physics.Raycast(transform.position, -transform.up, 1))
             return false;
         else
             return true;

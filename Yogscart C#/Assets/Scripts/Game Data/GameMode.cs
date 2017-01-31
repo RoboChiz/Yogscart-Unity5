@@ -165,10 +165,10 @@ abstract public class GameMode : MonoBehaviour
                     racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 19;
                     break;
                 case 1:
-                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 21;
+                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 22;
                     break;
                 default:
-                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 23;
+                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 25;
                     break;
             }
 

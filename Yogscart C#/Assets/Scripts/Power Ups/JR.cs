@@ -10,6 +10,14 @@ public class JR : Egg
     private int currentPoint;
     private TrackData td;
 
+    protected void Start()
+    {
+        parent = transform.parent;
+        currentPoint = parent.GetComponent<PositionFinding>().currentPos;
+        offset = 1.5f;
+        bounces = 0;
+    }
+
 	// Update is called once per frame
 	protected override void Update ()
     {
@@ -17,19 +25,13 @@ public class JR : Egg
         td = FindObjectOfType<TrackData>();
 
         //Update Position to Add Player in Front
-        if (actingShield)
-        {
-            parent = transform.parent;
-            currentPoint = parent.GetComponent<PositionFinding>().currentPos;
-            bounces = 1;
-            offset = 1.5f;
-        }
-        else
+        if (!actingShield)
         {
             //Find Target, Only when released
             if (target == null && !lockOff)
             {
                 PositionFinding pf = parent.GetComponent<PositionFinding>();
+                Vector3 roadDir = td.positionPoints[MathHelper.NumClamp(currentPoint, 0, td.positionPoints.Count)].position - td.positionPoints[currentPoint].position;
 
                 //If not in first
                 if (pf.position > 0)
@@ -40,7 +42,9 @@ public class JR : Egg
                     {
                         if (possiblePF.position == pf.position - 1)
                         {
-                            target = possiblePF.transform;
+                            //Check facing the right direction
+                            if(Vector3.Dot(parent.forward, roadDir) > 0)
+                                target = possiblePF.transform;
                             break;
                         }
                     }

@@ -52,7 +52,7 @@ public class kartItem : MonoBehaviour
     //Informs all clients that this kart has recieved an item
     public void RecieveItem(int item)
     {
-        Debug.Log("Recieved Item " + item.ToString());
+        //Debug.Log("Recieved Item " + item.ToString());
         heldPowerUp = item;
         iteming = true;
     }
@@ -62,7 +62,7 @@ public class kartItem : MonoBehaviour
     {
         if (heldPowerUp != -1)
         {
-            Debug.Log("Used Item");
+            //Debug.Log("Used Item");
             //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
             if (!onlineGame || gd.powerUps[heldPowerUp].onlineModel == null)
             {
@@ -83,7 +83,7 @@ public class kartItem : MonoBehaviour
     {
         if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].useableShield)
         {
-            Debug.Log("Used Shield");
+            //Debug.Log("Used Shield");
             sheilding = true;
 
             //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
@@ -105,10 +105,10 @@ public class kartItem : MonoBehaviour
 
     public void DropShield(float dir)
     {
-        Debug.Log("Dropped Shield");
+        //Debug.Log("Dropped Shield");
         if (myItem != null)
         {
-            Debug.Log("Actually dropped Item");
+            //Debug.Log("Actually dropped Item");
             sheilding = false;
 
             inputDirection = dir;
@@ -117,8 +117,10 @@ public class kartItem : MonoBehaviour
             if (myItem.GetComponent<Projectile>() != null)
             {
                 //Move Item
-                if(inputDirection >= 0)
-                    myItem.position = transform.position + (transform.forward * itemDistance * 2f);
+                if (inputDirection >= 0)
+                {
+                    myItem.position = transform.position + (transform.forward * itemDistance * 2f) + (transform.up * 0.5f);
+                }
 
                 //Start Projectile Behaviour
                 myItem.GetComponent<Projectile>().Setup(transform.forward * inputDirection, false);
@@ -279,7 +281,7 @@ public class kartItem : MonoBehaviour
         if (itemOwner != ItemOwner.Ai && GetComponent<AI>())//If AI detected must be AI
             itemOwner = ItemOwner.Ai;
 
-        if (kaI != null)
+        if (kaI != null && InputManager.controllers.Count > kaI.myController)
         {
             input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;
 

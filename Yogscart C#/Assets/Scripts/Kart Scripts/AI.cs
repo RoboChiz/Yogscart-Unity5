@@ -312,8 +312,8 @@ public class AI : MonoBehaviour
                 //Debug.Log("canFinishBlue:" + canFinishBlue + " blueFinished:" + blueFinished);
                 if ((!canFinishBlue || blueFinished) && (!canFinishOrange || orangeFinished))
                 {
-                    if(ks.driftTime > 0f)
-                        Debug.Log("Cancelled Drift! Drift Time:" + ks.driftTime);
+                   // if(ks.driftTime > 0f)
+                        //Debug.Log("Cancelled Drift! Drift Time:" + ks.driftTime);
 
                     ks.drift = false;
                 }

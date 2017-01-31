@@ -215,7 +215,7 @@ public class Leaderboard : MonoBehaviour
         GUIHelper.SetGUIAlpha(guiAlpha);
 
         float optionHeight = 67.5f;
-        Rect BoardRect = new Rect(970, optionHeight, 940, 945);
+        Rect BoardRect = new Rect(970, optionHeight, 940, 1000);
         GUI.DrawTexture(BoardRect, BoardTexture);
 
         GUI.BeginGroup(BoardRect);
@@ -300,8 +300,8 @@ public class Leaderboard : MonoBehaviour
         }
 
         //Render Continue Icon in Corner
-        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 175, BoardRect.height - 80, 150, 50), "Next", 2);
-        GUI.DrawTexture(new Rect(BoardRect.width - 225, BoardRect.height - 80, 50, 50), Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard) ? "Return" : "A")), ScaleMode.ScaleToFit);
+        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 175, BoardRect.height - 90, 150, 50), "Next", 2);
+        GUI.DrawTexture(new Rect(BoardRect.width - 225, BoardRect.height - 90, 50, 50), Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard) ? "Return" : "A")), ScaleMode.ScaleToFit);
 
         GUI.EndGroup();
 
