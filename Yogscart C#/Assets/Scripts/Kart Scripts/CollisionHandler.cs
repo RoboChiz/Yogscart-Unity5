@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 //The Straight Port of the Slightly Efficent Kart Finding System 
 
@@ -79,12 +80,11 @@ public class CollisionHandler : MonoBehaviour
         float leftSpace = ((fastest.transform.position - fastest.transform.right) - slowest.transform.position).magnitude;
         float rightSpace = ((fastest.transform.position + fastest.transform.right) - slowest.transform.position).magnitude;
 
-        Vector3 sidePush = fastest.transform.right;
-        if (leftSpace < rightSpace)
-            sidePush *= -1f;
+        bool pushLeft = (leftSpace < rightSpace);
 
-        slowest.GetComponent<Rigidbody>().AddForce((Vector3.up * pushUpAmount) + (sidePush * pushAcrossAmount), ForceMode.VelocityChange);
-        StartCoroutine(WaitForKartCollision(slowest));
+        slowest.GetComponent<CowTipping>().PushLeft = pushLeft;
+        slowest.GetComponent<CowTipping>().TipCow();
+
     } 
 
     private void DoKartGodCollision(kartScript kart, KartCollider god)
@@ -98,22 +98,4 @@ public class CollisionHandler : MonoBehaviour
         collisions[i, j] = false;
     }
 
-    private IEnumerator WaitForKartCollision(kartScript slowest)
-    {
-        slowest.isColliding = true;
-
-        foreach (WheelCollider collider in slowest.wheelColliders)
-        {
-            collider.enabled = false;
-        }
-
-        yield return new WaitForSeconds(0.1f);
-
-        foreach (WheelCollider collider in slowest.wheelColliders)
-        {
-            collider.enabled = true;
-        }
-
-        slowest.isColliding = false;
-    }
 }

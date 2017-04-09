@@ -93,6 +93,7 @@ public class GUIHelper
         GUI.color = nWhite;
     }
 
+
     public static Rect CentreRect(Rect originalRect, float scale)
     {
         float halfWidth = originalRect.width / 2f, halfHeight = originalRect.height / 2f;

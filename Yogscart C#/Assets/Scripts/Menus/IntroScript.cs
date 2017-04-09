@@ -66,7 +66,10 @@ Please don't sue us! XXX
 
 This is an Alpha build of the C# Version 
 of the game for testing and debugging.
-Not all feautres have been ported over! 
+
+Please feel free to Let's Play, Stream or critique 
+our game anyway you like.
+#DevsLoveYouTubers.
 
 We hope you enjoy the Game!
 From the Yogscart Team");

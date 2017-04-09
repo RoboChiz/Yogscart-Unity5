@@ -39,8 +39,6 @@ public class kartScript : MonoBehaviour
         }
     }
 
-    private bool allFourWheelsOffGround = false;
-
     //Kart Stats
     public float maxSpeed = 20f;
     private float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f, turnSpeed = 2f, driftAmount = 1f;
@@ -113,6 +111,7 @@ public class kartScript : MonoBehaviour
     public bool isColliding = false;
 
     private Vector3 relativeVelocity;
+    private Rigidbody kartRigidbody;
 
     // Use this for initialization
     void Start()
@@ -124,7 +123,9 @@ public class kartScript : MonoBehaviour
         maxGrassSpeed = maxSpeed * grassPercent;
         driftAmount = turnSpeed / 2f;
 
-        GetComponent<Rigidbody>().centerOfMass = new Vector3(0f, -0.5f, 0f);
+        kartRigidbody = GetComponent<Rigidbody>();
+        kartRigidbody.centerOfMass = new Vector3(0f, -0.5f, 0f);
+
     }
 
     public void SetupWheelStartPos()
@@ -144,7 +145,11 @@ public class kartScript : MonoBehaviour
 
         if (Time.timeScale != 0)
         {
-            CalculateExpectedSpeed(lastTime);
+
+            isFalling = CheckGravity();
+
+            if(!isFalling)
+                CalculateExpectedSpeed(lastTime);
 
             ApplySteering(lastTime);
 
@@ -170,42 +175,44 @@ public class kartScript : MonoBehaviour
                 Vector3 forward = Vector3.Scale(transform.forward, new Vector3(1, 0f, 1f));
                 RaycastHit hit;
 
-                wallInFront = Physics.Raycast(transform.position, forward, out hit, 1.5f) && hit.transform.GetComponent<Rigidbody>() == null;
+                wallInFront = Physics.Raycast(transform.position + transform.up, forward, out hit, 1.5f) && hit.transform.GetComponent<Rigidbody>() == null;
 
                 if (wallInFront && expectedSpeed > 0)
                 {
                     expectedSpeed = -1;
+                    Debug.Log("Ahhh a wall!!! " + expectedSpeed);
                     CancelBoost();
                 }
 
                 //Stop Extreme Boosting when in the Air
                 if (!wallInFront && actualSpeed < expectedSpeed)
+                {
                     expectedSpeed = actualSpeed;
+                }
             }
 
 
             float nA = (ExpectedSpeed - actualSpeed) / lastTime;
 
-            if (!isFalling || wallInFront || isColliding)
+            if ((!isFalling && !isColliding )|| wallInFront)
             {
 
                 float absExp = Mathf.Abs(expectedSpeed), absAct = Mathf.Abs(actualSpeed);
 
                 if (absAct > 1 || (expectedSpeed < -2f && actualSpeed == 0f))
                 {
-                   /*if(GetComponent<Rigidbody>().velocity.magnitude > maxSpeed)
-                    {
-                        Vector3 velocity = GetComponent<Rigidbody>().velocity;
-                        velocity = Vector3.Cross(velocity, transform.forward);
+                    Vector3 myForward = transform.forward;
+                    myForward.y = 0;
 
-                    }*/
-                        
-                    GetComponent<Rigidbody>().AddForce(transform.forward * nA, ForceMode.Acceleration);
+                    kartRigidbody.AddForce(myForward * nA, ForceMode.Acceleration);
 
                     foreach (WheelCollider collider in wheelColliders)
                     {
-                        collider.motorTorque = 0f;
-                        collider.brakeTorque = 0f;
+                        if (collider.enabled)
+                        {
+                            collider.motorTorque = 0f;
+                            collider.brakeTorque = 0f;
+                        }
                     }
                     
                 }
@@ -213,15 +220,18 @@ public class kartScript : MonoBehaviour
                 {
                     foreach (WheelCollider collider in wheelColliders)
                     {
-                        if (absExp > absAct)
+                        if (collider.enabled)
                         {
-                            collider.motorTorque = MathHelper.Sign(expectedSpeed) * 5000f * nA;
-                            collider.brakeTorque = 0f;
-                        }
-                        else if (absExp < absAct)
-                        {
-                            collider.motorTorque = 0f;
-                            collider.brakeTorque = 5000f;
+                            if (absExp > absAct)
+                            {
+                                collider.motorTorque = MathHelper.Sign(expectedSpeed) * 5000f * nA;
+                                collider.brakeTorque = 0f;
+                            }
+                            else if (absExp < absAct)
+                            {
+                                collider.motorTorque = 0f;
+                                collider.brakeTorque = 5000f;
+                            }
                         }
                     }
                 }
@@ -232,7 +242,28 @@ public class kartScript : MonoBehaviour
             //Keep kart upwards
             if(isFalling)
             {
-                transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.Euler(0, transform.localRotation.eulerAngles.y, 0), lastTime * 5f);
+               // transform.localRotation = Quaternion.Slerp(transform.localRotation, 
+                   // Quaternion.LookRotation(Vector3.Cross(kartRigidbody.velocity, new Vector3(1f,0f,1f)),Vector3.up) , lastTime);
+            }
+
+            //Stop Kart Sliding
+            if (!isFalling && !isColliding)
+            {
+                Vector3 currentVelocity = kartRigidbody.velocity, changedVelocity = currentVelocity;
+
+                if (currentVelocity.magnitude > 15f)
+                {
+                    Vector3 actualForward = transform.forward * Mathf.Sign(actualSpeed);
+
+                    if (Vector3.Angle(Vector3.Cross(actualForward, new Vector3(1, 0, 1)), Vector3.Cross(currentVelocity, new Vector3(1, 0, 1))) > 5f)
+                    {
+                        float mag = new Vector3(currentVelocity.x, 0f, currentVelocity.z).magnitude;
+                        changedVelocity = actualForward * mag;
+                        changedVelocity.y = currentVelocity.y;
+
+                        kartRigidbody.velocity = changedVelocity;
+                    }
+                }
             }
         }
     }
@@ -241,14 +272,12 @@ public class kartScript : MonoBehaviour
     void Update()
     {
         lapisAmount = (int)Mathf.Clamp(lapisAmount, 0f, 10f);
-        relativeVelocity = transform.InverseTransformDirection(GetComponent<Rigidbody>().velocity);
+        relativeVelocity = transform.InverseTransformDirection(kartRigidbody.velocity);
 
         if (Time.timeScale != 0)
         {
-            isFalling = CheckGravity();
-
             RaycastHit hit;
-            if (Physics.Raycast(transform.position, -transform.up, out hit, 1) && hit.collider.tag == "OffRoad")
+            if (!isFalling && Physics.Raycast(transform.position, -transform.up, out hit, 1) && hit.collider.tag == "OffRoad")
                 offRoad = true;
             else
                 offRoad = false;
@@ -270,7 +299,10 @@ public class kartScript : MonoBehaviour
                 wheelMeshes[i].localPosition = wheelStartPos[i];
 
                 Vector3 nPos = wheelMeshes[i].position;
-                nPos.y = wheelPos.y;
+
+                if(wheelColliders[i].enabled)
+                    nPos.y = wheelPos.y;
+
                 wheelMeshes[i].position = nPos;
             }
 
@@ -339,9 +371,9 @@ public class kartScript : MonoBehaviour
 
     void DoTrick()
     {
-        if (allFourWheelsOffGround || locked)
+        if (isFalling || locked)
         {
-            if (trickPotential)
+            if (!Physics.Raycast(transform.position, -transform.up, 1.5f) && trickPotential)
             {
                 tricking = true;
                 trickPotential = false;
@@ -379,7 +411,9 @@ public class kartScript : MonoBehaviour
             ExpectedSpeed += (cacceleration * lastTime);
 
             if (Mathf.Abs(ExpectedSpeed) <= 0.02)
+            {
                 ExpectedSpeed = 0;
+            }
         }
         else
         {
@@ -437,7 +471,6 @@ public class kartScript : MonoBehaviour
     bool CheckGravity()
     {
         bool grounded = true;
-        allFourWheelsOffGround = true;
 
         for (int i = 0; i < 4; i++)
         {
@@ -446,8 +479,6 @@ public class kartScript : MonoBehaviour
                 grounded = false;
                 break;
             }
-            else
-                allFourWheelsOffGround = false;
         }
 
         if (grounded && Physics.Raycast(transform.position, -transform.up, 1))

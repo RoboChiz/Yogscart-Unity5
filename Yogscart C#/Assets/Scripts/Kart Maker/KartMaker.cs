@@ -100,6 +100,8 @@ public class KartMaker : MonoBehaviour
             kb.AddComponent<DeathCatch>();
             kb.GetComponent<DeathCatch>().deathParticles = kartBody.FindChild("Kart Body").FindChild("Particles").FindChild("Death Particles").GetComponent<ParticleSystem>();
 
+            kb.AddComponent<CowTipping>();
+
             //Setup Wheel Colliders
             Transform frontlWheelCollider = (Transform)Instantiate(gd.wheels[w].model, kartSkel.FrontLPosition, Quaternion.Euler(0, 0, 0));
             frontlWheelCollider.name = "FrontL Wheel";

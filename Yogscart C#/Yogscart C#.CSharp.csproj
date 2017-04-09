@@ -111,6 +111,7 @@
     <Compile Include="Assets\Scripts\Kart Scripts\AI.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\CanvasCam.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\CollisionHandler.cs" />
+    <Compile Include="Assets\Scripts\Kart Scripts\CowTipping.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\DeathCatch.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\KartCollider.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\PositionFinding.cs" />
