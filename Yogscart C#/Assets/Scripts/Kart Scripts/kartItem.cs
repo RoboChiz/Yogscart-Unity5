@@ -111,7 +111,7 @@ public class kartItem : MonoBehaviour
             //Debug.Log("Actually dropped Item");
             sheilding = false;
 
-            inputDirection = dir;
+            inputDirection = -dir;
 
             //Fire the Item if it's a Projectile
             if (myItem.GetComponent<Projectile>() != null)
@@ -120,6 +120,7 @@ public class kartItem : MonoBehaviour
                 if (inputDirection >= 0)
                 {
                     myItem.position = transform.position + (transform.forward * itemDistance * 2f) + (transform.up * 0.5f);
+                    inputDirection = 1;
                 }
 
                 //Start Projectile Behaviour

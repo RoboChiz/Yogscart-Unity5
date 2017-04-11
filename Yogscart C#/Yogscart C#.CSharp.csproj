@@ -92,6 +92,7 @@
   <ItemGroup>
     <Compile Include="Assets\Resources\Animations\DrivingIK.cs" />
     <Compile Include="Assets\Scripts\Character Scripts\StandingCharacter.cs" />
+    <Compile Include="Assets\Scripts\Game Data\AudioSourceInfo.cs" />
     <Compile Include="Assets\Scripts\Game Data\CurrentGameData.cs" />
     <Compile Include="Assets\Scripts\Game Data\GUIHelper.cs" />
     <Compile Include="Assets\Scripts\Game Data\GameMode.cs" />

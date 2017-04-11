@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public class Options : MonoBehaviour
 {
@@ -24,8 +25,8 @@ public class Options : MonoBehaviour
     private Vector2 layoutScrollPosition, configScrollPosition;
     private float[] inputScales, commandSizes;
     private bool lockInputs = false, noInput = false;
-    [SerializeField]
-    private string[] availableChanges, availableNames;
+    [HideInInspector]
+    public string[] availableChanges, availableNames;
 
     //Keyboard / Controller Controls
     private Vector2 lastMouse;
@@ -34,8 +35,11 @@ public class Options : MonoBehaviour
 
     //Used for Volume Options
     private bool changingSlider = false, currentX = false;
-    private float sliderChangeRate = 50f;
+    private float sliderChangeRate = 2f;
     private int lastInput, currentY;
+
+    //Save Graphics Lists for Effecientcy
+    private string[] possibleScreens, qualityNames;
 
     // Use this for initialization
     void Start()
@@ -73,6 +77,12 @@ public class Options : MonoBehaviour
         availableNames = new string[] { "Throttle", "Brake / Reverse", "Steer Left", "Steer Right", "Drift", "Item", "Look Behind" };
 
         lastMouse = GUIHelper.GetMousePosition();
+
+        possibleScreens = new string[Screen.resolutions.Length];
+        for (int i = 0; i < possibleScreens.Length; i++)
+            possibleScreens[i] = Screen.resolutions[i].width + " x " + Screen.resolutions[i].height + " - " + Screen.resolutions[i].refreshRate + "hz";
+
+        qualityNames = QualitySettings.names;
     }
 
     public void ShowOptions()
@@ -92,7 +102,7 @@ public class Options : MonoBehaviour
 
     public IEnumerator ActualShowOptions()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSecondsRealtime(0.5f);
         StartCoroutine(FadeGui(0f, 1f));
     }
 
@@ -114,10 +124,10 @@ public class Options : MonoBehaviour
 
     private IEnumerator FadeGui(float start, float end)
     {
-        float startTime = Time.realtimeSinceStartup;
-        while (Time.realtimeSinceStartup - startTime < fadeTime)
+        float startTime = Time.unscaledTime;
+        while (Time.unscaledTime - startTime < fadeTime)
         {
-            guiAlpha = Mathf.Lerp(start, end, (Time.realtimeSinceStartup - startTime) / fadeTime);
+            guiAlpha = Mathf.Lerp(start, end, (Time.unscaledTime - startTime) / fadeTime);
             yield return null;
         }
 
@@ -132,10 +142,14 @@ public class Options : MonoBehaviour
             int vertical = InputManager.controllers[0].GetRawMenuInput("MenuVertical");
             float horizontal = 0;
 
-            if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider) || (currentTab == OptionsTab.Game))
+            if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider))
+            {
                 horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal");
+            }
             else
+            {
                 horizontal = InputManager.controllers[0].GetRawInput("MenuHorizontal");
+            }
 
             int tabChange = InputManager.controllers[0].GetRawMenuInput("TabChange");
             bool submitBool = (InputManager.controllers[0].GetRawMenuInput("Submit") != 0);
@@ -168,19 +182,22 @@ public class Options : MonoBehaviour
                             if (vertical != 0)
                                 currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 3);
                             if (cancelBool)
-                                FindObjectOfType<MainMenu>().BackMenu();
+                            {
+                                Quit();
+                            }
                         }
                         else
                         {
                             if (horizontal != 0)
                             {
-                                float toChange = horizontal * Time.deltaTime * sliderChangeRate;
+                                float toChange = horizontal * Time.unscaledDeltaTime * sliderChangeRate;
+
                                 if (currentSelection == 0)
-                                    SoundManager.masterVolume = Mathf.Clamp(SoundManager.masterVolume + toChange, 0, 100);
+                                    SoundManager.masterVolume = Mathf.Clamp(SoundManager.masterVolume + toChange, 0, 1);
                                 else if (currentSelection == 1)
-                                    SoundManager.musicVolume = Mathf.Clamp(SoundManager.musicVolume + toChange, 0, 100);
+                                    SoundManager.musicVolume = Mathf.Clamp(SoundManager.musicVolume + toChange, 0, 1);
                                 else if (currentSelection == 2)
-                                    SoundManager.sfxVolume = Mathf.Clamp(SoundManager.sfxVolume + toChange, 0, 100);
+                                    SoundManager.sfxVolume = Mathf.Clamp(SoundManager.sfxVolume + toChange, 0, 1);
                             }
                             if (cancelBool)
                                 changingSlider = false;
@@ -233,7 +250,7 @@ public class Options : MonoBehaviour
                         if (!changingSlider)
                         {
                             if (cancelBool)
-                                FindObjectOfType<MainMenu>().BackMenu();
+                                Quit();
 
                             if (resDropDown.toggled)
                                 resDropDown.toggled = false;
@@ -245,7 +262,9 @@ public class Options : MonoBehaviour
                             if (cancelBool)
                             {
                                 if (currentSelection == 3)
-                                    FindObjectOfType<MainMenu>().BackMenu();
+                                {
+                                    Quit();
+                                }
                                 else
                                 {
                                     changingSlider = false;
@@ -255,7 +274,6 @@ public class Options : MonoBehaviour
                                     else if (qualityDropDown.toggled)
                                         currentQuality = lastInput;
                                 }
-
                             }
 
                             if (resDropDown.toggled)
@@ -275,7 +293,7 @@ public class Options : MonoBehaviour
                         int configCount = InputManager.AllConfigs.Count;
 
                         if (cancelBool && (!changingSlider || currentSelection >= configCount) && !editName)
-                            FindObjectOfType<MainMenu>().BackMenu();
+                            Quit();
 
                         if (!changingSlider)
                         {
@@ -297,7 +315,7 @@ public class Options : MonoBehaviour
 
                             if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
                             {
-                                configScrollPosition.y += InputManager.controllers[0].GetRawInput("ViewScroll") * Time.deltaTime * 300f;
+                                configScrollPosition.y += InputManager.controllers[0].GetRawInput("ViewScroll") * Time.unscaledDeltaTime * 300f;
                             }
 
                             if (submitBool && currentSelection > 1)
@@ -321,7 +339,7 @@ public class Options : MonoBehaviour
 
                             float diff = (currentLayoutSelection * 70f) - layoutScrollPosition.y;
                             if (Mathf.Abs(diff) > 1f)
-                                layoutScrollPosition.y += Mathf.Sign(diff) * Time.deltaTime * 300f;
+                                layoutScrollPosition.y += Mathf.Sign(diff) * Time.unscaledDeltaTime * 300f;
                         }
                         else
                         {
@@ -345,7 +363,7 @@ public class Options : MonoBehaviour
                             //Scroll Scrollview with input
                             float diff = (currentY * 120) - configScrollPosition.y;
                             if (Mathf.Abs(diff) > 1f)
-                                configScrollPosition.y += Mathf.Sign(diff) * Time.deltaTime * 200f;
+                                configScrollPosition.y += Mathf.Sign(diff) * Time.unscaledDeltaTime * 200f;
 
                             if (cancelBool)
                                 changingSlider = false;
@@ -354,6 +372,14 @@ public class Options : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void Quit()
+    {
+        if (FindObjectOfType<MainMenu>() != null)
+            FindObjectOfType<MainMenu>().BackMenu();
+        else
+            HideOptions();
     }
 
     //Called when variables used for Controller inputs need to be reset
@@ -412,7 +438,7 @@ public class Options : MonoBehaviour
     {
         if (guiAlpha > 0f && GUIHelper.DrawBack(1f))
         {
-            FindObjectOfType<MainMenu>().BackMenu();
+            Quit();
         }
 
         Vector2 mousePosition = GUIHelper.GetMousePosition();
@@ -481,7 +507,7 @@ public class Options : MonoBehaviour
         {
             case OptionsTab.Game:
                 GUI.DrawTexture(tabRect, blueTab);
-                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 400), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
+                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 425), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
 
                 GUIHelper.BeginGroup(tabAreaRect);
 
@@ -491,16 +517,32 @@ public class Options : MonoBehaviour
                 selectedSliderThumb.normal.background = selectedSliderThumb.active.background;
 
                 GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:", (currentSelection == 0 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
-                SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 100f, normalSlider, (currentSelection == 0 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
-                GUI.Label(new Rect(1300, 70, 250, 100), (int)SoundManager.masterVolume + "%");
+                SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 1f, normalSlider, (currentSelection == 0 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
+                GUI.Label(new Rect(1300, 70, 250, 100), (int)(SoundManager.masterVolume * 100f) + "%");
 
                 GUI.Label(new Rect(20, 180, 300, 100), "Music Volume:", (currentSelection == 1 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
-                SoundManager.musicVolume = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), SoundManager.musicVolume, 0f, 100f, normalSlider, (currentSelection == 1 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
-                GUI.Label(new Rect(1300, 180, 250, 100), (int)SoundManager.musicVolume + "%");
+                SoundManager.musicVolume = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), SoundManager.musicVolume, 0f, 1f, normalSlider, (currentSelection == 1 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
+                GUI.Label(new Rect(1300, 180, 250, 100), (int)(SoundManager.musicVolume * 100f) + "%");
 
                 GUI.Label(new Rect(20, 290, 300, 100), "SFX Volume:", (currentSelection == 2 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
-                SoundManager.sfxVolume = GUI.HorizontalSlider(new Rect(330, 330, 1000, 100), SoundManager.sfxVolume, 0f, 100f, normalSlider, (currentSelection == 2 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
-                GUI.Label(new Rect(1300, 290, 250, 100), (int)SoundManager.sfxVolume + "%");
+                SoundManager.sfxVolume = GUI.HorizontalSlider(new Rect(330, 330, 1000, 100), SoundManager.sfxVolume, 0f, 1f, normalSlider, (currentSelection == 2 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
+                GUI.Label(new Rect(1300, 290, 250, 100), (int)(SoundManager.sfxVolume * 100f) + "%");
+
+                GUIStyle centreLabel = GUI.skin.label;
+                centreLabel.alignment = TextAnchor.MiddleCenter;
+
+                if (InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+                {
+                    if (!changingSlider)
+                        GUI.Label(new Rect(20, 400, 1445, 50), "Press A to select an option!", centreLabel);
+                    else
+                        GUI.Label(new Rect(20, 400, 1445, 50), "Press B to deselect the option!", centreLabel);
+                }
+                else
+                {
+                    changingSlider = false;
+                }
+
 
                 break;
             case OptionsTab.Graphics:
@@ -519,17 +561,13 @@ public class Options : MonoBehaviour
                 //Change Quality
                 GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:", (currentSelection == 2 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
 
-                int newQuality = qualityDropDown.Draw(new Rect(330, 250, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentQuality, QualitySettings.names);
+                int newQuality = qualityDropDown.Draw(new Rect(330, 250, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentQuality, qualityNames);
                 if (newQuality != currentQuality)
                     somethingChanged = true;
                 currentQuality = newQuality;
 
                 //Change Resolution
                 GUI.Label(new Rect(20, 70, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
-
-                string[] possibleScreens = new string[Screen.resolutions.Length];
-                for (int i = 0; i < possibleScreens.Length; i++)
-                    possibleScreens[i] = Screen.resolutions[i].width + " x " + Screen.resolutions[i].height;
 
                 int newRes = resDropDown.Draw(new Rect(330, 90, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentResolution, possibleScreens);
                 if (newRes != currentResolution)
@@ -556,9 +594,9 @@ public class Options : MonoBehaviour
             case OptionsTab.Input:
                 GUI.DrawTexture(tabRect, orangeTab);
 
-                bool showXbox = !mouseLastUsed && InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360 && !changingSlider;
+                bool showXbox = InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360;
 
-                if (showXbox)
+                if (showXbox && !changingSlider)
                     GUI.DrawTexture(new Rect(1725, 250 + (configScrollPosition.y * 3.4f), 50, 50), rsTexture);
 
                 GUIHelper.BeginGroup(tabAreaRect);
@@ -633,9 +671,6 @@ public class Options : MonoBehaviour
                     GUI.Label(new Rect(320, 675, 100, 100), !editName ? "bind" : "type");
                     GUI.DrawTexture(new Rect(345, 650, 50, 50), aTexture);
                 }
-                    
-
-
 
                 if (inputScales == null || inputScales.Length != InputManager.AllConfigs.Count)
                 {
@@ -930,18 +965,10 @@ public class Options : MonoBehaviour
     private void ResetEverything()
     {
         //Get current resolution
-        for (int i = 0; i < Screen.resolutions.Length; i++)
-        {
-            if (Screen.resolutions[i].width == Screen.width && Screen.resolutions[i].height == Screen.height)
-            {
-                currentResolution = i;
-                break;
-            }
-        }
+        currentResolution = Screen.resolutions.ToList().IndexOf(Screen.currentResolution);
 
         fullScreen = Screen.fullScreen;
         currentQuality = QualitySettings.GetQualityLevel();
-
     }
 
     private void SaveEverything()

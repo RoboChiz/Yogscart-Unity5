@@ -7,6 +7,8 @@ public class kartScript : MonoBehaviour
     //Lock all kart controls
     public bool locked = true;
 
+    private AudioSourceInfo audioSourceInfo;
+
     //Inputs
     public float throttle, steer;
     public bool drift;
@@ -125,6 +127,8 @@ public class kartScript : MonoBehaviour
 
         kartRigidbody = GetComponent<Rigidbody>();
         kartRigidbody.centerOfMass = new Vector3(0f, -0.5f, 0f);
+
+        audioSourceInfo = GetComponent<AudioSourceInfo>();
 
     }
 
@@ -315,7 +319,7 @@ public class kartScript : MonoBehaviour
                     GetComponent<AudioSource>().Play();
                     GetComponent<AudioSource>().loop = true;
                 }
-                GetComponent<AudioSource>().volume = Mathf.Lerp(0.05f, 0.4f, ExpectedSpeed / maxSpeed);
+                audioSourceInfo.idealVolume = Mathf.Lerp(0.05f, 0.4f, ExpectedSpeed / maxSpeed);
                 GetComponent<AudioSource>().pitch = Mathf.Lerp(0.75f, 1.5f, ExpectedSpeed / maxSpeed);
             }
 

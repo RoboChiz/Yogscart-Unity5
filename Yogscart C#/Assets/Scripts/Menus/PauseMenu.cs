@@ -6,6 +6,7 @@ public class PauseMenu : MonoBehaviour
 
     public static bool canPause = false, onlineGame = false;
     private int paused = -1;
+    private bool hide;
 
     private float guiAlpha;
     public float[] optionsSize;
@@ -99,13 +100,17 @@ public class PauseMenu : MonoBehaviour
             {
                 if(currentSelection == i)
                 {
-                    if(optionsSize[i] < 1.5f)
+                    if (optionsSize[i] < 1.5f)
                         optionsSize[i] += Time.unscaledDeltaTime * 4f;
+                    else
+                        optionsSize[i] = 1.5f;
                 }                               
                 else
                 {
-                    if(optionsSize[i] > 1f)
+                    if (optionsSize[i] > 1f)
                         optionsSize[i] -= Time.unscaledDeltaTime * 4f;
+                    else
+                        optionsSize[i] = 1f;
                 }
 
                 GUIHelper.CentreRectLabel(new Rect(670, 400 + (i * 100), 580, 100), optionsSize[i], options[i], (currentSelection == i)?Color.yellow:Color.white);
@@ -133,6 +138,10 @@ public class PauseMenu : MonoBehaviour
                             break;
                         case "Options":
                             Debug.Log("Load the options menu");
+                            StartCoroutine(FadeGui(1f, 0f));
+
+                            GetComponent<Options>().enabled = true;
+                            GetComponent<Options>().ShowOptions();
                             break;
                         case "Quit":
                             HidePause();
@@ -145,6 +154,11 @@ public class PauseMenu : MonoBehaviour
                     }
                 }
             }
+        }
+
+        if(GetComponent<Options>().enabled == false && paused != -1 && guiAlpha == 0)
+        {
+            StartCoroutine(FadeGui(0f, 1f));
         }
 
         GUIHelper.ResetColor();

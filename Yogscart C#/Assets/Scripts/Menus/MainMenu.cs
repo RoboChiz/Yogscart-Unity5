@@ -370,8 +370,8 @@ public class MainMenu : MonoBehaviour
                                 break;
                             case "Options":
                                 ChangeMenu(MenuState.Options);
-                                GetComponent<Options>().enabled = true;
-                                GetComponent<Options>().ShowOptions();
+                                FindObjectOfType<Options>().enabled = true;
+                                FindObjectOfType<Options>().ShowOptions();
                                 break;
                             case "Credits":
                                 moveTitle = true;

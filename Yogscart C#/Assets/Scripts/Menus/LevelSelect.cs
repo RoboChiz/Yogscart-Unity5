@@ -90,7 +90,7 @@ public class LevelSelect : MonoBehaviour
         {
             Texture2D trackPreview;
 
-            if (gamemode.raceType != RaceType.GrandPrix && (!state || i != currentTrack))
+            if (gamemode.raceType != RaceType.GrandPrix && state && i != currentTrack)
             {
                 trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo_GreyOut;
             }

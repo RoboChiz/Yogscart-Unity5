@@ -4,68 +4,61 @@ using System.Collections;
 public class SoundManager : MonoBehaviour
 {
 
-    public static float masterVolume = 100f, musicVolume = 100f, sfxVolume = 100f;
+    public static float masterVolume = 1f, musicVolume = 1f, sfxVolume = 1f;
+    private float lastMav = -1f, lastMuv = -1f, lastsfV = -1f;
+
     const float fadeTime = 0.5f;
 
-    private float lastMav = 1f;
+    
     private AudioSource mSource, sfxSource, dSource;
+    private AudioSourceInfo mSourceInfo, sfxSourceInfo;
+
     private bool mbeingUsed = false;
 
     // Use this for initialization
     void Awake ()
     {
-        masterVolume = Mathf.Clamp(PlayerPrefs.GetInt("MAV", 100), 0, 100);
-        musicVolume = Mathf.Clamp(PlayerPrefs.GetInt("MV", 50), 0, 100);
-        sfxVolume = Mathf.Clamp(PlayerPrefs.GetInt("SFXV", 100), 0, 100);
-        //DialogueVolume = Mathf.Clamp(PlayerPrefs.GetInt("DV",100),0,100);
+        masterVolume = Mathf.Clamp(PlayerPrefs.GetFloat("MAV", 1), 0, 1);
+        musicVolume = Mathf.Clamp(PlayerPrefs.GetFloat("MV", 0.5f), 0, 1);
+        sfxVolume = Mathf.Clamp(PlayerPrefs.GetFloat("SFXV", 1), 0, 1);
+
+        lastMav = masterVolume;
+        lastMuv = musicVolume;
+        lastsfV = sfxVolume;
 
         mSource = transform.FindChild("Music").GetComponent<AudioSource>();
+        mSourceInfo = transform.FindChild("Music").GetComponent<AudioSourceInfo>();
+        mSourceInfo.idealVolume = musicVolume;
+
         sfxSource = transform.FindChild("SFX").GetComponent<AudioSource>();
-        //dSource = transform.FindChild("Dialogue").audio;
+        sfxSourceInfo = transform.FindChild("SFX").GetComponent<AudioSourceInfo>();
+        sfxSourceInfo.idealVolume = sfxVolume;
 
         mSource.loop = true;
-        UpdateSound();
     }
 
     // Update is called once per frame
     void Update ()
     {
-        UpdateSound();
-
-        AudioSource[] allSound = FindObjectsOfType<AudioSource>();
-
-        foreach(AudioSource sound in allSound)
+        if(masterVolume != lastMav)
         {
-            //If Audio Source is not one of ours, set it's volume to SFX volume
-            if(sound != mSource && sound != sfxSource && sound != dSource)
-            {
-                sound.volume = sound.volume * sfxSource.volume;
-            }
+            PlayerPrefs.SetFloat("MAV", masterVolume);
+            lastMav = masterVolume;
+        }
+
+        if (musicVolume != lastMuv)
+        {
+            PlayerPrefs.SetFloat("MV", musicVolume);
+            lastMuv = musicVolume;
+        }
+
+        if (sfxVolume != lastsfV)
+        {
+            PlayerPrefs.SetFloat("SFXV", sfxVolume);
+            lastsfV = sfxVolume;
         }
     }
 
-    void UpdateSound()
-    {
-        float mav = masterVolume / 100f;
-        float mv = musicVolume / 100f;
-        float sfxv = sfxVolume / 100f;
-
-        if(!mbeingUsed && (mSource.volume != mv || lastMav != mav))
-        {
-            PlayerPrefs.SetInt("MAV", Mathf.RoundToInt(masterVolume));
-            PlayerPrefs.SetInt("MV", Mathf.RoundToInt(musicVolume));
-            mSource.volume = mav * mv;
-        }
-
-        if (sfxSource.volume != sfxv || lastMav != mav)
-        {
-            PlayerPrefs.SetInt("MAV", Mathf.RoundToInt(masterVolume));
-            PlayerPrefs.SetInt("SFXV", Mathf.RoundToInt(sfxVolume));
-            sfxSource.volume = mav * sfxv;
-        }
-
-        lastMav = mav;
-    }
 
     public void PlaySFX(AudioClip nMusic)
     {
@@ -89,7 +82,7 @@ public class SoundManager : MonoBehaviour
                 yield return null;
 
             mbeingUsed = true;
-            float finalVolume = mSource.volume;
+            float finalVolume = mSourceInfo.idealVolume;
 
             if (mSource.isPlaying)
                 yield return StartCoroutine("TransitionVolume",0f);
@@ -131,7 +124,7 @@ public class SoundManager : MonoBehaviour
 
         while ((Time.realtimeSinceStartup - startTime) < fadeTime)
         {
-            mSource.volume = Mathf.Lerp(startVolume, endVolume, (Time.realtimeSinceStartup - startTime) / fadeTime);
+            mSourceInfo.idealVolume = Mathf.Lerp(startVolume, endVolume, (Time.realtimeSinceStartup - startTime) / fadeTime);
             yield return null;
         }
 

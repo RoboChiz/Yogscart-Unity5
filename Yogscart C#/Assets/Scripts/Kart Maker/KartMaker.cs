@@ -88,6 +88,10 @@ public class KartMaker : MonoBehaviour
             aus.rolloffMode = AudioRolloffMode.Linear;
             aus.playOnAwake = false;
 
+            AudioSourceInfo ausI = kb.AddComponent<AudioSourceInfo>();
+            ausI.idealVolume = 0.05f;
+            ausI.audioType = AudioSourceInfo.AudioType.SFX;
+
             //Set up Kart Body Sounds
             AudioSource kbas = kartBody.FindChild("Kart Body").gameObject.AddComponent<AudioSource>();
             kbas.spatialBlend = 1;
