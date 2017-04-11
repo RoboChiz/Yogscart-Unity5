@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/Scenes/Final Tracks/Sjin's Farm/SjinsFarm.unity
-  isLoaded: 1
-  isActive: 1

@@ -2,6 +2,34 @@
 
 ## Changelog : Started 04/08/2016
 
+## 11/04/2017
+* Fixed Kart Collisions (Again)
+* Added Options Menu to Pause screen
+* Fixed bug where tracks got grayed out in Level Select
+* Fixed various options menu bugs
+* Fixed Eggs not travelling in a direction
+
+## 23/01/2016 - 10/04/2016
+* Some stuff probably happened... I forgot to write it down
+
+## 22/01/2017
+* Fixed bug when firing JR backwards
+* Fixed bug where egge and JR would clip road after spawning
+
+## 21/01/2017
+* Added JR Eggs back into the game
+* Added Dirtblocks back into the game
+* Updated intro message
+
+## 20/01/2017
+* Added Eggs back into the game
+
+##17/01/2017
+* Fixed Controller not being able to adjust volume
+* Added Space Icon to Input Selection
+* Fixed bug where ai item boxes were visible
+* Added A button to leader board
+
 ## 17/12/2016
 * FINALLY Fixed the Kart Suspension
 
