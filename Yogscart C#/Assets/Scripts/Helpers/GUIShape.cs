@@ -12,7 +12,6 @@ public static class GUIShape
             GUI.color = colour;
 
             int twoRadius = radius * 2;
-            float halfRadius = radius / 2f;
 
             //Draw centre Square          
             GUI.DrawTexture(new Rect(rect.x + radius, rect.y + radius, rect.width - twoRadius, rect.height - twoRadius), Resources.Load<Texture2D>("UI/Shapes/Square"));

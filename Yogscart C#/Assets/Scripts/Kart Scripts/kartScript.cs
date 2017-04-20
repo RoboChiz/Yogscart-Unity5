@@ -43,7 +43,7 @@ public class kartScript : MonoBehaviour
 
     //Kart Stats
     public float maxSpeed = 20f;
-    private float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f, turnSpeed = 2f, driftAmount = 1f;
+    private float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f, turnSpeed = 2f;
 
     private bool offRoad;
     public int lapisAmount;
@@ -85,6 +85,7 @@ public class kartScript : MonoBehaviour
     private bool allowedBoost, spinOut;
     private float startBoostAmount;
     public static int startBoostVal = -1;
+    public bool spinningOut;
 
     //Tricking off Ramps
     public bool tricking;
@@ -123,7 +124,6 @@ public class kartScript : MonoBehaviour
         //Calculate speed altering factors based on current max speed
         boostAddition = maxSpeed * boostPercent;
         maxGrassSpeed = maxSpeed * grassPercent;
-        driftAmount = turnSpeed / 2f;
 
         kartRigidbody = GetComponent<Rigidbody>();
         kartRigidbody.centerOfMass = new Vector3(0f, -0.5f, 0f);
@@ -637,6 +637,8 @@ public class kartScript : MonoBehaviour
             //If Kart is networked send this information to server and clients
             if (GetComponent<KartNetworker>() != null)
                 GetComponent<KartNetworker>().spinOut++;
+
+            spinningOut = true;
         }            
     }
 
@@ -664,7 +666,7 @@ public class kartScript : MonoBehaviour
             locked = false;
 
             spunOut = false;
-
+            spinningOut = false;
         }
     }
 

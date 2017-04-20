@@ -2,6 +2,13 @@
 
 ## Changelog : Started 04/08/2016
 
+## 20/04/2017
+* Upgraded to 5.6
+
+## 17/04/2017
+* Fixed Egg Firing Direction Bug
+* Added Owl Kart
+
 ## 11/04/2017
 * Fixed Kart Collisions (Again)
 * Added Options Menu to Pause screen

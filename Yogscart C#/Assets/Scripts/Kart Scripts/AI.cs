@@ -14,9 +14,8 @@ public class AI : MonoBehaviour
     public AIStupidity intelligence = AIStupidity.Stupid;
 
     private TrackData td;
-    private PositionFinding pf;
 
-    private int currentNode = 0, nextNode = 1, currentPercent = 0;
+    private int currentNode = 0, nextNode = 1;
     private const float maxXDistance = 1f, minAngle = 3f;
 
     public enum StartType { WillBoost, WontBoost, WillSpin };
@@ -44,7 +43,6 @@ public class AI : MonoBehaviour
     void Start()
     {
         td = FindObjectOfType<TrackData>();
-        pf = FindObjectOfType<PositionFinding>();
 
         AnalyseTrack();
 
@@ -84,15 +82,11 @@ public class AI : MonoBehaviour
             {
                 currentNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
                 nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-
-                currentPercent = 0;
             }
             if (percent < 0)
             {
                 currentNode = MathHelper.NumClamp(currentNode - 1, 0, td.positionPoints.Count);
                 nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-
-                currentPercent = 0;
             }
 
             Vector3 currentNodePos = td.positionPoints[currentNode].position;
@@ -351,7 +345,6 @@ public class AI : MonoBehaviour
 
     private bool ShouldDoDrift()
     {
-        kartScript ks = GetComponent<kartScript>();
 
         //Calculate if the kart should do a drift
         switch (intelligence)

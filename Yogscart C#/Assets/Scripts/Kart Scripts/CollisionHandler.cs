@@ -85,6 +85,8 @@ public class CollisionHandler : MonoBehaviour
         slowest.GetComponent<CowTipping>().PushLeft = pushLeft;
         slowest.GetComponent<CowTipping>().TipCow();
 
+        fastest.GetComponentInChildren<DrivingIK>().ForceLook(slowest.transform);
+
     } 
 
     private void DoKartGodCollision(kartScript kart, KartCollider god)

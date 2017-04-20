@@ -108,10 +108,7 @@ public class kartItem : MonoBehaviour
         //Debug.Log("Dropped Shield");
         if (myItem != null)
         {
-            //Debug.Log("Actually dropped Item");
             sheilding = false;
-
-            inputDirection = -dir;
 
             //Fire the Item if it's a Projectile
             if (myItem.GetComponent<Projectile>() != null)
@@ -287,14 +284,16 @@ public class kartItem : MonoBehaviour
             input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;
 
             if (InputManager.controllers[kaI.myController].GetInput("RearView") != 0)
+            {
                 inputDirection = -1;
+            }
             else
             {
                 inputDirection = 1;
 
                 if (InputManager.controllers[kaI.myController].controllerName != "Key_")
                 {
-                    inputDirection = InputManager.controllers[kaI.myController].GetInput("MenuVertical");
+                    inputDirection = -InputManager.controllers[kaI.myController].GetInput("MenuVertical");
                 }
             }
 

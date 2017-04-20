@@ -38,8 +38,6 @@ public class InEngineRender : MonoBehaviour
         {
             for (int i = 0; i < pp.Count; i++)
             {
-                float adjusterFloat = pp[i].GetComponent<PointHandler>().roadWidth;
-
                 if (td.loopedTrack || i < pp.Count - 1)
                 {
                     Debug.DrawLine(pp[i].position, pp[MathHelper.NumClamp(i + 1, 0, pp.Count)].position,Color.red);

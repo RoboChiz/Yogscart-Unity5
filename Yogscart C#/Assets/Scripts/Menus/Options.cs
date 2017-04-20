@@ -4,12 +4,10 @@ using System.Linq;
 
 public class Options : MonoBehaviour
 {
-    CurrentGameData gd;
-
     private float guiAlpha = 0;
     private const float fadeTime = 0.5f;
 
-    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, button, line, lbTexture, rbTexture, qTexture, eTexture, xTexture, yTexture, aTexture, rsTexture;
+    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, line, lbTexture, rbTexture, qTexture, eTexture, xTexture, yTexture, aTexture, rsTexture;
 
     enum OptionsTab { Game, Graphics, Input };
     private OptionsTab currentTab = OptionsTab.Game;
@@ -44,8 +42,6 @@ public class Options : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        gd = FindObjectOfType<CurrentGameData>();
-
         //Load the textures
         blueTab = Resources.Load<Texture2D>("UI/Options/BlueTab");
         greenTab = Resources.Load<Texture2D>("UI/Options/GreenTab");
@@ -61,7 +57,6 @@ public class Options : MonoBehaviour
         fullscreenToggle = new Toggle();
 
         //Load Textures
-        button = Resources.Load<Texture2D>("UI/Options/Button");
         line = Resources.Load<Texture2D>("UI/Lobby/Line");
 
         lbTexture = Resources.Load<Texture2D>("UI/Options/LB");
