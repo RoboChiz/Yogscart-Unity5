@@ -157,6 +157,14 @@ public class KartMaker : MonoBehaviour
 
             ks.trickParticles = kp.FindChild("Trick").GetComponent<ParticleSystem>();
 
+            ks.driftCloudParticles = new List<ParticleSystem>();
+            ks.driftCloudParticles.Add(kp.FindChild("L_DriftClouds").GetComponent<ParticleSystem>());
+            ks.driftCloudParticles.Add(kp.FindChild("R_DriftClouds").GetComponent<ParticleSystem>());
+
+            ks.startCloudParticles = new List<ParticleSystem>();
+            ks.startCloudParticles.Add(kp.FindChild("L_StartClouds").GetComponent<ParticleSystem>());
+            ks.startCloudParticles.Add(kp.FindChild("R_StartClouds").GetComponent<ParticleSystem>());
+
             //Add Other Kart Scripts
             kb.AddComponent<PositionFinding>();
             //Sort out Character Noises

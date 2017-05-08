@@ -16,6 +16,19 @@ public class MathHelper
         return value;
     }
 
+    public static float NumClamp(float value, float min, float max)
+    {
+        float diff = (max - min);
+
+        while (value >= max)
+            value -= diff;
+
+        while (value < min)
+            value += diff;
+
+        return value;
+    }
+
     /// <summary>
     /// Returns the angle between two vectors in a clockwise motion
     /// </summary>

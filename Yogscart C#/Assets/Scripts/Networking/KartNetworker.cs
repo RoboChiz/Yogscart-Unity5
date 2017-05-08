@@ -176,9 +176,6 @@ public class KartNetworker : NetworkBehaviour
         GetComponent<kartScript>().trickParticles = newKart.GetComponent<kartScript>().trickParticles;
         GetComponent<kartScript>().engineSound = newKart.GetComponent<kartScript>().engineSound;
 
-        newKart.GetComponent<kartScript>().SetupWheelStartPos();
-        GetComponent<kartScript>().wheelStartPos = newKart.GetComponent<kartScript>().wheelStartPos;
-
         GetComponent<kartAnimator>().ani = newKart.GetComponent<kartAnimator>().ani;
 
         //Replace the existing model, colliders and canvas (Move into place of existing, then delete original)

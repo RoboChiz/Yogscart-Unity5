@@ -162,13 +162,13 @@ abstract public class GameMode : MonoBehaviour
             switch (CurrentGameData.difficulty)
             {
                 case 0:
-                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 19;
-                    break;
-                case 1:
                     racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 22;
                     break;
-                default:
+                case 1:
                     racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 25;
+                    break;
+                default:
+                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 30;
                     break;
             }
 

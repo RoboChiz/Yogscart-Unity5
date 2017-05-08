@@ -71,6 +71,8 @@ public class Race : GameMode
             r.timer = 0;
         }
 
+        kartScript.raceStarted = false;
+
         lastcurrentRace = currentRace;
 
         //Load the Level

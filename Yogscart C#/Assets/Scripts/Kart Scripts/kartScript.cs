@@ -70,7 +70,7 @@ public class kartScript : MonoBehaviour
     private bool applyingDrift;
     const float kartbodyRot = 20f; //Amount that the kartbody rotates during drifting
     public float driftTime { get; private set; }
-    public float blueTime { get{ return 2f; } }
+    public float blueTime { get { return 2f; } }
     public float orangeTime { get { return 4f; } }
     public bool onlineMode = false; //Stops local boosting and spinning out. This is handled by the server (These are handled by server)
 
@@ -85,6 +85,9 @@ public class kartScript : MonoBehaviour
     private bool allowedBoost, spinOut;
     private float startBoostAmount;
     public static int startBoostVal = -1;
+    public static bool raceStarted = false;
+    private float wheelSpinLerp = 0f;
+
     public bool spinningOut;
 
     //Tricking off Ramps
@@ -100,11 +103,13 @@ public class kartScript : MonoBehaviour
     public List<WheelCollider> wheelColliders;
     [HideInInspector]
     public List<Transform> wheelMeshes;
-    [HideInInspector]
-    public List<Vector3> wheelStartPos;
+    //Wheel Turning / Spinning
+    private float wheelSpin;
+    private const float wheelSpinScalar = 25f;
+    private float[] lerpWheelRot;
 
     //Particles
-    public List<ParticleSystem> flameParticles, driftParticles;
+    public List<ParticleSystem> flameParticles, driftParticles, driftCloudParticles, startCloudParticles;
     public ParticleSystem trickParticles;
 
     //Noises
@@ -116,11 +121,14 @@ public class kartScript : MonoBehaviour
     private Vector3 relativeVelocity;
     private Rigidbody kartRigidbody;
 
+    //Skid Marks
+    private static Transform skidMarkTransform;
+    public LineRenderer[] currentLineRenderer;
+    public float skidTimer;
+
     // Use this for initialization
     void Start()
     {
-        SetupWheelStartPos();
-
         //Calculate speed altering factors based on current max speed
         boostAddition = maxSpeed * boostPercent;
         maxGrassSpeed = maxSpeed * grassPercent;
@@ -130,16 +138,9 @@ public class kartScript : MonoBehaviour
 
         audioSourceInfo = GetComponent<AudioSourceInfo>();
 
-    }
+        if (skidMarkTransform == null)
+            skidMarkTransform = Resources.Load<Transform>("Prefabs/SkidMarks");
 
-    public void SetupWheelStartPos()
-    {
-        //Setup the start positions of the wheels, these will be used when wheels aren't touching the ground
-        wheelStartPos = new List<Vector3>();
-        for (int i = 0; i < wheelMeshes.Count; i++)
-        {
-            wheelStartPos.Add(wheelMeshes[i].localPosition);
-        }
     }
 
     // Update is called once per 60th of a second
@@ -152,7 +153,7 @@ public class kartScript : MonoBehaviour
 
             isFalling = CheckGravity();
 
-            if(!isFalling)
+            if (!isFalling)
                 CalculateExpectedSpeed(lastTime);
 
             ApplySteering(lastTime);
@@ -198,7 +199,7 @@ public class kartScript : MonoBehaviour
 
             float nA = (ExpectedSpeed - actualSpeed) / lastTime;
 
-            if ((!isFalling && !isColliding )|| wallInFront)
+            if ((!isFalling && !isColliding) || wallInFront)
             {
 
                 float absExp = Mathf.Abs(expectedSpeed), absAct = Mathf.Abs(actualSpeed);
@@ -218,7 +219,7 @@ public class kartScript : MonoBehaviour
                             collider.brakeTorque = 0f;
                         }
                     }
-                    
+
                 }
                 else
                 {
@@ -244,10 +245,16 @@ public class kartScript : MonoBehaviour
             lastMaxSpeed = nMaxSpeed;
 
             //Keep kart upwards
-            if(isFalling)
+            Debug.DrawRay(transform.position, -transform.up * 3f);
+            if (isFalling && !Physics.Raycast(transform.position, -transform.up, 3f))
             {
-               // transform.localRotation = Quaternion.Slerp(transform.localRotation, 
-                   // Quaternion.LookRotation(Vector3.Cross(kartRigidbody.velocity, new Vector3(1f,0f,1f)),Vector3.up) , lastTime);
+                GetComponent<Rigidbody>().freezeRotation = true;
+                Quaternion finalRot = Quaternion.LookRotation(Vector3.Scale(transform.forward, new Vector3(1f, 0f, 1f)), Vector3.up);
+                transform.rotation = Quaternion.Lerp(transform.rotation, finalRot, Time.deltaTime * 8f);
+            }
+            else
+            {
+                GetComponent<Rigidbody>().freezeRotation = false;
             }
 
             //Stop Kart Sliding
@@ -288,26 +295,76 @@ public class kartScript : MonoBehaviour
 
             DoTrick();
 
+            //Make Wheels Rotate if Throttle is down
+            float increaseAmount = 0f;
+
+            //Make Smoke from wheels speed up and slow down
+            if (!raceStarted)
+            {
+                if (throttle > 0)
+                    wheelSpinLerp = Mathf.Lerp(wheelSpinLerp, 15f, Time.deltaTime * 2f);
+                else
+                    wheelSpinLerp = Mathf.Lerp(wheelSpinLerp, 0f, Time.deltaTime * 4f);
+
+                foreach (ParticleSystem ps in startCloudParticles)
+                {
+                    ParticleSystem.EmissionModule emission = ps.emission;
+                    emission.rateOverTimeMultiplier = wheelSpinLerp;
+                }
+
+                //Spin wheels forward during start
+                increaseAmount = Time.deltaTime * wheelSpinLerp;
+            }
+            else if (throttle > 0 || actualSpeed > 0f)
+            {
+                //Otherwise speed it depending on Kart Speed
+                increaseAmount = Time.deltaTime * actualSpeed;
+            }
+
+            if (throttle < 0 || actualSpeed < 0f)
+            {
+                //Spin wheels forward during start
+                if (throttle < 0 && actualSpeed > -5f)
+                    increaseAmount = Time.deltaTime * -5f;
+                else //Otherwise speed it depending on Kart Speed
+                    increaseAmount = Time.deltaTime * actualSpeed;
+            }
+
+            wheelSpin = MathHelper.NumClamp(wheelSpin + (increaseAmount * wheelSpinScalar), 0f, 360f);
+
+            if (lerpWheelRot == null)
+            {
+                lerpWheelRot = new float[2];
+            }
+
+            //Move and Rotate each wheel mesh accordingly
             for (int i = 0; i < wheelMeshes.Count; i++)
             {
-                Vector3 wheelPos;
-                Quaternion wheelRot;
+                //Make wheel turn left and right smoothly
+                if (i < 2)
+                    lerpWheelRot[i] = Mathf.Lerp(lerpWheelRot[i], wheelColliders[i].steerAngle * 5f, Time.deltaTime * 5f);
 
-                wheelColliders[i].GetWorldPose(out wheelPos, out wheelRot);
+                Quaternion wheelRot = Quaternion.Euler(wheelSpin, (i < 2) ? lerpWheelRot[i] : 0f, 0f);
 
                 if (i == 0 || i == 2)
-                    wheelMeshes[i].rotation = wheelRot;
+                    wheelMeshes[i].localRotation = wheelRot;
                 else
-                    wheelMeshes[i].rotation = wheelRot * Quaternion.Euler(0, 180, 0);
+                    wheelMeshes[i].localRotation = wheelRot * Quaternion.Euler(0, 180, 0);
 
-                wheelMeshes[i].localPosition = wheelStartPos[i];
+                //Make Wheel stick to road
+                Vector3 wheelPos;
 
-                Vector3 nPos = wheelMeshes[i].position;
+                if (wheelColliders[i].isGrounded)
+                {
+                    Quaternion nullHolder = new Quaternion();
+                    wheelColliders[i].GetWorldPose(out wheelPos, out nullHolder);
 
-                if(wheelColliders[i].enabled)
-                    nPos.y = wheelPos.y;
+                    Vector3 toLocal = wheelMeshes[i].parent.InverseTransformPoint(wheelPos);
+                    Vector3 localPos = wheelMeshes[i].localPosition;
+                    localPos.y = toLocal.y;
 
-                wheelMeshes[i].position = nPos;
+                    wheelMeshes[i].localPosition = localPos;
+                }
             }
 
             //Play engine Audio
@@ -350,13 +407,30 @@ public class kartScript : MonoBehaviour
                 {
                     Boost(startBoostAmount, BoostMode.Trick);
                     allowedBoost = false;
-                }                    
+                }
+
+                if (startBoostVal == 0)
+                    raceStarted = true;
+            }
+
+            foreach (ParticleSystem startCloud in startCloudParticles)
+            {
+                if (!raceStarted && throttle > 0)
+                {
+                    if (!startCloud.isPlaying)
+                        startCloud.Play();
+                }
+                else
+                {
+                    if (startCloud.isPlaying)
+                        startCloud.Stop();
+                }
             }
 
             //Boost Particles
-            if(isBoosting == BoostMode.Not)
+            if (isBoosting == BoostMode.Not)
             {
-                for(int i = 0; i < flameParticles.Count; i++)
+                for (int i = 0; i < flameParticles.Count; i++)
                 {
                     if (flameParticles[i].isPlaying)
                         flameParticles[i].Stop();
@@ -396,7 +470,7 @@ public class kartScript : MonoBehaviour
 
             if (tricking)
             {
-                if(!onlineMode)
+                if (!onlineMode)
                     Boost(0.25f, BoostMode.Trick);
 
                 tricking = false;
@@ -436,8 +510,8 @@ public class kartScript : MonoBehaviour
             }
         }
 
-       // if (Mathf.Abs(actualSpeed) < Mathf.Abs(ExpectedSpeed) - 5)
-         //   ExpectedSpeed = actualSpeed;
+        // if (Mathf.Abs(actualSpeed) < Mathf.Abs(ExpectedSpeed) - 5)
+        //   ExpectedSpeed = actualSpeed;
     }
 
     void ApplySteering(float lastTime)
@@ -527,15 +601,77 @@ public class kartScript : MonoBehaviour
                 else if (driftTime >= blueTime)
                 {
                     //Turn Particles on if they're not
-                    if(!driftParticles[f].GetComponent<ParticleSystem>().isPlaying)
+                    if (!driftParticles[f].GetComponent<ParticleSystem>().isPlaying)
                         driftParticles[f].GetComponent<ParticleSystem>().Play();
 
                     driftParticles[f].GetComponent<Renderer>().material = Resources.Load<Material>("Particles/Drift Particles/Spark_Blue");
                 }
+
+                if (!driftCloudParticles[f].isPlaying)
+                    driftCloudParticles[f].Play();
             }
 
+            //Spawn Line Renderer and Do Drift
+            if(currentLineRenderer == null)
+            {
+                //Create New Arrray
+                int half = wheelColliders.Count / 2;
+                currentLineRenderer = new LineRenderer[half];
+
+                //Create Object for each wheel
+                for (int i = 0; i < half; i++)
+                {
+                    Transform newLineRenderer = Instantiate(skidMarkTransform, Vector3.zero, Quaternion.Euler(90f, 0f, 0f));
+                    currentLineRenderer[i] = newLineRenderer.GetComponent<LineRenderer>();
+                }
+            }
+            else
+            {
+                //Reduce Skid Timer
+                skidTimer -= Time.deltaTime;
+
+                //Add new point to Skid every 0.2 seconds
+                int half = wheelColliders.Count / 2;
+                if (skidTimer <= 0f)
+                {                  
+                    for (int i = 0; i < half; i++)
+                            currentLineRenderer[i].positionCount = currentLineRenderer[i].positionCount + 1;
+
+                    skidTimer = 0.2f;
+                }
+
+                //Update position of late Point
+                for (int i = 0; i < half; i++)
+                {
+                    WheelHit hit;
+                    bool onGround = wheelColliders[half + i].GetGroundHit(out hit);
+
+                    if (onGround)
+                    {
+                        Transform wheelMesh = wheelMeshes[half + i];
+                        Vector3 hitPoint = wheelMesh.position + (Vector3.down * wheelColliders[half + i].radius);
+
+                        currentLineRenderer[i].SetPosition(currentLineRenderer[i].positionCount - 1, hitPoint + new Vector3(0f, 0.1f, 0f));
+                    }
+                }
+            }
         }
         else {
+
+            //Reset Skid Marks
+            if(currentLineRenderer != null)
+            {
+                foreach(LineRenderer lr in currentLineRenderer)
+                {
+                    if(lr.positionCount == 0)
+                    {
+                        DestroyImmediate(lr.gameObject);
+                    }
+                }
+
+                currentLineRenderer = null;
+                skidTimer = 0f;
+            }
 
             if (isFalling || offRoad)
                 driftTime = 0;
@@ -547,7 +683,7 @@ public class kartScript : MonoBehaviour
             {
                 if (driftTime >= orangeTime)
                 {
-                    if(!onlineMode)
+                    if (!onlineMode)
                         Boost(1f, BoostMode.DriftBoost);
                 }
                 else if (driftTime >= blueTime)
@@ -559,8 +695,11 @@ public class kartScript : MonoBehaviour
 
             driftTime = 0f;
             driftSteer = 0;
-            driftParticles[0].GetComponent<ParticleSystem>().Stop();
-            driftParticles[1].GetComponent<ParticleSystem>().Stop();
+            for (int j = 0; j < 2; j++)
+            {
+                driftParticles[j].Stop();
+                driftCloudParticles[j].Stop();
+            }
         }
 
     }
@@ -579,7 +718,7 @@ public class kartScript : MonoBehaviour
         StartCoroutine("StartBoost", t);
 
         //If Kart is networked send this information to server and clients
-        if(GetComponent<KartNetworker>() != null && !onlineMode)
+        if (GetComponent<KartNetworker>() != null && !onlineMode)
         {
             GetComponent<KartNetworker>().SendBoost(t, type);
         }
@@ -590,14 +729,14 @@ public class kartScript : MonoBehaviour
         AudioClip BoostSound = Resources.Load<AudioClip>("Music & Sounds/SFX/boost");
         GetComponent<AudioSource>().PlayOneShot(BoostSound, 3);
 
-        yield return new WaitForSeconds(t);         
+        yield return new WaitForSeconds(t);
 
         isBoosting = BoostMode.Not;
     }
 
     void CancelBoost()
     {
-        StopCoroutine("Boost");  
+        StopCoroutine("Boost");
         isBoosting = BoostMode.Not;
     }
 
@@ -639,7 +778,7 @@ public class kartScript : MonoBehaviour
                 GetComponent<KartNetworker>().spinOut++;
 
             spinningOut = true;
-        }            
+        }
     }
 
     //For use by Kart Networker as Kart will not spin locally otherwise

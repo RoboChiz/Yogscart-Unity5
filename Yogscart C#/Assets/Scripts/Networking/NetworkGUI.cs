@@ -7,7 +7,6 @@ using System;
 public class NetworkGUI : MonoBehaviour
 {
     CurrentGameData gd;
-    SoundManager sm;
 
     private float guiAlpha = 0f, fadeTime = 0.5f;
 
@@ -56,7 +55,6 @@ public class NetworkGUI : MonoBehaviour
     void Awake()
     {
         gd = FindObjectOfType<CurrentGameData>();
-        sm = FindObjectOfType<SoundManager>();
         playerName = PlayerPrefs.GetString("playerName", "Player");
 
         serverInfo = Resources.Load<Texture2D>("UI/Lobby/ServerInfo");
