@@ -38,15 +38,18 @@ public class kartItem : MonoBehaviour
     {
         gd = FindObjectOfType<CurrentGameData>();
         sm = FindObjectOfType<SoundManager>();
-
-        ki = GetComponent<kartInfo>();
-        kaI = GetComponent<kartInput>();
-        pf = GetComponent<PositionFinding>();
-
+            
         frame = Resources.Load<Texture2D>("UI/Power Ups/item frame");
 
         if (GetComponent<AI>())//If AI detected must be AI
             itemOwner = ItemOwner.Ai;
+    }
+
+    void Start()
+    {
+        ki = GetComponent<kartInfo>();
+        kaI = GetComponent<kartInput>();
+        pf = GetComponent<PositionFinding>();
     }
 
     //Informs all clients that this kart has recieved an item

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Egg : Projectile
 {
-    public const float travelSpeed = 30f;
+    public const float travelSpeed = 45f;
     private float desiredY = 0f;
     protected float offset = 1f;
     protected int bounces = 3;

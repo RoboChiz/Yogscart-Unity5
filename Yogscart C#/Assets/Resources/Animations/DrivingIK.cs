@@ -8,15 +8,17 @@ public class DrivingIK : MonoBehaviour
     private kartScript ks;
     private InterestManager interestManager;
 
-    public Transform leftHandTarget, rightHandTarget, leftFoorTarget, rightFootTarget;
+    public Transform leftHandTarget, rightHandTarget, leftFootTarget, rightFootTarget, steeringWheel;
 
     public PointOfInterest headLook;
     public float headWait, headWeight;
 
     private Transform myParent;
 
-    private Quaternion startThrottleRot, endThrottleRot;
+    private Quaternion startThrottleRot, endThrottleRot, startBrakeRot, endBrakeRot, startSteeringRotation;
 
+    private float accelPedal, brakePedal, steer;
+    private const float pedalSpeed = 3.5f, steerAmount = 45f, steerSpeed = 4f;
 
     void Start()
     {
@@ -24,7 +26,7 @@ public class DrivingIK : MonoBehaviour
 
         myParent = transform;
 
-        while (myParent.parent != null)
+        while (myParent.parent != null && myParent.GetComponent<kartScript>() == null)
             myParent = myParent.parent;
 
         ks = myParent.GetComponent<kartScript>();
@@ -32,15 +34,37 @@ public class DrivingIK : MonoBehaviour
         //Set up Pedal Animation Position
         startThrottleRot = rightFootTarget.localRotation;
         endThrottleRot = rightFootTarget.localRotation * Quaternion.AngleAxis(30f, Vector3.right);
+
+        startBrakeRot = rightFootTarget.localRotation;
+        endBrakeRot = rightFootTarget.localRotation * Quaternion.AngleAxis(30f, Vector3.right);
+
+        if (steeringWheel != null)
+            startSteeringRotation = steeringWheel.localRotation;
     }
 
     void Update()
     {
-
         //Do Pedal Movements
         if (ks != null)
         {
-            rightFootTarget.localRotation = Quaternion.Lerp(startThrottleRot, endThrottleRot, Mathf.Abs(ks.throttle));
+            if(ks.throttle == 0)
+            {
+                accelPedal = Mathf.Clamp(accelPedal - Time.deltaTime * pedalSpeed, 0f, 1f);
+                brakePedal = Mathf.Clamp(brakePedal - Time.deltaTime * pedalSpeed, 0f, 1f);
+            }
+            else if(MathHelper.Sign(ks.throttle) == MathHelper.Sign(ks.actualSpeed))
+            {
+                accelPedal = Mathf.Clamp(accelPedal + Time.deltaTime * pedalSpeed, 0f, 1f);
+                brakePedal = Mathf.Clamp(brakePedal - Time.deltaTime * pedalSpeed, 0f, 1f);
+            }
+            else
+            {
+                accelPedal = Mathf.Clamp(accelPedal - Time.deltaTime * pedalSpeed, 0f, 1f);
+                brakePedal = Mathf.Clamp(brakePedal + Time.deltaTime * pedalSpeed, 0f, 1f);
+            }
+
+            leftFootTarget.localRotation = Quaternion.Lerp(startBrakeRot, endBrakeRot, brakePedal);
+            rightFootTarget.localRotation = Quaternion.Lerp(startThrottleRot, endThrottleRot, accelPedal);
         }
 
         //Do Head Movements
@@ -133,6 +157,15 @@ public class DrivingIK : MonoBehaviour
             else
                 headWeight = 0f;
         }
+
+        //Do Steering Wheel
+        if(steeringWheel != null && ks != null)
+        {
+
+            steer = Mathf.Lerp(steer, ks.steer, Time.deltaTime * steerSpeed);
+
+            steeringWheel.localRotation = Quaternion.Lerp(startSteeringRotation, startSteeringRotation * Quaternion.Euler(0f, steer * steerAmount, 0f), Mathf.Abs(steer));
+        }
     }
 
     public void ForceLook(Transform target)
@@ -156,8 +189,8 @@ public class DrivingIK : MonoBehaviour
             animator.SetIKPosition(AvatarIKGoal.RightHand, rightHandTarget.position);
             animator.SetIKRotation(AvatarIKGoal.RightHand, rightHandTarget.rotation);
 
-            animator.SetIKPosition(AvatarIKGoal.LeftFoot, leftFoorTarget.position);
-            animator.SetIKRotation(AvatarIKGoal.LeftFoot, leftFoorTarget.rotation);
+            animator.SetIKPosition(AvatarIKGoal.LeftFoot, leftFootTarget.position);
+            animator.SetIKRotation(AvatarIKGoal.LeftFoot, leftFootTarget.rotation);
 
             animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootTarget.position);
             animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootTarget.rotation);

@@ -12,7 +12,7 @@ public class Kart_Skeleton : MonoBehaviour
 {
 
     public Vector3 FrontLPosition, FrontRPosition, BackLPosition, BackRPosition, SeatPosition;
-    public Transform leftHandTarget, rightHandTarget, leftFoorTarget, rightFootTarget;
+    public Transform leftHandTarget, rightHandTarget, leftFootTarget, rightFootTarget;
 
     public float ItemDrop = 3f;
     public AudioClip engineSound;

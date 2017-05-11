@@ -43,11 +43,11 @@ public class KartMaker : MonoBehaviour
         Transform characterMesh = Instantiate(gd.characters[c].model, Vector3.zero, Quaternion.identity);
         characterMesh.name = "Character";
 
+        Transform actualKartBody = kartBody.FindChild("Kart Body");
 
         Character_Skeleton charSkel = characterMesh.GetComponent<Character_Skeleton>();
-
         characterMesh.position = kartSkel.SeatPosition - charSkel.SeatPosition;
-        characterMesh.parent = kartBody.FindChild("Kart Body");
+        characterMesh.parent = actualKartBody;
 
         if (h != 0)//Don't spawn a hat if hat value equals zero
         {
@@ -60,8 +60,9 @@ public class KartMaker : MonoBehaviour
         DrivingIK ikComponent = characterMesh.gameObject.AddComponent<DrivingIK>();
         ikComponent.leftHandTarget = kartSkel.leftHandTarget;
         ikComponent.rightHandTarget = kartSkel.rightHandTarget;
-        ikComponent.leftFoorTarget = kartSkel.leftFoorTarget;
+        ikComponent.leftFootTarget = kartSkel.leftFootTarget;
         ikComponent.rightFootTarget = kartSkel.rightFootTarget;
+        ikComponent.steeringWheel = actualKartBody.FindChild("Steering Wheel");
 
         if (type == KartType.Online)
         {
