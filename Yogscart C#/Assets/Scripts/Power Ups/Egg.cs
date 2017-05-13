@@ -5,9 +5,12 @@ using UnityEngine;
 public class Egg : Projectile
 {
     public const float travelSpeed = 45f;
-    private float desiredY = 0f;
+    private float desiredY = 0f, colliderOff = 0f;
     protected float offset = 1f;
-    protected int bounces = 3;
+    protected int bounces = 5;
+
+    private static AudioClip fireSound, bounceSound;
+    private bool playedSound = false;
 
     public override void Setup(Vector3 _direction, bool _actingShield)
     {
@@ -18,8 +21,12 @@ public class Egg : Projectile
     // Use this for initialization
     void Start ()
     {
-		
-	}
+        if (fireSound == null)
+            fireSound = Resources.Load<AudioClip>("Music & Sounds/clucky shoot egg");
+
+        if (bounceSound == null)
+            bounceSound = Resources.Load<AudioClip>("Music & Sounds/Clucky_Bounce");
+    }
 	
 	// Update is called once per frame
 	protected virtual void Update ()
@@ -45,6 +52,19 @@ public class Egg : Projectile
 
             transform.rotation *= Quaternion.Euler(Vector3.one * Time.deltaTime * 45f);
 
+            if (!playedSound)
+            {
+                GetComponent<AudioSource>().PlayOneShot(fireSound);
+                playedSound = true;
+            }
+
+            if(colliderOff > 0)
+            {
+                colliderOff -= Time.deltaTime;
+            }
+            else
+                GetComponent<SphereCollider>().enabled = true;
+
         }
 	}
 
@@ -69,6 +89,11 @@ public class Egg : Projectile
             {
                 direction = Vector3.Reflect(direction, collision.contacts[0].normal);
                 bounces --;
+
+                colliderOff = 0.25f;
+                GetComponent<SphereCollider>().enabled = false;
+
+                GetComponent<AudioSource>().PlayOneShot(bounceSound, 3f);
             }
             else
             {

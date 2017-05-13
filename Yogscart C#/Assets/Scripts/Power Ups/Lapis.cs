@@ -5,13 +5,14 @@ public class Lapis : MonoBehaviour
 {
 
     public Transform physicsProp;
+    public AudioClip[] sounds;
 
 	void OnTriggerEnter(Collider other)
     {
         StartCoroutine(Hit());
 
         Transform parent = other.transform;
-        while(parent.parent != null)
+        while(parent.parent != null && parent.GetComponent<kartScript>() == null)
         {
             parent = parent.parent;
         }
@@ -19,6 +20,7 @@ public class Lapis : MonoBehaviour
         if(parent.GetComponent<kartScript>() != null)
         {
             parent.GetComponent<kartScript>().lapisAmount++;
+            GetComponent<AudioSource>().PlayOneShot(sounds[Random.Range(0, sounds.Length)]);
         }
 
 	}

@@ -17,6 +17,7 @@ public class ItemBox : MonoBehaviour {
 
         GetComponent<Renderer>().enabled = false;
         GetComponent<Collider>().enabled = false;
+        GetComponent<AudioSource>().Play();
 
         yield return new WaitForSeconds(1);
 

@@ -213,7 +213,7 @@ public class kartItem : MonoBehaviour
 
         if (itemOwner == ItemOwner.Mine)
         {
-            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/Powerup"));
+            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/Powerup"), 0.5f);
 
             float size = Screen.width / 8f;
             renderHeight = -(int)size;
@@ -236,7 +236,7 @@ public class kartItem : MonoBehaviour
 
             renderItem = gd.powerUps[item].icon;
 
-            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/Powerup2"));
+            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/Powerup2"), 0.5f);
             yield return StartCoroutine(Stop());
 
         }

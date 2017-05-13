@@ -60,13 +60,15 @@ public class SoundManager : MonoBehaviour
     }
 
 
-    public void PlaySFX(AudioClip nMusic)
+    public void PlaySFX(AudioClip nMusic, float volumeScale)
     {
         if(sfxSource != null)
         {
-            sfxSource.PlayOneShot(nMusic, 1f);
+            sfxSource.PlayOneShot(nMusic, volumeScale);
         }
     }
+
+    public void PlaySFX(AudioClip nMusic) { PlaySFX(nMusic, 1f); }
 
     public void PlayMusic(AudioClip nMusic)
     {

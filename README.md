@@ -2,6 +2,33 @@
 
 ## Changelog : Started 04/08/2016
 
+## 12/05/2017
+* Added IK Steering for sparkles kart
+* Added IK Steering for owl kart
+* Removed IK cubes from models
+* Added Egg fire sound
+* Added Egg hold sound
+* Added Egg bounce sound
+* Added create smash sound
+* Added random sound on Lapis pickup
+* Fixed character names on character select not facing camera
+* Added rotate indicator UI to character select
+
+## 10/05/2017
+* Multiplayer item box position fixed
+* Made eggs faster
+* Fixed falling into ground on Sjin's Farm
+* Added IK Rotations for pedal pressing
+* Added IK Steering for default kart
+
+## 08/05/2017
+* Added leveling out on big jump
+* Small puffs of cloud when drifting
+* Wheel Spin on start up
+* Smoke on Wheel Spin
+* Wheel Trails when drifting
+* Lens flare on Sjin's Farm
+
 ## 20/04/2017
 * Upgraded to 5.6
 

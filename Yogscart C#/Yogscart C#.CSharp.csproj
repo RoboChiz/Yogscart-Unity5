@@ -121,6 +121,7 @@
     <Compile Include="Assets\Scripts\Managers\InterestManager.cs" />
     <Compile Include="Assets\Scripts\Menus\CharacterSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\Credits.cs" />
+    <Compile Include="Assets\Scripts\Menus\FaceToCamera.cs" />
     <Compile Include="Assets\Scripts\Menus\IntroScript.cs" />
     <Compile Include="Assets\Scripts\Menus\Leaderboard.cs" />
     <Compile Include="Assets\Scripts\Menus\LevelSelect.cs" />

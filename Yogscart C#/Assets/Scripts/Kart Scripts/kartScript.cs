@@ -376,7 +376,7 @@ public class kartScript : MonoBehaviour
                     GetComponent<AudioSource>().Play();
                     GetComponent<AudioSource>().loop = true;
                 }
-                audioSourceInfo.idealVolume = Mathf.Lerp(0.05f, 0.4f, ExpectedSpeed / maxSpeed);
+                audioSourceInfo.idealVolume = Mathf.Lerp(0.05f, 0.2f, ExpectedSpeed / maxSpeed);
                 GetComponent<AudioSource>().pitch = Mathf.Lerp(0.75f, 1.5f, ExpectedSpeed / maxSpeed);
             }
 
