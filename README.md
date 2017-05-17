@@ -2,6 +2,16 @@
 
 ## Changelog : Started 04/08/2016
 
+## 17/05/2017
+* Fixed centering on Rotate GUI Indicator
+* Added kinematic rigidbodies to Sjin's Farm Walls
+* Fixed character select cameras
+* Fixed spamming submit on multiplayer selection
+* Fixed some gui fading for no reason on character select
+* Adding cursor removal when character/hat is selected
+* Fixed side image changing on difficulty selection
+* Redid Simon Icon to match style
+
 ## 12/05/2017
 * Added IK Steering for sparkles kart
 * Added IK Steering for owl kart

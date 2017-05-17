@@ -5,12 +5,16 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class FaceToCamera : MonoBehaviour
 {
+    public Transform forceCamera;
     void Awake() { LookAtCamera(); }
     void Update () { LookAtCamera(); }
 
     void LookAtCamera()
     {
         //Find Camera and Face it
-        transform.LookAt(Camera.main.transform);
+        if(forceCamera == null)
+            transform.LookAt(Camera.main.transform);
+        else
+            transform.LookAt(forceCamera);
     }
 }

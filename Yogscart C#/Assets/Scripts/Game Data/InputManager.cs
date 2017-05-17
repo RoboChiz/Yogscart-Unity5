@@ -36,6 +36,9 @@ public class InputManager : MonoBehaviour
     public List<float> iconHeights = new List<float>();
     public static readonly List<string> menuInputs = new List<string>(new string[] { "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle", "Edit", "Minus", "ViewScroll" });
 
+    //Remove Later
+    static private bool debugLock;
+
     //Loads Saved Input Configurations
     public static void LoadConfig()
     {
@@ -181,6 +184,17 @@ public class InputManager : MonoBehaviour
 
                     if (Input.GetAxis("Start_4") != 0)
                         AddController("_4");
+
+                    /*if (Input.GetKeyDown(KeyCode.PageUp) && !debugLock)
+                    {
+                        AddController("Key_");
+                        debugLock = true;
+                    }*/
+                }
+
+                if (!Input.GetKey(KeyCode.PageDown) && !Input.GetKey(KeyCode.PageUp))
+                {
+                    debugLock = false;
                 }
 
                 if (controllers.Count >= 1)
@@ -199,6 +213,12 @@ public class InputManager : MonoBehaviour
 
                     if (Input.GetAxis("Back_4") != 0)
                         RemoveController("_4");
+
+                    /*if (Input.GetKeyDown(KeyCode.PageDown) && !debugLock)
+                    {
+                        RemoveController(controllers[controllers.Count-1].controllerName);
+                        debugLock = true;
+                    }*/
                 }
             }
         }

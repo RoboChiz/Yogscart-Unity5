@@ -345,7 +345,7 @@ public class MainMenu : MonoBehaviour
             if (submitBool || mouseClick)
             {
 
-                if (lastloadedPicture < 0 || possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture])
+                if (lastloadedPicture < 0 ||(state == MenuState.Main && possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture]))
                     StartCoroutine(ActualChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
 
                 switch (state)

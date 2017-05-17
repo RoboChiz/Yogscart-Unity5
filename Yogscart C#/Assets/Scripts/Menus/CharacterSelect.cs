@@ -9,7 +9,7 @@ public class CharacterSelect : MonoBehaviour
     private KartMaker km;
     private CurrentGameData gd;
 
-    private bool isShowing = false, loading = true;
+    private bool isShowing = false, loading = true, affectAllGUIwithAlpha;
 
     public GUISkin skin;
 
@@ -56,6 +56,7 @@ public class CharacterSelect : MonoBehaviour
     {
         loading = true;
         lastAllowed = InputManager.allowedToChange;
+        affectAllGUIwithAlpha = true;
 
         gd = FindObjectOfType<CurrentGameData>();
         sm = FindObjectOfType<SoundManager>();
@@ -87,6 +88,7 @@ public class CharacterSelect : MonoBehaviour
     {
         isShowing = false;
         sliding = true;
+        affectAllGUIwithAlpha = true;
 
         float startTime = Time.time;
         float travelTime = 0.25f;
@@ -122,7 +124,6 @@ public class CharacterSelect : MonoBehaviour
     private void ResetReady()
     {
         ready = new bool[4];
-        rotateRects = new Rect[4];
     }
 
     private void ResetEverything()
@@ -143,6 +144,11 @@ public class CharacterSelect : MonoBehaviour
         showLayout = new bool[4];
         selectedLayout = new int[4];
         layoutScrollPositions = new Vector2[4];
+
+        rotateRects = new Rect[4];
+
+        for (int i = 0; i < rotateRects.Length; i++)
+            rotateRects[i] = new Rect(1440, 500, 0, 0);
 
         controlLayoutBoxHeights = new float[4];
 
@@ -176,21 +182,6 @@ public class CharacterSelect : MonoBehaviour
             {
                 mouseLast = true;
                 lastMousePos = mousePos;
-            }
-
-            //Show Rotate Icons
-            for(int i = 0; i < InputManager.controllers.Count; i++)
-            {
-                Rect current = rotateRects[i];
-                if (current != null)
-                {
-                    float newWidth = current.width / 2f;
-                    float ratio = newWidth / rotateKey.width;
-                    float newHeight = rotateKey.height * ratio;
-
-                    GUI.DrawTexture(new Rect(current.x + (newWidth * 0.25f), current.y - newHeight - 5, newWidth, newHeight * 0.5f),
-                        (InputManager.controllers[i].controlLayout.Type == ControllerType.Keyboard ? rotateKey : rotateXbox), ScaleMode.ScaleToFit);
-                }
             }
 
             switch (state)
@@ -285,7 +276,7 @@ public class CharacterSelect : MonoBehaviour
 
             for (int s = 0; s < InputManager.controllers.Count; s++)
             {
-                if (state != csState.Off && state != csState.Kart)
+                if (state != csState.Off && state != csState.Kart && !ready[s])
                 {
                     int selectedIcon = 0;
 
@@ -306,6 +297,24 @@ public class CharacterSelect : MonoBehaviour
 
                     GUIHelper.EndGroup();
                 }
+
+                if (!affectAllGUIwithAlpha)
+                    GUIHelper.ResetColor();
+
+                //Show Rotate Icons
+                Rect current = rotateRects[s];
+                if (current != null)
+                {
+                    float newWidth = current.width / 4f;
+                    float ratio = newWidth / rotateKey.width;
+                    float newHeight = rotateKey.height * ratio;
+
+                    GUI.DrawTexture(new Rect(current.x, current.y + current.height - newHeight, current.width, newHeight),
+                        (InputManager.controllers[s].controlLayout.Type == ControllerType.Keyboard ? rotateKey : rotateXbox), ScaleMode.ScaleToFit);
+                }
+
+                if(!affectAllGUIwithAlpha)
+                    GUIHelper.SetGUIAlpha(menuAlpha);
 
                 float topHeight = 115;
 
@@ -532,7 +541,8 @@ public class CharacterSelect : MonoBehaviour
             }
 
             GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
-            GUIHelper.SetGUIAlpha(overallAlpha);
+            if (!affectAllGUIwithAlpha)
+                GUIHelper.ResetColor();
 
             //Draw Input Layouts
             if (InputManager.controllers != null)
@@ -677,6 +687,7 @@ public class CharacterSelect : MonoBehaviour
                         {
                             loadedModels[s] = (Transform)Instantiate(gd.characters[choice[s].character].CharacterModel_Standing, platforms[s].FindChild("Spawn").position, oldRot);
                             loadedModels[s].GetComponent<Rigidbody>().isKinematic = true;
+                            loadedModels[s].GetComponentInChildren<FaceToCamera>().forceCamera = platforms[s].FindChild("Camera");
                         }
 
                         loadedChoice[s].character = choice[s].character;
@@ -737,24 +748,28 @@ public class CharacterSelect : MonoBehaviour
                 {
                     cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
                     cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, cam.rect.y, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+                    LeaveCamOn(cam);
                 }
 
                 if (InputManager.controllers.Count <= 1 || !isShowing)
                 {
                     cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
                     cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, cam.rect.y, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+                    LeaveCamOn(cam);
                 }
 
                 if (InputManager.controllers.Count <= 2 || !isShowing)
                 {
                     cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
                     cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, cam.rect.y, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+                    LeaveCamOn(cam);
                 }
 
                 if (InputManager.controllers.Count <= 3 || !isShowing)
                 {
                     cam = platforms[3].FindChild("Camera").GetComponent<Camera>();
                     cam.rect = GUIHelper.Lerp(cam.rect, new Rect(1f, cam.rect.y, cam.rect.width, cam.rect.height), Time.deltaTime * 5f);
+                    LeaveCamOn(cam);
                 }
 
                 if (isShowing)
@@ -765,29 +780,44 @@ public class CharacterSelect : MonoBehaviour
                     float areaHeight = 0.3f / ((0.5f / Screen.width) * Screen.height);
 
                     //FIGURE OUT OK AREA
-                    Rect okayArea = new Rect(0.5f, 0f, 0.5f, 1f);
+                    Rect okayArea;
 
                     if (GUIHelper.widthSmaller)
                         okayArea = new Rect(0.5f, 0.5f - (areaHeight / 2f), 0.5f, areaHeight);
                     else
                         okayArea = new Rect(0.5f, areaY, 0.5f - areaX, 1f - areaY);
 
+                    okayArea.y += 0.12f;
+                    okayArea.height -= 0.2f;
+
+                    //Figure out ok area for GUI
+                    Rect okayGUIArea = new Rect(960, 50, 960, 900);
+                    Rect newOkayGUIArea;
+
                     if (InputManager.controllers.Count == 1)
                     {
                         cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
                         cam.rect = GUIHelper.Lerp(cam.rect, okayArea, Time.deltaTime * 5f);
-                        rotateRects[0] = new Rect(cam.rect.x * GUIHelper.width, (1f- cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                        LeaveCamOn(cam);
+
+                        rotateRects[0] = GUIHelper.Lerp(rotateRects[0], okayGUIArea, Time.deltaTime * 5f);
                     }
 
                     if (InputManager.controllers.Count == 2)
                     {
                         cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
                         cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y + (okayArea.height / 2f), okayArea.width, okayArea.height / 2f), Time.deltaTime * 5f);
-                        rotateRects[0] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                        LeaveCamOn(cam);
+
+                        newOkayGUIArea = new Rect(okayGUIArea.x, okayGUIArea.y, okayGUIArea.width, okayGUIArea.height / 2f);
+                        rotateRects[0] = GUIHelper.Lerp(rotateRects[0], newOkayGUIArea, Time.deltaTime * 5f);
 
                         cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
-                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y, okayArea.width, okayArea.height / 2f), Time.deltaTime * 5f);
-                        rotateRects[1] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y, okayArea.width, okayArea.height / 2f), Time.deltaTime * 5f);                     
+                        LeaveCamOn(cam);
+
+                        newOkayGUIArea = new Rect(okayGUIArea.x, okayGUIArea.y + okayGUIArea.height / 2f, okayGUIArea.width, okayGUIArea.height / 2f);
+                        rotateRects[1] = GUIHelper.Lerp(rotateRects[1], newOkayGUIArea, Time.deltaTime * 5f);
                     }
 
                     if (InputManager.controllers.Count >= 3)
@@ -796,28 +826,42 @@ public class CharacterSelect : MonoBehaviour
                         {
                             cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
                             cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y + (okayArea.height / 2f), okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
-                            rotateRects[0] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                            LeaveCamOn(cam);
+
+                            newOkayGUIArea = new Rect(okayGUIArea.x, okayGUIArea.y, okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                            rotateRects[0] = GUIHelper.Lerp(rotateRects[0], newOkayGUIArea, Time.deltaTime * 5f);
 
                             cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
                             cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y, okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
-                            rotateRects[2] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                            LeaveCamOn(cam);
+
+                            newOkayGUIArea = new Rect(okayGUIArea.x, okayGUIArea.y + (okayGUIArea.height/2f), okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                            rotateRects[2] = GUIHelper.Lerp(rotateRects[2], newOkayGUIArea, Time.deltaTime * 5f);
 
                         }
                         else
                         {
                             cam = platforms[0].FindChild("Camera").GetComponent<Camera>();
                             cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x - okayArea.width / 2f, okayArea.y + (okayArea.height / 2f), okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
-                            rotateRects[0] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                            LeaveCamOn(cam);
 
+                            newOkayGUIArea = new Rect(okayGUIArea.x - (okayGUIArea.width/2f), okayGUIArea.y, okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                            rotateRects[0] = GUIHelper.Lerp(rotateRects[0], newOkayGUIArea, Time.deltaTime * 5f);
 
                             cam = platforms[2].FindChild("Camera").GetComponent<Camera>();
                             cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x - okayArea.width / 2f, okayArea.y, okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
-                            rotateRects[2] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                            LeaveCamOn(cam);
+
+                            newOkayGUIArea = new Rect(okayGUIArea.x - (okayGUIArea.width / 2f), okayGUIArea.y + (okayGUIArea.height / 2f), okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                            rotateRects[2] = GUIHelper.Lerp(rotateRects[2], newOkayGUIArea, Time.deltaTime * 5f);
                         }
 
                         cam = platforms[1].FindChild("Camera").GetComponent<Camera>();
                         cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x + okayArea.width / 2f, okayArea.y + (okayArea.height / 2f), okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
-                        rotateRects[1] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                        LeaveCamOn(cam);
+
+                        newOkayGUIArea = new Rect(okayGUIArea.x + (okayGUIArea.width/2f), okayGUIArea.y, okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                        rotateRects[1] = GUIHelper.Lerp(rotateRects[1], newOkayGUIArea, Time.deltaTime * 5f);
 
                     }
 
@@ -825,7 +869,10 @@ public class CharacterSelect : MonoBehaviour
                     {
                         cam = platforms[3].FindChild("Camera").GetComponent<Camera>();
                         cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x + okayArea.width / 2f, okayArea.y, okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
-                        rotateRects[3] = new Rect(cam.rect.x * GUIHelper.width, (1f - cam.rect.y) * GUIHelper.height, cam.rect.width * GUIHelper.width, cam.rect.height * GUIHelper.height);
+                        LeaveCamOn(cam);
+
+                        newOkayGUIArea = new Rect(okayGUIArea.x + (okayGUIArea.width / 2f), okayGUIArea.y + (okayGUIArea.height / 2f), okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                        rotateRects[3] = GUIHelper.Lerp(rotateRects[3], newOkayGUIArea, Time.deltaTime * 5f);
                     }
                 }
 
@@ -971,7 +1018,7 @@ public class CharacterSelect : MonoBehaviour
 
                     if (submit)
                     {
-                        if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
+                        if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked && !ready[s])
                         {
                             if (gd.characters[choice[s].character].selectedSound != null)
                                 sm.PlaySFX(gd.characters[choice[s].character].selectedSound);
@@ -981,12 +1028,12 @@ public class CharacterSelect : MonoBehaviour
                             ready[s] = true;
                         }
 
-                        if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
+                        if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked && !ready[s])
                         {
                             ready[s] = true;
                         }
 
-                        if (state == csState.Kart)
+                        if (state == csState.Kart && !ready[s])
                         {
                             if (kartSelected[s])
                             {
@@ -1071,6 +1118,14 @@ public class CharacterSelect : MonoBehaviour
                 ResetReady();
             }
         }
+    }
+
+    public void LeaveCamOn(Camera cam)
+    {
+        if (cam.rect.x > 0.95f)
+            cam.enabled = false;
+        else
+            cam.enabled = true;
     }
 
     public void Back(int s)
@@ -1160,6 +1215,7 @@ public class CharacterSelect : MonoBehaviour
         if (!sliding)
         {
             sliding = true;
+            affectAllGUIwithAlpha = false;
 
             float startTime = Time.time;
             float travelTime = 0.25f;
