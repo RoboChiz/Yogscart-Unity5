@@ -8,6 +8,7 @@ public class kartScript : MonoBehaviour
     public bool locked = true;
 
     private AudioSourceInfo audioSourceInfo;
+    private AudioSource kartAudioSource;
 
     //Inputs
     public float throttle, steer;
@@ -126,6 +127,9 @@ public class kartScript : MonoBehaviour
     public LineRenderer[] currentLineRenderer;
     public float skidTimer;
 
+    //Character Taunts and Hit Noises
+    public int characterID;
+
     // Use this for initialization
     void Start()
     {
@@ -137,6 +141,7 @@ public class kartScript : MonoBehaviour
         kartRigidbody.centerOfMass = new Vector3(0f, -0.5f, 0f);
 
         audioSourceInfo = GetComponent<AudioSourceInfo>();
+        kartAudioSource = GetComponentInChildren<AudioSource>();
 
         if (skidMarkTransform == null)
             skidMarkTransform = Resources.Load<Transform>("Prefabs/SkidMarks");
@@ -306,11 +311,11 @@ public class kartScript : MonoBehaviour
                 else
                     wheelSpinLerp = Mathf.Lerp(wheelSpinLerp, 0f, Time.deltaTime * 4f);
 
-                foreach (ParticleSystem ps in startCloudParticles)
-                {
-                    ParticleSystem.EmissionModule emission = ps.emission;
-                    emission.rateOverTimeMultiplier = wheelSpinLerp;
-                }
+                    foreach (ParticleSystem ps in startCloudParticles)
+                    {
+                        ParticleSystem.EmissionModule emission = ps.emission;
+                        emission.rateOverTimeMultiplier = wheelSpinLerp;
+                    }
 
                 //Spin wheels forward during start
                 increaseAmount = Time.deltaTime * wheelSpinLerp;
@@ -413,17 +418,20 @@ public class kartScript : MonoBehaviour
                     raceStarted = true;
             }
 
-            foreach (ParticleSystem startCloud in startCloudParticles)
+            if (GetComponent<AI>() == null)
             {
-                if (!raceStarted && throttle > 0)
+                foreach (ParticleSystem startCloud in startCloudParticles)
                 {
-                    if (!startCloud.isPlaying)
-                        startCloud.Play();
-                }
-                else
-                {
-                    if (startCloud.isPlaying)
-                        startCloud.Stop();
+                    if (!raceStarted && throttle > 0)
+                    {
+                        if (!startCloud.isPlaying)
+                            startCloud.Play();
+                    }
+                    else
+                    {
+                        if (startCloud.isPlaying)
+                            startCloud.Stop();
+                    }
                 }
             }
 
@@ -767,7 +775,7 @@ public class kartScript : MonoBehaviour
         spinning = false;
     }
 
-    public void SpinOut()
+    public void SpinOut(bool doNoise)
     {
         if (!onlineMode)
         {
@@ -777,8 +785,31 @@ public class kartScript : MonoBehaviour
             if (GetComponent<KartNetworker>() != null)
                 GetComponent<KartNetworker>().spinOut++;
 
+            if(doNoise)
+            {
+                Character myCharacter = FindObjectOfType<CurrentGameData>().characters[characterID];
+                if(myCharacter.hitSounds != null && myCharacter.hitSounds.Length > 0)
+                    kartAudioSource.PlayOneShot(myCharacter.hitSounds[Random.Range(0, myCharacter.hitSounds.Length)]);
+            }
+
             spinningOut = true;
         }
+    }
+
+    public void SpinOut()
+    {
+        SpinOut(false);
+    }
+
+    public void DoTaunt()
+    {
+        Character myCharacter = FindObjectOfType<CurrentGameData>().characters[characterID];
+
+        //Play Sound
+        if (myCharacter.tauntSounds != null && myCharacter.tauntSounds.Length > 0)
+            kartAudioSource.PlayOneShot(myCharacter.tauntSounds[Random.Range(0, myCharacter.tauntSounds.Length)]);
+
+        //Do Animation
     }
 
     //For use by Kart Networker as Kart will not spin locally otherwise

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-abstract public class Projectile : MonoBehaviour {
+abstract public class Projectile : MonoBehaviour
+{
 
     protected Vector3 direction;
     protected bool actingShield = false;

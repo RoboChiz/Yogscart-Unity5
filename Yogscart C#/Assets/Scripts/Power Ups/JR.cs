@@ -31,7 +31,7 @@ public class JR : Egg
             if (target == null && !lockOff)
             {
                 PositionFinding pf = parent.GetComponent<PositionFinding>();
-                Vector3 roadDir = td.positionPoints[MathHelper.NumClamp(currentPoint, 0, td.positionPoints.Count)].position - td.positionPoints[currentPoint].position;
+                Vector3 roadDir = td.positionPoints[MathHelper.NumClamp(currentPoint + 1, 0, td.positionPoints.Count)].position - td.positionPoints[currentPoint].position;
 
                 //If not in first
                 if (pf.position > 0)
@@ -43,8 +43,17 @@ public class JR : Egg
                         if (possiblePF.position == pf.position - 1)
                         {
                             //Check facing the right direction
-                            if(Vector3.Dot(parent.forward, roadDir) > 0)
+                            if (Vector3.Dot(parent.forward, roadDir) > 0)
+                            {
                                 target = possiblePF.transform;
+
+                                //Inform Kart Info or Attack
+                                kartInfo kartInfo = target.GetComponent<kartInfo>();
+                                if(kartInfo != null)
+                                {
+                                    kartInfo.NewAttack(Resources.Load<Texture2D>("UI/Power Ups/Clucky_1JR"), gameObject);
+                                }
+                            }
                             break;
                         }
                     }
@@ -58,13 +67,11 @@ public class JR : Egg
                 //Test if we can hit the Target
                 Vector3 attackDir = target.position - transform.position;
                 RaycastHit hit;
-                var layerMask = 1 << 10;
-                layerMask = ~layerMask;
 
-                if (target.GetComponent<PositionFinding>().currentPos <= currentPoint + 3 &&  Physics.Raycast(transform.position, attackDir, out hit, Mathf.Infinity, layerMask) && hit.transform == target)
+                if (target.GetComponent<PositionFinding>().currentPos <= currentPoint + 3 && Physics.Raycast(transform.position, attackDir, out hit, Mathf.Infinity) && hit.transform == target)
                 {
-                    attackDir.y = 0;
                     direction = attackDir.normalized;
+                    overrideYPos = true;
                 }
                 else
                 {
@@ -73,6 +80,7 @@ public class JR : Egg
                     attackDir.y = 0;
 
                     direction = attackDir.normalized;
+                    overrideYPos = false;
                 }
             }
 
@@ -85,9 +93,7 @@ public class JR : Egg
 
             //If distance to last point is greater than entire road distance
             if (Vector3.Distance(lastPoint, myPos) >= Vector3.Distance(targetPoint, lastPoint))
-            {
-                currentPoint++;
-            }
+                currentPoint = MathHelper.NumClamp(currentPoint + 1, 0, td.positionPoints.Count);
 
         }
 

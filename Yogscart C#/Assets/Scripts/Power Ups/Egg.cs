@@ -8,12 +8,15 @@ public class Egg : Projectile
     private float desiredY = 0f, colliderOff = 0f;
     protected float offset = 1f;
     protected int bounces = 5;
+    protected bool overrideYPos;
 
     private static AudioClip fireSound, bounceSound;
     private bool playedSound = false;
 
     public override void Setup(Vector3 _direction, bool _actingShield)
     {
+        _direction.y = 0f;
+
         base.Setup(_direction, _actingShield);
         desiredY = transform.position.y;
     }
@@ -45,8 +48,15 @@ public class Egg : Projectile
 
             Vector3 newPosition = transform.position;
 
-            newPosition += new Vector3(direction.x, 0f, direction.z) * travelSpeed * Time.deltaTime;
-            newPosition.y = Mathf.Lerp(newPosition.y, desiredY, Time.deltaTime * 20f);
+            newPosition += direction * travelSpeed * Time.deltaTime;
+
+            if (overrideYPos)
+            {
+                if (desiredY < newPosition.y)
+                    newPosition.y = Mathf.Lerp(newPosition.y, desiredY, Time.deltaTime * 20f);
+                else
+                    newPosition.y = desiredY;
+            }
 
             transform.position = newPosition;
 
@@ -73,7 +83,12 @@ public class Egg : Projectile
         if(collision.transform.GetComponent<kartScript>() != null)
         {
             //Spin the Kart Out
-            collision.transform.GetComponent<kartScript>().SpinOut();
+            collision.transform.GetComponent<kartScript>().SpinOut(true);
+
+            //Make Owner Taunt
+            DamagingItem di = GetComponent<DamagingItem>();
+            if (di.owner != collision.transform.GetComponent<kartScript>())         
+                di.owner.DoTaunt();
 
             //Get rid of the GameObject
             Destroy(gameObject);

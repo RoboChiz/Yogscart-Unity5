@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Boo.Lang;
 
 public enum ScreenType { Full, TopLeft, TopRight, BottomLeft, BottomRight, Top, Bottom };
 
@@ -24,13 +25,22 @@ public class kartInfo : MonoBehaviour
     public float finishAlpha;
     public Rect finishRect, screenRect;
 
+    //Components
     private TrackData td;
     private SoundManager sm;
+
+    //Textures
+    Texture2D incomingBox;
+
+    //Incoming
+    public List<IncomingObject> incomingObjects = new List<IncomingObject>();
 
     void Start()
     {
         td = FindObjectOfType<TrackData>();
         sm = FindObjectOfType<SoundManager>();
+
+        incomingBox = Resources.Load<Texture2D>("UI/Power Ups/Incoming");
     }
 
     // Update is called once per frame
@@ -69,7 +79,6 @@ public class kartInfo : MonoBehaviour
         if (cameras != null)
             for (int i = 0; i < cameras.Length; i++)
             {
-
             if (screenPos == ScreenType.Full)
                 cameras[i].rect = new Rect(0, 0, 1, 1);
 
@@ -96,34 +105,36 @@ public class kartInfo : MonoBehaviour
 
         Race gamemode = FindObjectOfType<Race>();
 
-        if (gamemode.raceType != RaceType.TimeTrial)
+        if (gamemode != null)
         {
-            //Render Position GUI
-            if (position != -1)
+            if (gamemode.raceType != RaceType.TimeTrial)
             {
-                var postexture = Resources.Load<Texture2D>("UI/Positions/" + (lastPosition + 1).ToString());
-                Rect posRenderArea = new Rect();
+                //Render Position GUI
+                if (position != -1)
+                {
+                    var postexture = Resources.Load<Texture2D>("UI/Positions/" + (lastPosition + 1).ToString());
+                    Rect posRenderArea = new Rect();
 
-                if (screenPos == ScreenType.Full || screenPos == ScreenType.BottomRight || screenPos == ScreenType.Bottom)
-                    posRenderArea = new Rect(Screen.width - 10 - PosGUISize, Screen.height - 10 - PosGUISize, PosGUISize, PosGUISize);
-                else if (screenPos == ScreenType.TopLeft)
-                    posRenderArea = new Rect(Screen.width / 2f - 10 - PosGUISize, Screen.height / 2f - 10 - PosGUISize, PosGUISize, PosGUISize);
-                else if(screenPos == ScreenType.TopRight)
-                    posRenderArea = new Rect(Screen.width - 10 - PosGUISize, Screen.height / 2f - 10 - PosGUISize, PosGUISize, PosGUISize);           
-                else if(screenPos == ScreenType.BottomLeft)
-                    posRenderArea = new Rect(Screen.width / 2f - 10 - PosGUISize, Screen.height - 10 - PosGUISize, PosGUISize, PosGUISize);
-                else if(screenPos == ScreenType.Top)
-                    posRenderArea = new Rect(Screen.width - 10 - PosGUISize, Screen.height / 2f - 10 - PosGUISize, PosGUISize, PosGUISize);
+                    if (screenPos == ScreenType.Full || screenPos == ScreenType.BottomRight || screenPos == ScreenType.Bottom)
+                        posRenderArea = new Rect(Screen.width - 10 - PosGUISize, Screen.height - 10 - PosGUISize, PosGUISize, PosGUISize);
+                    else if (screenPos == ScreenType.TopLeft)
+                        posRenderArea = new Rect(Screen.width / 2f - 10 - PosGUISize, Screen.height / 2f - 10 - PosGUISize, PosGUISize, PosGUISize);
+                    else if (screenPos == ScreenType.TopRight)
+                        posRenderArea = new Rect(Screen.width - 10 - PosGUISize, Screen.height / 2f - 10 - PosGUISize, PosGUISize, PosGUISize);
+                    else if (screenPos == ScreenType.BottomLeft)
+                        posRenderArea = new Rect(Screen.width / 2f - 10 - PosGUISize, Screen.height - 10 - PosGUISize, PosGUISize, PosGUISize);
+                    else if (screenPos == ScreenType.Top)
+                        posRenderArea = new Rect(Screen.width - 10 - PosGUISize, Screen.height / 2f - 10 - PosGUISize, PosGUISize, PosGUISize);
 
-                if (postexture != null)
-                    GUI.DrawTexture(posRenderArea, postexture, ScaleMode.ScaleToFit);
+                    if (postexture != null)
+                        GUI.DrawTexture(posRenderArea, postexture, ScaleMode.ScaleToFit);
+                }
             }
-        }
-        else
-        {
-            //Draw Timer
-            if(gamemode != null)
+            else
+            {
+                //Draw Timer
                 GUI.Label(new Rect(Screen.width - 10 - Screen.width / 5f, Screen.height - 20 - GUI.skin.label.fontSize, Screen.width / 5f, GUI.skin.label.fontSize + 5), TimeManager.ToString(gamemode.Timer));
+            }
         }
 
         float boxWidth = 0f, boxHeight = 0f;
@@ -206,7 +217,47 @@ public class kartInfo : MonoBehaviour
         else
             finishAlpha = Mathf.Lerp(finishAlpha, 0f, Time.deltaTime * 7f);
 
+        //Render Incoming Objects
+        float iconSize = screenRect.height / 5f, tenthIconSize = iconSize / 10f,
+            widthFactor = 500f / screenRect.width, halfWidth = screenRect.width/2f,
+            incomingScale = (Mathf.Sin(Time.realtimeSinceStartup * 5f) * 0.25f) + 1f;
+        foreach(IncomingObject ic in incomingObjects.ToArray())
+        {
+            //Update the Position
+            if (ic.powerUpObject != null)
+            {
+                Vector3 localPos = transform.InverseTransformPoint(ic.powerUpObject.transform.position);
+                ic.position = Mathf.Clamp(localPos.x / widthFactor, -halfWidth, halfWidth);
+            }
+
+            //Update the Alpha
+            if (ic.powerUpObject != null)
+                ic.alpha = Mathf.Clamp(ic.alpha + (Time.deltaTime * 4f), 0f, 1f);
+            else
+            {
+                ic.alpha = Mathf.Clamp(ic.alpha - (Time.deltaTime * 4f), 0f, 1f);
+
+                //Destroy Object if it no longer exists
+                if (ic.alpha == 0)
+                    incomingObjects.Remove(ic);
+            }
+
+            GUIHelper.SetGUIAlpha(ic.alpha);
+
+            //Render the Indictor
+            float centrePosX = screenRect.x + (screenRect.width / 2f) - (iconSize / 2f),
+                posY = screenRect.y + screenRect.height - (iconSize * 1.2f);
+
+            Rect indicatorRect = GUIHelper.CentreRect(new Rect(centrePosX + ic.position, posY, iconSize, iconSize), incomingScale);
+            Rect itemRenderRect = GUIHelper.CentreRect(new Rect(centrePosX + ic.position + tenthIconSize, posY + tenthIconSize, iconSize - (2f* tenthIconSize), iconSize - (2f * tenthIconSize)), incomingScale);
+
+            GUI.DrawTexture(indicatorRect, incomingBox);
+            GUI.DrawTexture(itemRenderRect, ic.powerUp);
+        }
+
         GUIHelper.ResetColor();
+
+       
     }
 
     void NewLap()
@@ -236,4 +287,22 @@ public class kartInfo : MonoBehaviour
         finishShow = false;
     }
 
+    public void NewAttack(Texture2D _powerUp, GameObject _powerUpObject)
+    {
+        incomingObjects.Add(new IncomingObject(_powerUp, _powerUpObject));
+    }
+
+}
+
+public class IncomingObject
+{
+    public float position, alpha;
+    public Texture2D powerUp;
+    public GameObject powerUpObject;
+
+    public IncomingObject(Texture2D _powerUp, GameObject _powerUpObject)
+    {
+        powerUp = _powerUp;
+        powerUpObject = _powerUpObject;
+    }
 }

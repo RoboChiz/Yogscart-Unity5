@@ -75,6 +75,9 @@ public class kartItem : MonoBehaviour
                 if (myItem.GetComponent<Projectile>() != null)
                     myItem.GetComponent<Projectile>().Setup(transform.forward * inputDirection,false);
 
+                if (myItem.GetComponent<DamagingItem>() != null)
+                    myItem.GetComponent<DamagingItem>().owner = GetComponent<kartScript>();
+
                 itemSpawned = true;
             }       
 
@@ -100,6 +103,9 @@ public class kartItem : MonoBehaviour
 
                 if (myItem.GetComponent<Projectile>() != null)
                     myItem.GetComponent<Projectile>().Setup(transform.forward, true);
+
+                if (myItem.GetComponent<DamagingItem>() != null)
+                    myItem.GetComponent<DamagingItem>().owner = GetComponent<kartScript>();
 
                 itemSpawned = true;
             }

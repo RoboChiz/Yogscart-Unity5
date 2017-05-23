@@ -97,9 +97,14 @@ public class KartMaker : MonoBehaviour
             AudioSource kbas = kartBody.FindChild("Kart Body").gameObject.AddComponent<AudioSource>();
             kbas.spatialBlend = 1;
             kbas.minDistance = 0f;
-            kbas.maxDistance = 25f;
+            kbas.maxDistance = 100f;
             kbas.rolloffMode = AudioRolloffMode.Linear;
             kbas.playOnAwake = false;
+            kbas.dopplerLevel = 0f;
+
+            ausI = kbas.gameObject.AddComponent<AudioSourceInfo>();
+            ausI.idealVolume = 1f;
+            ausI.audioType = AudioSourceInfo.AudioType.SFX;
 
             //Add Death Catch
             kb.AddComponent<DeathCatch>();
@@ -131,6 +136,7 @@ public class KartMaker : MonoBehaviour
             //Add Kart Script
             kartScript ks = kb.AddComponent<kartScript>();
 
+            ks.characterID = c;
             ks.engineSound = kartSkel.engineSound;
 
             ks.wheelColliders = new List<WheelCollider>();

@@ -2,6 +2,17 @@
 
 ## Changelog : Started 04/08/2016
 
+## 23/05/2017
+* Hid starting boost clouds for AI Racers
+* Added an Incoming Item Indicator
+* Fixed bug where JR would not fly down towards target
+* Added Hit Sounds to spinout Method if wanted
+* Made Egg and JR cause hit sound
+* Made Dirtblock cause hit sound
+* Added storing parent kartScript of item in DamagingItem Class
+* Added owner Taunt Sounds when Dirtblock, Egg or JR hits
+* Fixed bug where characters would taunt if hit by own item
+
 ## 22/05/2017
 * Fixed pitched of lapis, crates and egg power ups on drive by
 * Made pitch change for background music on final lap
