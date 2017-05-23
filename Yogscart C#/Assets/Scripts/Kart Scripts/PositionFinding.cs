@@ -9,10 +9,11 @@ public class PositionFinding : MonoBehaviour
     public int lap = -1, currentPos, currentShortcut = -1, currentTotal, position = -1;
     public float currentDistance;
 
+    private bool changedPitched;
+
     // Update is called once per frame
     void Update()
     {
-
         if (td == null)
         {
             GameObject tm = GameObject.Find("Track Manager");

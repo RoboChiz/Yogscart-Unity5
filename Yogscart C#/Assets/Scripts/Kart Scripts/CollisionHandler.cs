@@ -28,7 +28,7 @@ public class CollisionHandler : MonoBehaviour
             for (int j = i + 1; j < thingCount; j++)
             {
                 //Check that both things weren't in GodMode
-                if (!things[i].godMode && !things[j].godMode)
+                if (!(things[i].godMode && things[j].godMode))
                 {
                     Vector3 compareVect = things[j].transform.position - things[i].transform.position;
 
@@ -91,7 +91,15 @@ public class CollisionHandler : MonoBehaviour
 
     private void DoKartGodCollision(kartScript kart, KartCollider god)
     {
+        //Push the kart
+        float leftSpace = ((god.transform.position - god.transform.right) - kart.transform.position).magnitude;
+        float rightSpace = ((god.transform.position + god.transform.right) - kart.transform.position).magnitude;
 
+        bool pushLeft = (leftSpace < rightSpace);
+
+        kart.GetComponent<CowTipping>().PushLeft = pushLeft;
+        kart.GetComponent<CowTipping>().TipCow();
+        kart.GetComponent<kartScript>().SpinOut();
     }
 
     private IEnumerator WaitForCollision(int i, int j)

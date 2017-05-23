@@ -16,10 +16,16 @@ public class TrackData : MonoBehaviour
     //Track Metadata
     public string trackName = "Untitled Track";
     public AudioClip backgroundMusic;
+    public float lastLapPitch = 1.1f; //The pitch of the Audio Source on the last lap of the race
 
     public bool loopedTrack = true;
 
     public int Laps = 3;
+
+    public Texture2D map;
+    public Vector2 mapOffset; //The position in the scene where the map begins from
+    public Vector2 mapScale; //How the map scales. 1 = 1 pixel per metre
+    public float mapRotate;
 
     [HideInInspector]
     public Transform spawnPoint;

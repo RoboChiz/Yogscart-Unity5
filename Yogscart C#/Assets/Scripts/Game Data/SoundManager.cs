@@ -131,4 +131,9 @@ public class SoundManager : MonoBehaviour
         }
 
     }
+
+    public void SetMusicPitch(float value)
+    {
+        mSource.pitch = value;
+    }
 }

@@ -117,6 +117,7 @@
     <Compile Include="Assets\Scripts\Kart Scripts\kartInput.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartItem.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartScript.cs" />
+    <Compile Include="Assets\Scripts\Level Scripts\PigMovement.cs" />
     <Compile Include="Assets\Scripts\Managers\BSPTree.cs" />
     <Compile Include="Assets\Scripts\Managers\InterestManager.cs" />
     <Compile Include="Assets\Scripts\Menus\CharacterSelect.cs" />

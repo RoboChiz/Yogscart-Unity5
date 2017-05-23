@@ -2,6 +2,18 @@
 
 ## Changelog : Started 04/08/2016
 
+## 22/05/2017
+* Fixed pitched of lapis, crates and egg power ups on drive by
+* Made pitch change for background music on final lap
+* Added a Top Down Map
+* Implemented Top Down Map on Sjin's Farm
+
+## 18/05/2017
+* Added Sji'n Farm Intro Cutscene
+* Updated name textures for scoreboards to new style
+* Added Pigs to Sjin's Farm
+* Fixed Collision Handler Bug
+
 ## 17/05/2017
 * Fixed centering on Rotate GUI Indicator
 * Added kinematic rigidbodies to Sjin's Farm Walls

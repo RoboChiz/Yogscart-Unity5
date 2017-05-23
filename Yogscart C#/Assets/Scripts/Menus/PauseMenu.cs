@@ -149,6 +149,8 @@ public class PauseMenu : MonoBehaviour
                             paused = -1;
                             canPause = false;
 
+                            //Change Pitch Back
+                            FindObjectOfType<SoundManager>().SetMusicPitch(1f);
                             FindObjectOfType<GameMode>().EndGamemode();
                             break;
                     }

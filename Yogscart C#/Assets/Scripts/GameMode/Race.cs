@@ -23,15 +23,15 @@ public class Race : GameMode
     private int currentSelection;
 
     public RaceGUI currentGUI = RaceGUI.Blank;
-    public float guiAlpha = 0f;
-    public bool changingState = false;
+    public float guiAlpha = 0f, mapAlpha = 0f;
+    public bool changingState = false, showMap;
 
     protected TrackData td;
 
     private string rankString;
     private int bestPlace;
 
-    protected bool raceFinished = false;
+    protected bool raceFinished = false, lastLap;
 
     public override void StartGameMode()
     {
@@ -74,6 +74,7 @@ public class Race : GameMode
         kartScript.raceStarted = false;
 
         lastcurrentRace = currentRace;
+        showMap = false;
 
         //Load the Level
         SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
@@ -163,6 +164,9 @@ public class Race : GameMode
         foreach (kartItem ki in kitemes)
             ki.hidden = false;
 
+        //Show Map
+        showMap = true;
+
         yield return StartCoroutine(ChangeState(RaceGUI.Countdown));
 
         //Do the Countdown
@@ -183,6 +187,8 @@ public class Race : GameMode
         PauseMenu.canPause = true;
         PauseMenu.onlineGame = false;
 
+        yield return StartCoroutine(ChangeState(RaceGUI.RaceGUI));
+
         yield return null;
 
         //Wait for the gamemode to be over
@@ -199,6 +205,7 @@ public class Race : GameMode
         //Show Results
         Debug.Log("It's over!");
         finished = true;
+        showMap = false;
 
         StopTimer();
 
@@ -599,7 +606,44 @@ public class Race : GameMode
                 break;
         }
 
+        if (showMap)
+            mapAlpha = Mathf.Clamp(mapAlpha + (Time.deltaTime * 2f), 0f, 1f);
+        else
+            mapAlpha = Mathf.Clamp(mapAlpha - (Time.deltaTime * 2f), 0f, 1f);
+
+        if (mapAlpha > 0f)
+        {
+            //Set the Alpha
+            GUIHelper.SetGUIAlpha(mapAlpha);
+
+            //Draw Map
+            Rect drawRect;
+            float mapSize = Mathf.Min(Screen.width, Screen.height) / 3f;
+
+            if (InputManager.controllers.Count == 1)//Put Map in bottom left corner
+                drawRect = new Rect(Screen.width - mapSize - 10, (Screen.height / 2f) - (mapSize / 2f), mapSize, mapSize);
+            else //Put Map in centre of the Screen
+                drawRect = new Rect((Screen.width / 2f) - (mapSize / 2f), (Screen.height / 2f) - (mapSize / 2f), mapSize, mapSize);
+
+            GUI.DrawTexture(drawRect, td.map);
+
+            //Draw Icons
+            float iconSize = mapSize / 8f;
+
+            foreach (Racer racer in racers)
+            { 
+                Vector3 pos = Quaternion.AngleAxis(td.mapRotate, Vector3.up) * racer.ingameObj.transform.position;
+                Vector2 localPos = new Vector2(pos.x * td.mapScale.x, pos.z * td.mapScale.y) + td.mapOffset;
+                Rect iconRect = new Rect(drawRect.x + localPos.x, drawRect.y + localPos.y, iconSize, iconSize);
+
+                GUI.depth = racer.position * 2;
+                GUI.DrawTexture(iconRect, gd.characters[racer.Character].icon);
+            }
+
+        }
+
         GUIHelper.ResetColor();
+        GUI.depth = 0;
     }
 
     public override void HostUpdate()
@@ -625,12 +669,24 @@ public class Race : GameMode
             //Finish Race
             if (racers[i].Human != -1 && !racers[i].finished)
                 allFinished = false;
+
+            //Change pitch of music for last lap
+            if(pf.lap >= td.Laps - 1 && !lastLap)
+            {
+                lastLap = true;
+                FindObjectOfType<SoundManager>().SetMusicPitch(td.lastLapPitch);
+            }
         }
 
         SortingScript.CalculatePositions(racers);
 
         if (allFinished)
+        {
             raceFinished = true;
+
+            //Change Pitch Back
+            FindObjectOfType<SoundManager>().SetMusicPitch(1f);
+        }
 
     }
 

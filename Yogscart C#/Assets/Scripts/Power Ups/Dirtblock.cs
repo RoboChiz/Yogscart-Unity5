@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Dirtblock : MonoBehaviour {
-
-
+public class Dirtblock : MonoBehaviour
+{
     void OnCollisionEnter(Collision collision)
     {
         if (collision.transform.GetComponent<kartScript>() != null)
