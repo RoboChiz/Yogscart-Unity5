@@ -17,6 +17,9 @@ public class Kart_Skeleton : MonoBehaviour
     public float ItemDrop = 3f;
     public AudioClip engineSound;
 
+    //Particle Positions
+    public Vector3 deathParticlesPos, lFlame, rFlame, lSparks, rSparks, trick, lDriftClouds, rDriftClouds, lStartClouds, rStartClouds;
+
     void OnDrawGizmos()
     {
 
@@ -44,6 +47,17 @@ public class Kart_Skeleton : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawCube(transform.position - (transform.forward * ItemDrop), new Vector3(ChairSize, ChairSize, ChairSize));
 
+        Gizmos.color = Color.grey;
+        Gizmos.DrawCube(transform.position + deathParticlesPos, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + lFlame, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + rFlame, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + lSparks, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + rSparks, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + trick, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + lDriftClouds, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + rDriftClouds, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + lStartClouds, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(transform.position + rStartClouds, new Vector3(0.1f, 0.1f, 0.1f));
     }
 
 }

@@ -57,6 +57,16 @@ public class SoundManager : MonoBehaviour
             PlayerPrefs.SetFloat("SFXV", sfxVolume);
             lastsfV = sfxVolume;
         }
+
+    #if UNITY_EDITOR_WIN
+        if (Input.GetKeyDown(KeyCode.G))
+            {
+                if (mSource.isPlaying)
+                    mSource.Stop();
+                else
+                    mSource.Play();
+            }
+        #endif
     }
 
 

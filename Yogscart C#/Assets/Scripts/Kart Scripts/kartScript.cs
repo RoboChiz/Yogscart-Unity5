@@ -110,11 +110,11 @@ public class kartScript : MonoBehaviour
     private float[] lerpWheelRot;
 
     //Particles
-    public List<ParticleSystem> flameParticles, driftParticles, driftCloudParticles, startCloudParticles;
-    public ParticleSystem trickParticles;
+    public Dictionary<string, ParticleSystem> particleSystems;
 
     //Noises
     public AudioClip engineSound;
+    public float quietTimer; //Used to make engine quiter after a couple of seconds
 
     //Collisions
     public bool isColliding = false;
@@ -129,6 +129,11 @@ public class kartScript : MonoBehaviour
 
     //Character Taunts and Hit Noises
     public int characterID;
+
+    //Store Systems as arrays for convinence
+    Transform kartBody;
+    ParticleSystem[] startCloudParticles, flameParticles, driftParticles, driftCloudParticles;
+    ParticleSystem trickParticles;
 
     // Use this for initialization
     void Start()
@@ -146,6 +151,20 @@ public class kartScript : MonoBehaviour
         if (skidMarkTransform == null)
             skidMarkTransform = Resources.Load<Transform>("Prefabs/SkidMarks");
 
+        ResetParticles();
+    }
+
+    public void ResetParticles()
+    {
+        //Get Kart Body
+        kartBody = transform.FindChild("Kart Body");
+
+        //Get Particles
+        startCloudParticles = new ParticleSystem[] { particleSystems["L_StartClouds"], particleSystems["R_StartClouds"] };
+        flameParticles = new ParticleSystem[] { particleSystems["L_Flame"], particleSystems["R_Flame"] };
+        driftParticles = new ParticleSystem[] { particleSystems["L_Sparks"], particleSystems["R_Sparks"] };
+        driftCloudParticles = new ParticleSystem[] { particleSystems["L_DriftClouds"], particleSystems["R_DriftClouds"] };
+        trickParticles = particleSystems["Trick"];
     }
 
     // Update is called once per 60th of a second
@@ -311,11 +330,11 @@ public class kartScript : MonoBehaviour
                 else
                     wheelSpinLerp = Mathf.Lerp(wheelSpinLerp, 0f, Time.deltaTime * 4f);
 
-                    foreach (ParticleSystem ps in startCloudParticles)
-                    {
-                        ParticleSystem.EmissionModule emission = ps.emission;
-                        emission.rateOverTimeMultiplier = wheelSpinLerp;
-                    }
+                foreach (ParticleSystem ps in startCloudParticles)
+                {
+                    ParticleSystem.EmissionModule emission = ps.emission;
+                    emission.rateOverTimeMultiplier = wheelSpinLerp;
+                }
 
                 //Spin wheels forward during start
                 increaseAmount = Time.deltaTime * wheelSpinLerp;
@@ -381,8 +400,35 @@ public class kartScript : MonoBehaviour
                     GetComponent<AudioSource>().Play();
                     GetComponent<AudioSource>().loop = true;
                 }
-                audioSourceInfo.idealVolume = Mathf.Lerp(0.05f, 0.2f, ExpectedSpeed / maxSpeed);
-                GetComponent<AudioSource>().pitch = Mathf.Lerp(0.75f, 1.5f, ExpectedSpeed / maxSpeed);
+
+                if (raceStarted)
+                {
+                    float percent = ExpectedSpeed / maxSpeed;
+                    float normalVolume = Mathf.Lerp(0.1f, 0.4f, percent), normalPitch = Mathf.Lerp(0.75f, 1.5f, percent);
+                    float quieterVolume = 0.25f;
+
+                    //Make quiet timer increase 
+                    if (percent > 0.75f)
+                        quietTimer += Time.deltaTime;
+                    else
+                        quietTimer = 0f;
+
+
+                    float currentVolume = normalVolume;
+                    //After five seconds of max throttle make the car quieter
+                    if (quietTimer > 5f)
+                        currentVolume = quieterVolume;
+
+                    audioSourceInfo.idealVolume = Mathf.Lerp(audioSourceInfo.idealVolume, currentVolume, Time.deltaTime * 3f);
+                    GetComponent<AudioSource>().pitch = normalPitch;
+
+                }
+                else
+                {
+                    float percent = wheelSpinLerp / 15f;
+                    audioSourceInfo.idealVolume = Mathf.Lerp(0.1f, 0.4f, percent);
+                    GetComponent<AudioSource>().pitch = Mathf.Lerp(0.75f, 1.5f, percent);
+                }
             }
 
             //Calculate Start Boost
@@ -436,20 +482,17 @@ public class kartScript : MonoBehaviour
             }
 
             //Boost Particles
-            if (isBoosting == BoostMode.Not)
+            foreach (ParticleSystem flame in flameParticles)
             {
-                for (int i = 0; i < flameParticles.Count; i++)
-                {
-                    if (flameParticles[i].isPlaying)
-                        flameParticles[i].Stop();
+                if (isBoosting == BoostMode.Not)
+                { 
+                    if (flame.isPlaying)
+                        flame.Stop();
                 }
-            }
-            else
-            {
-                for (int i = 0; i < flameParticles.Count; i++)
+                else
                 {
-                    if (!flameParticles[i].isPlaying)
-                        flameParticles[i].Play();
+                    if (!flame.isPlaying)
+                        flame.Play();
                 }
             }
         }
@@ -575,7 +618,7 @@ public class kartScript : MonoBehaviour
 
     void ApplyDrift(float lastTime)
     {
-        Transform KartBody = transform.FindChild("Kart Body");
+        
 
         if (drift && ExpectedSpeed > maxSpeed * 0.75f && !isFalling && (!offRoad || (offRoad && isBoosting == BoostMode.Boost)))
         {
@@ -598,7 +641,7 @@ public class kartScript : MonoBehaviour
         {
             driftTime += lastTime * Mathf.Abs(driftSteer + (steer / 2f));
             if (!spinning)
-                KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation, Quaternion.Euler(0, kartbodyRot * driftSteer, 0), lastTime * 2);
+                kartBody.localRotation = Quaternion.Slerp(kartBody.localRotation, Quaternion.Euler(0, kartbodyRot * driftSteer, 0), lastTime * 2);
 
             for (int f = 0; f < 2; f++)
             {
@@ -685,7 +728,7 @@ public class kartScript : MonoBehaviour
                 driftTime = 0;
 
             if (!spinning)
-                KartBody.localRotation = Quaternion.Slerp(KartBody.localRotation, Quaternion.Euler(0, 0, 0), lastTime * 2);
+                kartBody.localRotation = Quaternion.Slerp(kartBody.localRotation, Quaternion.Euler(0, 0, 0), lastTime * 2);
 
             if (throttle > 0)
             {
@@ -768,7 +811,7 @@ public class kartScript : MonoBehaviour
 
         while (Time.time - startTime < time)
         {
-            transform.FindChild("Kart Body").Rotate((dir * 360f * Time.deltaTime) / time);
+            kartBody.Rotate((dir * 360f * Time.deltaTime) / time);
             yield return null;
         }
 
@@ -827,7 +870,7 @@ public class kartScript : MonoBehaviour
             locked = true;
 
             //Play Sound
-            Animator ani = transform.FindChild("Kart Body").FindChild("Character").GetComponent<Animator>();
+            Animator ani = kartBody.FindChild("Character").GetComponent<Animator>();
             ani.SetBool("Hit", true);
 
             yield return StartCoroutine("SpinKartBody", Vector3.up);

@@ -166,16 +166,12 @@ public class KartNetworker : NetworkBehaviour
     {
         //Spawn a new version of the Kart
         Transform newKart = FindObjectOfType<KartMaker>().SpawnKart(KartType.Local, transform.position, transform.rotation, currentChar, currentHat, currentKart, currentWheel);
+
         //Replace the values in the Original Kart Object to point to the new parts
+        GetComponent<kartScript>().particleSystems = newKart.GetComponent<kartScript>().particleSystems;
+        GetComponent<kartScript>().ResetParticles();
+
         GetComponent<DeathCatch>().deathParticles = newKart.GetComponent<DeathCatch>().deathParticles;
-
-        GetComponent<kartScript>().wheelColliders = newKart.GetComponent<kartScript>().wheelColliders;
-        GetComponent<kartScript>().wheelMeshes = newKart.GetComponent<kartScript>().wheelMeshes;
-        GetComponent<kartScript>().flameParticles = newKart.GetComponent<kartScript>().flameParticles;
-        GetComponent<kartScript>().driftParticles = newKart.GetComponent<kartScript>().driftParticles;
-        GetComponent<kartScript>().trickParticles = newKart.GetComponent<kartScript>().trickParticles;
-        GetComponent<kartScript>().engineSound = newKart.GetComponent<kartScript>().engineSound;
-
         GetComponent<kartAnimator>().ani = newKart.GetComponent<kartAnimator>().ani;
 
         //Replace the existing model, colliders and canvas (Move into place of existing, then delete original)

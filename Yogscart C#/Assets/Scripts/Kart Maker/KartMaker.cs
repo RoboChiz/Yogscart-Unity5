@@ -19,31 +19,31 @@ public class KartMaker : MonoBehaviour
     {
         //Spawn Kart and Wheels
         Transform kartBody = Instantiate(gd.karts[k].model, Vector3.zero, Quaternion.identity);
+        Transform actualKartBody = kartBody.FindChild("Kart Body"); ;
+
         Kart_Skeleton kartSkel = kartBody.GetComponent<Kart_Skeleton>();
 
         Transform frontlWheel, frontrWheel, backlWheel, backrWheel;
 
         frontlWheel = Instantiate(gd.wheels[w].model, kartSkel.FrontLPosition, Quaternion.Euler(0, 0, 0));
-        frontlWheel.parent = kartBody.FindChild("Kart Body");
+        frontlWheel.parent = actualKartBody;
         frontlWheel.name = "FrontL Wheel";
 
         frontrWheel = Instantiate(gd.wheels[w].model, kartSkel.FrontRPosition, Quaternion.Euler(0, 180, 0));
-        frontrWheel.parent = kartBody.FindChild("Kart Body");
+        frontrWheel.parent = actualKartBody;
         frontrWheel.name = "FrontR Wheel";
 
         backlWheel = Instantiate(gd.wheels[w].model, kartSkel.BackLPosition, Quaternion.Euler(0, 0, 0));
-        backlWheel.parent = kartBody.FindChild("Kart Body");
+        backlWheel.parent = actualKartBody;
         backlWheel.name = "BackL Wheel";
 
         backrWheel = Instantiate(gd.wheels[w].model, kartSkel.BackRPosition, Quaternion.Euler(0, 180, 0));
-        backrWheel.parent = kartBody.FindChild("Kart Body");
+        backrWheel.parent = actualKartBody;
         backrWheel.name = "BackR Wheel";
 
         //Spawn Character and Hat
         Transform characterMesh = Instantiate(gd.characters[c].model, Vector3.zero, Quaternion.identity);
         characterMesh.name = "Character";
-
-        Transform actualKartBody = kartBody.FindChild("Kart Body");
 
         Character_Skeleton charSkel = characterMesh.GetComponent<Character_Skeleton>();
         characterMesh.position = kartSkel.SeatPosition - charSkel.SeatPosition;
@@ -69,7 +69,7 @@ public class KartMaker : MonoBehaviour
             kartBody.gameObject.AddComponent<NetworkIdentity>();
         }
 
-        if(type != KartType.Display)
+        if (type != KartType.Display)
         {
             GameObject kb = kartBody.gameObject;
 
@@ -94,7 +94,7 @@ public class KartMaker : MonoBehaviour
             ausI.audioType = AudioSourceInfo.AudioType.SFX;
 
             //Set up Kart Body Sounds
-            AudioSource kbas = kartBody.FindChild("Kart Body").gameObject.AddComponent<AudioSource>();
+            AudioSource kbas = actualKartBody.gameObject.AddComponent<AudioSource>();
             kbas.spatialBlend = 1;
             kbas.minDistance = 0f;
             kbas.maxDistance = 100f;
@@ -105,12 +105,6 @@ public class KartMaker : MonoBehaviour
             ausI = kbas.gameObject.AddComponent<AudioSourceInfo>();
             ausI.idealVolume = 1f;
             ausI.audioType = AudioSourceInfo.AudioType.SFX;
-
-            //Add Death Catch
-            kb.AddComponent<DeathCatch>();
-            kb.GetComponent<DeathCatch>().deathParticles = kartBody.FindChild("Kart Body").FindChild("Particles").FindChild("Death Particles").GetComponent<ParticleSystem>();
-
-            kb.AddComponent<CowTipping>();
 
             //Setup Wheel Colliders
             Transform frontlWheelCollider = (Transform)Instantiate(gd.wheels[w].model, kartSkel.FrontLPosition, Quaternion.Euler(0, 0, 0));
@@ -151,26 +145,41 @@ public class KartMaker : MonoBehaviour
             ks.wheelMeshes.Add(backlWheel);
             ks.wheelMeshes.Add(backrWheel);
 
-            //Sort Particles Out
-            Transform kp = kartBody.FindChild("Kart Body").FindChild("Particles");
+            //Spawn Particles
+            Transform particlesPack = Instantiate(Resources.Load<Transform>("Prefabs/Kart Maker/Bodies/Particles"), actualKartBody.position, actualKartBody.rotation, actualKartBody);
 
-            ks.flameParticles = new List<ParticleSystem>();
-            ks.flameParticles.Add(kp.FindChild("L_Flame").GetComponent<ParticleSystem>());
-            ks.flameParticles.Add(kp.FindChild("R_Flame").GetComponent<ParticleSystem>());
+            ks.particleSystems = new Dictionary<string, ParticleSystem>();
 
-            ks.driftParticles = new List<ParticleSystem>();
-            ks.driftParticles.Add(kp.FindChild("L_Sparks").GetComponent<ParticleSystem>());
-            ks.driftParticles.Add(kp.FindChild("R_Sparks").GetComponent<ParticleSystem>());
+            string[] particleNames = new string[] { "Death Particles", "L_Flame", "R_Flame", "L_Sparks", "R_Sparks", "Trick", "L_DriftClouds", "R_DriftClouds", "L_StartClouds", "R_StartClouds" };
+            int count = 0;
+            foreach (string particle in particleNames)
+            {
+                //Add Particle System to dictioanry of kart's particles
+                Transform currentparticle = particlesPack.FindChild(particle);
+                ks.particleSystems.Add(particle, currentparticle.GetComponent<ParticleSystem>());
 
-            ks.trickParticles = kp.FindChild("Trick").GetComponent<ParticleSystem>();
+                switch (count)
+                {
+                    case 0: currentparticle.position = kartSkel.deathParticlesPos; break;
+                    case 1: currentparticle.position = kartSkel.rFlame; break;
+                    case 2: currentparticle.position = kartSkel.lFlame; break;
+                    case 3: currentparticle.position = kartSkel.rSparks; break;
+                    case 4: currentparticle.position = kartSkel.lSparks; break;
+                    case 5: currentparticle.position = kartSkel.trick; break;
+                    case 6: currentparticle.position = kartSkel.lDriftClouds; break;
+                    case 7: currentparticle.position = kartSkel.rDriftClouds; break;
+                    case 8: currentparticle.position = kartSkel.lStartClouds; break;
+                    case 9: currentparticle.position = kartSkel.rStartClouds; break;
+                }
 
-            ks.driftCloudParticles = new List<ParticleSystem>();
-            ks.driftCloudParticles.Add(kp.FindChild("L_DriftClouds").GetComponent<ParticleSystem>());
-            ks.driftCloudParticles.Add(kp.FindChild("R_DriftClouds").GetComponent<ParticleSystem>());
+                count++;
+            }
 
-            ks.startCloudParticles = new List<ParticleSystem>();
-            ks.startCloudParticles.Add(kp.FindChild("L_StartClouds").GetComponent<ParticleSystem>());
-            ks.startCloudParticles.Add(kp.FindChild("R_StartClouds").GetComponent<ParticleSystem>());
+            //Add Death Catch
+            kb.AddComponent<DeathCatch>();
+            kb.GetComponent<DeathCatch>().deathParticles = ks.particleSystems["Death Particles"];
+
+            kb.AddComponent<CowTipping>();
 
             //Add Other Kart Scripts
             kb.AddComponent<PositionFinding>();
@@ -207,8 +216,9 @@ public class KartMaker : MonoBehaviour
     void SetUpWheelCollider(Transform collider)
     {
         WheelCollider wheelCollider = collider.gameObject.AddComponent<WheelCollider>();
+        WheelCollider masterWheelCollider = Resources.Load<Transform>("Prefabs/Kart Maker/Wheels/Wheel Collider Base").GetComponent<WheelCollider>();
 
-        wheelCollider.mass = 20f;
+        wheelCollider.mass = masterWheelCollider.mass;
 
         if (collider.GetComponent<Wheel_Skeleton>() != null)
         {
@@ -219,30 +229,30 @@ public class KartMaker : MonoBehaviour
             wheelCollider.radius = 0.2f;
 
 
-        wheelCollider.wheelDampingRate = 0.25f;
-        wheelCollider.suspensionDistance = 0.3f;
-        wheelCollider.forceAppPointDistance = 0f;
+        wheelCollider.wheelDampingRate = masterWheelCollider.wheelDampingRate;
+        wheelCollider.suspensionDistance = masterWheelCollider.suspensionDistance;
+        wheelCollider.forceAppPointDistance = masterWheelCollider.forceAppPointDistance;
 
         JointSpring suspensionSpring = new JointSpring();
-        suspensionSpring.spring = 35000;
-        suspensionSpring.damper = 4500;
-        suspensionSpring.targetPosition = 0.9f;
+        suspensionSpring.spring = masterWheelCollider.suspensionSpring.spring;
+        suspensionSpring.damper = masterWheelCollider.suspensionSpring.damper;
+        suspensionSpring.targetPosition = masterWheelCollider.suspensionSpring.targetPosition;
         wheelCollider.suspensionSpring = suspensionSpring;
 
         WheelFrictionCurve forwardFriction = new WheelFrictionCurve();
-        forwardFriction.extremumSlip = 0.4f;
-        forwardFriction.extremumValue = 1f;
-        forwardFriction.asymptoteSlip = 0.8f;
-        forwardFriction.asymptoteValue = 0.5f;
-        forwardFriction.stiffness = 1;
+        forwardFriction.extremumSlip = masterWheelCollider.forwardFriction.extremumSlip;
+        forwardFriction.extremumValue = masterWheelCollider.forwardFriction.extremumValue;
+        forwardFriction.asymptoteSlip = masterWheelCollider.forwardFriction.asymptoteSlip;
+        forwardFriction.asymptoteValue = masterWheelCollider.forwardFriction.asymptoteValue;
+        forwardFriction.stiffness = masterWheelCollider.forwardFriction.stiffness;
         wheelCollider.forwardFriction = forwardFriction;
 
         WheelFrictionCurve sidewaysFriction = new WheelFrictionCurve();
-        sidewaysFriction.extremumSlip = 0.2f;
-        sidewaysFriction.extremumValue = 1f;
-        sidewaysFriction.asymptoteSlip = 0.5f;
-        sidewaysFriction.asymptoteValue = 0.75f;
-        sidewaysFriction.stiffness = 2;
+        sidewaysFriction.extremumSlip = masterWheelCollider.sidewaysFriction.extremumSlip; ;
+        sidewaysFriction.extremumValue = masterWheelCollider.sidewaysFriction.extremumValue; ;
+        sidewaysFriction.asymptoteSlip = masterWheelCollider.sidewaysFriction.asymptoteSlip; ;
+        sidewaysFriction.asymptoteValue = masterWheelCollider.sidewaysFriction.asymptoteValue;
+        sidewaysFriction.stiffness = masterWheelCollider.sidewaysFriction.stiffness;
         wheelCollider.sidewaysFriction = sidewaysFriction;
 
         Destroy(collider.GetComponent<MeshFilter>());

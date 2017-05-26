@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+## 26/05/2017
+* Add pitch and volume change on engine during start boost
+* Made engine go quieter after 5 seconds of max throttle
+* Adjusted kartScript to store all it's particle systems as a dictionary
+* Made Kart Maker setup particle systems from a predefined particle pack
+* Adjusted KartSkeleton to include particle position
+* Made Kart Maker create wheel colliders from a predefined wheel collider
+
 ## 23/05/2017
 * Hid starting boost clouds for AI Racers
 * Added an Incoming Item Indicator
