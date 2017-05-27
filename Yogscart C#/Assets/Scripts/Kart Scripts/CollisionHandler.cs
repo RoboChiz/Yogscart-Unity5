@@ -80,13 +80,21 @@ public class CollisionHandler : MonoBehaviour
         float leftSpace = ((fastest.transform.position - fastest.transform.right) - slowest.transform.position).magnitude;
         float rightSpace = ((fastest.transform.position + fastest.transform.right) - slowest.transform.position).magnitude;
 
-        bool pushLeft = (leftSpace < rightSpace);
+        if(leftSpace < rightSpace)
+        {
+            slowest.GetComponent<CowTipping>().pushState = CowTipping.PushState.LeftNormal;
+            fastest.GetComponent<CowTipping>().pushState = CowTipping.PushState.RightHalf;
+        }
+        else
+        {
+            slowest.GetComponent<CowTipping>().pushState = CowTipping.PushState.RightNormal;
+            fastest.GetComponent<CowTipping>().pushState = CowTipping.PushState.LeftHalf;
+        }
 
-        slowest.GetComponent<CowTipping>().PushLeft = pushLeft;
-        slowest.GetComponent<CowTipping>().TipCow();
+        slowest.GetComponent<CowTipping>().TipCow(); 
+        fastest.GetComponent<CowTipping>().TipCow();
 
         fastest.GetComponentInChildren<DrivingIK>().ForceLook(slowest.transform);
-
     } 
 
     private void DoKartGodCollision(kartScript kart, KartCollider god)
@@ -97,7 +105,11 @@ public class CollisionHandler : MonoBehaviour
 
         bool pushLeft = (leftSpace < rightSpace);
 
-        kart.GetComponent<CowTipping>().PushLeft = pushLeft;
+        if(pushLeft)
+            kart.GetComponent<CowTipping>().pushState = CowTipping.PushState.LeftNormal;
+        else
+            kart.GetComponent<CowTipping>().pushState = CowTipping.PushState.RightNormal;
+
         kart.GetComponent<CowTipping>().TipCow();
         kart.GetComponent<kartScript>().SpinOut();
     }

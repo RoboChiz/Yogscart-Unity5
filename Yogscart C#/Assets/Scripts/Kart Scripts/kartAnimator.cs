@@ -24,9 +24,9 @@ public class kartAnimator : MonoBehaviour {
         if (interestManager.CanAddInterestNow())
         {
             if (!ks.spinningOut)
-                interestManager.AddInterest(transform, InterestType.Kart);
+                interestManager.AddInterest(transform, InterestType.Kart, Vector3.up * 2f);
             else
-                interestManager.AddInterest(transform, InterestType.Attack);
+                interestManager.AddInterest(transform, InterestType.Attack, Vector3.up * 2f);
         }
     }
 }

@@ -2,6 +2,16 @@
 
 ## Changelog : Started 04/08/2016
 
+## 27/05/2017
+* Adjusted Kart Collisions so both karts move during collision
+* Made Characters look at other characters heads (Rather than the ground beneath them)
+* Adjusted kartScript to use a modifer rather than a direct speed change
+* Created Debug Kart Spawner to create a kart for testing
+* Adjusted wheel friction to stop sliding
+* Reduced Physics Timestep and increased gravity to imrprove driving
+* Added Kart Ground hugging to avoid kart flying upwards on gradients
+* Stopped Kart from sliding up walls (Slide effect of last fix)
+
 ## 26/05/2017
 * Add pitch and volume change on engine during start boost
 * Made engine go quieter after 5 seconds of max throttle

@@ -35,9 +35,9 @@ public class InterestManager : MonoBehaviour
         return lastUpdate == 0;
     }
 
-    public void AddInterest(Transform transform, InterestType type)
+    public void AddInterest(Transform transform, InterestType type, Vector3 offset)
     {
-        tree.Insert(new TransformPointOfInterest(transform, type));
+        tree.Insert(new TransformPointOfInterest(transform, type, offset));
     }
 
     //Tell Scripts that are adding Points of Interest to add them now

@@ -24,27 +24,20 @@ public class kartScript : MonoBehaviour
         }
         private set
         {
-            isFallingValue = value;
-            if (value)
-            {
-                foreach (WheelCollider collider in wheelColliders)
-                {
-                    collider.suspensionDistance = 0.1f;
-                }
-            }
-            else
-            {
-                foreach (WheelCollider collider in wheelColliders)
-                {
-                    collider.suspensionDistance = 0.35f;
-                }
-            }
+            isFallingValue = value;           
         }
     }
 
     //Kart Stats
-    public float maxSpeed = 20f;
-    private float lastMaxSpeed, acceleration = 10f, brakeTime = 0.5f, turnSpeed = 2f;
+    public float modifier = 1f;
+    const float  maxSpeedVal = 22f, accelerationVal = 10f, brakeTimeVal = 0.5f, turnSpeedVal = 2f;
+
+    private float lastMaxSpeed, maxSpeed = 22f, acceleration = 10f, brakeTime = 0.5f, turnSpeed = 2f;
+
+    public float MaxSpeed
+    {
+        get { return maxSpeed; }
+    }
 
     private bool offRoad;
     public int lapisAmount;
@@ -172,6 +165,12 @@ public class kartScript : MonoBehaviour
     {
         float lastTime = Time.deltaTime;
 
+        maxSpeed = maxSpeedVal * modifier;
+        acceleration = accelerationVal * modifier;
+        brakeTime = brakeTimeVal * modifier;
+        //turnSpeed = turnSpeedVal * modifier;
+
+
         if (Time.timeScale != 0)
         {
 
@@ -272,13 +271,13 @@ public class kartScript : MonoBehaviour
             Debug.DrawRay(transform.position, -transform.up * 3f);
             if (isFalling && !Physics.Raycast(transform.position, -transform.up, 3f))
             {
-                GetComponent<Rigidbody>().freezeRotation = true;
+                kartRigidbody.freezeRotation = true;
                 Quaternion finalRot = Quaternion.LookRotation(Vector3.Scale(transform.forward, new Vector3(1f, 0f, 1f)), Vector3.up);
                 transform.rotation = Quaternion.Lerp(transform.rotation, finalRot, Time.deltaTime * 8f);
             }
             else
             {
-                GetComponent<Rigidbody>().freezeRotation = false;
+                kartRigidbody.freezeRotation = false;
             }
 
             //Stop Kart Sliding
@@ -404,8 +403,8 @@ public class kartScript : MonoBehaviour
                 if (raceStarted)
                 {
                     float percent = ExpectedSpeed / maxSpeed;
-                    float normalVolume = Mathf.Lerp(0.1f, 0.4f, percent), normalPitch = Mathf.Lerp(0.75f, 1.5f, percent);
-                    float quieterVolume = 0.25f;
+                    float normalVolume = Mathf.Lerp(0.1f, 0.25f, percent), normalPitch = Mathf.Lerp(0.75f, 1.5f, percent);
+                    float quieterVolume = 0.15f;
 
                     //Make quiet timer increase 
                     if (percent > 0.75f)
@@ -493,6 +492,17 @@ public class kartScript : MonoBehaviour
                 {
                     if (!flame.isPlaying)
                         flame.Play();
+                }
+            }
+
+            //Stop Kart from flying off the ground
+            RaycastHit groundHit;
+            if(Physics.Raycast(transform.position,Vector3.down, out groundHit, 1f))
+            {
+                Vector3 toGround = transform.position - groundHit.point;          
+                if(kartRigidbody.velocity.y > 0.75f && toGround.magnitude > 0.5f)
+                {
+                    kartRigidbody.AddForce(new Vector3(0f, -(kartRigidbody.velocity.y * 0.6f), 0f), ForceMode.VelocityChange);
                 }
             }
         }

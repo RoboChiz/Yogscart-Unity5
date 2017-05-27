@@ -12,12 +12,16 @@ public abstract class PointOfInterest
 public class TransformPointOfInterest : PointOfInterest
 {
     public Transform target { get; protected set; }
+    public Vector3 offset;
 
-    public TransformPointOfInterest(Transform _target, InterestType type)
+    public TransformPointOfInterest(Transform _target, InterestType type, Vector3 _offset)
     {
         interestType = type;
         target = _target;
+        offset = _offset;
     }
+
+    public TransformPointOfInterest(Transform _target, InterestType type) : this(_target, type, Vector3.zero) { }
 
     public override Vector3 GetLocation()
     {

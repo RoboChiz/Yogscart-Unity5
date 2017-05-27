@@ -159,18 +159,7 @@ abstract public class GameMode : MonoBehaviour
             racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
             //Set speeds of Kart depending on Difficulty
-            switch (CurrentGameData.difficulty)
-            {
-                case 0:
-                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 22;
-                    break;
-                case 1:
-                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 25;
-                    break;
-                default:
-                    racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 30;
-                    break;
-            }
+            SetDifficulty(racers[i].ingameObj.GetComponent<kartScript>());
 
             if (racers[i].Human != -1)
             {
@@ -196,6 +185,17 @@ abstract public class GameMode : MonoBehaviour
         }
     }
 
+    public void SetDifficulty(kartScript kartScript)
+    {
+        //Set speeds of Kart depending on Difficulty
+        switch (CurrentGameData.difficulty)
+        {
+            case 0: kartScript.modifier = 1f; break;
+            case 1: kartScript.modifier = 1.15f; break;
+            default: kartScript.modifier = 1.4f; break;
+        }
+    }
+
     //Spawns the given kart in Racers in the Time Trial layout
     protected void SpawnLoneKart(Vector3 spawnPosition, Quaternion spawnRotation, int i)
     {
@@ -208,18 +208,7 @@ abstract public class GameMode : MonoBehaviour
         racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
         //Set speeds of Kart depending on Difficulty
-        switch (CurrentGameData.difficulty)
-        {
-            case 0:
-                racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 19;
-                break;
-            case 1:
-                racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 21;
-                break;
-            default:
-                racers[i].ingameObj.GetComponent<kartScript>().maxSpeed = 23;
-                break;
-        }
+        SetDifficulty(racers[i].ingameObj.GetComponent<kartScript>());
 
         if (racers[i].Human != -1)
         {

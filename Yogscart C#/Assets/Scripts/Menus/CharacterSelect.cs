@@ -303,15 +303,13 @@ public class CharacterSelect : MonoBehaviour
 
                 //Show Rotate Icons
                 Rect current = rotateRects[s];
-                if (current != null)
-                {
-                    float newWidth = current.width / 4f;
-                    float ratio = newWidth / rotateKey.width;
-                    float newHeight = rotateKey.height * ratio;
 
-                    GUI.DrawTexture(new Rect(current.x, current.y + current.height - newHeight, current.width, newHeight),
-                        (InputManager.controllers[s].controlLayout.Type == ControllerType.Keyboard ? rotateKey : rotateXbox), ScaleMode.ScaleToFit);
-                }
+                float newWidth = current.width / 4f;
+                float ratio = newWidth / rotateKey.width;
+                float newHeight = rotateKey.height * ratio;
+
+                GUI.DrawTexture(new Rect(current.x, current.y + current.height - newHeight, current.width, newHeight),
+                    (InputManager.controllers[s].controlLayout.Type == ControllerType.Keyboard ? rotateKey : rotateXbox), ScaleMode.ScaleToFit);
 
                 if(!affectAllGUIwithAlpha)
                     GUIHelper.SetGUIAlpha(menuAlpha);

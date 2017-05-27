@@ -5,7 +5,9 @@ using UnityEngine;
 public class CowTipping : MonoBehaviour
 {
 
-    public bool PushLeft = false;
+    public enum PushState { None, LeftNormal, LeftHalf, RightNormal, RightHalf};
+
+    public PushState pushState;
     private bool waitPush = false, waitLand;
 
     private float pushSpeed = 10, pushTime = 0.2f, currentPushTime, desiredY, offset = 0.5f;
@@ -27,8 +29,14 @@ public class CowTipping : MonoBehaviour
 
         if(currentPushTime > 0)
         {
-            
-            float finalPush = (PushLeft) ? -pushSpeed : pushSpeed;        
+            float finalPush = 0f;
+            switch(pushState)
+            {
+                case PushState.LeftNormal: finalPush = -pushSpeed; break;
+                case PushState.RightNormal: finalPush = pushSpeed; break;
+                case PushState.LeftHalf: finalPush = -pushSpeed/2f; break;
+                case PushState.RightHalf: finalPush = pushSpeed/2f; break;
+            }      
 
             rigidbody.AddRelativeForce(finalPush - relativeVelocity.x, 0, 0, ForceMode.VelocityChange);
 

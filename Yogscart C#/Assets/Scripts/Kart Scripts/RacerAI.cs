@@ -120,7 +120,7 @@ public class RacerAI : MonoBehaviour
         }
 
         //Reverse if Kart hits somethings
-        if (ks.ExpectedSpeed > ks.maxSpeed/2f && Mathf.Abs(ks.ActualSpeed) < 1) //Presume something is blocking the kart.
+        if (ks.ExpectedSpeed > ks.MaxSpeed / 2f && Mathf.Abs(ks.ActualSpeed) < 1) //Presume something is blocking the kart.
             reversing = true;
 
         if (reversing)

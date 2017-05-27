@@ -101,6 +101,7 @@
     <Compile Include="Assets\Scripts\Helpers\MathHelper.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\Character_Skeleton.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\KartMaker.cs" />
+    <Compile Include="Assets\Scripts\Kart Maker\KartSpawner.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\Kart_Skeleton.cs" />
     <Compile Include="Assets\Scripts\Kart Maker\Wheel_Skeleton.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\AI.cs" />
