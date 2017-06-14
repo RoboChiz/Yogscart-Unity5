@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+## 14/06/2017
+* Started Implementing Track Layout Creator
+
+## 09/06/2017
+* Improved AI
+* Improved Drift Detection for AI
+* Improved AI Drifting Ability
+
 ## 27/05/2017
 * Adjusted Kart Collisions so both karts move during collision
 * Made Characters look at other characters heads (Rather than the ground beneath them)
@@ -109,7 +117,7 @@
 ## 20/01/2017
 * Added Eggs back into the game
 
-##17/01/2017
+## 17/01/2017
 * Fixed Controller not being able to adjust volume
 * Added Space Icon to Input Selection
 * Fixed bug where ai item boxes were visible

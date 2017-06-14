@@ -190,9 +190,9 @@ abstract public class GameMode : MonoBehaviour
         //Set speeds of Kart depending on Difficulty
         switch (CurrentGameData.difficulty)
         {
-            case 0: kartScript.modifier = 1f; break;
-            case 1: kartScript.modifier = 1.15f; break;
-            default: kartScript.modifier = 1.4f; break;
+            case 0: kartScript.modifier = 0.9f; break;
+            case 1: kartScript.modifier = 1f; break;
+            default: kartScript.modifier = 1.1f; break;
         }
     }
 

@@ -5,11 +5,13 @@ using UnityEngine;
 public class KartSpawner : MonoBehaviour
 {
     public float modifer;
+    public bool ai;
+    public AI.AIStupidity stupidty;
 
-	// Use this for initialization
-	IEnumerator Start ()
+    // Use this for initialization
+    IEnumerator Start ()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.2f);
 
         KartMaker km = FindObjectOfType<KartMaker>();
         Transform kart = km.SpawnKart(KartType.Local, transform.position, transform.rotation * Quaternion.Euler(0, -90, 0), 0,0,0,0);
@@ -34,6 +36,14 @@ public class KartSpawner : MonoBehaviour
 
         inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = kart;
         inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = kart;
+
+        if(ai)
+        {
+            ki.backCamera.enabled = false;
+            Destroy(kart.GetComponent<kartInput>());
+            AI ai = kart.gameObject.AddComponent<AI>();
+            ai.intelligence = stupidty;
+        }
 
     }
 }

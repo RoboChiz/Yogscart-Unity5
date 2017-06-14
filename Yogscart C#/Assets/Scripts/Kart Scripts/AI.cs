@@ -15,16 +15,16 @@ public class AI : MonoBehaviour
 
     private TrackData td;
 
-    private int currentNode = 0, nextNode = 1;
+    private int currentNode = 0, nextNode = 1, nextNextNode = 2;
     private const float maxXDistance = 1f, minAngle = 3f;
 
     public enum StartType { WillBoost, WontBoost, WillSpin };
     public StartType myStartType;
 
-    public enum DriveState { Centring, Turning, DriftCentring, Nothing};
+    public enum DriveState { Centring, Turning, DriftCentring, Fixing, Nothing };
     public DriveState driveState = DriveState.Centring;
 
-    public enum DriftThought { None, Gonna, NotGonna, Drifting};
+    public enum DriftThought { None, Gonna, NotGonna, Drifting };
     public DriftThought driftThought;
 
     public bool canDrive = true;
@@ -73,26 +73,25 @@ public class AI : MonoBehaviour
 
             if (kartScript.startBoostVal <= 1)
                 canDrive = true;
-
         }
 
         if (canDrive)
         {
+            //If kart has gone past a node update currentNode
             if (percent > 1)
-            {
                 currentNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-            }
             if (percent < 0)
-            {
                 currentNode = MathHelper.NumClamp(currentNode - 1, 0, td.positionPoints.Count);
-                nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
-            }
+
+            nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
+            nextNextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
 
             Vector3 currentNodePos = td.positionPoints[currentNode].position;
             Vector3 nextNodePos = td.positionPoints[nextNode].position;
+            Vector3 nextNextNodePos = td.positionPoints[nextNextNode].position;
 
-            Vector3 finalDir = nextNodePos - currentNodePos;           
+            Vector3 finalDir = nextNodePos - currentNodePos;
+            Vector3 nextDir = nextNextNodePos - nextNodePos;
 
             Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(finalDir), Vector3.one).inverse;
             localPos = matrix * (transform.position - currentNodePos);
@@ -102,7 +101,9 @@ public class AI : MonoBehaviour
             myForward.y = 0f;
             myForward.Normalize();
 
+            //Angle between kart direction and final direction
             float finalDirAngle = -MathHelper.Angle(myForward, finalDir);
+            float nextFinalDirAngle = -MathHelper.Angle(myForward, nextDir);
 
             //Get Current Instruction
             int currentInstruction = -1;
@@ -131,7 +132,7 @@ public class AI : MonoBehaviour
                     doNothing = false;
 
                     //Slow down if you're not gonna make it
-                    if((!ks.drift || driftThought == DriftThought.None || driftThought == DriftThought.NotGonna) && ((ks.steer < 0 && localPos.x > maxXDistance) || (ks.steer > 0 && localPos.x < -maxXDistance)))
+                    if ((!ks.drift || driftThought == DriftThought.None || driftThought == DriftThought.NotGonna) && ((ks.steer < 0 && localPos.x > maxXDistance) || (ks.steer > 0 && localPos.x < -maxXDistance)))
                     {
                         if (intelligence >= AIStupidity.Great)
                         {
@@ -147,20 +148,24 @@ public class AI : MonoBehaviour
                     }
                 }
 
-                //Drifting 2.0
+                //Drifting 2.0            
                 if (instruction.drift != DriftType.NoDrift && driftThought == DriftThought.Gonna && MathHelper.Sign(ks.steer) == MathHelper.Sign(instruction.turnAmount))
                 {
                     driftThought = DriftThought.Drifting;
                     ks.drift = true;
                 }
-               
+
+                //If we're drifting but in the wrong direction
+                if (driftThought == DriftThought.Drifting && MathHelper.Sign(ks.driftSteer) != MathHelper.Sign(instruction.turnAmount))
+                    driftThought = DriftThought.None;
+
                 //Do Drift Centring
-                if (ks.drift)
+                if (ks.drift && ks.driftSteer != 0)
                 {
                     driveState = DriveState.DriftCentring;
                     doNothing = false;
 
-                    float minX = 2, maxX = 4;
+                    float maxDistance = 5f;
 
                     //Get Target X Pos we should be drifting at
                     float centringOffset = 0f; ;
@@ -170,43 +175,23 @@ public class AI : MonoBehaviour
                         case DriftType.Wide: centringOffset -= instruction.turnAmount * 2f; break;
                     }
 
-                    minX += centringOffset;
-                    maxX += centringOffset;
+                    //Stick to the centring Offset
+                    if (localPos.x < centringOffset) //If we are on the left side of our goal, steer right
+                        ks.steer = 1;
+                    else if (localPos.x > centringOffset) //If we are on the right side of our goal, steer left
+                        ks.steer = -1;
 
-                    //We're drifting right
-                    if (ks.driftSteer > 0)
-                    {
-                        //Stay on the left side of the path
-                        if (localPos.x > -minX && finalDirAngle > -minAngle * 1.5f)
-                            ks.steer = -1;
-                        else if (localPos.x < -maxX && finalDirAngle < minAngle * 1.5f)
-                            ks.steer = 1;
-                        else
-                            ks.steer = 0;
+                    //Cancel Drift if we go too far from the goal
+                    if (Mathf.Abs(centringOffset - localPos.x) > maxDistance)
+                        driftThought = DriftThought.None;
 
-                        //Give up if go over the line
-                        if(localPos.x > minX)
-                        {
-                            driftThought = DriftThought.None;
-                        }
-                    }
-                    //We're drifting left
-                    if (ks.driftSteer < 0)
-                    {                     
-                        //Stay on the right side of the path
-                        if (localPos.x < minX && finalDirAngle < minAngle * 1.5f)
-                            ks.steer = 1;
-                        else if (localPos.x > maxX && finalDirAngle > -minAngle * 1.5f)
-                            ks.steer = -1;
-                        else
-                            ks.steer = 0;
+                    //If we're drifting right and oversteer right
+                    if (ks.driftSteer > 0 && nextFinalDirAngle > minAngle * 5f)
+                        driftThought = DriftThought.None;
 
-                        //Give up if go over the line
-                        if (localPos.x < -minX)
-                        {
-                            driftThought = DriftThought.None;
-                        }
-                    }
+                    //If we're drifting left and oversteer left
+                    if (ks.driftSteer < 0 && nextFinalDirAngle < -minAngle * 5f)
+                        driftThought = DriftThought.None;
                 }
 
             }
@@ -226,13 +211,13 @@ public class AI : MonoBehaviour
                 }
 
                 //Cancel Drift
-                if (nextInstruction.drift == DriftType.NoDrift)
-                    driftThought = DriftThought.None;
+                //if (nextInstruction.drift == DriftType.NoDrift)
+                // driftThought = DriftThought.None;
 
             }
             else
             {
-                driftThought = DriftThought.None;
+                // driftThought = DriftThought.None;
             }
 
 
@@ -245,7 +230,7 @@ public class AI : MonoBehaviour
                 if (AITrackInfo[nextNode].Count > 0 && driftThought == DriftThought.Gonna)
                 {
                     TrackRoadInfo nextInstruction = AITrackInfo[nextNode][0];
-                    switch(nextInstruction.drift)
+                    switch (nextInstruction.drift)
                     {
                         case DriftType.Normal: centringOffset -= nextInstruction.turnAmount * 2f; break;
                         case DriftType.Wide: centringOffset -= nextInstruction.turnAmount * 4f; break;
@@ -253,7 +238,7 @@ public class AI : MonoBehaviour
                 }
 
                 //Do Straightening
-                int straightenTurn = 0;    
+                int straightenTurn = 0;
 
                 //Turn towards Next Point if we are far away from
                 if (Mathf.Abs(localPos.x) > maxXDistance || centringOffset != 0f || correctingTime > 0f || (driveState != DriveState.Turning && Mathf.Abs(finalDirAngle) > minAngle))
@@ -264,10 +249,10 @@ public class AI : MonoBehaviour
                     driveDir.y = 0;
 
                     int nextDirAngle = (int)(-MathHelper.Angle(driveDir, myForward));
-                    bool canStraighten = (Mathf.Abs(nextDirAngle) < 45f || reversing || ks.actualSpeed < 15f || (ks.steer == -1 && nextDirAngle > -minAngle) || (ks.steer == 1 && nextDirAngle < minAngle));
+                    bool canStraighten = (Mathf.Abs(nextDirAngle) < 45f || reversing || ks.actualSpeed < 15f || (ks.steer == -1 && nextDirAngle > -(minAngle/2f)) || (ks.steer == 1 && nextDirAngle < (minAngle / 2f)));
 
-                    Debug.DrawRay(transform.position, driveDir, canStraighten ? Color.yellow:Color.red);
-              
+                    Debug.DrawRay(transform.position, driveDir, canStraighten ? Color.yellow : Color.red);
+
                     if (nextDirAngle > 0 && canStraighten)
                         straightenTurn = 1;
                     else if (nextDirAngle < 0 && canStraighten)
@@ -290,15 +275,15 @@ public class AI : MonoBehaviour
 
             //No Instructions to follow, so just drive straight
             if (doNothing)
-            {           
+            {
                 ks.throttle = 1f;
                 ks.steer = 0f;
-                driftThought = DriftThought.None;
+                //driftThought = DriftThought.None;
 
                 driveState = DriveState.Nothing;
             }
 
-            bool canFinishBlue = (ks.blueTime - ks.driftTime < 0.5f), canFinishOrange = (ks.orangeTime - ks.driftTime < 0.3f);
+            bool canFinishBlue = (ks.blueTime - ks.driftTime < 0.4f), canFinishOrange = (ks.orangeTime - ks.driftTime < 0.3f);
             bool blueFinished = ks.driftTime >= ks.blueTime, orangeFinished = ks.driftTime >= ks.orangeTime;
 
             if (driftThought == DriftThought.None)
@@ -306,12 +291,12 @@ public class AI : MonoBehaviour
                 //Debug.Log("canFinishBlue:" + canFinishBlue + " blueFinished:" + blueFinished);
                 if ((!canFinishBlue || blueFinished) && (!canFinishOrange || orangeFinished))
                 {
-                   // if(ks.driftTime > 0f)
-                        //Debug.Log("Cancelled Drift! Drift Time:" + ks.driftTime);
+                    // if(ks.driftTime > 0f)
+                    //Debug.Log("Cancelled Drift! Drift Time:" + ks.driftTime);
 
                     ks.drift = false;
                 }
-                    
+
             }
 
             //Reverse if Driving into a Wall
@@ -322,10 +307,11 @@ public class AI : MonoBehaviour
             if (reversing)
                 distance = 15f;
 
-            if((Physics.Raycast(transform.position, transform.forward,out raycastHit, distance) || 
-                Physics.Raycast(transform.position + (transform.right/2f), transform.forward, out raycastHit, distance) || 
+            if ((Physics.Raycast(transform.position, transform.forward, out raycastHit, distance) ||
+                Physics.Raycast(transform.position + (transform.right / 2f), transform.forward, out raycastHit, distance) ||
                 Physics.Raycast(transform.position - (transform.right / 2f), transform.forward, out raycastHit, distance)) && raycastHit.transform.GetComponent<Rigidbody>() == null)
             {
+                driveState = DriveState.Fixing;
                 reversing = true;
                 ks.throttle = -1;
                 ks.steer *= -1f;
@@ -371,7 +357,7 @@ public class AI : MonoBehaviour
         return false;
     }
 
-    const float turnAngleRequired = 2f, roadNeededtoStraightenOut = 10f;
+    const float turnAngleRequired = 5f, roadNeededtoStraightenOut = 6f;
     /// <summary>
     /// Scan the entire track and find places to turn .etc
     /// </summary>
@@ -429,18 +415,24 @@ public class AI : MonoBehaviour
             int nextPoint = MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count);
             int nextNextPoint = MathHelper.NumClamp(i + 2, 0, td.positionPoints.Count);
 
-            Vector3 currentDir = td.positionPoints[nextPoint].position - td.positionPoints[i].position;
-            Vector3 nextDir = td.positionPoints[nextNextPoint].position - td.positionPoints[nextPoint].position;
+            Vector3 currentPos = Vector3.Scale(td.positionPoints[i].position, new Vector3(1f, 0f, 1f));
+            Vector3 nextPos = Vector3.Scale(td.positionPoints[nextPoint].position, new Vector3(1f, 0f, 1f));
+            Vector3 nextnextPos = Vector3.Scale(td.positionPoints[nextNextPoint].position, new Vector3(1f, 0f, 1f));
+
+            Vector3 currentDir = nextPos - currentPos;
+            Vector3 nextDir = nextnextPos - nextPos;
 
             angles[i] = MathHelper.Angle(currentDir, nextDir);
             directions[i] = currentDir;
 
             pathLengths.Add(currentDir.magnitude);
+
+            FindObjectOfType<InEngineRender>().roadColours.Add(Color.red);
         }
 
         //Find Driftable Areas
         DriftType[] driftable = new DriftType[angles.Length];
-        float angleNeeded = 25f;
+        float angleNeeded = 15f;
 
         for (int driftCount = 0; driftCount < td.positionPoints.Count; driftCount++)
         {
@@ -467,14 +459,23 @@ public class AI : MonoBehaviour
                     //Change the driftable for this Node and all Nodes included
                     for (int j = driftCount; j <= currentNode; j++)
                     {
-                        if(j == currentNode)
-                            driftable[j] = DriftType.Normal;
-                        else if (Mathf.Abs(angles[j]) > 20f && pathLengths[j] < 8f)
+                        // if(j == currentNode)
+                        //    driftable[j] = DriftType.Normal;
+                        if (Mathf.Abs(angles[j]) > 20f && pathLengths[j] < 8f)
+                        {
                             driftable[j] = DriftType.Close;
+                            FindObjectOfType<InEngineRender>().roadColours[j] = Color.cyan;
+                        }
                         else if (Mathf.Abs(angles[j]) < 14f)
+                        {
                             driftable[j] = DriftType.Wide;
+                            FindObjectOfType<InEngineRender>().roadColours[j] = Color.green;
+                        }
                         else
+                        {
                             driftable[j] = DriftType.Normal;
+                            FindObjectOfType<InEngineRender>().roadColours[j] = Color.yellow;
+                        }
 
                     }
                 }
