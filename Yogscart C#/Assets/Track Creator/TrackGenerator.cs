@@ -5,11 +5,10 @@ using UnityEngine;
 
 [ExecuteInEditMode, RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class TrackGenerator : MonoBehaviour
-{
-    private List<Road> allRoads;
-
+{  
     public List<NodeConnector> connections = new List<NodeConnector>();
     private List<NodeConnector> lastConnections = new List<NodeConnector>();
+    private List<Road> allRoads;
 
     // Update is called once per frame
     void Update()
@@ -17,7 +16,9 @@ public class TrackGenerator : MonoBehaviour
         //Check current Nodes against old Node
         bool changesFound = false;
 
-        if (connections.Count != lastConnections.Count)
+        if (allRoads == null)
+            changesFound = true;
+        else if (connections.Count != lastConnections.Count)
             changesFound = true;
         else
         {
@@ -34,16 +35,21 @@ public class TrackGenerator : MonoBehaviour
 
         if (changesFound)
         {
-            //Update last node list
-            lastConnections = new List<NodeConnector>();
-
-            foreach (NodeConnector nc in connections)
-                lastConnections.Add(new NodeConnector(nc));
-
-            //Remake Mesh
-            UpdateMesh();
+            UpdateLC();
         }
 
+    }
+
+    void UpdateLC()
+    {
+        //Update last node list
+        lastConnections = new List<NodeConnector>();
+
+        foreach (NodeConnector nc in connections)
+            lastConnections.Add(new NodeConnector(nc));
+
+        //Remake Mesh
+        UpdateMesh();
     }
 
     private void UpdateMesh()
@@ -168,7 +174,7 @@ public class TrackGenerator : MonoBehaviour
         }
     }
 
-    private bool HasRoad(Node nodeA, Node nodeB)
+    public bool HasRoad(Node nodeA, Node nodeB)
     {
         foreach (Road road in allRoads)
         {

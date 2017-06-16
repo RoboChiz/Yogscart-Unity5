@@ -25,6 +25,8 @@ public class NodeConnector
     public ConnectionType connectionType;
 
     public Transform[] extras;
+    public Vector3[] lastExtraPos;
+
     public int segments;
 
     public NodeConnector()
@@ -61,6 +63,17 @@ public class NodeConnector
             lastB = b.transform.position;
     }
 
+    public void UpdateLasts()
+    {
+        lastA = a.transform.position;
+        lastB = b.transform.position;
+
+        lastExtraPos = new Vector3[extras.Length];
+
+        for (int i = 0; i < extras.Length; i++)
+            lastExtraPos[i] = extras[i].transform.position;
+    }
+
     public bool SameNodeConnector(NodeConnector nc)
     {
         if (a != nc.a)
@@ -72,21 +85,33 @@ public class NodeConnector
         if (connectionType != nc.connectionType)
             return false;
 
-        if (extras.Length != nc.extras.Length)
+        if (lastExtraPos == null || extras == null || extras.Length != lastExtraPos.Length)
+        {
+            UpdateLasts();
             return false;
+        }
 
         for (int i = 0; i < extras.Length; i++)
-            if (extras[i] != nc.extras[i])
+            if (extras[i].transform.position != lastExtraPos[i])
+            {
+                UpdateLasts();
                 return false;
+            }
 
         if (segments != nc.segments)
             return false;
 
         if (a.transform.position != lastA)
+        {
+            UpdateLasts();
             return false;
+        }
 
         if (b.transform.position != lastB)
+        {
+            UpdateLasts();
             return false;
+        }
 
         return true;
     }

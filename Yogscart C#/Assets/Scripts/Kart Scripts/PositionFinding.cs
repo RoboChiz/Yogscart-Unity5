@@ -11,6 +11,35 @@ public class PositionFinding : MonoBehaviour
 
     private bool changedPitched;
 
+    void Start()
+    {
+        GameObject tm = GameObject.Find("Track Manager");
+        if (tm != null)
+            td = tm.GetComponent<TrackData>();
+
+        //Find out where we are
+        if (td != null)
+        {
+            float smallestDistance = 1000f;
+            int closestPoint = 0;
+
+            for (int i = 0; i < td.positionPoints.Count; i++)
+            {
+                float distance = Vector3.Distance(td.positionPoints[i].position, transform.position);
+
+                if (distance < smallestDistance)
+                {
+                    closestPoint = i;
+                    smallestDistance = distance;
+                }
+            }
+
+            currentPos = closestPoint;
+            currentTotal = currentPos;
+            lap = 0;
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {

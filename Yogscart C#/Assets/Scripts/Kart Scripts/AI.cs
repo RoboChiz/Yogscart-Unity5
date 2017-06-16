@@ -30,17 +30,15 @@ public class AI : MonoBehaviour
     public bool canDrive = true;
 
     public Vector3 localPos;
-    public float percent;
+    public float percent = -1;
     private bool reversing = false;
 
     private static List<List<TrackRoadInfo>> AITrackInfo;
     private List<float> pathLengths;
     private float[] angles;
 
-    public float correctingTime = 0f;
-
     // Use this for initialization
-    void Start()
+    IEnumerator Start()
     {
         td = FindObjectOfType<TrackData>();
 
@@ -58,6 +56,11 @@ public class AI : MonoBehaviour
             myStartType = StartType.WillBoost;
         if (intelligence == AIStupidity.Perfect)//Will always of Boost at Start
             myStartType = StartType.WillBoost;
+
+        yield return new WaitForEndOfFrame();
+
+        currentNode = GetComponent<PositionFinding>().currentPos;
+
     }
 
     // Update is called once per frame
@@ -76,30 +79,29 @@ public class AI : MonoBehaviour
         }
 
         if (canDrive)
-        {
-            //If kart has gone past a node update currentNode
+        {           
+            CalculatePercent();
+
+            //If we are ahead of the next node or behind the current node make adjustments
             if (percent > 1)
                 currentNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
             if (percent < 0)
                 currentNode = MathHelper.NumClamp(currentNode - 1, 0, td.positionPoints.Count);
 
+            //Find the next two nodes ahead of us
             nextNode = MathHelper.NumClamp(currentNode + 1, 0, td.positionPoints.Count);
             nextNextNode = MathHelper.NumClamp(currentNode + 2, 0, td.positionPoints.Count);
 
+            //Get the location of our nodes
             Vector3 currentNodePos = td.positionPoints[currentNode].position;
             Vector3 nextNodePos = td.positionPoints[nextNode].position;
             Vector3 nextNextNodePos = td.positionPoints[nextNextNode].position;
 
             Vector3 finalDir = nextNodePos - currentNodePos;
-            Vector3 nextDir = nextNextNodePos - nextNodePos;
 
-            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(finalDir), Vector3.one).inverse;
-            localPos = matrix * (transform.position - currentNodePos);
-            percent = localPos.z / finalDir.magnitude;
+            Vector3 nextDir = nextNextNodePos - nextNodePos; 
 
-            Vector3 myForward = transform.forward;
-            myForward.y = 0f;
-            myForward.Normalize();
+            Vector3 myForward = Vector3.Scale(transform.forward, new Vector3(1f, 0f, 1f)).normalized;
 
             //Angle between kart direction and final direction
             float finalDirAngle = -MathHelper.Angle(myForward, finalDir);
@@ -118,7 +120,7 @@ public class AI : MonoBehaviour
             ks.throttle = 1f;
 
             //Follow Current Instruction
-            if (currentInstruction != -1 && correctingTime <= 0f)
+            if (currentInstruction != -1f)
             {
                 TrackRoadInfo instruction = AITrackInfo[currentNode][currentInstruction];
 
@@ -149,7 +151,7 @@ public class AI : MonoBehaviour
                 }
 
                 //Drifting 2.0            
-                if (instruction.drift != DriftType.NoDrift && driftThought == DriftThought.Gonna && MathHelper.Sign(ks.steer) == MathHelper.Sign(instruction.turnAmount))
+                if (instruction.drift != DriftType.NoDrift && driftThought == DriftThought.Gonna && MathHelper.Sign(ks.steer) == Mathf.Sign(instruction.turnAmount))
                 {
                     driftThought = DriftThought.Drifting;
                     ks.drift = true;
@@ -224,7 +226,7 @@ public class AI : MonoBehaviour
             if (!ks.drift)
             {
 
-                float centringOffset = 0f;
+                /*float centringOffset = 0f;
 
                 //Adjust Centreing for Drift if we're gonna drift
                 if (AITrackInfo[nextNode].Count > 0 && driftThought == DriftThought.Gonna)
@@ -235,23 +237,29 @@ public class AI : MonoBehaviour
                         case DriftType.Normal: centringOffset -= nextInstruction.turnAmount * 2f; break;
                         case DriftType.Wide: centringOffset -= nextInstruction.turnAmount * 4f; break;
                     }
-                }
+                }*/
 
                 //Do Straightening
                 int straightenTurn = 0;
 
                 //Turn towards Next Point if we are far away from
-                if (Mathf.Abs(localPos.x) > maxXDistance || centringOffset != 0f || correctingTime > 0f || (driveState != DriveState.Turning && Mathf.Abs(finalDirAngle) > minAngle))
+                if (Mathf.Abs(localPos.x) > maxXDistance || (driveState != DriveState.Turning && Mathf.Abs(finalDirAngle) > minAngle))
                 {
-
                     //Centring Stuff
-                    Vector3 driveDir = td.positionPoints[nextNode].position - transform.position;
-                    driveDir.y = 0;
+                    Vector3 dir = (nextNodePos - currentNodePos);
+                    float percentAmount = percent + (10f / dir.magnitude);
 
-                    int nextDirAngle = (int)(-MathHelper.Angle(driveDir, myForward));
+                    //If Percent goes over current node use the next ones
+                    percentAmount = Mathf.Clamp(percentAmount, 0f, 1f);
+
+                    Vector3 offset = dir * percentAmount;
+
+                    Vector3 desiredDirection = Vector3.Scale((currentNodePos + offset) - transform.position, new Vector3(1f, 0f, 1f));
+                    float nextDirAngle = MathHelper.Angle(myForward, desiredDirection);
+
                     bool canStraighten = (Mathf.Abs(nextDirAngle) < 45f || reversing || ks.actualSpeed < 15f || (ks.steer == -1 && nextDirAngle > -(minAngle/2f)) || (ks.steer == 1 && nextDirAngle < (minAngle / 2f)));
 
-                    Debug.DrawRay(transform.position, driveDir, canStraighten ? Color.yellow : Color.red);
+                    Debug.DrawRay(transform.position, desiredDirection, canStraighten ? Color.yellow : Color.red);
 
                     if (nextDirAngle > 0 && canStraighten)
                         straightenTurn = 1;
@@ -265,7 +273,7 @@ public class AI : MonoBehaviour
                 //If Straighten turn exact opposite of current turn then don't follow through
                 //If doNothing or if current turn is 0 or if current turn is same as Straighten Turn then follow through
                 //If past left minXDistance and told to turn left, then allowed to straighten
-                if (straightenTurn != 0 && (doNothing || ks.steer == 0 || reversing))
+                if (straightenTurn != 0 && !reversing && (doNothing || ks.steer == 0))
                 {
                     ks.steer = straightenTurn;
                     driveState = DriveState.Centring;
@@ -300,33 +308,61 @@ public class AI : MonoBehaviour
             }
 
             //Reverse if Driving into a Wall
-            Debug.DrawRay(transform.position, transform.forward * 1.5f, Color.red);
             RaycastHit raycastHit;
+            Color hitColor = Color.red;
 
-            float distance = 2f;
+            float distance = 3f;
+
             if (reversing)
-                distance = 15f;
+                distance = 10f;
 
-            if ((Physics.Raycast(transform.position, transform.forward, out raycastHit, distance) ||
-                Physics.Raycast(transform.position + (transform.right / 2f), transform.forward, out raycastHit, distance) ||
-                Physics.Raycast(transform.position - (transform.right / 2f), transform.forward, out raycastHit, distance)) && raycastHit.transform.GetComponent<Rigidbody>() == null)
+            Vector3 startPos = transform.position + (Vector3.up * 0.5f);
+            int layerMask = ~((1 << 8) | (1 << 9) | (1 << 10));
+
+            if (Physics.Raycast(startPos, transform.forward, out raycastHit, distance, layerMask) ||
+                Physics.Raycast(startPos + (transform.right / 2f), transform.forward, out raycastHit, distance, layerMask) ||
+                Physics.Raycast(startPos - (transform.right / 2f), transform.forward, out raycastHit, distance, layerMask))
             {
                 driveState = DriveState.Fixing;
                 reversing = true;
-                ks.throttle = -1;
-                ks.steer *= -1f;
-                correctingTime = 5f;
+
+                ks.throttle = -1f;
+
+                Vector3 dir = (nextNodePos - currentNodePos);
+                Vector3 offset = dir * (percent + (10f / dir.magnitude));
+
+                float newSteer = MathHelper.Angle(
+                    Vector3.Scale(currentNodePos + offset, new Vector3(1f, 0f, 1f)),
+                    Vector3.Scale(transform.forward, new Vector3(1f, 0f, 1f)));
+                ks.steer = Mathf.Sign(newSteer);
+
+                Debug.DrawLine(startPos, currentNodePos + offset, Color.blue);
+                hitColor = Color.green;
+
+                driftThought = DriftThought.None;
+                ks.drift = false;
             }
-            else
+            else if (distance == 10f && reversing)
             {
                 reversing = false;
             }
 
-            if (correctingTime > 0f)
-                correctingTime -= Time.deltaTime;
-
-
+            Debug.DrawRay(startPos, transform.forward * distance, hitColor);
+            Debug.DrawRay(startPos + (transform.right / 2f), transform.forward * distance, hitColor);
+            Debug.DrawRay(startPos - (transform.right / 2f), transform.forward * distance, hitColor);
         }
+    }
+
+    private void CalculatePercent()
+    {
+        Vector3 currentNodePos = td.positionPoints[currentNode].transform.position;
+        Vector3 nextNodePos = td.positionPoints[MathHelper.NumClamp(currentNode + 1,0,td.positionPoints.Count)].transform.position;
+        Vector3 finalDir = nextNodePos - currentNodePos;
+
+        //Find out where we are relative to our current and next node
+        Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.LookRotation(finalDir), Vector3.one).inverse;
+        localPos = matrix * (transform.position - currentNodePos);
+        percent = localPos.z / finalDir.magnitude;
     }
 
     private bool ShouldDoDrift()

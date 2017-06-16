@@ -156,6 +156,7 @@
     <Compile Include="Assets\Track Creator\AnchorPoint.cs" />
     <Compile Include="Assets\Track Creator\Bezier.cs" />
     <Compile Include="Assets\Track Creator\Node.cs" />
+    <Compile Include="Assets\Track Creator\OBJExporter.cs" />
     <Compile Include="Assets\Track Creator\Road.cs" />
     <Compile Include="Assets\Track Creator\TrackGenerator.cs" />
   </ItemGroup>

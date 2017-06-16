@@ -2,6 +2,12 @@
 
 ## Changelog : Started 04/08/2016
 
+## 16/06/2016
+* Sorta added reversing to AI
+* Broke the rest of the AI
+* Added Window for Track Layout Editing
+* Added exporting track layout to .OBJ
+
 ## 14/06/2017
 * Started Implementing Track Layout Creator
 
