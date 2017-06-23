@@ -4,45 +4,77 @@ using UnityEngine;
 
 public class Node : MonoBehaviour
 {
-    public float roadWidth = 5f;
+    public float roadWidth = 25f;
+    //In Degrees
+    public float rotateAmount = 0f;
 
     [HideInInspector]
     public List<NodeConnector> connections = new List<NodeConnector>();
 
     void OnDrawGizmos()
     {
-        Gizmos.DrawCube(transform.position, new Vector3(1, 1, 1));
+        Gizmos.DrawCube(transform.position, new Vector3(5, 5, 5));
     }
 }
 
 [System.Serializable]
 public class NodeConnector
 {
-    public Node a, b;
+    public string name;
+    public Node a
+    {
+        get { return nodeA; }
+        set { nodeA = value; UpdateName(); }
+    }
+    public Node b
+    {
+        get { return nodeB; }
+        set { nodeB = value; UpdateName(); }
+    }
+
+    public Node nodeA, nodeB;
     private Vector3 lastA, lastB;
+    private float lastARotate, lastBRotate;
 
     public enum ConnectionType { Straight, Curve}
     public ConnectionType connectionType;
 
-    public Transform[] extras;
-    public Vector3[] lastExtraPos;
+    public List<Transform> extras;
+    private Vector3[] lastExtraPos;
+
+    [HideInInspector]
+    public Road road;
 
     public int segments;
 
     public NodeConnector()
     {
         connectionType = ConnectionType.Straight;
-        extras = new Transform[0];
-        segments = 5;
+        extras = new List<Transform>();
+        segments = 10;
     }
 
-    public NodeConnector(Node _a, Node _b, ConnectionType _connectionType, Transform[] _extras)
+    public void UpdateName()
+    {
+        name = "";
+
+        if (nodeA != null)
+            name += a.transform.name;
+
+        if (name != "" && b != null)
+            name += " & ";
+
+        if (nodeB != null)
+            name += b.transform.name;
+    }
+
+    public NodeConnector(Node _a, Node _b, ConnectionType _connectionType, List<Transform> _extras)
     {
         a = _a;
         b = _b;
         connectionType = _connectionType;
         extras = _extras;
-        segments = 5;
+        segments = 10;
 
         lastA = a.transform.position;
         lastB = b.transform.position;
@@ -65,13 +97,24 @@ public class NodeConnector
 
     public void UpdateLasts()
     {
-        lastA = a.transform.position;
-        lastB = b.transform.position;
+        if (a != null)
+            lastA = a.transform.position;
+        else
+            lastA = Vector3.zero;
 
-        lastExtraPos = new Vector3[extras.Length];
+        if (b != null)
+            lastB = b.transform.position;
+        else
+            lastB = Vector3.zero;
 
-        for (int i = 0; i < extras.Length; i++)
-            lastExtraPos[i] = extras[i].transform.position;
+        lastExtraPos = new Vector3[extras.Count];
+
+        for (int i = 0; i < extras.Count; i++)
+            if(extras[i] != null)
+                lastExtraPos[i] = extras[i].transform.position;
+
+        lastARotate = a.rotateAmount;
+        lastBRotate = b.rotateAmount;
     }
 
     public bool SameNodeConnector(NodeConnector nc)
@@ -85,14 +128,14 @@ public class NodeConnector
         if (connectionType != nc.connectionType)
             return false;
 
-        if (lastExtraPos == null || extras == null || extras.Length != lastExtraPos.Length)
+        if (lastExtraPos == null || extras == null || extras.Count != lastExtraPos.Length)
         {
             UpdateLasts();
             return false;
         }
 
-        for (int i = 0; i < extras.Length; i++)
-            if (extras[i].transform.position != lastExtraPos[i])
+        for (int i = 0; i < extras.Count; i++)
+            if (extras[i] != null && extras[i].transform.position != lastExtraPos[i])
             {
                 UpdateLasts();
                 return false;
@@ -101,15 +144,25 @@ public class NodeConnector
         if (segments != nc.segments)
             return false;
 
-        if (a.transform.position != lastA)
+        if (a != null && a.transform.position != lastA)
         {
             UpdateLasts();
             return false;
         }
 
-        if (b.transform.position != lastB)
+        if (b != null && b.transform.position != lastB)
         {
             UpdateLasts();
+            return false;
+        }
+
+        if(a.rotateAmount != lastARotate)
+        {
+            return false;
+        }
+
+        if (b.rotateAmount != lastBRotate)
+        {
             return false;
         }
 

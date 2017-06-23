@@ -22,6 +22,13 @@ public class LayoutEditorWindow : EditorWindow
         newGameObject.AddComponent<TrackGenerator>();
     }
 
+    [MenuItem("Layout Creator/Clean Layout")]
+    public static void CleanGenerator()
+    {
+        TrackGenerator tg = FindObjectOfType<TrackGenerator>();
+        tg.CleanNetwork();
+    }
+
     void OnGUI()
     {
         TrackGenerator tg = FindObjectOfType<TrackGenerator>();
@@ -56,6 +63,13 @@ public class LayoutEditorWindow : EditorWindow
                 EditorUtility.SetDirty(tg);
             }
 
+            //Swap Node of a Road
+            if (GUILayout.Button("Swap Nodes"))
+            {
+                SwapRoad();
+                EditorUtility.SetDirty(tg);
+            }
+
             GUILayout.BeginVertical();
 
             fileName = GUILayout.TextField(fileName);
@@ -84,7 +98,12 @@ public class LayoutEditorWindow : EditorWindow
         GameObject newGameObject = new GameObject("Node " + (FindObjectsOfType<Node>().Length + 1));
         newGameObject.AddComponent<Node>();
 
+        if (Selection.activeGameObject != null)
+            newGameObject.transform.position = Selection.activeGameObject.transform.position;
+
         Selection.activeGameObject = newGameObject;
+
+        newGameObject.transform.parent = FindObjectOfType<TrackGenerator>().transform;
     }
 
     public static void CreateRoad(NodeConnector.ConnectionType connectionType)
@@ -117,7 +136,7 @@ public class LayoutEditorWindow : EditorWindow
                             anchorPoint.transform.position = (a.transform.position + b.transform.position) / 2f;
                         }
 
-                        tg.connections.Add(new NodeConnector(a, b, connectionType, extra.ToArray()));
+                        tg.connections.Add(new NodeConnector(a, b, NodeConnector.ConnectionType.Curve, extra));
                     }
                 }
             }
@@ -149,6 +168,37 @@ public class LayoutEditorWindow : EditorWindow
 
                                 tg.connections.Remove(nc);
                                 break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static void SwapRoad()
+    {
+        //Get Track Generator
+        TrackGenerator tg = FindObjectOfType<TrackGenerator>();
+        if (tg != null)
+        {
+            //Check we have selected 2 node
+            if (Selection.gameObjects.Length == 2)
+            {
+                Node a = Selection.gameObjects[0].GetComponent<Node>(), b = Selection.gameObjects[1].GetComponent<Node>();
+
+                if (a != null && b != null)
+                {
+                    //Check that a road dosen't already exist
+                    if (tg.HasRoad(a, b))
+                    {
+                        foreach (NodeConnector nc in tg.connections.ToArray())
+                        {
+                            if ((nc.a == a && nc.b == b) || (nc.a == b && nc.b == a))
+                            {
+                                Node newB = nc.a, newA = nc.b;
+                                nc.a = newA;
+                                nc.b = newB;
                             }
                         }
                     }
