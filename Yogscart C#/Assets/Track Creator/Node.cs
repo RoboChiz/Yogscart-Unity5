@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class Node : MonoBehaviour
 {
     public float roadWidth = 25f;
     //In Degrees
     public float rotateAmount = 0f;
+
+    public bool flipUV;
 
     [HideInInspector]
     public List<NodeConnector> connections = new List<NodeConnector>();
@@ -15,167 +18,59 @@ public class Node : MonoBehaviour
     {
         Gizmos.DrawCube(transform.position, new Vector3(5, 5, 5));
     }
-}
 
-[System.Serializable]
-public class NodeConnector
-{
-    public string name;
-    public Node a
+    public void ResetMesh()
     {
-        get { return nodeA; }
-        set { nodeA = value; UpdateName(); }
-    }
-    public Node b
-    {
-        get { return nodeB; }
-        set { nodeB = value; UpdateName(); }
+        Mesh falseMesh = new Mesh();
+
+        GetComponent<MeshFilter>().mesh = falseMesh;
+        GetComponent<MeshCollider>().sharedMesh = falseMesh;
     }
 
-    public Node nodeA, nodeB;
-    private Vector3 lastA, lastB;
-    private float lastARotate, lastBRotate;
-
-    public enum ConnectionType { Straight, Curve}
-    public ConnectionType connectionType;
-
-    public List<Transform> extras;
-    private Vector3[] lastExtraPos;
-
-    [HideInInspector]
-    public Road road;
-
-    public int segments;
-
-    public NodeConnector()
+    public void GenerateMesh()
     {
-        connectionType = ConnectionType.Straight;
-        extras = new List<Transform>();
-        segments = 10;
-    }
+        List<Vertex> points = new List<Vertex>();
 
-    public void UpdateName()
-    {
-        name = "";
-
-        if (nodeA != null)
-            name += a.transform.name;
-
-        if (name != "" && b != null)
-            name += " & ";
-
-        if (nodeB != null)
-            name += b.transform.name;
-    }
-
-    public NodeConnector(Node _a, Node _b, ConnectionType _connectionType, List<Transform> _extras)
-    {
-        a = _a;
-        b = _b;
-        connectionType = _connectionType;
-        extras = _extras;
-        segments = 10;
-
-        lastA = a.transform.position;
-        lastB = b.transform.position;
-    }
-
-    public NodeConnector(NodeConnector nc)
-    {
-        a = nc.a;
-        b = nc.b;
-        connectionType = nc.connectionType;
-
-        extras = nc.extras;
-        segments = nc.segments;
-
-        if(a != null)
-            lastA = a.transform.position;
-        if(b != null)
-            lastB = b.transform.position;
-    }
-
-    public void UpdateLasts()
-    {
-        if (a != null)
-            lastA = a.transform.position;
-        else
-            lastA = Vector3.zero;
-
-        if (b != null)
-            lastB = b.transform.position;
-        else
-            lastB = Vector3.zero;
-
-        lastExtraPos = new Vector3[extras.Count];
-
-        for (int i = 0; i < extras.Count; i++)
-            if(extras[i] != null)
-                lastExtraPos[i] = extras[i].transform.position;
-
-        lastARotate = a.rotateAmount;
-        lastBRotate = b.rotateAmount;
-    }
-
-    public bool SameNodeConnector(NodeConnector nc)
-    {
-        if (a != nc.a)
-            return false;
-
-        if (b != nc.b)
-            return false;
-
-        if (connectionType != nc.connectionType)
-            return false;
-
-        if (lastExtraPos == null || extras == null || extras.Count != lastExtraPos.Length)
+        foreach(NodeConnector nc in connections)
         {
-            UpdateLasts();
-            return false;
-        }
-
-        for (int i = 0; i < extras.Count; i++)
-            if (extras[i] != null && extras[i].transform.position != lastExtraPos[i])
+            if(this == nc.a)
             {
-                UpdateLasts();
-                return false;
+                points.Add(nc.aEndVertices[0]);
+                points.Add(nc.aEndVertices[1]);
             }
-
-        if (segments != nc.segments)
-            return false;
-
-        if (a != null && a.transform.position != lastA)
-        {
-            UpdateLasts();
-            return false;
+            else if (this == nc.b)
+            {
+                points.Add(nc.bEndVertices[0]);
+                points.Add(nc.bEndVertices[1]);
+            }           
         }
 
-        if (b != null && b.transform.position != lastB)
+        if (points.Count >= 4f)
         {
-            UpdateLasts();
-            return false;
+            Mesh mesh = DelaunayTriangulation.GenerateMesh(points);
+
+            //Remove Node position from vertices
+            Vector3[] verticePositions = mesh.vertices;
+            for (int i = 0; i < verticePositions.Length; i++)
+                verticePositions[i] -= transform.position;
+
+            mesh.vertices = verticePositions;
+
+            if(flipUV && mesh.uv.Length >= 2)
+            {
+                Vector2[] uv = mesh.uv;
+
+                Vector2 holder = uv[0];
+                uv[0] = uv[1];
+                uv[1] = holder;
+
+                mesh.uv = uv;
+            }
+            mesh.RecalculateBounds();
+            mesh.RecalculateNormals();
+
+            GetComponent<MeshFilter>().mesh = mesh;
+            GetComponent<MeshCollider>().sharedMesh = mesh;
         }
-
-        if(a.rotateAmount != lastARotate)
-        {
-            return false;
-        }
-
-        if (b.rotateAmount != lastBRotate)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    public Node Other(Node node)
-    {
-        if (a == node)
-            return b;
-        if (b == node)
-            return a;
-
-        return null;
     }
 }

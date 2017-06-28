@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -50,3 +52,5 @@ public static class OBJExporter
         SaveOBJ(fileName,ToOBJ(mesh));
     }
 }
+
+#endif

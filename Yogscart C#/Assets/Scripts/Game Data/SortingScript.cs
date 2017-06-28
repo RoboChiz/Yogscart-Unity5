@@ -37,6 +37,11 @@ public class SortingScript : MonoBehaviour
             }
             else
             {
+                int[] positions = new int[array.Count];
+
+                for (int j = 0; j < positions.Length; j++)
+                    positions[j] = array[j].position;
+
                 throw new Exception("Same position appears twice!!!");
             }
         }

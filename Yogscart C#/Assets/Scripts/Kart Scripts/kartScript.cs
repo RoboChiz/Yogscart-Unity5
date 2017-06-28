@@ -8,7 +8,7 @@ public class kartScript : MonoBehaviour
     public bool locked = true;
 
     private AudioSourceInfo audioSourceInfo;
-    private AudioSource kartAudioSource;
+    private AudioSource kartAudioSource, myAudioSource;
 
     //Inputs
     public float throttle, steer;
@@ -79,7 +79,7 @@ public class kartScript : MonoBehaviour
     private bool allowedBoost, spinOut;
     private float startBoostAmount;
     public static int startBoostVal = -1;
-    public static bool raceStarted = false;
+    public static bool raceStarted = false, beQuiet = true;
     private float wheelSpinLerp = 0f;
 
     public bool spinningOut;
@@ -95,6 +95,11 @@ public class kartScript : MonoBehaviour
     //Wheel Transforms
     [HideInInspector]
     public List<WheelCollider> wheelColliders;
+    //Stops Wheels from falling through the floor
+    [HideInInspector]
+    public List<SphereCollider> wheelBackUps;
+    public float wheelBackupsStartRadius;
+
     [HideInInspector]
     public List<Transform> wheelMeshes;
     //Wheel Turning / Spinning
@@ -139,12 +144,15 @@ public class kartScript : MonoBehaviour
         kartRigidbody.centerOfMass = new Vector3(0f, -0.5f, 0f);
 
         audioSourceInfo = GetComponent<AudioSourceInfo>();
+        myAudioSource = GetComponent<AudioSource>();
         kartAudioSource = GetComponentInChildren<AudioSource>();
 
         if (skidMarkTransform == null)
             skidMarkTransform = Resources.Load<Transform>("Prefabs/SkidMarks");
 
         ResetParticles();
+
+        wheelBackupsStartRadius = wheelColliders[0].radius * 0.8f;
     }
 
     public void ResetParticles()
@@ -170,10 +178,8 @@ public class kartScript : MonoBehaviour
         brakeTime = brakeTimeVal * modifier;
         //turnSpeed = turnSpeedVal * modifier;
 
-
         if (Time.timeScale != 0)
         {
-
             isFalling = CheckGravity();
 
             if (!isFalling)
@@ -198,27 +204,25 @@ public class kartScript : MonoBehaviour
                 actualSpeed = 0f;
 
             bool wallInFront = false;
-            if (isFalling)
+
+            Vector3 forward = Vector3.Scale(transform.forward, new Vector3(1, 0f, 1f));
+            RaycastHit hit;
+
+            wallInFront = Physics.Raycast(transform.position + transform.up, forward, out hit, 1.5f) && hit.transform != transform && hit.transform.gameObject.tag != "Ground" && hit.transform.gameObject.tag != "OffRoad" &&  (hit.transform.GetComponent<Collider>() == null || !hit.transform.GetComponent<Collider>().isTrigger);
+
+            if (wallInFront && throttle > 0)
             {
-                Vector3 forward = Vector3.Scale(transform.forward, new Vector3(1, 0f, 1f));
-                RaycastHit hit;
-
-                wallInFront = Physics.Raycast(transform.position + transform.up, forward, out hit, 1.5f) && hit.transform.GetComponent<Rigidbody>() == null;
-
-                if (wallInFront && expectedSpeed > 0)
-                {
-                    expectedSpeed = -1;
-                    Debug.Log("Ahhh a wall!!! " + expectedSpeed);
-                    CancelBoost();
-                }
-
-                //Stop Extreme Boosting when in the Air
-                if (!wallInFront && actualSpeed < expectedSpeed)
-                {
-                    expectedSpeed = actualSpeed;
-                }
+                expectedSpeed = -5f;
+                Debug.Log("Ahhh a wall!!! " + expectedSpeed);
+                CancelBoost();
             }
 
+            //Used to stop wheels going through the floor
+            for (int i = 0; i < wheelBackUps.Count; i++)
+            {
+                wheelBackUps[i].enabled = true;
+                wheelBackUps[i].radius = isFalling ? wheelBackupsStartRadius : wheelBackupsStartRadius * 0.4f;
+            }
 
             float nA = (ExpectedSpeed - actualSpeed) / lastTime;
 
@@ -391,13 +395,13 @@ public class kartScript : MonoBehaviour
             }
 
             //Play engine Audio
-            if (engineSound != null)
+            if (engineSound != null && !beQuiet)
             {
-                if (!GetComponent<AudioSource>().isPlaying)
+                if (!myAudioSource.isPlaying)
                 {
-                    GetComponent<AudioSource>().clip = engineSound;
-                    GetComponent<AudioSource>().Play();
-                    GetComponent<AudioSource>().loop = true;
+                    myAudioSource.clip = engineSound;
+                    myAudioSource.Play();
+                    myAudioSource.loop = true;
                 }
 
                 if (raceStarted)
@@ -419,15 +423,19 @@ public class kartScript : MonoBehaviour
                         currentVolume = quieterVolume;
 
                     audioSourceInfo.idealVolume = Mathf.Lerp(audioSourceInfo.idealVolume, currentVolume, Time.deltaTime * 3f);
-                    GetComponent<AudioSource>().pitch = normalPitch;
+                    myAudioSource.pitch = normalPitch;
 
                 }
                 else
                 {
                     float percent = wheelSpinLerp / 15f;
                     audioSourceInfo.idealVolume = Mathf.Lerp(0.1f, 0.4f, percent);
-                    GetComponent<AudioSource>().pitch = Mathf.Lerp(0.75f, 1.5f, percent);
+                    myAudioSource.pitch = Mathf.Lerp(0.75f, 1.5f, percent);
                 }
+            }
+            else
+            {
+                audioSourceInfo.idealVolume = 0f;
             }
 
             //Calculate Start Boost
@@ -505,6 +513,11 @@ public class kartScript : MonoBehaviour
                     kartRigidbody.AddForce(new Vector3(0f, -(kartRigidbody.velocity.y * 0.6f), 0f), ForceMode.VelocityChange);
                 }
             }
+        }
+        else
+        {
+            //Make the Kart quiet
+            audioSourceInfo.idealVolume = 0f;
         }
     }
 
@@ -788,7 +801,7 @@ public class kartScript : MonoBehaviour
     IEnumerator StartBoost(float t)
     {
         AudioClip BoostSound = Resources.Load<AudioClip>("Music & Sounds/SFX/boost");
-        GetComponent<AudioSource>().PlayOneShot(BoostSound, 3);
+        myAudioSource.PlayOneShot(BoostSound, 3);
 
         yield return new WaitForSeconds(t);
 

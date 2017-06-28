@@ -46,14 +46,14 @@ public class LayoutEditorWindow : EditorWindow
             //Create a straight road between two selected nodes
             if (GUILayout.Button("Create Straight Road"))
             {
-                CreateRoad(NodeConnector.ConnectionType.Straight);
+                CreateRoad(false);
                 EditorUtility.SetDirty(tg);
             }
 
             //Create a curved road between two selected nodes
             if (GUILayout.Button("Create Curved Road"))
             {
-                CreateRoad(NodeConnector.ConnectionType.Curve);
+                CreateRoad(true);
             }
 
             //Delete a road between two nodes
@@ -79,7 +79,27 @@ public class LayoutEditorWindow : EditorWindow
             {
                 if (fileName != "")
                 {
-                    OBJExporter.SaveMeshAsOBJ(fileName, tg.GetComponent<MeshFilter>().sharedMesh);
+                    //Get the final mesh
+                    Mesh finalMesh = new Mesh();
+                    List<MeshFilter> meshFilters = new List<MeshFilter>();
+
+                    //Get all Mesh Filters
+                    foreach (NodeConnector nc in tg.connections)
+                        meshFilters.Add(nc.GetComponent<MeshFilter>());
+                    foreach (Node node in FindObjectsOfType<Node>())
+                        meshFilters.Add(node.GetComponent<MeshFilter>());
+
+                    //Combine to form one mesh
+                    CombineInstance[] combine = new CombineInstance[meshFilters.Count];
+                    
+                    for(int i = 0; i < combine.Length; i++)
+                    {
+                        combine[i].mesh = meshFilters[i].sharedMesh;
+                        combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+                    }
+                    finalMesh.CombineMeshes(combine);
+
+                    OBJExporter.SaveMeshAsOBJ(fileName, finalMesh);
                 }
             }
 
@@ -104,9 +124,12 @@ public class LayoutEditorWindow : EditorWindow
         Selection.activeGameObject = newGameObject;
 
         newGameObject.transform.parent = FindObjectOfType<TrackGenerator>().transform;
+
+        TrackGenerator tg = FindObjectOfType<TrackGenerator>();
+        newGameObject.GetComponent<MeshRenderer>().material = tg.roadMat;
     }
 
-    public static void CreateRoad(NodeConnector.ConnectionType connectionType)
+    public static void CreateRoad(bool curvedRoad)
     {
         //Get Track Generator
         TrackGenerator tg = FindObjectOfType<TrackGenerator>();
@@ -120,12 +143,12 @@ public class LayoutEditorWindow : EditorWindow
                 if (a != null && b != null)
                 {
                     //Check that a road dosen't already exist
-                    if (!tg.HasRoad(a, b))
+                    if (!tg.ContainsConnection(a, b))
                     {
                         List<Transform> extra = new List<Transform>();
 
                         //If a curved road create a anchor node
-                        if (connectionType == NodeConnector.ConnectionType.Curve)
+                        if (curvedRoad)
                         {
                             GameObject anchorPoint = new GameObject("Node ("
                                 + a.name.Substring(5, a.name.Length - 5) + "&"
@@ -136,7 +159,11 @@ public class LayoutEditorWindow : EditorWindow
                             anchorPoint.transform.position = (a.transform.position + b.transform.position) / 2f;
                         }
 
-                        tg.connections.Add(new NodeConnector(a, b, NodeConnector.ConnectionType.Curve, extra));
+                        GameObject nodeConnector = new GameObject();
+                        NodeConnector nc = nodeConnector.AddComponent<NodeConnector>();
+                        nc.SetConnector(a, b, extra);
+
+                        nodeConnector.GetComponent<MeshRenderer>().material = tg.roadMat;
                     }
                 }
             }
@@ -156,20 +183,15 @@ public class LayoutEditorWindow : EditorWindow
 
                 if (a != null && b != null)
                 {
+                    NodeConnector nc = tg.FindConnection(a, b);
                     //Check that a road dosen't already exist
-                    if (tg.HasRoad(a, b))
+                    if (nc != null)
                     {
-                        foreach (NodeConnector nc in tg.connections.ToArray())
-                        {
-                            if ((nc.a == a && nc.b == b) || (nc.a == b && nc.b == a))
-                            {
-                                foreach (Transform extra in nc.extras)
-                                    DestroyImmediate(extra.gameObject);
+                        foreach (Transform extra in nc.extras)
+                            DestroyImmediate(extra.gameObject);
 
-                                tg.connections.Remove(nc);
-                                break;
-                            }
-                        }
+                        DestroyImmediate(nc.gameObject);
+                       
                     }
                 }
             }
@@ -189,19 +211,14 @@ public class LayoutEditorWindow : EditorWindow
 
                 if (a != null && b != null)
                 {
+                    NodeConnector nc = tg.FindConnection(a, b);
                     //Check that a road dosen't already exist
-                    if (tg.HasRoad(a, b))
+                    if (nc != null)
                     {
-                        foreach (NodeConnector nc in tg.connections.ToArray())
-                        {
-                            if ((nc.a == a && nc.b == b) || (nc.a == b && nc.b == a))
-                            {
-                                Node newB = nc.a, newA = nc.b;
-                                nc.a = newA;
-                                nc.b = newB;
-                            }
-                        }
-                    }
+                        Node newB = nc.a, newA = nc.b;
+                        nc.a = newA;
+                        nc.b = newB;
+                    }                      
                 }
             }
         }

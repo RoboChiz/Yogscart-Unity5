@@ -5,9 +5,7 @@ using System.Collections.Generic;
 [ExecuteInEditMode, RequireComponent(typeof(TrackData))]
 public class InEngineRender : MonoBehaviour
 {
-
     private TrackData td;
-    public List<Color> roadColours;
 
     // Update is called once per frame
     void Update()
@@ -33,21 +31,11 @@ public class InEngineRender : MonoBehaviour
         }
 
         //Render Track Lines
-        List<Transform> pp = td.positionPoints;
-
-        bool valid = roadColours.Count == td.positionPoints.Count;
-
-        if (pp != null && pp.Count >= 2)
+        foreach(PointConnector pc in td.connections)
         {
-            for (int i = 0; i < pp.Count; i++)
-            {
-                if (td.loopedTrack || i < pp.Count - 1)
-                {
-                    Debug.DrawLine(pp[i].position, pp[MathHelper.NumClamp(i + 1, 0, pp.Count)].position,(!valid) ? Color.red : roadColours[i]);
-
-                    //Draw Road Widths
-                }
-            }
+            if(pc.a != null && pc.b != null)
+                Debug.DrawLine(pc.a.transform.position, pc.b.transform.position, Color.red);
         }
+        
     }
 }

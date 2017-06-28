@@ -8,7 +8,7 @@ public class Egg : Projectile
     private float desiredY = 0f, colliderOff = 0f;
     protected float offset = 1f;
     protected int bounces = 5;
-    protected bool overrideYPos;
+    protected bool overrideYPos = true;
 
     private static AudioClip fireSound, bounceSound;
     private bool playedSound = false;

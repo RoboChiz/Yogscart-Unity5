@@ -13,10 +13,16 @@ public class PauseMenu : MonoBehaviour
 
     private const float fadeTime = 0.25f;
     private int currentSelection = 0;
+    private SoundManager sm;
 
     public void Awake()
     {
         optionsSize = new float[3] { 1, 1, 1 };
+    }
+
+    public void Start()
+    {
+        sm = FindObjectOfType<SoundManager>();
     }
 
     private void ShowPause()
@@ -130,6 +136,8 @@ public class PauseMenu : MonoBehaviour
 
                 if (submitBool)
                 {
+                    sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
+
                     switch (options[currentSelection])
                     {
                         case "Resume":

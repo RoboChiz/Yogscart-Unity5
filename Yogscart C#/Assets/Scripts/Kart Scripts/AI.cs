@@ -463,7 +463,7 @@ public class AI : MonoBehaviour
 
             pathLengths.Add(currentDir.magnitude);
 
-            FindObjectOfType<InEngineRender>().roadColours.Add(Color.red);
+            //FindObjectOfType<InEngineRender>().roadColours.Add(Color.red);
         }
 
         //Find Driftable Areas
@@ -500,17 +500,17 @@ public class AI : MonoBehaviour
                         if (Mathf.Abs(angles[j]) > 20f && pathLengths[j] < 8f)
                         {
                             driftable[j] = DriftType.Close;
-                            FindObjectOfType<InEngineRender>().roadColours[j] = Color.cyan;
+                          //  FindObjectOfType<InEngineRender>().roadColours[j] = Color.cyan;
                         }
                         else if (Mathf.Abs(angles[j]) < 14f)
                         {
                             driftable[j] = DriftType.Wide;
-                            FindObjectOfType<InEngineRender>().roadColours[j] = Color.green;
+                           // FindObjectOfType<InEngineRender>().roadColours[j] = Color.green;
                         }
                         else
                         {
                             driftable[j] = DriftType.Normal;
-                            FindObjectOfType<InEngineRender>().roadColours[j] = Color.yellow;
+                            //FindObjectOfType<InEngineRender>().roadColours[j] = Color.yellow;
                         }
 
                     }

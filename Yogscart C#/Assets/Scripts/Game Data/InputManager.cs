@@ -28,7 +28,11 @@ public class InputManager : MonoBehaviour
     static public List<List<InputLayout>> splitConfigs;
     static private List<InputLayout> allConfigs;
 
-    static public bool allowedToChange = true;//Set to false
+#if UNITY_EDITOR
+    static public bool allowedToChange = true;
+#else
+    static public bool allowedToChange = false;
+#endif
 
     static public List<InputController> controllers = new List<InputController>();
     static private bool mouseLock = false;

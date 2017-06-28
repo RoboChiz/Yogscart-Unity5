@@ -151,14 +151,18 @@
     <Compile Include="Assets\Scripts\Track Editor\BoostPad.cs" />
     <Compile Include="Assets\Scripts\Track Editor\Cannon.cs" />
     <Compile Include="Assets\Scripts\Track Editor\InEngineRender.cs" />
+    <Compile Include="Assets\Scripts\Track Editor\MapViewer.cs" />
     <Compile Include="Assets\Scripts\Track Editor\PointHandler.cs" />
     <Compile Include="Assets\Scripts\Track Editor\TrackData.cs" />
+    <Compile Include="Assets\Scripts\Track Editor\TrackWindow.cs" />
     <Compile Include="Assets\Track Creator\AnchorPoint.cs" />
     <Compile Include="Assets\Track Creator\Bezier.cs" />
+    <Compile Include="Assets\Track Creator\DelaunayTriangulation.cs" />
     <Compile Include="Assets\Track Creator\Node.cs" />
+    <Compile Include="Assets\Track Creator\NodeConnector.cs" />
     <Compile Include="Assets\Track Creator\OBJExporter.cs" />
-    <Compile Include="Assets\Track Creator\Road.cs" />
     <Compile Include="Assets\Track Creator\TrackGenerator.cs" />
+    <Compile Include="Assets\Track Creator\Vertex.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Resources\Fonts\read me.txt" />

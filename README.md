@@ -2,6 +2,37 @@
 
 ## Changelog : Started 04/08/2016
 
+## 28/06/2017
+* Gave each Track new banner image
+* Redesigned Track Banner
+* Rewrote large chunk of Track Editor
+
+## 27/06/2017
+* Added new Debug Testing Track
+* Added Carnival Del Banjo Layout Track
+* Added Downtown Debug Track
+* Fixed Input Manager allowing controllers during intro (Now only does it in editor)
+* Added SFX to Pause Menu and Level Select
+* Fixed bug where level select wouldn't show after VS Race
+* Fixed Export Obj button on Track Layout Editor
+* Removed engines noises from track intro
+* Fixed issue with sorting script if too many people cross finish line
+* Gave Lapis Item SFX
+* Adjusted Kart pushing Force
+* Fixed engine noises when game is paused
+* Fixed being able to open pause menu on Countdown
+* Redesigned Map overlay and map tracking
+* Fixed Leaderboard sometimes requiring two presses
+* Fixed issue with Postion Finding
+* Fixed Eggs not staying close to the ground
+* Various Bug Fixes and Improvements
+
+## 25/06/2017
+* Improved Track Layout Editor
+
+## 17/06/2017
+* Added Node Deletion to Track Layout Editor
+
 ## 16/06/2016
 * Sorta added reversing to AI
 * Broke the rest of the AI

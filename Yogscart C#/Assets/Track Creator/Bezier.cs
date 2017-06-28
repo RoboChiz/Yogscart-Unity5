@@ -25,6 +25,8 @@ public class Bezier
     //The points along the curve at each segment
     public Vector3[] curvePoints { get; private set; }
 
+    public float length { get; private set; }
+
     public Bezier(int _segments, Vector3[] _anchorPoints)
     {
         segmentValue = _segments;
@@ -47,6 +49,12 @@ public class Bezier
         }
 
         finalPoints.Add(anchorPoints.Last());
+
+        float totalLength = 0f;
+        for (int i = 0; i < finalPoints.Count - 1; i++)
+            totalLength += (finalPoints[i + 1] - finalPoints[i]).magnitude;
+
+        length = totalLength;
 
         curvePoints = finalPoints.ToArray();
     }

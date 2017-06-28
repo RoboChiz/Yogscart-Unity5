@@ -53,4 +53,17 @@ public class MathHelper
         else
             return (int)Mathf.Sign(value);
     }
+
+    public static bool InRange(float value, float min, float max)
+    {
+        if (value >= min && value <= max)
+            return true;
+
+        return false;
+    }
+
+    public static Vector3 ZeroYPos(Vector3 position)
+    {
+        return Vector3.Scale(position, new Vector3(1f, 0f, 1f));
+    }
 }

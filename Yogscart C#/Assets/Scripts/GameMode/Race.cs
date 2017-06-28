@@ -6,7 +6,7 @@ using System;
 using UnityEngine.Networking;
 
 public enum RaceType { GrandPrix, VSRace, TimeTrial, Online };
-public enum RaceGUI { Blank, CutScene, RaceInfo, Countdown, RaceGUI, ScoreBoard, NextMenu, Win };
+public enum RaceGUI { Blank, CutScene, RaceInfo, Countdown, RaceGUI, ScoreBoard, NextMenu, Win, LevelSelect };
 
 /*
     Races Class v1.0
@@ -31,7 +31,10 @@ public class Race : GameMode
     private string rankString;
     private int bestPlace;
 
-    protected bool raceFinished = false, lastLap;
+    protected bool raceFinished = false, lastLap, readyToLevelSelect = false;
+    public int finishedCount = 0;
+
+    private MapViewer mapViewer;
 
     public override void StartGameMode()
     {
@@ -43,8 +46,12 @@ public class Race : GameMode
         gd = FindObjectOfType<CurrentGameData>();
         sm = FindObjectOfType<SoundManager>();
 
+        readyToLevelSelect = false;
+
         //Character Select & Level Select
         yield return StartCoroutine("PlayerSetup");
+
+        mapViewer = gameObject.AddComponent<MapViewer>();
 
         //Setup the Racers for the Gamemode
         SetupRacers();
@@ -57,10 +64,12 @@ public class Race : GameMode
     }
 
     protected IEnumerator StartRace()
-    {  
-        CurrentGameData.blackOut = true;
-
-        yield return new WaitForSeconds(0.5f);
+    {
+        while (!gd.isBlackedOut)
+        {
+            CurrentGameData.blackOut = true;
+            yield return null;
+        }
 
         //Tidy Up
         foreach (Racer r in racers)
@@ -72,6 +81,7 @@ public class Race : GameMode
         }
 
         kartScript.raceStarted = false;
+        kartScript.beQuiet = true;
 
         lastcurrentRace = currentRace;
         showMap = false;
@@ -79,6 +89,12 @@ public class Race : GameMode
         //Load the Level
         SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
         yield return null;
+
+        readyToLevelSelect = true;
+        finishedCount = 0;
+
+        //Adjust Gravity depending on difficulty
+        Physics.gravity = -Vector3.up * Mathf.Lerp(12f, 17f, CurrentGameData.difficulty / 3f);
 
         //Get rid of Item Boxes
         if (raceType == RaceType.TimeTrial)
@@ -144,10 +160,19 @@ public class Race : GameMode
 
         yield return new WaitForSeconds(1f);
 
+        //Setup Map Viewer
+        mapViewer.objects = new List<MapObject>();
+
+        foreach (Racer racer in racers)
+            mapViewer.objects.Add(new MapObject(racer.ingameObj, gd.characters[racer.Character].icon, racer.position));
+
+        yield return null;
+
         //Do the intro to the Map
         yield return StartCoroutine("DoIntro");
 
         //Show what race we're on
+        kartScript.beQuiet = false;
         yield return StartCoroutine(ChangeState(RaceGUI.RaceInfo));
 
         kartInput[] kines = FindObjectsOfType<kartInput>();
@@ -184,12 +209,13 @@ public class Race : GameMode
             ki.locked = false;
 
         //Unlock the Pause Menu
-        PauseMenu.canPause = true;
         PauseMenu.onlineGame = false;
 
         yield return StartCoroutine(ChangeState(RaceGUI.RaceGUI));
-
         yield return null;
+
+        //Unlock the Pause Menu
+        PauseMenu.canPause = true;
 
         //Wait for the gamemode to be over
         while (!raceFinished && timer < 3600)
@@ -436,12 +462,29 @@ public class Race : GameMode
         {
             case RaceGUI.CutScene:
 
-                float idealWidth = Screen.width / 3f;
-                Texture2D previewTexture = gd.tournaments[currentCup].tracks[currentTrack].preview;
+                /*float idealWidth = Screen.width / 3f;
+              
                 float previewRatio = idealWidth / previewTexture.width;
                 Rect previewRect = new Rect(Screen.width - idealWidth - 20, Screen.height - (previewTexture.height * previewRatio * 2f), idealWidth, previewTexture.height * previewRatio);
 
-                GUI.DrawTexture(previewRect, previewTexture);
+                GUI.DrawTexture(previewRect, previewTexture);*/
+
+                Matrix4x4 original = GUI.matrix;
+                GUI.matrix = GUIHelper.GetMatrix();
+
+                //Background
+                Texture2D background = Resources.Load<Texture2D>("UI/Level Selection/Levels/CheckerBoard");
+                float time = (Time.time * 0.1f) % 0.5f;
+
+                for (float x = GUIHelper.screenEdges.x; x < GUIHelper.screenEdges.x + GUIHelper.screenEdges.width; x += 400)
+                {
+                    GUI.DrawTextureWithTexCoords(new Rect(x, 780, 400, 200), background, new Rect(0, time, 1f, 0.5f));
+                }
+
+                Texture2D previewTexture = gd.tournaments[currentCup].tracks[currentTrack].preview;
+                GUI.DrawTexture(GUIHelper.CentreRect(new Rect(0,780,1920,200), guiAlpha), previewTexture);
+
+                GUI.matrix = original;
 
                 break;
             case RaceGUI.RaceInfo:
@@ -538,6 +581,7 @@ public class Race : GameMode
 
                 if (!changingState && (submitBool || (mouseSelecting && InputManager.GetClick())))
                 {
+                    sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
 
                     switch (options[currentSelection])
                     {
@@ -545,11 +589,21 @@ public class Race : GameMode
                             StartCoroutine(ChangeState(RaceGUI.Blank));
                             EndGamemode();
                             break;
-                        case "Next Race":
-                            StartCoroutine(ChangeState(RaceGUI.Blank));
-                            StartCoroutine("StartRace");
-                            currentTrack++;
-                            currentRace++;
+                        case "Next Race":                         
+                            if (raceType == RaceType.GrandPrix)
+                            {
+                                StartCoroutine(ChangeState(RaceGUI.Blank));
+                                StartCoroutine("StartRace");
+                                currentTrack++;
+                                currentRace++;
+                            }
+                            else if(raceType == RaceType.VSRace)
+                            {
+                                StartCoroutine(ChangeState(RaceGUI.LevelSelect));
+
+                                LevelSelect ls = gameObject.AddComponent<LevelSelect>();
+                                ls.ShowLevelSelect();
+                            }
                             break;
                         case "Restart":
                             StartCoroutine(ChangeState(RaceGUI.Blank));
@@ -611,39 +665,64 @@ public class Race : GameMode
         else
             mapAlpha = Mathf.Clamp(mapAlpha - (Time.deltaTime * 2f), 0f, 1f);
 
-        if (mapAlpha > 0f)
+        if (mapViewer != null)
         {
-            //Set the Alpha
-            GUIHelper.SetGUIAlpha(mapAlpha);
+            if (mapAlpha > 0f && td.map != null)
+            {
+                mapViewer.mapAlpha = mapAlpha;
 
-            //Draw Map
-            Rect drawRect;
-            float mapSize = Mathf.Min(Screen.width, Screen.height) / 3f;
-
-            if (InputManager.controllers.Count == 1)//Put Map in bottom left corner
-                drawRect = new Rect(Screen.width - mapSize - 10, (Screen.height / 2f) - (mapSize / 2f), mapSize, mapSize);
-            else //Put Map in centre of the Screen
-                drawRect = new Rect((Screen.width / 2f) - (mapSize / 2f), (Screen.height / 2f) - (mapSize / 2f), mapSize, mapSize);
-
-            GUI.DrawTexture(drawRect, td.map);
-
-            //Draw Icons
-            float iconSize = mapSize / 8f;
-
-            foreach (Racer racer in racers)
-            { 
-                Vector3 pos = Quaternion.AngleAxis(td.mapRotate, Vector3.up) * racer.ingameObj.transform.position;
-                Vector2 localPos = new Vector2(pos.x * td.mapScale.x, pos.z * td.mapScale.y) + td.mapOffset;
-                Rect iconRect = new Rect(drawRect.x + localPos.x, drawRect.y + localPos.y, iconSize, iconSize);
-
-                GUI.depth = racer.position * 2;
-                GUI.DrawTexture(iconRect, gd.characters[racer.Character].icon);
+                for (int i = 0; i < racers.Count; i++)
+                {
+                    mapViewer.objects[i].depth = racers[i].position;
+                }
             }
-
+            else
+            {
+                mapViewer.mapAlpha = 0f;
+            }
         }
 
         GUIHelper.ResetColor();
         GUI.depth = 0;
+    }
+
+    public void CancelLevelSelect()
+    {
+        if (readyToLevelSelect)
+        {
+            StartCoroutine(WaitforFade());
+        }
+    }
+
+    public IEnumerator WaitforFade()
+    {
+        while(changingState)
+            yield return null;
+
+        StartCoroutine(ChangeState(RaceGUI.NextMenu));
+        StartCoroutine(KillLevelSelect());
+    }
+
+    public IEnumerator KillLevelSelect()
+    {
+        while (GetComponent<LevelSelect>().enabled)
+            yield return null;
+
+        Destroy(GetComponent<LevelSelect>());
+    }
+
+    public void FinishLevelSelect(int _currentCup, int _currentTrack)
+    {
+        if (readyToLevelSelect)
+        {
+            currentTrack = _currentTrack;
+            currentCup = _currentCup;
+
+            currentRace++;
+       
+            StartCoroutine("StartRace");
+            StartCoroutine(KillLevelSelect());
+        }
     }
 
     public override void HostUpdate()
@@ -662,6 +741,10 @@ public class Race : GameMode
             {
                 racers[i].finished = true;
                 racers[i].timer = timer;
+
+                racers[i].position = finishedCount;
+                finishedCount++;
+
                 if (racers[i].Human >= 0)
                     StartCoroutine(FinishKart(racers[i]));
             }
@@ -809,6 +892,9 @@ public class Race : GameMode
         currentTrack = -1;
         currentRace = 1;
         lastcurrentRace = -1;
+
+        Destroy(mapViewer);
+
         StartCoroutine(QuitGame());
     }
 

@@ -101,6 +101,7 @@ public class KartMaker : MonoBehaviour
             kbas.rolloffMode = AudioRolloffMode.Linear;
             kbas.playOnAwake = false;
             kbas.dopplerLevel = 0f;
+            kbas.spread = 0f;
 
             ausI = kbas.gameObject.AddComponent<AudioSourceInfo>();
             ausI.idealVolume = 1f;
@@ -138,6 +139,18 @@ public class KartMaker : MonoBehaviour
             ks.wheelColliders.Add(frontrWheelCollider.GetComponent<WheelCollider>());
             ks.wheelColliders.Add(backlWheelCollider.GetComponent<WheelCollider>());
             ks.wheelColliders.Add(backrWheelCollider.GetComponent<WheelCollider>());
+
+            ks.wheelBackUps = new List<SphereCollider>();
+            ks.wheelBackUps.Add(frontlWheelCollider.gameObject.AddComponent<SphereCollider>());
+            ks.wheelBackUps.Add(frontrWheelCollider.gameObject.AddComponent<SphereCollider>());
+            ks.wheelBackUps.Add(backlWheelCollider.gameObject.AddComponent<SphereCollider>());
+            ks.wheelBackUps.Add(backrWheelCollider.gameObject.AddComponent<SphereCollider>());
+
+            foreach(SphereCollider sc in ks.wheelBackUps)
+            {
+                sc.radius = frontlWheelCollider.GetComponent<WheelCollider>().radius - 0.2f;
+                sc.enabled = false;
+            }
 
             ks.wheelMeshes = new List<Transform>();
             ks.wheelMeshes.Add(frontlWheel);

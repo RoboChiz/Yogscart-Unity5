@@ -10,7 +10,7 @@ public class CowTipping : MonoBehaviour
     public PushState pushState;
     private bool waitPush = false, waitLand;
 
-    private float pushSpeed = 10, pushTime = 0.2f, currentPushTime, desiredY, offset = 0.5f;
+    private float pushSpeed = 5f, pushTime = 0.2f, currentPushTime, desiredY, offset = 0.5f;
 
     private new Rigidbody rigidbody;
     private Vector3 lastVelocity;

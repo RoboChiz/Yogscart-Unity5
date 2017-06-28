@@ -97,15 +97,22 @@ public class Leaderboard : MonoBehaviour
             pcSpeed = 20f;
 
         while (pointCount < 15f)
-            yield return null;
+            yield return null;    
+    
+        speeding = false;
 
+        GoToAddedPoints();
+    }
+
+    private void GoToAddedPoints()
+    {
         state = LBType.AddedPoints;
 
         //Check to see if List is sorted
         bool sorted = true;
         for (var j = 0; j < racers.Count; j++)
         {
-            if(j < racers.Count - 1)
+            if (j < racers.Count - 1)
             {
                 if (racers[j].points < racers[j + 1].points)
                 {
@@ -117,9 +124,6 @@ public class Leaderboard : MonoBehaviour
 
         if (sorted)
             state = LBType.Sorted;
-
-        speeding = false;
-
     }
 
     void Update()
@@ -305,16 +309,17 @@ public class Leaderboard : MonoBehaviour
 
         GUI.EndGroup();
 
-        if (state != LBType.TimeTrial && pointCount < 15)
+        if (state != LBType.TimeTrial && pointCount < 15f)
         {
             pointCount += Time.deltaTime * pcSpeed;
         }
         else if(state == LBType.AddingPoints)
         {
-            state = LBType.AddedPoints;
+            GoToAddedPoints();
+            speeding = false;
         }
 
-        pointCount = Mathf.Clamp(pointCount, 0f, 15f);
+       // pointCount = Mathf.Clamp(pointCount, 0f, float.);
 
         //Reset the GUI Alpha after changing it
         GUIHelper.ResetColor();

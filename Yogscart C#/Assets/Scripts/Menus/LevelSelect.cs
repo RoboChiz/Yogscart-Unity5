@@ -16,16 +16,23 @@ public class LevelSelect : MonoBehaviour
     private Vector2 lastMousePos;
     private float[] cupScales, trackScales;
 
+    private SoundManager sm;
+
     // Use this for initialization
     void Start()
     {
         gd = FindObjectOfType<CurrentGameData>();
+        sm = FindObjectOfType<SoundManager>();
 
         trackScales = new float[] { 1f, 1f, 1f, 1f };
         cupScales = new float[gd.tournaments.Length];
 
         for (int i = 0; i < cupScales.Length; i++)
             cupScales[i] = 1f;
+
+        if (skin == null)
+            skin = Resources.Load<GUISkin>("GUISkins/LevelSelect");
+
     }
 
     void OnGUI()
@@ -205,10 +212,15 @@ public class LevelSelect : MonoBehaviour
                 else
                     FinishLevelSelect();
             }
+
+            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
         }
 
         if (cancel)
         {
+            if(FindObjectOfType<MainMenu>() == null || state)
+                sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/back"));
+
             if (!state)
             {
                 CancelLevelSelect();
@@ -239,6 +251,10 @@ public class LevelSelect : MonoBehaviour
                 gd.gameObject.AddComponent<VotingScreen>();
 
             FindObjectOfType<VotingScreen>().ShowScreen();
+        }
+        else if(gamemode.raceType == RaceType.VSRace)
+        {
+            gamemode.CancelLevelSelect();
         }
     }
 
@@ -284,6 +300,10 @@ public class LevelSelect : MonoBehaviour
                 gd.gameObject.AddComponent<VotingScreen>();
 
             FindObjectOfType<VotingScreen>().ShowScreen();
+        }
+        else if(gamemode.raceType == RaceType.VSRace)
+        {
+            gamemode.FinishLevelSelect(currentCup, currentTrack);
         }
 
         StartCoroutine(HideLevelSelect());

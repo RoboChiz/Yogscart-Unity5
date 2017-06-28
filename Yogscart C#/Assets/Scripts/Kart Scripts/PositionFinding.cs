@@ -16,28 +16,6 @@ public class PositionFinding : MonoBehaviour
         GameObject tm = GameObject.Find("Track Manager");
         if (tm != null)
             td = tm.GetComponent<TrackData>();
-
-        //Find out where we are
-        if (td != null)
-        {
-            float smallestDistance = 1000f;
-            int closestPoint = 0;
-
-            for (int i = 0; i < td.positionPoints.Count; i++)
-            {
-                float distance = Vector3.Distance(td.positionPoints[i].position, transform.position);
-
-                if (distance < smallestDistance)
-                {
-                    closestPoint = i;
-                    smallestDistance = distance;
-                }
-            }
-
-            currentPos = closestPoint;
-            currentTotal = currentPos;
-            lap = 0;
-        }
     }
 
     // Update is called once per frame
@@ -133,7 +111,7 @@ public class PositionFinding : MonoBehaviour
 
     void CheckForwards(float closestDistance)
     {
-        for (int i = 1; i < 3; i++)
+        for (int i = 1; i < 10; i++)
         {
             float newDistance = Vector3.Distance(transform.position, td.positionPoints[MathHelper.NumClamp(currentPos + i, 0, td.positionPoints.Count)].position);
             if (newDistance < closestDistance)
@@ -146,7 +124,7 @@ public class PositionFinding : MonoBehaviour
     }
     void CheckBackwards(float closestDistance)
     {
-        for (int i = -1; i > -3; i--)
+        for (int i = -1; i > -10; i--)
         {
             float newDistance = Vector3.Distance(transform.position, td.positionPoints[MathHelper.NumClamp(currentPos + i, 0, td.positionPoints.Count)].position);
 
@@ -177,17 +155,15 @@ public class PositionFinding : MonoBehaviour
         {
             int returnVal = 0, lapCounted = 0;
 
-            for(int i = 0; i < td.positionPoints.Count; i++)
+            for(int i = 1; i < td.positionPoints.Count; i++)
             {
                 if(td.positionPoints[i].GetComponent<PointHandler>().style == PointHandler.Point.Lap)
                 {
                     lapCounted++;
                 }
 
-                if(lapCounted == lapVal - 1)
-                {
-                    returnVal++;
-                }
+                returnVal++;
+
                 if (lapCounted == lapVal)
                     break;
             }

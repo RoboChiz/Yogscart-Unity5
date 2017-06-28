@@ -25,7 +25,10 @@ public class TransformPointOfInterest : PointOfInterest
 
     public override Vector3 GetLocation()
     {
-        return target.position;
+        if (target != null)
+            return target.position;
+        else
+            return Vector3.zero;
     }
 }
 public class Vector3PointOfInterest : PointOfInterest

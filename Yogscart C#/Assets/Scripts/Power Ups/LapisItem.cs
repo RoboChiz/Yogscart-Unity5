@@ -10,7 +10,7 @@ public class LapisItem : MonoBehaviour {
         kartScript ks = transform.parent.GetComponent<kartScript>();
         ks.lapisAmount += 4;
 
-        yield return null;
+        yield return new WaitForSeconds(2f);
         Destroy(gameObject);
 
     }

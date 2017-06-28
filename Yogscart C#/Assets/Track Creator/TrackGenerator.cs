@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[ExecuteInEditMode, RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
+[ExecuteInEditMode]
 public class TrackGenerator : MonoBehaviour
 {
+    public Material roadMat;
+
     public List<NodeConnector> connections = new List<NodeConnector>();
-    private List<NodeConnector> lastConnections = new List<NodeConnector>();
-    private List<Road> allRoads;
+    private List<NodeConnectorCopy> lastConnections = new List<NodeConnectorCopy>();
 
     // Update is called once per frame
     void Update()
@@ -16,9 +17,9 @@ public class TrackGenerator : MonoBehaviour
         //Check current Nodes against old Node
         bool changesFound = false;
 
-        if (allRoads == null)
-            changesFound = true;
-        else if (connections.Count != lastConnections.Count)
+        connections = FindObjectsOfType<NodeConnector>().ToList();
+
+        if (connections.Count != lastConnections.Count)
             changesFound = true;
         else
         {
@@ -43,10 +44,26 @@ public class TrackGenerator : MonoBehaviour
     void UpdateLC()
     {
         //Update last node list
-        lastConnections = new List<NodeConnector>();
+        lastConnections = new List<NodeConnectorCopy>();
+
+        Transform trackChild = transform.FindChild("Roads");
+
+        if(trackChild == null)
+        {
+            GameObject tcGO = new GameObject("Roads");
+            trackChild = tcGO.transform;                 
+        }
+
+        trackChild.parent = transform;
+        trackChild.localPosition = Vector3.zero;
 
         foreach (NodeConnector nc in connections)
-            lastConnections.Add(new NodeConnector(nc));
+        {
+            lastConnections.Add(new NodeConnectorCopy(nc));
+
+            nc.transform.parent = trackChild;
+            nc.generatedMesh = false;
+        }
 
         //Remake Mesh
         UpdateMesh();
@@ -54,126 +71,86 @@ public class TrackGenerator : MonoBehaviour
 
     private void UpdateMesh()
     {
-        float startTime = Time.realtimeSinceStartup;
+        //float startTime = Time.realtimeSinceStartup;
 
         //Clean up the Network
-        CollectNetwork();
+        List<NodeConnector> validConnections = CollectNetwork();
+        List<Node> usedNode = new List<Node>();
 
-        //Create Mesh Lists
-        List<Vector3> verts = new List<Vector3>();
-        List<Vector3> normals = new List<Vector3>();
-        List<Vector2> uvs = new List<Vector2>();
-        List<int> tris = new List<int>();
+        //Create a list of used Nodes
+        foreach(NodeConnector nc in validConnections)
+        {
+            if(!usedNode.Contains(nc.a))
+                usedNode.Add(nc.a);
+            if (!usedNode.Contains(nc.b))
+                usedNode.Add(nc.b);
+        }
 
         //Create Road Geometry
-        foreach (Road road in allRoads)
+        foreach (NodeConnector nc in validConnections)
         {
-            if (!road.addedToMesh)
+            if (!nc.generatedMesh)
             {
-                GenerateRoad(verts, normals, uvs, tris, road, 0f, null, false);
+                GenerateRoad(nc);
             }
         }
 
-        Mesh newMesh = new Mesh();
-        newMesh.vertices = verts.ToArray();
-        newMesh.normals = normals.ToArray();
-        newMesh.triangles = tris.ToArray();
-        newMesh.uv = uvs.ToArray();
-
-        GetComponent<MeshFilter>().mesh = newMesh;
-        GetComponent<MeshCollider>().sharedMesh = newMesh;
-
-        //Debug.Log("Generated track of " + lastNodesPosition.Count + " Nodes in " + (Time.realtimeSinceStartup - startTime).ToString() + " seconds.");
-    }
-
-    private void GenerateRoad(List<Vector3> verts, List<Vector3> normals, List<Vector2> uvs, List<int> tris, Road road, float currentLength, Vertex[] lastTwoVertices, bool atFront)
-    {
-        int vertStart = verts.Count;
-
-        float newLength = 0f;
-        Mesh roadMesh = road.GenerateRoad(currentLength, out newLength);
-        currentLength = newLength;
-
-        Vector3[] finalVerts = roadMesh.vertices;
-        Vector3[] finalNormals = roadMesh.normals;
-        Vector2[] finalUV = roadMesh.uv;
-
-        if (lastTwoVertices != null)
+        //Create Node Geometry
+        foreach (Node node in usedNode)
         {
-            for (int i = 0; i < 2; i++)
-            {
-                int grabPosition = atFront ? i : roadMesh.vertices.Length - 2 + i;
-
-                finalVerts[grabPosition] = lastTwoVertices[i].position;
-                finalNormals[grabPosition] = lastTwoVertices[i].normal;
-                finalUV[grabPosition] = lastTwoVertices[i].uv;
-            }       
+            node.ResetMesh();
+            node.GenerateMesh();
         }
 
-        verts.AddRange(finalVerts);
-        normals.AddRange(finalNormals);
-        uvs.AddRange(finalUV);
+        //float totalTime = (Time.realtimeSinceStartup - startTime);
+        //Debug.Log("Track Generated in " + totalTime + " seconds!");
+    }
 
-        List<int> roadTris = roadMesh.triangles.ToList();
-        for (int i = 0; i < roadTris.Count; i++)
-            roadTris[i] += vertStart;
-
-        tris.AddRange(roadTris);
+    private void GenerateRoad(NodeConnector nc)
+    {
+        nc.GenerateRoad();
 
         //Test for connected roads, to connect vertices together
-        Node a = road.a;
-        Node b = road.b;
+        Node a = nc.a;
+        Node b = nc.b;
 
         //If A node if there is only one other connection
-        if (road.a.connections.Count == 2)
+        if (a.connections.Count == 2)
         {           
-            NodeConnector nc = null;
+            NodeConnector aCheck = null;
             foreach(NodeConnector checkNC in a.connections)
             {
-                if(!((checkNC.a == a && checkNC.b == b) || (checkNC.a == b && checkNC.b == a)))
+                if(checkNC != nc)
                 {
-                    nc = checkNC;
+                    aCheck = checkNC;
                     break;
                 }
             }
 
             //If this connection has a road that hasn't been generated and is in an opposite direction to our road
-            if (nc.road != null && !nc.road.addedToMesh && Vector3.Dot(nc.road.Direction(a), road.Direction(a)) < -0.5f)
+            if (!aCheck.generatedMesh && Vector3.Dot(nc.Direction(a), aCheck.Direction(a)) < -0.5f)
             {
-                List<Vertex> aListVertices = new List<Vertex>();
-
-                for (int i = 1; i >= 0; i--)
-                    aListVertices.Add(new Vertex(roadMesh.vertices[i], roadMesh.normals[i], roadMesh.uv[i]));
-
-                GenerateRoad(verts, normals, uvs, tris, nc.road, currentLength, aListVertices.ToArray(), nc.road.a == a);
+                GenerateRoad(aCheck);
             }
         }
 
         //If B node if there is only one other connection
-        if (road.b.connections.Count == 2)
-        {         
-            NodeConnector nc = null;
+        if (b.connections.Count == 2)
+        {
+            NodeConnector bCheck = null;
             foreach (NodeConnector checkNC in b.connections)
             {
-                if (!((checkNC.a == a && checkNC.b == b) || (checkNC.a == b && checkNC.b == a)))
+                if (checkNC != nc)
                 {
-                    nc = checkNC;
+                    bCheck = checkNC;
                     break;
                 }
             }
 
             //If this connection has a road that hasn't been generated and is in an opposite direction to our road
-            if (nc.road != null && !nc.road.addedToMesh && Vector3.Dot(nc.road.Direction(b), road.Direction(b)) < -0.5f)
+            if (!bCheck.generatedMesh && Vector3.Dot(nc.Direction(b), bCheck.Direction(b)) < -0.5f)
             {
-                List<Vertex> bListVertices = new List<Vertex>();
-
-                for (int i = 1; i >= 0; i--)
-                {
-                    int grabPoint = roadMesh.vertices.Length - 2 + i;
-                    bListVertices.Add(new Vertex(roadMesh.vertices[grabPoint], roadMesh.normals[grabPoint], roadMesh.uv[grabPoint]));
-                }
-
-                GenerateRoad(verts, normals, uvs, tris, nc.road, currentLength, bListVertices.ToArray(), nc.road.b == b);
+                GenerateRoad(bCheck);
             }
         }
     }
@@ -183,27 +160,45 @@ public class TrackGenerator : MonoBehaviour
         //Make sure each node has an empty list
         foreach (NodeConnector nc in connections.ToArray())
         {
-            if (nc.a == null || nc.b == null)
+            foreach (Transform extra in nc.extras.ToArray())
             {
-                foreach (Transform extra in nc.extras.ToArray())
-                {
-                    if (extra != null)
-                        DestroyImmediate(extra.gameObject);
-
+                if (extra == null)
                     nc.extras.Remove(extra);
-                }
-
-                connections.Remove(nc);
             }
+
+        }
+    }
+
+    public bool ContainsConnection(Node a, Node b)
+    {
+        foreach(NodeConnector nc in connections)
+        {
+            if ((nc.a == a && nc.b == b) || (nc.b == a && nc.a == b))
+                return true;
         }
 
-        CollectNetwork();
+        return false;
+    }
+
+    public NodeConnector FindConnection(Node a, Node b)
+    {
+        foreach (NodeConnector nc in connections)
+        {
+            if ((nc.a == a && nc.b == b) || (nc.b == a && nc.a == b))
+                return nc;
+        }
+
+        return null;
     }
 
     //Collects all Node components from a scene, and cleans the Road Network
-    private void CollectNetwork()
+    private List<NodeConnector> CollectNetwork()
     {
-        allRoads = new List<Road>();
+        //Clean the Network
+        CleanNetwork();
+
+        List<NodeConnector> returnValue = new List<NodeConnector>();
+
         Node[] allNodes = FindObjectsOfType<Node>();
         AnchorPoint[] allAnchors = FindObjectsOfType<AnchorPoint>();
 
@@ -211,7 +206,6 @@ public class TrackGenerator : MonoBehaviour
         foreach (Node node in allNodes)
         {
             node.connections = new List<NodeConnector>();
-
             node.transform.parent = transform;
         }
 
@@ -221,7 +215,7 @@ public class TrackGenerator : MonoBehaviour
         //Make sure each node has an empty list
         foreach (NodeConnector nc in connections.ToArray())
         {
-            nc.segments = Mathf.Clamp(nc.segments, 2, 50);
+            nc.segments = Mathf.Clamp(nc.segments, 2, 75);
         }
 
         //Clean Nodes
@@ -239,6 +233,8 @@ public class TrackGenerator : MonoBehaviour
             {
                 nc.a.connections.Add(nc);
                 nc.b.connections.Add(nc);
+
+                returnValue.Add(nc);
             }
         }
 
@@ -250,7 +246,7 @@ public class TrackGenerator : MonoBehaviour
 
             for (int i = 0; i < node.connections.Count; i++)
             {
-                Vector3 direction = node.connections[i].Other(node).transform.position - node.transform.position;
+                Vector3 direction = node.connections[i].Opposite(node).transform.position - node.transform.position;
                 angles.Add(MathHelper.Angle(Vector3.forward, direction));
             }
 
@@ -276,37 +272,7 @@ public class TrackGenerator : MonoBehaviour
             node.connections = sortedList;
         }
 
-        //Generate Roads
-        foreach (NodeConnector connectedNode in connections)
-        {
-            //If allRoads does not contain this road
-            if (connectedNode.a != null && connectedNode.b != null && !HasRoad(connectedNode.a, connectedNode.b))
-            {
-                Road road;
-                if (connectedNode.connectionType == NodeConnector.ConnectionType.Straight)
-                    road = new StraightRoad(connectedNode.a, connectedNode.b);
-                else
-                    road = new BezierRoad(connectedNode.a, connectedNode.b, connectedNode.extras.ToArray(), connectedNode.segments);
-
-                allRoads.Add(road);
-                connectedNode.road = road;
-            }
-            else
-            {
-                connectedNode.road = null;
-            }
-        }
-    }
-
-    public bool HasRoad(Node nodeA, Node nodeB)
-    {
-        foreach (Road road in allRoads)
-        {
-            if ((road.a == nodeA && road.b == nodeB) || (road.a == nodeB && road.b == nodeA))
-                return true;
-        }
-
-        return false;
+        return returnValue;
     }
 
     public class Vertex

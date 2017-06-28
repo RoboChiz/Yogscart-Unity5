@@ -16,41 +16,4 @@ public class TrackDataEditor : EditorWindow
             obj.AddComponent<TrackData>();
         }
     }
-
-    [MenuItem("Track Editor/Create Position Point at end of queue")]
-    static void CreatePositionPoint()
-    {
-        GameObject tm = GameObject.Find("Track Manager");
-        if (tm != null && tm.GetComponent<TrackData>() != null)
-        {
-            tm.GetComponent<TrackData>().NewPoint();
-        }
-    }
-
-    [MenuItem("Track Editor/Create Position Point after selection")]
-    static void CreatePositionPointAfterSelection()
-    {
-        GameObject tm = GameObject.Find("Track Manager");
-        TrackData td = tm.GetComponent<TrackData>();
-
-        if (Selection.activeTransform != null && tm != null && td != null)
-        {
-            Transform cs = Selection.activeTransform;
-            int index = td.positionPoints.FindIndex(o => o == cs);
-
-            if (index >= 0 && index < td.positionPoints.Count)
-                td.AddPoint(index+1);
-
-        }
-    }
-
-    // Use this for initialization
-    void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 }

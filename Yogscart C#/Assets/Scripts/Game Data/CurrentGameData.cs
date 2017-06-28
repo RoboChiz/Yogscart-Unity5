@@ -32,6 +32,8 @@ public class CurrentGameData : MonoBehaviour {
 
     //BlackOut Variables
     public static bool blackOut = false;
+    public bool isBlackedOut { get { return colourAlpha.a >= 1f; } }
+
     private Color colourAlpha = Color.white;
     const float animationSpeed = 0.05f;
     private float lastTime = 0f;
