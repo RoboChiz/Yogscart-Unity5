@@ -264,8 +264,8 @@ public class NetworkRaceHost : Race
             r.finished = false;
             r.ready = false;
             r.timer = 0;
-            r.currentDistance = 0;
-            r.totalDistance = 0;         
+            r.currentPercent = 0;
+            r.lap = 0;         
         }
     }
 

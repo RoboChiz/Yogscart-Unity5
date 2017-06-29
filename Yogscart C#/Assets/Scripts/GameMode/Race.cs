@@ -35,10 +35,11 @@ public class Race : GameMode
     public int finishedCount = 0;
 
     private MapViewer mapViewer;
+    private Coroutine currentGame;
 
     public override void StartGameMode()
     {
-        StartCoroutine("actualStartGamemode");
+        currentGame = StartCoroutine("actualStartGamemode");
     }
 
     protected virtual IEnumerator actualStartGamemode()
@@ -75,8 +76,8 @@ public class Race : GameMode
         foreach (Racer r in racers)
         {
             r.finished = false;
-            r.currentDistance = 0;
-            r.totalDistance = 0;
+            r.currentPercent = 0;
+            r.lap = 0;
             r.timer = 0;
         }
 
@@ -87,14 +88,16 @@ public class Race : GameMode
         showMap = false;
 
         //Load the Level
-        SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
-        yield return null;
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
+
+        while(!sync.isDone)
+            yield return null;
 
         readyToLevelSelect = true;
         finishedCount = 0;
 
         //Adjust Gravity depending on difficulty
-        Physics.gravity = -Vector3.up * Mathf.Lerp(12f, 17f, CurrentGameData.difficulty / 3f);
+        Physics.gravity = -Vector3.up * Mathf.Lerp(12f, 15f, CurrentGameData.difficulty / 2f);
 
         //Get rid of Item Boxes
         if (raceType == RaceType.TimeTrial)
@@ -732,9 +735,9 @@ public class Race : GameMode
         for (int i = 0; i < racers.Count; i++)
         {
             PositionFinding pf = racers[i].ingameObj.GetComponent<PositionFinding>();
-            racers[i].currentDistance = pf.currentDistance;
-            racers[i].totalDistance = pf.currentTotal;
-            pf.position = racers[i].position;
+            racers[i].currentPercent = pf.currentPercent;
+            racers[i].lap = pf.lap;
+            pf.racePosition = racers[i].position;
 
             //Finish Player
             if (pf.lap >= td.Laps && !racers[i].finished)
@@ -894,8 +897,32 @@ public class Race : GameMode
         lastcurrentRace = -1;
 
         Destroy(mapViewer);
-
         StartCoroutine(QuitGame());
+    }
+
+    public override void Restart()
+    {
+        StartCoroutine(ActualRestart());
+    }
+
+    public IEnumerator ActualRestart()
+    {
+        StopCoroutine(currentGame);
+
+        Debug.Log("It's over!");
+        finished = true;
+        showMap = false;
+        StopTimer();
+        PauseMenu.canPause = false;
+
+        timer = 0;
+        finished = false;
+        raceFinished = false;
+        CurrentGameData.blackOut = true;
+
+        yield return new WaitForSeconds(0.5f);
+
+        StartCoroutine(actualStartGamemode());
     }
 
     //Called when a client disconnects from online gamemode (Not used as Race is Single Player Only)

@@ -50,7 +50,7 @@ public class kartInfo : MonoBehaviour
 
         lapisCount = GetComponent<kartScript>().lapisAmount;
         lap = GetComponent<PositionFinding>().lap;
-        position = GetComponent<PositionFinding>().position;
+        position = GetComponent<PositionFinding>().racePosition;
 
         //Affect Alpha and Size based on booleans
         if (hidden)

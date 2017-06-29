@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -100,9 +101,24 @@ public class PauseMenu : MonoBehaviour
             Texture2D boardTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Backing");
             GUI.DrawTexture(new Rect(660, 100, 600, 800), boardTexture);
 
-            string[] options = new string[] { "Resume", "Options", "Quit" };
+            List<string> options = new List<string>() { "Resume", "Options", "Quit" };
 
-            for(int i = 0; i < options.Length; i++)
+            Race race = FindObjectOfType<Race>();
+            if (race != null && race.raceType == RaceType.TimeTrial)
+            {
+                options.Insert(2, "Restart");
+
+                if(optionsSize.Length != options.Count)
+                {
+                    float[] holder = optionsSize;
+                    optionsSize = new float[options.Count];
+
+                    for (int i = 0; i < holder.Length; i++)
+                        optionsSize[i] = holder[i];
+                }
+            }
+
+            for(int i = 0; i < options.Count; i++)
             {
                 if(currentSelection == i)
                 {
@@ -119,7 +135,9 @@ public class PauseMenu : MonoBehaviour
                         optionsSize[i] = 1f;
                 }
 
-                GUIHelper.CentreRectLabel(new Rect(670, 400 + (i * 100), 580, 100), optionsSize[i], options[i], (currentSelection == i)?Color.yellow:Color.white);
+                float yCentre = 500 - ((options.Count * 100) / 2f);
+
+                GUIHelper.CentreRectLabel(new Rect(670, yCentre + (i * 100), 580, 100), optionsSize[i], options[i], (currentSelection == i)?Color.yellow:Color.white);
 
             }
 
@@ -131,7 +149,7 @@ public class PauseMenu : MonoBehaviour
                 if (vertical != 0)
                 {
                     currentSelection += vertical;
-                    currentSelection = MathHelper.NumClamp(currentSelection, 0, 3);
+                    currentSelection = MathHelper.NumClamp(currentSelection, 0, options.Count);
                 }
 
                 if (submitBool)
@@ -150,6 +168,12 @@ public class PauseMenu : MonoBehaviour
 
                             GetComponent<Options>().enabled = true;
                             GetComponent<Options>().ShowOptions();
+                            break;
+                        case "Restart":
+                            HidePause();
+                            paused = -1;
+
+                            FindObjectOfType<GameMode>().Restart();
                             break;
                         case "Quit":
                             HidePause();

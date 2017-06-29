@@ -45,7 +45,7 @@ public class IntroScript : MonoBehaviour {
 
         yield return new WaitForSeconds(0.5f);
 
-        SceneManager.LoadScene("Main_Menu");
+        SceneManager.LoadSceneAsync("Main_Menu");
     }
 	
     void OnGUI()

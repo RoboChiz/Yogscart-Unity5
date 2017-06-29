@@ -159,8 +159,10 @@ public class NetworkRaceClient : Race
         if (FindObjectOfType<VotingScreen>() != null)
             DestroyImmediate(FindObjectOfType<VotingScreen>());
 
-        SceneManager.LoadScene(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
-        yield return null;
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
+
+        while(!sync.isDone)
+            yield return null;
 
         //Load the Track Manager
         td = FindObjectOfType<TrackData>();
@@ -215,7 +217,7 @@ public class NetworkRaceClient : Race
     private void OnPosition(NetworkMessage netMsg)
     {
         intMessage msg = netMsg.ReadMessage<intMessage>();
-        myKart.GetComponent<PositionFinding>().position = msg.value;
+        myKart.GetComponent<PositionFinding>().racePosition = msg.value;
     }
 
     public void SetupCameras()

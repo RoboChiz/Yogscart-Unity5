@@ -1,7 +1,11 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+
 
 public class TrackWindow : EditorWindow
 {
@@ -82,17 +86,19 @@ public class TrackWindow : EditorWindow
 
             GUILayout.Label("Looped: " + td.loopedTrack);
 
-            GUILayout.Space(10f);
-
-            GUILayout.Label("Background Music:");
-            td.backgroundMusic = (AudioClip)EditorGUILayout.ObjectField(td.backgroundMusic, typeof(AudioClip));
-           
-            if (td.loopedTrack)
+            if(!td.loopedTrack)
+                GUILayout.Label("Laps: " + td.Laps);
+            else
             {
                 GUILayout.Space(10f);
                 GUILayout.Label("Laps:");
                 td.Laps = Mathf.Clamp(EditorGUILayout.IntField(td.Laps), 1, 10);
             }
+
+            GUILayout.Space(10f);
+
+            GUILayout.Label("Background Music:");
+            td.backgroundMusic = (AudioClip)EditorGUILayout.ObjectField(td.backgroundMusic, typeof(AudioClip));          
 
             GUILayout.Space(10f);
 
@@ -142,6 +148,9 @@ public class TrackWindow : EditorWindow
 
                 if (introShowing[count])
                 {
+                    GUILayout.Label("Travel Time:");
+                    introPoint.travelTime = EditorGUILayout.FloatField(introPoint.travelTime);
+
                     introPoint.startPoint = EditorGUILayout.Vector3Field("Start Position", introPoint.startPoint);
                     introPoint.startRotation = EditorGUILayout.Vector3Field("Start Rotation", introPoint.startRotation);
 
@@ -241,3 +250,4 @@ public class TrackWindow : EditorWindow
         return obj.transform;
     }
 }
+#endif

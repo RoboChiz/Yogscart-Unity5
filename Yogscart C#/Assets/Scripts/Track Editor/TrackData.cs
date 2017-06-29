@@ -14,7 +14,7 @@ using System.Linq;
 public class TrackData : MonoBehaviour
 {
 
-    public enum TrackErrors { PointWithNoEnd, LapNotOnMain, RouteSkipsLap, NoStartPoint, NoEndPoint, TooManyStartPoints, TooManyEndPoints, LapPointOnLoopedTrack, NotEnoughPoints, BadTrackDesignPointlessLoop };
+    public enum TrackErrors { PointWithNoEnd, LapNotOnMainRoute, RouteSkipsLap, NoStartPoint, NoEndPoint, TooManyStartPoints, TooManyEndPoints, LapPointOnLoopedTrack, NotEnoughPoints, BadTrackDesignPointlessLoop };
     public List<TrackErrors> trackErrors;
 
     //Track Metadata
@@ -36,13 +36,17 @@ public class TrackData : MonoBehaviour
 
     [HideInInspector]
     public Transform spawnPoint;
+    
     //DEBUG[HideInInspector]
-    public List<Transform> positionPoints; //Depracted Used to copy over existing layouts
+    //public List<Transform> positionPoints; //Depracted Used to copy over existing layouts
 
     public List<PointConnector> connections;
     private int lastConnectionCount;
 
     public List<CameraPoint> introPans;
+
+    public BSPTree pointTree;
+    public List<PointHandler> validPointHandlers { get; private set; }
 
     // Update is called once per frame
     void Update()
@@ -55,7 +59,7 @@ public class TrackData : MonoBehaviour
             if (introPans == null)
                 introPans = new List<CameraPoint>();
 
-            //Depreacted Converting
+            /*Depreacted Converting
             if(positionPoints != null && positionPoints.Count > 0)
             {
                 //Converts Old Position Point system to new System
@@ -66,7 +70,7 @@ public class TrackData : MonoBehaviour
                 }
 
                 positionPoints = new List<Transform>();
-            }
+            }*/
 
             //Check for Spawn Point
             if (spawnPoint == null)
@@ -81,7 +85,7 @@ public class TrackData : MonoBehaviour
             spawnPoint.name = "Spawn Point";
 
 
-                  //DEPRECATED!!!!!!!!!!
+             /*DEPRECATED!!!!!!!!!!
              if (positionPoints.Count > 2)
              {
                  if (loopedTrack)
@@ -100,7 +104,7 @@ public class TrackData : MonoBehaviour
                          loopedTrack = true;
                      }
                  }
-             }
+             }*/
 
             //Check if Track needs to be updated
             bool changeDetected = false;
@@ -122,14 +126,16 @@ public class TrackData : MonoBehaviour
             if (changeDetected)
             {
                 CheckConsistency();
-
-                #if UNITY_EDITOR
-                    TrackWindow window = (TrackWindow)EditorWindow.GetWindow(typeof(TrackWindow));
-                    window.Repaint();
-                #endif
+#if UNITY_EDITOR
+                if (Application.isEditor)
+                {
+                        TrackWindow window = (TrackWindow)EditorWindow.GetWindow(typeof(TrackWindow));
+                        window.Repaint();
+                }
+#endif
+                pointTree = null;
             }
-
-            //DEPRECATED!!!!!!!!!!
+            /*DEPRECATED!!!!!!!!!!
 
             //Check that Position Points are in the correct format
             int lapCount = 0;
@@ -164,7 +170,42 @@ public class TrackData : MonoBehaviour
                 Laps = lapCount;
 
           //  if (positionPoints.Count == 0)
-                //NewPoint();
+                //NewPoint();*/
+        }
+        else if (pointTree == null && trackErrors != null && trackErrors.Count == 0)
+        {
+            //Generate BSP Tree
+            CheckConsistency();
+
+            //Get Rect Size
+            Vector2 min = new Vector2(validPointHandlers[0].lastPos.x, validPointHandlers[0].lastPos.z)
+                , max = new Vector2(validPointHandlers[0].lastPos.x, validPointHandlers[0].lastPos.z);
+
+            foreach (PointHandler ph in validPointHandlers)
+            {
+                if (ph.lastPos.x < min.x)
+                    min.x = ph.lastPos.x;
+
+                if (ph.lastPos.x > max.x)
+                    max.x = ph.lastPos.x;
+
+                if (ph.lastPos.z < min.y)
+                    min.y = ph.lastPos.z;
+
+                if (ph.lastPos.z > max.y)
+                    max.y = ph.lastPos.z;
+            }
+
+            //Generate the BSP Tree
+            min -= new Vector2(100, 100);
+            max += new Vector2(100, 100);
+
+            pointTree = new BSPTree(0, new Rect(min.x, min.y, max.x - min.x, max.y - min.y));
+
+            foreach (PointHandler ph in validPointHandlers)
+                pointTree.Insert(ph);
+
+            Debug.Log("Generated Point Tree");
         }
     }
 
@@ -227,6 +268,8 @@ public class TrackData : MonoBehaviour
 
         List<PointHandler> startPoints = new List<PointHandler>(), endPoints = new List<PointHandler>();
 
+        int lapCount = 0;
+
         //If a point isn't a valid one then delete it
         foreach (PointHandler ph in pointHandlers.ToArray())
         {
@@ -243,7 +286,13 @@ public class TrackData : MonoBehaviour
                 if (ph.style == PointHandler.Point.Start)
                     startPoints.Add(ph);
                 if (ph.style == PointHandler.Point.End)
+                {
                     endPoints.Add(ph);
+                    lapCount++;
+                }
+
+                if (ph.style == PointHandler.Point.Lap)
+                    lapCount++;
             }
         }
 
@@ -285,7 +334,10 @@ public class TrackData : MonoBehaviour
 
         //If we an end point this is a non-looped track
         if (!foundLink)
+        {
             loopedTrack = false;
+            Laps = lapCount;
+        }
         else
             loopedTrack = true;
 
@@ -300,10 +352,12 @@ public class TrackData : MonoBehaviour
             ph.visitedPoint = false;
 
         //Calculate route to the finish
-        if (!CalculatePercent(startPoints[0]))
+        if (!CalculatePercent(startPoints[0], validPoints))
         {
             return;
         }
+
+        validPointHandlers = pointHandlers;
     }
 
     //Checks that there are no strands
@@ -322,7 +376,7 @@ public class TrackData : MonoBehaviour
         }
 
         //If Lap Point found with 1 connection then presume non looped track
-        if(startPoint.style == PointHandler.Point.Lap && !loopedTrack)
+        if(startPoint.style == PointHandler.Point.Lap && loopedTrack)
         {
             trackErrors.Add(TrackErrors.LapPointOnLoopedTrack);
             return false;
@@ -339,7 +393,7 @@ public class TrackData : MonoBehaviour
     }
 
     //Gives each Point Handler a percentage representing how far along the course they are
-    private bool CalculatePercent(PointHandler startPoint)
+    private bool CalculatePercent(PointHandler startPoint, List<PointHandler> validPoints)
     {
         //Custom route class that contains a list of points and the points overall distance
         //Use Recursion to map every route through the track
@@ -360,18 +414,125 @@ public class TrackData : MonoBehaviour
 
         //Longest route is main track 0% - 100%
         Route mainRoute = routes[0];
-        //If there is a Lap point not on the main route, reject!
+
+        foreach(Route route in routes)
+            if(route.length > mainRoute.length)
+                mainRoute = route;
+
+        //Check Lap Points
+        foreach(PointHandler ph in validPoints)
+        {
+            if (ph.style == PointHandler.Point.Lap)
+            {
+                if (loopedTrack)
+                {
+                    //There should be no lap points in a looped track
+                    ph.style = PointHandler.Point.Position;
+                }
+                else
+                {
+                    //If there is a Lap point not on the main route, reject!
+                    if (!mainRoute.points.Contains(ph))
+                    {
+                        trackErrors.Add(TrackErrors.LapNotOnMainRoute);
+                        return false;
+                    }
+                }
+            }
+        }
+
         //Assign each point in main track a percentage based on distance, and set it's main route marker to true, name each point and set it's position in the track manager
+        int count = 0;
+        float currentLength = 0f;
 
-        //Check if looped that we return to the start?
-        //Check if not looped that we go from the start to the end node
+        //If a looped track, Add the start point at end to get actual length
+        if (loopedTrack)
+            mainRoute.AddPoint(mainRoute.points[0]);
 
-        //for each other route
-        //Find points with no percentage, if none skip for now
-        //calculate percent values based on nodes that do have percents
-        //If there is a route that skips a lap point, reject
+        bool doneStart = false;
+        foreach (PointHandler ph in mainRoute.points)
+        {
+            if (ph.style != PointHandler.Point.Start || !doneStart)
+            {
+                doneStart = true;
 
-        return true;
+                ph.usedByMainRoute = true;
+                ph.percent = currentLength / mainRoute.length;
+
+                ph.transform.name = "Main Route " + count;
+
+                ph.transform.parent = transform;
+                ph.transform.SetSiblingIndex(count);
+
+                count++;
+
+                if (count < mainRoute.points.Count)
+                    currentLength += (MathHelper.ZeroYPos(mainRoute.points[count].transform.position) - MathHelper.ZeroYPos(mainRoute.points[count - 1].transform.position)).magnitude;
+            }
+        }
+
+        //For each other route
+        int routeCount = 1, routeChildCount = 0;
+
+        while (routes.Count > 0)
+        {
+            foreach (Route route in routes.ToArray())
+            {
+                if (route != mainRoute)
+                {
+                    int startValue = -1;
+
+                    //Find points with no percentage, if none skip for now
+                    for (int i = 1; i < route.points.Count; i++)
+                    {
+                        if (route.points[i].percent == -1)
+                        {
+                            if (startValue == -1)
+                                startValue = i-1;
+                        }
+                        else if(startValue >= 0)
+                        {
+                            int endValue = i;
+                            float currentSectionPercent = route.points[startValue].percent,
+                                sectionLength = route.CalculateLengthAt(startValue, endValue);
+
+                            PointHandler start = route.points[startValue], end = route.points[endValue];
+
+                            float sectionPercent = end.percent - start.percent;
+
+                            routeCount++;
+
+                            //Calculate percent values based on nodes that do have percents
+                            for (int j = startValue + 1; j < endValue; j++)
+                            {
+                                route.points[j].percent = currentSectionPercent + ((route.CalculateLengthAt(startValue, j) / sectionLength) * sectionPercent);
+
+                                route.points[j].transform.name = "Optional Route " + routeCount + " " + (j - startValue).ToString();
+
+                                route.points[j].transform.parent = transform;
+
+                                int siblingIndex = mainRoute.points.Count + routeChildCount + (j - startValue);
+                                route.points[j].transform.SetSiblingIndex(siblingIndex);
+                            }
+
+                            startValue = -1;
+                        }
+
+                        if (startValue == -1)
+                        {
+                            routes.Remove(route);
+                            routeChildCount += route.points.Count;
+                        }
+                    }
+                }
+                else
+                {
+                    routes.Remove(route);
+                }
+            }
+        }
+
+            return true;
     }
 
     private bool FindRoutes(PointHandler startPoint, List<Route> routes, int myRoute)
@@ -390,22 +551,40 @@ public class TrackData : MonoBehaviour
         for (int i = 0; i < startPoint.connections.Count; i++)
         {
             bool exitOnThisNode = false;
+            PointHandler otherPoint = startPoint.connections[i];
 
             //Check if this node is the end
-            if (!loopedTrack && startPoint.connections[i].style == PointHandler.Point.End)
+            if (!loopedTrack && otherPoint.style == PointHandler.Point.End)
             {
-                routes[myRoute].AddPoint(startPoint.connections[i]);
+                routes[myRoute].AddPoint(otherPoint);
                 foundExit = true;
                 exitOnThisNode = true;
             }
-            else if (loopedTrack && startPoint.connections[i].style == PointHandler.Point.End && routes[myRoute].length >= 3)
+            else if (loopedTrack && otherPoint.style == PointHandler.Point.End && routes[myRoute].length >= 3)
             {
-                routes[myRoute].AddPoint(startPoint.connections[i]);
+                routes[myRoute].AddPoint(otherPoint);
                 foundExit = true;
                 exitOnThisNode = true;
             }
 
-            if (!exitOnThisNode && !startPoint.connections[i].visitedPoint)
+            bool valid = true;
+
+            //If one way, check that this point is point A
+            if(startPoint.oneWay)
+            {
+                foreach(PointConnector connection in connections)
+                {
+                    if (connection.a == startPoint && connection.b == otherPoint)
+                        break;
+                    else if (connection.b == startPoint && connection.a == otherPoint)
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!exitOnThisNode && !otherPoint.visitedPoint && valid)
             {
                 int toRoute = myRoute;
                 possibleRouteCount++;
@@ -417,7 +596,7 @@ public class TrackData : MonoBehaviour
                     toRoute = routes.Count - 1;
                 }
 
-                if (FindRoutes(startPoint.connections[i], routes, toRoute))
+                if (FindRoutes(otherPoint, routes, toRoute))
                     foundExit = true;
             }
         }
@@ -475,6 +654,16 @@ public class TrackData : MonoBehaviour
             for(int i = 0; i < points.Count - 1; i++)
                 length += (MathHelper.ZeroYPos(points[i + 1].lastPos) - MathHelper.ZeroYPos(points[i].lastPos)).magnitude;
         }
+
+        public float CalculateLengthAt(int start, int end)
+        {
+            float returnValue = 0f;
+
+            for (int i = start; i < end; i++)
+                returnValue += (points[i + 1].transform.position - points[i].transform.position).magnitude;
+
+            return returnValue;
+        }
     }
 
     void OnDrawGizmos()
@@ -501,4 +690,137 @@ public class PointConnector
         a = _a;
         b = _b;
     }
+}
+
+public class BSPTree
+{
+    const int maxObjectsPerLeaf = 10, maxLevels = 10;
+
+    public int level { get; private set; }
+    public List<PointHandler> leafs { get; private set; }
+    public Rect aabbBounds { get; private set; }
+    public BSPTree[] nodes;
+
+    //Constructor
+    public BSPTree(int _level, Rect _aabbBounds)
+    {
+        level = _level;
+        leafs = new List<PointHandler>();
+        aabbBounds = _aabbBounds;
+        nodes = new BSPTree[4];
+    }
+
+    //Useful Functions
+
+    /// <summary>
+    /// Clears the Collision Tree and all it's Splits
+    /// </summary>
+    public void Clear()
+    {
+        leafs.Clear();
+
+        for (int i = 0; i < nodes.Length; i++)
+        {
+            BSPTree node = nodes[i];
+
+            if (node != null)
+            {
+                node.Clear();
+                nodes[i] = null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Splits a Tree into 4 SubTrees
+    /// </summary>
+    public void Split()
+    {
+        int splitWidth = (int)(aabbBounds.width / 2f), splitHeight = (int)(aabbBounds.height / 2f);
+        int x = (int)aabbBounds.x, y = (int)aabbBounds.y;
+
+        nodes[0] = new BSPTree(level + 1, new Rect(x, y, splitWidth, splitHeight));
+        nodes[1] = new BSPTree(level + 1, new Rect(x + splitWidth, y, splitWidth, splitHeight));
+        nodes[2] = new BSPTree(level + 1, new Rect(x, y + splitHeight, splitWidth, splitHeight));
+        nodes[3] = new BSPTree(level + 1, new Rect(x + splitWidth, y + splitHeight, splitWidth, splitHeight));
+    }
+
+    private int[] GetIndex(Rect possibleRect)
+    {
+        List<int> quadrents = new List<int>();
+
+        if (nodes != null)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (nodes[i] != null)
+                {
+                    Rect checkRect = nodes[i].aabbBounds;
+
+                    if (checkRect.Contains(new Vector2(possibleRect.x, possibleRect.y)) ||
+                        checkRect.Contains(new Vector2(possibleRect.x + possibleRect.width, possibleRect.y)) ||
+                        checkRect.Contains(new Vector2(possibleRect.x, possibleRect.y + possibleRect.height)) ||
+                        checkRect.Contains(new Vector2(possibleRect.x + possibleRect.width, possibleRect.y + possibleRect.height)))
+                        quadrents.Add(i);
+                }
+            }
+        }
+
+        return quadrents.ToArray();
+    }
+
+    public void Insert(PointHandler point)
+    {
+        if (nodes[0] != null)
+        {
+            Vector3 position = point.transform.position;
+            int[] index = GetIndex(new Rect(position.x, position.y, 1f, 1f));
+
+            if (index.Length == 1)
+            {
+                nodes[index[0]].Insert(point);
+                return;
+            }
+        }
+
+        leafs.Add(point);
+
+        if (leafs.Count > maxObjectsPerLeaf && level < maxLevels)
+        {
+            if (nodes[0] == null)
+                Split();
+
+            for (int i = 0; i < leafs.Count; i++)
+            {
+                Vector3 position = leafs[i].transform.position;
+                int[] index = GetIndex(new Rect(position.x, position.y, 1f, 1f));
+
+                if (index.Length == 1)
+                {
+                    nodes[index[0]].Insert(leafs[i]);
+                    leafs.RemoveAt(i);
+
+                    i--;
+                    continue;
+                }
+            }
+        }
+    }
+
+    public List<PointHandler> Retrieve(List<PointHandler> returnList, Vector3 position)
+    {
+        Rect rect = new Rect(position.x - 5, position.y - 5, 10, 10);
+
+        int[] index = GetIndex(rect);
+
+       for(int i = 0; i < index.Length; i++)
+        {
+            nodes[index[i]].Retrieve(returnList, position);
+        }
+
+        returnList.AddRange(leafs);
+
+        return returnList;
+    }
+
 }

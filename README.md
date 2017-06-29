@@ -2,6 +2,17 @@
 
 ## Changelog : Started 04/08/2016
 
+## 29/06/2017
+* Finished Track Editor
+* Rewrote Position Finding
+* Fixed wheel colliders falling through the ground
+* Added hiding mouse when not in use
+* Adjusted time required for drifting
+* Added a Restart button to Time Trials
+* Added a secret boost to Downtown Debug
+* Adjusted how levels are loading to avoid stuttering on loading screens
+* Converted all tracks to new track format
+
 ## 28/06/2017
 * Gave each Track new banner image
 * Redesigned Track Banner

@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class KartSpawner : MonoBehaviour
 {
-    public float modifer;
+    public float modifer = 1f;
     public bool ai;
     public AI.AIStupidity stupidty;
+
+    public int character, hat, kartVal, wheels;
 
     // Use this for initialization
     IEnumerator Start ()
@@ -14,7 +16,7 @@ public class KartSpawner : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
 
         KartMaker km = FindObjectOfType<KartMaker>();
-        Transform kart = km.SpawnKart(KartType.Local, transform.position, transform.rotation * Quaternion.Euler(0, -90, 0), 0,0,0,0);
+        Transform kart = km.SpawnKart(KartType.Local, transform.position, transform.rotation * Quaternion.Euler(0, -90, 0), character, hat, kartVal, wheels);
 
         //Set speeds of Kart depending on Difficulty
         kartScript ks = kart.GetComponent<kartScript>();

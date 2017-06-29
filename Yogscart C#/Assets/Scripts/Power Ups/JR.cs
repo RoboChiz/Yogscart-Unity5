@@ -13,7 +13,7 @@ public class JR : Egg
     protected void Start()
     {
         parent = transform.parent;
-        currentPoint = parent.GetComponent<PositionFinding>().currentPos;
+        currentPoint = 0;
         offset = 1.5f;
         bounces = 0;
     }
@@ -31,16 +31,16 @@ public class JR : Egg
             if (target == null && !lockOff)
             {
                 PositionFinding pf = parent.GetComponent<PositionFinding>();
-                Vector3 roadDir = td.positionPoints[MathHelper.NumClamp(currentPoint + 1, 0, td.positionPoints.Count)].position - td.positionPoints[currentPoint].position;
+                Vector3 roadDir = Vector3.forward; // td.positionPoints[MathHelper.NumClamp(currentPoint + 1, 0, td.positionPoints.Count)].position - td.positionPoints[currentPoint].position;
 
                 //If not in first
-                if (pf.position > 0)
+                if (pf.racePosition > 0)
                 {
                     PositionFinding[] pfArray = FindObjectsOfType<PositionFinding>();
 
                     foreach (PositionFinding possiblePF in pfArray)
                     {
-                        if (possiblePF.position == pf.position - 1)
+                        if (possiblePF.racePosition == pf.racePosition - 1)
                         {
                             //Check facing the right direction
                             if (Vector3.Dot(parent.forward, roadDir) > 0)
@@ -68,7 +68,7 @@ public class JR : Egg
                 Vector3 attackDir = target.position - transform.position;
                 RaycastHit hit;
 
-                if (target.GetComponent<PositionFinding>().currentPos <= currentPoint + 3 && Physics.Raycast(transform.position, attackDir, out hit, Mathf.Infinity) && hit.transform == target)
+                if (0 <= currentPoint + 3 && Physics.Raycast(transform.position, attackDir, out hit, Mathf.Infinity) && hit.transform == target)
                 {
                     direction = attackDir.normalized;
                     overrideYPos = true;
@@ -76,7 +76,7 @@ public class JR : Egg
                 else
                 {
                     //Otherwise travel along track, until we can hit the target
-                    attackDir = (td.positionPoints[currentPoint].position - transform.position);
+                   // attackDir = (td.positionPoints[currentPoint].position - transform.position);
                     attackDir.y = 0;
 
                     direction = attackDir.normalized;
@@ -84,16 +84,16 @@ public class JR : Egg
                 }
             }
 
-            Vector3 targetPoint = td.positionPoints[currentPoint].position;
+            Vector3 targetPoint = Vector3.zero; //td.positionPoints[currentPoint].position;
             targetPoint.y = 0;
-            Vector3 lastPoint = td.positionPoints[MathHelper.NumClamp(currentPoint - 1, 0, td.positionPoints.Count)].position;
+            Vector3 lastPoint = Vector3.zero; //td.positionPoints[MathHelper.NumClamp(currentPoint - 1, 0, td.positionPoints.Count)].position;
             lastPoint.y = 0;
             Vector3 myPos = transform.position;
             myPos.y = 0;
 
             //If distance to last point is greater than entire road distance
             if (Vector3.Distance(lastPoint, myPos) >= Vector3.Distance(targetPoint, lastPoint))
-                currentPoint = MathHelper.NumClamp(currentPoint + 1, 0, td.positionPoints.Count);
+                currentPoint = MathHelper.NumClamp(currentPoint + 1, 0, 100);//td.positionPoints.Count
 
         }
 

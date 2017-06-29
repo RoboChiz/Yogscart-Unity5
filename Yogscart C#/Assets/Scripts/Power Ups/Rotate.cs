@@ -7,6 +7,8 @@ public class Rotate : MonoBehaviour {
     private float origin;
     private bool up = false;
 
+    public Vector3 axis = Vector3.up;
+
 	// Use this for initialization
 	void Start ()
     {
@@ -16,7 +18,7 @@ public class Rotate : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate()
     {
-        transform.Rotate(Vector3.up, rotateSpeed);
+        transform.Rotate(axis, rotateSpeed);
 
         if (up)
             transform.position += new Vector3(0,floatSpeed,0);

@@ -35,6 +35,15 @@ public class InEngineRender : MonoBehaviour
         {
             if(pc.a != null && pc.b != null)
                 Debug.DrawLine(pc.a.transform.position, pc.b.transform.position, Color.red);
+
+            if(pc.a.oneWay)
+            {
+                Vector3 forwardDir = (pc.b.transform.position - pc.a.transform.position).normalized;
+                Vector3 rightDir = (Quaternion.AngleAxis(-90f, Vector3.up) * forwardDir).normalized;
+
+                Debug.DrawLine(pc.a.transform.position, pc.a.transform.position - forwardDir + rightDir, Color.green);
+                Debug.DrawLine(pc.a.transform.position, pc.a.transform.position - forwardDir - rightDir, Color.green);
+            }
         }
         
     }

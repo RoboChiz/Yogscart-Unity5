@@ -30,6 +30,7 @@ public class DeathCatch : MonoBehaviour {
             TrackData td = GameObject.Find("Track Manager").GetComponent<TrackData>();
             PositionFinding pf = transform.GetComponent<PositionFinding>();
 
+            /*
             Vector3 nPos = td.positionPoints[pf.currentPos].position;
             Vector3 nPos1;
 
@@ -41,7 +42,7 @@ public class DeathCatch : MonoBehaviour {
             transform.position = nPos;
             transform.rotation = Quaternion.Euler(0, 0, 0);
             transform.rotation = Quaternion.LookRotation(nPos1 - nPos, Vector3.up);
-            transform.GetComponent<kartScript>().tricking = false;
+            transform.GetComponent<kartScript>().tricking = false;*/
 
         }
 

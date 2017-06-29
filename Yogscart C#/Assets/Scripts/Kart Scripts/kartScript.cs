@@ -64,8 +64,8 @@ public class kartScript : MonoBehaviour
     private bool applyingDrift;
     const float kartbodyRot = 20f; //Amount that the kartbody rotates during drifting
     public float driftTime { get; private set; }
-    public float blueTime { get { return 2f; } }
-    public float orangeTime { get { return 4f; } }
+    public float blueTime { get { return 1.5f; } }
+    public float orangeTime { get { return 3f; } }
     public bool onlineMode = false; //Stops local boosting and spinning out. This is handled by the server (These are handled by server)
 
     //Spinning Out
@@ -640,10 +640,8 @@ public class kartScript : MonoBehaviour
     }
 
     void ApplyDrift(float lastTime)
-    {
-        
-
-        if (drift && ExpectedSpeed > maxSpeed * 0.75f && !isFalling && (!offRoad || (offRoad && isBoosting == BoostMode.Boost)))
+    {       
+        if (drift && ExpectedSpeed > maxSpeed * 0.5f && !isFalling && (!offRoad || (offRoad && isBoosting == BoostMode.Boost)))
         {
             if (!applyingDrift && Mathf.Abs(steer) > 0.2 && driftStarted == false)
             {
@@ -651,7 +649,8 @@ public class kartScript : MonoBehaviour
                 driftSteer = (int)Mathf.Sign(steer);
             }
         }
-        else {
+        else
+        {
             if (driftStarted == true)
             {
                 applyingDrift = true;
@@ -660,9 +659,9 @@ public class kartScript : MonoBehaviour
             }
         }
 
-        if (driftStarted == true)
+        if (driftStarted)
         {
-            driftTime += lastTime * Mathf.Abs(driftSteer + (steer / 2f));
+            driftTime += Time.fixedDeltaTime * Mathf.Abs(driftSteer + (steer / 2f));
             if (!spinning)
                 kartBody.localRotation = Quaternion.Slerp(kartBody.localRotation, Quaternion.Euler(0, kartbodyRot * driftSteer, 0), lastTime * 2);
 
@@ -730,8 +729,8 @@ public class kartScript : MonoBehaviour
                 }
             }
         }
-        else {
-
+        else
+        {
             //Reset Skid Marks
             if(currentLineRenderer != null)
             {
@@ -746,9 +745,6 @@ public class kartScript : MonoBehaviour
                 currentLineRenderer = null;
                 skidTimer = 0f;
             }
-
-            if (isFalling || offRoad)
-                driftTime = 0;
 
             if (!spinning)
                 kartBody.localRotation = Quaternion.Slerp(kartBody.localRotation, Quaternion.Euler(0, 0, 0), lastTime * 2);

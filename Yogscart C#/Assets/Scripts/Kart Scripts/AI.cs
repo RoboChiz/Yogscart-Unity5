@@ -59,7 +59,7 @@ public class AI : MonoBehaviour
 
         yield return new WaitForEndOfFrame();
 
-        currentNode = GetComponent<PositionFinding>().currentPos;
+        currentNode = 0;
 
     }
 
@@ -78,6 +78,7 @@ public class AI : MonoBehaviour
                 canDrive = true;
         }
 
+        /*
         if (canDrive)
         {           
             CalculatePercent();
@@ -237,7 +238,7 @@ public class AI : MonoBehaviour
                         case DriftType.Normal: centringOffset -= nextInstruction.turnAmount * 2f; break;
                         case DriftType.Wide: centringOffset -= nextInstruction.turnAmount * 4f; break;
                     }
-                }*/
+                }
 
                 //Do Straightening
                 int straightenTurn = 0;
@@ -351,9 +352,10 @@ public class AI : MonoBehaviour
             Debug.DrawRay(startPos + (transform.right / 2f), transform.forward * distance, hitColor);
             Debug.DrawRay(startPos - (transform.right / 2f), transform.forward * distance, hitColor);
         }
+*/
     }
 
-    private void CalculatePercent()
+   /* private void CalculatePercent()
     {
         Vector3 currentNodePos = td.positionPoints[currentNode].transform.position;
         Vector3 nextNodePos = td.positionPoints[MathHelper.NumClamp(currentNode + 1,0,td.positionPoints.Count)].transform.position;
@@ -391,7 +393,7 @@ public class AI : MonoBehaviour
         }
 
         return false;
-    }
+    }*/
 
     const float turnAngleRequired = 5f, roadNeededtoStraightenOut = 6f;
     /// <summary>
@@ -439,7 +441,7 @@ public class AI : MonoBehaviour
                         DONE!
                     If Not
                         DONE!
-        */
+        
 
         //Find out the angles and lengths of all the paths
         angles = new float[td.positionPoints.Count];
@@ -575,7 +577,7 @@ public class AI : MonoBehaviour
             }
 
             AITrackInfo.Add(newTrackList);
-        }
+        }*/
     }
 
     enum DriftType { NoDrift, Normal, Wide, Close };

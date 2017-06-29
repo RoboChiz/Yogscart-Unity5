@@ -56,12 +56,12 @@ public class SortingScript : MonoBehaviour
 
             while (leftCheck < rightCheck)
             {
-                while (array[leftCheck].totalDistance > array[pivot].totalDistance ||
-                    (array[leftCheck].totalDistance == array[pivot].totalDistance && array[leftCheck].currentDistance < array[pivot].currentDistance))
+                while (array[leftCheck].lap > array[pivot].lap ||
+                    (array[leftCheck].lap == array[pivot].lap && array[leftCheck].currentPercent < array[pivot].currentPercent))
                     leftCheck += 1;
 
-                while (array[rightCheck].totalDistance < array[pivot].totalDistance ||
-                    (array[rightCheck].totalDistance == array[pivot].totalDistance && array[rightCheck].currentDistance > array[pivot].currentDistance))
+                while (array[rightCheck].lap < array[pivot].lap ||
+                    (array[rightCheck].lap == array[pivot].lap && array[rightCheck].currentPercent > array[pivot].currentPercent))
                     rightCheck -= 1;
 
                 if (leftCheck < rightCheck)

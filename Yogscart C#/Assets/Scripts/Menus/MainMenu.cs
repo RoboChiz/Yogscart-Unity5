@@ -348,17 +348,25 @@ public class MainMenu : MonoBehaviour
                 if (lastloadedPicture < 0 ||(state == MenuState.Main && possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture]))
                     StartCoroutine(ActualChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
 
+                Race temp;
+
                 switch (state)
                 {
                     case MenuState.Main:
                         switch (options[currentSelection])
                         {
                             case "Single Player":
+                                if (CurrentGameData.currentGamemode != null)
+                                    DestroyImmediate(CurrentGameData.currentGamemode);
+
                                 CurrentGameData.currentGamemode = gd.gameObject.AddComponent<Race>();
                                 ChangeMenu(MenuState.SinglePlayer);
                                 gd.GetComponent<InputManager>().RemoveOtherControllers();
                                 break;
                             case "Multiplayer":
+                                if (CurrentGameData.currentGamemode != null)
+                                    DestroyImmediate(CurrentGameData.currentGamemode);
+
                                 CurrentGameData.currentGamemode = gd.gameObject.AddComponent<Race>();
                                 ChangeMenu(MenuState.Multiplayer);
                                 break;
@@ -387,8 +395,8 @@ public class MainMenu : MonoBehaviour
                     case MenuState.SinglePlayer:
                         switch (options[currentSelection])
                         {
-                            case "Tournament":
-                                Race temp = (Race)CurrentGameData.currentGamemode;
+                           /* case "Tournament":
+                                temp = (Race)CurrentGameData.currentGamemode;
                                 temp.raceType = RaceType.GrandPrix;
 
                                 ChangeMenu(MenuState.Difficulty);
@@ -398,7 +406,7 @@ public class MainMenu : MonoBehaviour
                                 temp.raceType = RaceType.VSRace;
 
                                 ChangeMenu(MenuState.Difficulty);
-                                break;
+                                break;*/
                             case "Time Trial":
                                 temp = (Race)CurrentGameData.currentGamemode;
                                 temp.raceType = RaceType.TimeTrial;
@@ -410,22 +418,23 @@ public class MainMenu : MonoBehaviour
                         }
                     break;
                     case MenuState.Multiplayer:
-                        switch (options[currentSelection])
-                        {
+                        /*
+                       switch (options[currentSelection])
+                       {
                             case "Tournament":
-                                Race temp = (Race)CurrentGameData.currentGamemode;
-                                temp.raceType = RaceType.GrandPrix;
+                               temp = (Race)CurrentGameData.currentGamemode;
+                               temp.raceType = RaceType.GrandPrix;
 
-                                ChangeMenu(MenuState.Difficulty);
-                                break;
-                            case "VS Race":
-                                temp = (Race)CurrentGameData.currentGamemode;
-                                temp.raceType = RaceType.VSRace;
+                               ChangeMenu(MenuState.Difficulty);
+                               break;
+                           case "VS Race":
+                               temp = (Race)CurrentGameData.currentGamemode;
+                               temp.raceType = RaceType.VSRace;
 
-                                ChangeMenu(MenuState.Difficulty);
-                                break;
-                        }
-                    break;
+                               ChangeMenu(MenuState.Difficulty);
+                               break;
+                       }*/
+                        break;
                     case MenuState.Difficulty:
                         switch (options[currentSelection])
                         {

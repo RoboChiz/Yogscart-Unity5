@@ -40,6 +40,8 @@ public class InputManager : MonoBehaviour
     public List<float> iconHeights = new List<float>();
     public static readonly List<string> menuInputs = new List<string>(new string[] { "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle", "Edit", "Minus", "ViewScroll" });
 
+    private Vector2 lastMousePos;
+
     //Loads Saved Input Configurations
     public static void LoadConfig()
     {
@@ -206,6 +208,17 @@ public class InputManager : MonoBehaviour
                 }
             }
         }
+
+        //Hide Mouse if it's not used
+        if(Input.anyKeyDown && !Input.GetMouseButton(0))
+        {
+            Cursor.visible = false;
+        }
+
+        if (Input.GetMouseButton(0) || lastMousePos.x != Input.mousePosition.x || lastMousePos.y != Input.mousePosition.y)
+            Cursor.visible = true;
+
+        lastMousePos = Input.mousePosition;
     }
 
     void OnGUI()

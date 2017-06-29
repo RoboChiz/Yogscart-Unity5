@@ -24,12 +24,14 @@ public class PointHandler : MonoBehaviour
     public bool usedByMainRoute;
 
     //How far along the final track is this node
-    [HideInInspector]
+    //[HideInInspector]
     public float percent;
 
     //Has this point been checked by recursion
     [HideInInspector, System.NonSerialized]
     public List<PointHandler> connections;
+
+    public bool oneWay;
 
     // Used to draw Sphere on point
     void OnDrawGizmos()

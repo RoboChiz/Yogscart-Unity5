@@ -141,10 +141,10 @@ public class KartMaker : MonoBehaviour
             ks.wheelColliders.Add(backrWheelCollider.GetComponent<WheelCollider>());
 
             ks.wheelBackUps = new List<SphereCollider>();
-            ks.wheelBackUps.Add(frontlWheelCollider.gameObject.AddComponent<SphereCollider>());
-            ks.wheelBackUps.Add(frontrWheelCollider.gameObject.AddComponent<SphereCollider>());
-            ks.wheelBackUps.Add(backlWheelCollider.gameObject.AddComponent<SphereCollider>());
-            ks.wheelBackUps.Add(backrWheelCollider.gameObject.AddComponent<SphereCollider>());
+            //ks.wheelBackUps.Add(frontlWheelCollider.gameObject.AddComponent<SphereCollider>());
+            //ks.wheelBackUps.Add(frontrWheelCollider.gameObject.AddComponent<SphereCollider>());
+            //ks.wheelBackUps.Add(backlWheelCollider.gameObject.AddComponent<SphereCollider>());
+            //ks.wheelBackUps.Add(backrWheelCollider.gameObject.AddComponent<SphereCollider>());
 
             foreach(SphereCollider sc in ks.wheelBackUps)
             {

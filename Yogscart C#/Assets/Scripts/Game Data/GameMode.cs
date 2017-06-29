@@ -340,13 +340,17 @@ abstract public class GameMode : MonoBehaviour
         StartCoroutine(QuitGame());
     }
 
+    public virtual void Restart() { }
+
     protected IEnumerator QuitGame()
     {
         CurrentGameData.blackOut = true;
         yield return new WaitForSeconds(0.5f);
-        SceneManager.LoadScene("Main_Menu");
 
-        yield return null;
+        AsyncOperation sync =SceneManager.LoadSceneAsync("Main_Menu");
+
+        while(!sync.isDone)
+            yield return null;
 
         FindObjectOfType<MainMenu>().ReturnFromGame();
 
@@ -457,8 +461,8 @@ public class Racer
     public Transform cameras;
 
     public float timer;
-    public int totalDistance;
-    public float currentDistance;
+    public int lap;
+    public float currentPercent;
 
     //After Race Information //////////////////////////////////
     public int points  = 0;

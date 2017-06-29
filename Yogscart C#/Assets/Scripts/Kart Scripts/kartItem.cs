@@ -181,13 +181,13 @@ public class kartItem : MonoBehaviour
             int totalChance = 0;
 
             for (int i = 0; i < gd.powerUps.Length; i++)
-                totalChance += gd.powerUps[i].likelihood[pf.position];
+                totalChance += gd.powerUps[i].likelihood[pf.racePosition];
 
             int randomiser = Random.Range(0, totalChance);
 
             for (int i = 0; i < gd.powerUps.Length; i++)
             {
-                randomiser -= gd.powerUps[i].likelihood[pf.position];
+                randomiser -= gd.powerUps[i].likelihood[pf.racePosition];
 
                 if (randomiser <= 0)
                 {

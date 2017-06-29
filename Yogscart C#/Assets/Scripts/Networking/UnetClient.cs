@@ -273,8 +273,10 @@ public class UnetClient : NetworkManager
         yield return new WaitForSeconds(0.5f);
 
         //Load the Lobby
-        SceneManager.LoadScene("Main_Menu");
-        yield return null;
+        AsyncOperation sync = SceneManager.LoadSceneAsync("Main_Menu");
+
+        while(!sync.isDone)
+            yield return null;
 
         //Reload the Lobby
         FindObjectOfType<NetworkGUI>().ChangeState(newState);
@@ -306,7 +308,7 @@ public class UnetClient : NetworkManager
     private void OnLoadLevelID(NetworkMessage netMsg)
     {
         stringMessage msg = netMsg.ReadMessage<stringMessage>();
-        SceneManager.LoadScene(msg.value);
+        SceneManager.LoadSceneAsync(msg.value);
     }
 
     public virtual void EndClient(string message)
