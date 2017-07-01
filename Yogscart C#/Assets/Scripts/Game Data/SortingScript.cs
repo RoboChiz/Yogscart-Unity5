@@ -57,11 +57,11 @@ public class SortingScript : MonoBehaviour
             while (leftCheck < rightCheck)
             {
                 while (array[leftCheck].lap > array[pivot].lap ||
-                    (array[leftCheck].lap == array[pivot].lap && array[leftCheck].currentPercent < array[pivot].currentPercent))
+                    (array[leftCheck].lap == array[pivot].lap && array[leftCheck].currentPercent > array[pivot].currentPercent))
                     leftCheck += 1;
 
                 while (array[rightCheck].lap < array[pivot].lap ||
-                    (array[rightCheck].lap == array[pivot].lap && array[rightCheck].currentPercent > array[pivot].currentPercent))
+                    (array[rightCheck].lap == array[pivot].lap && array[rightCheck].currentPercent < array[pivot].currentPercent))
                     rightCheck -= 1;
 
                 if (leftCheck < rightCheck)

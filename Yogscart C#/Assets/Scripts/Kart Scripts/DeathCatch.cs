@@ -11,8 +11,8 @@ public class DeathCatch : MonoBehaviour {
         {
             deathParticles.Play();
 
-            if(transform.GetComponent<PositionFinding>() != null && transform.GetComponent<kartScript>() != null)
-                transform.GetComponent<kartScript>().ExpectedSpeed = 0;
+            if(transform.GetComponent<PositionFinding>() != null && transform.GetComponent<KartScript>() != null)
+                transform.GetComponent<KartScript>().ExpectedSpeed = 0;
 
             StartCoroutine("DoRespawn");
 
@@ -25,25 +25,25 @@ public class DeathCatch : MonoBehaviour {
 
         GetComponent<Rigidbody>().isKinematic = true;
 
-        if(transform.GetComponent<kartScript>() != null)
+        if(transform.GetComponent<KartScript>() != null)
         {
             TrackData td = GameObject.Find("Track Manager").GetComponent<TrackData>();
             PositionFinding pf = transform.GetComponent<PositionFinding>();
 
-            /*
-            Vector3 nPos = td.positionPoints[pf.currentPos].position;
-            Vector3 nPos1;
+            Vector3 newPos = pf.closestPoint.transform.position;
 
-            if (pf.currentPos + 1 >= td.positionPoints.Count)
-                nPos1 = td.positionPoints[0].position;
-            else
-                nPos1 = td.positionPoints[pf.currentPos+1].position;
+            PointHandler nextPoint = pf.closestPoint.connections[0];
+            for(int i = 1; i < pf.closestPoint.connections.Count; i++)
+            {
+                PointHandler ph = pf.closestPoint.connections[i];
+                if (ph.percent > nextPoint.percent)
+                    nextPoint = ph;
+            }
 
-            transform.position = nPos;
-            transform.rotation = Quaternion.Euler(0, 0, 0);
-            transform.rotation = Quaternion.LookRotation(nPos1 - nPos, Vector3.up);
-            transform.GetComponent<kartScript>().tricking = false;*/
+            transform.position = newPos;
+            transform.rotation = Quaternion.LookRotation(nextPoint.transform.position - newPos, Vector3.up);
 
+            transform.GetComponent<KartScript>().tricking = false;
         }
 
         GetComponent<Rigidbody>().isKinematic = false;

@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class LayoutEditorWindow : EditorWindow
 {
-
     private string fileName = "New Track";
 
     [MenuItem("Layout Creator/Show Toolbar")]

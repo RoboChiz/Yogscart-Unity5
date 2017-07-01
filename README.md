@@ -2,6 +2,18 @@
 
 ## Changelog : Started 04/08/2016
 
+## 01/07/2017
+* Added Option to delete save data
+* Added Pop Up to confirm save data deletion
+* Redid Race Countdown to be more efficent
+* Tried to fix wheel issue
+* Made basic AI for new track system
+* Made AI Stop at end of looped track
+* Made Key Kart less shiny
+* Fixed Death Catch
+* Made Options render ontop of race gui
+* Updated to Unity 5.6.2
+
 ## 29/06/2017
 * Finished Track Editor
 * Rewrote Position Finding

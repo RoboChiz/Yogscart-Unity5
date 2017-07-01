@@ -26,9 +26,9 @@ public class Options : MonoBehaviour
     [HideInInspector]
     public string[] availableChanges, availableNames;
 
+    public bool locked = false;
+
     //Keyboard / Controller Controls
-    private Vector2 lastMouse;
-    private bool mouseLastUsed;
     private int currentSelection = 0;
 
     //Used for Volume Options
@@ -70,8 +70,6 @@ public class Options : MonoBehaviour
 
         availableChanges = new string[] { "Throttle", "Brake", "SteerLeft", "SteerRight", "Drift", "Item", "RearView" };
         availableNames = new string[] { "Throttle", "Brake / Reverse", "Steer Left", "Steer Right", "Drift", "Item", "Look Behind" };
-
-        lastMouse = GUIHelper.GetMousePosition();
 
         possibleScreens = new string[Screen.resolutions.Length];
         for (int i = 0; i < possibleScreens.Length; i++)
@@ -134,26 +132,27 @@ public class Options : MonoBehaviour
         //Handle Input
         if (!lockInputs && InputManager.controllers != null && InputManager.controllers.Count > 0 && guiAlpha == 1)
         {
-            int vertical = InputManager.controllers[0].GetRawMenuInput("MenuVertical");
-            float horizontal = 0;
+            int tabChange = 0, vertical = 0;
+            float horizontal = 0f;
+            bool submitBool = false, cancelBool = false;
 
-            if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider))
+            if (!locked)
             {
-                horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal");
-            }
-            else
-            {
-                horizontal = InputManager.controllers[0].GetRawInput("MenuHorizontal");
-            }
+                vertical = InputManager.controllers[0].GetRawMenuInput("MenuVertical");
+                horizontal = 0;
 
-            int tabChange = InputManager.controllers[0].GetRawMenuInput("TabChange");
-            bool submitBool = (InputManager.controllers[0].GetRawMenuInput("Submit") != 0);
-            bool cancelBool = (InputManager.controllers[0].GetRawMenuInput("Cancel") != 0);
+                if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider))
+                {
+                    horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal");
+                }
+                else
+                {
+                    horizontal = InputManager.controllers[0].GetRawInput("MenuHorizontal");
+                }
 
-            if (mouseLastUsed && (horizontal != 0 || vertical != 0 || tabChange != 0 || submitBool || cancelBool))
-            {
-                mouseLastUsed = false;
-                ResetControllerOptions();
+                tabChange = InputManager.controllers[0].GetRawMenuInput("TabChange");
+                submitBool = (InputManager.controllers[0].GetRawMenuInput("Submit") != 0);
+                cancelBool = (InputManager.controllers[0].GetRawMenuInput("Cancel") != 0);
             }
 
             if (tabChange != 0)
@@ -163,19 +162,35 @@ public class Options : MonoBehaviour
                 ResetControllerOptions();
             }
 
-            if (!mouseLastUsed)
+            if (!Cursor.visible)
             {
                 switch (currentTab)
                 {
                     case OptionsTab.Game:
 
                         if (submitBool)
-                            changingSlider = !changingSlider;
+                        {
+                            if(currentSelection < 3)
+                                changingSlider = !changingSlider;
+                            else
+                            {
+                                //Find the PopUp Window and Show it
+                                locked = true;
+                                FindObjectOfType<ResetGamePopup>().ShowPopUp();
+                            }
+                        }
 
                         if (!changingSlider)
                         {
+
+                            int maxVal = 3;
+
+                            if (FindObjectOfType<MainMenu>() != null)
+                                maxVal = 4;
+
                             if (vertical != 0)
-                                currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 3);
+                                currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, maxVal);
+
                             if (cancelBool)
                             {
                                 Quit();
@@ -194,6 +209,7 @@ public class Options : MonoBehaviour
                                 else if (currentSelection == 2)
                                     SoundManager.sfxVolume = Mathf.Clamp(SoundManager.sfxVolume + toChange, 0, 1);
                             }
+
                             if (cancelBool)
                                 changingSlider = false;
                         }
@@ -413,7 +429,7 @@ public class Options : MonoBehaviour
         InputManager.SaveConfig();
         currentLayoutSelection -= 1;
 
-        if (!mouseLastUsed)
+        if (!Cursor.visible)
             currentSelection -= 1;
 
         selectedInput = -1;
@@ -431,21 +447,12 @@ public class Options : MonoBehaviour
 
     void OnGUI()
     {
+        GUI.depth = -50;
+
         if (guiAlpha > 0f && GUIHelper.DrawBack(1f))
         {
             Quit();
         }
-
-        Vector2 mousePosition = GUIHelper.GetMousePosition();
-
-        //Do Mouse Input Checks
-        if (!mouseLastUsed && (lastMouse != mousePosition || Input.GetMouseButton(0) || Input.GetMouseButton(1)))
-        {
-            mouseLastUsed = true;
-            ResetControllerOptions();
-        }
-
-        lastMouse = mousePosition;
 
         GUIHelper.SetGUIAlpha(guiAlpha);
         GUI.matrix = GUIHelper.GetMatrix();
@@ -457,7 +464,7 @@ public class Options : MonoBehaviour
             Rect gameRect = new Rect(180, 95, 330, 70);
             GUI.DrawTexture(gameRect, gameTitle);
 
-            if (GUI.Button(gameRect, ""))
+            if (!locked && GUI.Button(gameRect, ""))
                 currentTab = OptionsTab.Game;
         }
 
@@ -466,7 +473,7 @@ public class Options : MonoBehaviour
             Rect graphicsRect = new Rect(510, 95, 330, 70);
             GUI.DrawTexture(graphicsRect, graphicsTitle);
 
-            if (GUI.Button(graphicsRect, ""))
+            if (!locked && GUI.Button(graphicsRect, ""))
                 currentTab = OptionsTab.Graphics;
         }
 
@@ -475,7 +482,7 @@ public class Options : MonoBehaviour
             Rect inputRect = new Rect(840, 95, 330, 70);
             GUI.DrawTexture(inputRect, inputTitle);
 
-            if (GUI.Button(inputRect, ""))
+            if (!locked && GUI.Button(inputRect, ""))
                 currentTab = OptionsTab.Input;
         }
 
@@ -502,7 +509,7 @@ public class Options : MonoBehaviour
         {
             case OptionsTab.Game:
                 GUI.DrawTexture(tabRect, blueTab);
-                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 425), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
+                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 550), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
 
                 GUIHelper.BeginGroup(tabAreaRect);
 
@@ -511,33 +518,58 @@ public class Options : MonoBehaviour
                 GUIStyle selectedSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb);
                 selectedSliderThumb.normal.background = selectedSliderThumb.active.background;
 
-                GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:", (currentSelection == 0 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
-                SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 1f, normalSlider, (currentSelection == 0 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
+                GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:", (currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 1f, normalSlider, (currentSelection == 0 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 70, 250, 100), (int)(SoundManager.masterVolume * 100f) + "%");
 
-                GUI.Label(new Rect(20, 180, 300, 100), "Music Volume:", (currentSelection == 1 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
-                SoundManager.musicVolume = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), SoundManager.musicVolume, 0f, 1f, normalSlider, (currentSelection == 1 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
+                GUI.Label(new Rect(20, 180, 300, 100), "Music Volume:", (currentSelection == 1 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                SoundManager.musicVolume = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), SoundManager.musicVolume, 0f, 1f, normalSlider, (currentSelection == 1 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 180, 250, 100), (int)(SoundManager.musicVolume * 100f) + "%");
 
-                GUI.Label(new Rect(20, 290, 300, 100), "SFX Volume:", (currentSelection == 2 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
-                SoundManager.sfxVolume = GUI.HorizontalSlider(new Rect(330, 330, 1000, 100), SoundManager.sfxVolume, 0f, 1f, normalSlider, (currentSelection == 2 && changingSlider && !mouseLastUsed) ? selectedSliderThumb : normalSliderThumb);
+                GUI.Label(new Rect(20, 290, 300, 100), "SFX Volume:", (currentSelection == 2 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                SoundManager.sfxVolume = GUI.HorizontalSlider(new Rect(330, 330, 1000, 100), SoundManager.sfxVolume, 0f, 1f, normalSlider, (currentSelection == 2 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 290, 250, 100), (int)(SoundManager.sfxVolume * 100f) + "%");
 
                 GUIStyle centreLabel = GUI.skin.label;
                 centreLabel.alignment = TextAnchor.MiddleCenter;
 
-                if (InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+                if (currentSelection < 3)
                 {
-                    if (!changingSlider)
-                        GUI.Label(new Rect(20, 400, 1445, 50), "Press A to select an option!", centreLabel);
+                    if (InputManager.controllers.Count > 0)
+                    {
+                        if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+                        {
+                            if (!changingSlider)
+                                GUI.Label(new Rect(20, 500, 1445, 50), "Press A to select an option!", centreLabel);
+                            else
+                                GUI.Label(new Rect(20, 500, 1445, 50), "Press B to deselect the option!", centreLabel);
+                        }
+
+                        if (InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard)
+                        {
+                            if (!changingSlider)
+                                GUI.Label(new Rect(20, 500, 1445, 50), "Press Return to select an option!", centreLabel);
+                            else
+                                GUI.Label(new Rect(20, 500, 1445, 50), "Press Return to deselect the option!", centreLabel);
+                        }
+                    }
                     else
-                        GUI.Label(new Rect(20, 400, 1445, 50), "Press B to deselect the option!", centreLabel);
-                }
-                else
-                {
-                    changingSlider = false;
+                    {
+                        changingSlider = false;
+                    }
                 }
 
+                if (FindObjectOfType<MainMenu>() != null)
+                {
+                    GUI.Label(new Rect(20, 400, 300, 100), "Reset Save Data", (currentSelection == 3 && !Cursor.visible) ? selectedLabel : normalLabel);
+
+                    if (!locked && GUI.Button(new Rect(20, 400, 300, 100),""))
+                    {
+                        //Find the PopUp Window and Show it
+                        locked = true;
+                        FindObjectOfType<ResetGamePopup>().ShowPopUp();
+                    }
+                }
 
                 break;
             case OptionsTab.Graphics:
@@ -548,13 +580,13 @@ public class Options : MonoBehaviour
                 GUIHelper.BeginGroup(tabAreaRect);
 
                 //Fullscreen
-                GUI.Label(new Rect(20, 145, 300, 100), "Fullscreen:", (currentSelection == 1 && !mouseLastUsed) ? selectedLabel : normalLabel);
+                GUI.Label(new Rect(20, 145, 300, 100), "Fullscreen:", (currentSelection == 1 && !Cursor.visible) ? selectedLabel : normalLabel);
                 bool newFullscreen = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, fullScreen, "");
                 if (!resDropDown.toggled)
                     fullScreen = newFullscreen;
 
                 //Change Quality
-                GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:", (currentSelection == 2 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
+                GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:", (currentSelection == 2 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
 
                 int newQuality = qualityDropDown.Draw(new Rect(330, 250, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentQuality, qualityNames);
                 if (newQuality != currentQuality)
@@ -562,7 +594,7 @@ public class Options : MonoBehaviour
                 currentQuality = newQuality;
 
                 //Change Resolution
-                GUI.Label(new Rect(20, 70, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !mouseLastUsed) ? selectedLabel : normalLabel);
+                GUI.Label(new Rect(20, 70, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
 
                 int newRes = resDropDown.Draw(new Rect(330, 90, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentResolution, possibleScreens);
                 if (newRes != currentResolution)
@@ -617,7 +649,7 @@ public class Options : MonoBehaviour
                 if (InputManager.AllConfigs.Count < 12)
                 {
                     Rect addLabel = new Rect(50, 700, 30, 50);
-                    GUIHelper.CentreRectLabel(addLabel, plusScale, "+", (!mouseLastUsed && currentSelection == InputManager.AllConfigs.Count && !changingSlider) ? Color.yellow : Color.white);
+                    GUIHelper.CentreRectLabel(addLabel, plusScale, "+", (!Cursor.visible && currentSelection == InputManager.AllConfigs.Count && !changingSlider) ? Color.yellow : Color.white);
 
                     if (GUI.Button(addLabel, ""))
                     {
@@ -629,7 +661,7 @@ public class Options : MonoBehaviour
                 }
 
                 //Draw - Gui
-                if (currentLayoutSelection >= 2 && (mouseLastUsed || (currentSelection < InputManager.AllConfigs.Count && !changingSlider)))
+                if (currentLayoutSelection >= 2 && (Cursor.visible || (currentSelection < InputManager.AllConfigs.Count && !changingSlider)))
                 {
                     Rect minusRect = new Rect(140, 700, 30, 50);
                     GUIHelper.CentreRectLabel(minusRect, minusScale, "-", Color.white);
@@ -645,7 +677,7 @@ public class Options : MonoBehaviour
                 }
 
                 //Draw Edit Gui
-                if (currentLayoutSelection >= 2 && (mouseLastUsed || (currentSelection < InputManager.AllConfigs.Count && !changingSlider)))
+                if (currentLayoutSelection >= 2 && (Cursor.visible || (currentSelection < InputManager.AllConfigs.Count && !changingSlider)))
                 {
                     Rect editRect = new Rect(210, 675, 100, 100);
                     GUIHelper.CentreRectLabel(editRect, editScale, !editName ? "edit" : "save", Color.white);
@@ -682,7 +714,7 @@ public class Options : MonoBehaviour
                     Rect labelRect;
                     if (currentLayoutSelection != i || !editName)
                     {
-                        labelRect = GUIHelper.CentreRectLabel(new Rect(10, 40 + (70 * i), 380, 50), inputScales[i], InputManager.AllConfigs[i].Name, ((mouseLastUsed && currentLayoutSelection == i) || (!mouseLastUsed && currentSelection == i && !changingSlider)) ? Color.yellow : Color.white);
+                        labelRect = GUIHelper.CentreRectLabel(new Rect(10, 40 + (70 * i), 380, 50), inputScales[i], InputManager.AllConfigs[i].Name, ((Cursor.visible && currentLayoutSelection == i) || (!Cursor.visible && currentSelection == i && !changingSlider)) ? Color.yellow : Color.white);
                     }
                     else
                     {
@@ -753,7 +785,7 @@ public class Options : MonoBehaviour
                         labelText = current.commandsOne[availableChanges[i]];
                     }
 
-                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2)], labelText, (!mouseLastUsed && changingSlider && !currentX && currentY == i) ? Color.yellow : Color.white);
+                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2)], labelText, (!Cursor.visible && changingSlider && !currentX && currentY == i) ? Color.yellow : Color.white);
 
                     if (currentLayoutSelection > 1 && GUI.Button(labelRect, ""))
                     {
@@ -789,7 +821,7 @@ public class Options : MonoBehaviour
                         labelText = current.commandsTwo[availableChanges[i]];
                     }
 
-                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2) + 1], labelText, (!mouseLastUsed && changingSlider && currentX && currentY == i) ? Color.yellow : Color.white);
+                    GUIHelper.CentreRectLabel(labelRect, commandSizes[(i * 2) + 1], labelText, (!Cursor.visible && changingSlider && currentX && currentY == i) ? Color.yellow : Color.white);
 
                     if (currentLayoutSelection > 1 && GUI.Button(labelRect, ""))
                     {
@@ -959,11 +991,13 @@ public class Options : MonoBehaviour
 
     private void ResetEverything()
     {
+#if !(UNITY_EDITOR)
         //Get current resolution
         currentResolution = Screen.resolutions.ToList().IndexOf(Screen.currentResolution);
 
         fullScreen = Screen.fullScreen;
         currentQuality = QualitySettings.GetQualityLevel();
+#endif
     }
 
     private void SaveEverything()

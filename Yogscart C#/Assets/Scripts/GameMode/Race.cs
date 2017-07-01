@@ -20,22 +20,22 @@ public class Race : GameMode
 
     public RaceType raceType;
     public static int currentCup = -1, currentTrack = -1, currentRace = 1, lastcurrentRace;
-    private int currentSelection;
+    protected int currentSelection;
 
     public RaceGUI currentGUI = RaceGUI.Blank;
-    public float guiAlpha = 0f, mapAlpha = 0f;
-    public bool changingState = false, showMap;
+    protected float guiAlpha = 0f, mapAlpha = 0f;
+    protected bool changingState = false, showMap;
 
     protected TrackData td;
 
-    private string rankString;
-    private int bestPlace;
+    protected string rankString;
+    protected int bestPlace;
 
     protected bool raceFinished = false, lastLap, readyToLevelSelect = false;
-    public int finishedCount = 0;
+    protected int finishedCount = 0;
 
-    private MapViewer mapViewer;
-    private Coroutine currentGame;
+    protected MapViewer mapViewer;
+    protected Coroutine currentGame;
 
     public override void StartGameMode()
     {
@@ -81,8 +81,8 @@ public class Race : GameMode
             r.timer = 0;
         }
 
-        kartScript.raceStarted = false;
-        kartScript.beQuiet = true;
+        KartScript.raceStarted = false;
+        KartScript.beQuiet = true;
 
         lastcurrentRace = currentRace;
         showMap = false;
@@ -175,7 +175,7 @@ public class Race : GameMode
         yield return StartCoroutine("DoIntro");
 
         //Show what race we're on
-        kartScript.beQuiet = false;
+        KartScript.beQuiet = false;
         yield return StartCoroutine(ChangeState(RaceGUI.RaceInfo));
 
         kartInput[] kines = FindObjectsOfType<kartInput>();
@@ -204,8 +204,8 @@ public class Race : GameMode
         StartTimer();
 
         //Unlock the karts
-        kartScript[] kses = FindObjectsOfType<kartScript>();
-        foreach (kartScript ks in kses)
+        KartScript[] kses = FindObjectsOfType<KartScript>();
+        foreach (KartScript ks in kses)
             ks.locked = false;
 
         foreach (kartItem ki in kitemes)

@@ -48,6 +48,8 @@ public class TrackData : MonoBehaviour
     public BSPTree pointTree;
     public List<PointHandler> validPointHandlers { get; private set; }
 
+    public List<Route> validRoutes { get; private set; }
+
     // Update is called once per frame
     void Update()
     {
@@ -129,8 +131,8 @@ public class TrackData : MonoBehaviour
 #if UNITY_EDITOR
                 if (Application.isEditor)
                 {
-                        TrackWindow window = (TrackWindow)EditorWindow.GetWindow(typeof(TrackWindow));
-                        window.Repaint();
+                        //TrackWindow window = (TrackWindow)EditorWindow.GetWindow(typeof(TrackWindow));
+                        //window.Repaint();
                 }
 #endif
                 pointTree = null;
@@ -473,6 +475,8 @@ public class TrackData : MonoBehaviour
 
         //For each other route
         int routeCount = 1, routeChildCount = 0;
+
+        validRoutes = new List<Route>(routes);
 
         while (routes.Count > 0)
         {

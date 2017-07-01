@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(kartScript))]
+[RequireComponent(typeof(KartScript))]
 public class kartInput : MonoBehaviour
 {
 
-    private kartScript ks;
+    private KartScript ks;
     public int myController;
     public bool camLocked = false;
     public Camera frontCamera, backCamera;
@@ -16,7 +16,7 @@ public class kartInput : MonoBehaviour
         if (InputManager.controllers.Count > myController)
         {
             if (ks == null)
-                ks = GetComponent<kartScript>();
+                ks = GetComponent<KartScript>();
 
             ks.throttle = Mathf.Abs(InputManager.controllers[myController].GetInput("Throttle"));
             ks.throttle -= Mathf.Abs(InputManager.controllers[myController].GetInput("Brake"));

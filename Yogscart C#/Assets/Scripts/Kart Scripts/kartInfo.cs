@@ -48,7 +48,7 @@ public class kartInfo : MonoBehaviour
     {
         GUI.skin = Resources.Load<GUISkin>("GUISkins/Main Menu");
 
-        lapisCount = GetComponent<kartScript>().lapisAmount;
+        lapisCount = GetComponent<KartScript>().lapisAmount;
         lap = GetComponent<PositionFinding>().lap;
         position = GetComponent<PositionFinding>().racePosition;
 

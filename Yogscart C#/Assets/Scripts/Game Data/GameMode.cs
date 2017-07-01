@@ -39,10 +39,10 @@ abstract public class GameMode : MonoBehaviour
     public bool finished = false;
 
     //Countdown Stuff
-    public int CountdownText; //The number on screen
-    public Rect CountdownRect; //Where to draw the countdown
-    public bool CountdownShow = false, countdowning = false;
-    public float CountdownAlpha = 1f;
+    public int countdownText; //The number on screen
+    public bool countdowning = false;
+
+    public float countdownAlpha = 0f, countdownScale = 0f;
 
     //Load the Game Managers
     void Awake()
@@ -159,7 +159,7 @@ abstract public class GameMode : MonoBehaviour
             racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
             //Set speeds of Kart depending on Difficulty
-            SetDifficulty(racers[i].ingameObj.GetComponent<kartScript>());
+            SetDifficulty(racers[i].ingameObj.GetComponent<KartScript>());
 
             if (racers[i].Human != -1)
             {
@@ -185,14 +185,14 @@ abstract public class GameMode : MonoBehaviour
         }
     }
 
-    public void SetDifficulty(kartScript kartScript)
+    public void SetDifficulty(KartScript KartScript)
     {
         //Set speeds of Kart depending on Difficulty
         switch (CurrentGameData.difficulty)
         {
-            case 0: kartScript.modifier = 0.9f; break;
-            case 1: kartScript.modifier = 1f; break;
-            default: kartScript.modifier = 1.1f; break;
+            case 0: KartScript.modifier = 0.9f; break;
+            case 1: KartScript.modifier = 1f; break;
+            default: KartScript.modifier = 1.1f; break;
         }
     }
 
@@ -208,7 +208,7 @@ abstract public class GameMode : MonoBehaviour
         racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
         //Set speeds of Kart depending on Difficulty
-        SetDifficulty(racers[i].ingameObj.GetComponent<kartScript>());
+        SetDifficulty(racers[i].ingameObj.GetComponent<KartScript>());
 
         if (racers[i].Human != -1)
         {
@@ -253,57 +253,69 @@ abstract public class GameMode : MonoBehaviour
 
         for (int i = 3; i >= 0; i--)
         {
+            countdownText = i;
+            KartScript.startBoostVal = i;
 
-            CountdownText = i;
-            kartScript.startBoostVal = i;
+            countdownScale = 1.1f;
+            countdownAlpha = 0f;
 
-            CountdownRect = new Rect(Screen.width / 2 - (Screen.height / 1.5f) / 2f, Screen.height / 2 - (Screen.height / 1.5f) / 2f, Screen.height / 1.5f, Screen.height / 1.5f);
-            CountdownShow = true;
+            yield return FadeTo(0.8f);
 
-            yield return new WaitForSeconds(0.8f);
-
-            CountdownShow = false;
             yield return new WaitForSeconds(0.3f);
         }
 
-        CountdownText = -1;
-        kartScript.startBoostVal = -1;
+        countdownText = -1;
+        KartScript.startBoostVal = -1;
 
         countdowning = false;
+    }
+
+    private IEnumerator FadeTo(float time)
+    {
+        float startTime = Time.time, startVal = countdownScale;
+
+        while(Time.time - startTime < time)
+        {
+            countdownScale = Mathf.Lerp(startVal, 0.5f, (Time.time - startTime) / time);
+
+            if(Time.time - startTime < 0.2f)
+                countdownAlpha = Mathf.Lerp(0f, 1f, (Time.time - startTime) / 0.2f);
+            else if (Time.time - startTime > 0.6f)
+                countdownAlpha = Mathf.Lerp(1f, 0f, ((Time.time - startTime) - 0.6f) / 0.2f);
+
+            yield return null;
+        }
+
+        countdownScale = 0f;
+        countdownAlpha = 0f;
     }
 
     //Remember to call "base.OnGUI();" to get countdown behaviour
     public virtual void OnGUI()
     {
         //CountDown
-
-        GUIHelper.SetGUIAlpha(CountdownAlpha);
-
-        Texture2D countdownTexture;
-
-        if (CountdownText == 0)
-            countdownTexture = Resources.Load<Texture2D>("UI/CountDown/GO");
-        else if (CountdownText > 0)
-            countdownTexture = Resources.Load<Texture2D>("UI/CountDown/" + CountdownText.ToString());
-        else
-            countdownTexture = null;
-
-        if (countdownTexture != null)
+        if (countdownAlpha > 0f)
         {
-            GUI.DrawTexture(CountdownRect, countdownTexture, ScaleMode.ScaleToFit);
+            GUIHelper.SetGUIAlpha(countdownAlpha);
 
-            CountdownRect.x = Mathf.Lerp(CountdownRect.x, Screen.width / 2 - Screen.height / 6f, Time.deltaTime);
-            CountdownRect.y = Mathf.Lerp(CountdownRect.y, Screen.height / 2 - Screen.height / 6f, Time.deltaTime);
-            CountdownRect.width = Mathf.Lerp(CountdownRect.width, Screen.height / 3f, Time.deltaTime);
-            CountdownRect.height = Mathf.Lerp(CountdownRect.height, Screen.height / 3f, Time.deltaTime);
+            Matrix4x4 hold = GUI.matrix;
+            GUI.matrix = GUIHelper.GetMatrix();
 
-            if (CountdownShow)
-                CountdownAlpha = Mathf.Lerp(CountdownAlpha, 1f, Time.deltaTime * 10f);
+            Texture2D countdownTexture;
+
+            if (countdownText == 0)
+                countdownTexture = Resources.Load<Texture2D>("UI/CountDown/GO");
+            else if (countdownText > 0)
+                countdownTexture = Resources.Load<Texture2D>("UI/CountDown/" + countdownText.ToString());
             else
-                CountdownAlpha = Mathf.Lerp(CountdownAlpha, 0f, Time.deltaTime * 10f);
-        }
+                countdownTexture = null;
 
-        GUIHelper.ResetColor();
+            if (countdownTexture != null)
+                GUI.DrawTexture(GUIHelper.CentreRect(new Rect(400, 200, 1120, 680), countdownScale), countdownTexture, ScaleMode.ScaleToFit);
+
+            GUIHelper.ResetColor();
+            GUI.matrix = hold;
+        }
     }
 
     public abstract void HostUpdate();

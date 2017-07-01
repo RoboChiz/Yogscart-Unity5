@@ -46,7 +46,7 @@ public class TrackGenerator : MonoBehaviour
         //Update last node list
         lastConnections = new List<NodeConnectorCopy>();
 
-        Transform trackChild = transform.FindChild("Roads");
+        Transform trackChild = transform.Find("Roads");
 
         if(trackChild == null)
         {

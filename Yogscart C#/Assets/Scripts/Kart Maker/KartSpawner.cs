@@ -19,10 +19,10 @@ public class KartSpawner : MonoBehaviour
         Transform kart = km.SpawnKart(KartType.Local, transform.position, transform.rotation * Quaternion.Euler(0, -90, 0), character, hat, kartVal, wheels);
 
         //Set speeds of Kart depending on Difficulty
-        kartScript ks = kart.GetComponent<kartScript>();
+        KartScript ks = kart.GetComponent<KartScript>();
         ks.modifier = modifer;
         ks.locked = false;
-        kartScript.raceStarted = true;
+        KartScript.raceStarted = true;
 
         //Spawn Camera
         Transform inGameCam = (Transform)Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), transform.position, Quaternion.identity);

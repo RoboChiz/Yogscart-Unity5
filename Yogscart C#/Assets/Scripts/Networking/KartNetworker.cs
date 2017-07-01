@@ -31,12 +31,12 @@ public class KartNetworker : NetworkBehaviour
     [SyncVar]
     public string kartPlayerName = "Player";
 
-    private kartScript ks;
+    private KartScript ks;
     private kartItem ki;
 
     void Start()
     {
-        ks = GetComponent<kartScript>();
+        ks = GetComponent<KartScript>();
         ki = GetComponent<kartItem>();
     }
 
@@ -71,7 +71,7 @@ public class KartNetworker : NetworkBehaviour
 
             if (boostTime > 0)
             {
-                ks.Boost(boostTime, (kartScript.BoostMode)boostType);
+                ks.Boost(boostTime, (KartScript.BoostMode)boostType);
                 boostTime = 0;
                 boostType = 0;
             }
@@ -136,7 +136,7 @@ public class KartNetworker : NetworkBehaviour
     }
 
     [ClientCallback]
-    public void SendBoost(float time, kartScript.BoostMode type)
+    public void SendBoost(float time, KartScript.BoostMode type)
     {
         if(isLocalPlayer)
         {
@@ -168,8 +168,8 @@ public class KartNetworker : NetworkBehaviour
         Transform newKart = FindObjectOfType<KartMaker>().SpawnKart(KartType.Local, transform.position, transform.rotation, currentChar, currentHat, currentKart, currentWheel);
 
         //Replace the values in the Original Kart Object to point to the new parts
-        GetComponent<kartScript>().particleSystems = newKart.GetComponent<kartScript>().particleSystems;
-        GetComponent<kartScript>().ResetParticles();
+        GetComponent<KartScript>().particleSystems = newKart.GetComponent<KartScript>().particleSystems;
+        GetComponent<KartScript>().ResetParticles();
 
         GetComponent<DeathCatch>().deathParticles = newKart.GetComponent<DeathCatch>().deathParticles;
         GetComponent<kartAnimator>().ani = newKart.GetComponent<kartAnimator>().ani;

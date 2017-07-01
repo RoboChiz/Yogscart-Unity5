@@ -8,11 +8,11 @@ public class BoostPad : MonoBehaviour {
 
         Transform parent = other.transform;
 
-        while (parent.parent != null && parent.GetComponent<kartScript>() == null)
+        while (parent.parent != null && parent.GetComponent<KartScript>() == null)
             parent = parent.parent;
 
-        if (parent.GetComponent<kartScript>() != null)
-            parent.GetComponent<kartScript>().Boost(2f, kartScript.BoostMode.Boost);
+        if (parent.GetComponent<KartScript>() != null)
+            parent.GetComponent<KartScript>().Boost(2f, KartScript.BoostMode.Boost);
 
     }
 

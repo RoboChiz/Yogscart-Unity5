@@ -73,7 +73,7 @@ public class CowTipping : MonoBehaviour
                 currentPushTime = 0;
 
             //Keep Kart travelling forward after Push
-            if (GetComponent<kartScript>().isFalling)
+            if (GetComponent<KartScript>().isFalling)
             {
                 if(waitLand)
                     rigidbody.velocity = Vector3.Scale(rigidbody.velocity,new Vector3(0f, 1f, 0f)) + Vector3.Scale(lastVelocity, new Vector3(1f, 0, 1f));

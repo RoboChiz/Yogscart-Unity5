@@ -19,7 +19,7 @@ public class KartMaker : MonoBehaviour
     {
         //Spawn Kart and Wheels
         Transform kartBody = Instantiate(gd.karts[k].model, Vector3.zero, Quaternion.identity);
-        Transform actualKartBody = kartBody.FindChild("Kart Body"); ;
+        Transform actualKartBody = kartBody.Find("Kart Body"); ;
 
         Kart_Skeleton kartSkel = kartBody.GetComponent<Kart_Skeleton>();
 
@@ -62,7 +62,7 @@ public class KartMaker : MonoBehaviour
         ikComponent.rightHandTarget = kartSkel.rightHandTarget;
         ikComponent.leftFootTarget = kartSkel.leftFootTarget;
         ikComponent.rightFootTarget = kartSkel.rightFootTarget;
-        ikComponent.steeringWheel = actualKartBody.FindChild("Steering Wheel");
+        ikComponent.steeringWheel = actualKartBody.Find("Steering Wheel");
 
         if (type == KartType.Online)
         {
@@ -110,26 +110,26 @@ public class KartMaker : MonoBehaviour
             //Setup Wheel Colliders
             Transform frontlWheelCollider = (Transform)Instantiate(gd.wheels[w].model, kartSkel.FrontLPosition, Quaternion.Euler(0, 0, 0));
             frontlWheelCollider.name = "FrontL Wheel";
-            frontlWheelCollider.parent = kartBody.FindChild("Colliders");
+            frontlWheelCollider.parent = kartBody.Find("Colliders");
             SetUpWheelCollider(frontlWheelCollider);
 
             Transform frontrWheelCollider = (Transform)Instantiate(gd.wheels[w].model, kartSkel.FrontRPosition, Quaternion.Euler(0, 180, 0));
             frontrWheelCollider.name = "FrontR Wheel";
-            frontrWheelCollider.parent = kartBody.FindChild("Colliders");
+            frontrWheelCollider.parent = kartBody.Find("Colliders");
             SetUpWheelCollider(frontrWheelCollider);
 
             Transform backlWheelCollider = (Transform)Instantiate(gd.wheels[w].model, kartSkel.BackLPosition, Quaternion.Euler(0, 0, 180));
             backlWheelCollider.name = "BackL Wheel";
-            backlWheelCollider.parent = kartBody.FindChild("Colliders");
+            backlWheelCollider.parent = kartBody.Find("Colliders");
             SetUpWheelCollider(backlWheelCollider);
 
             Transform backrWheelCollider = (Transform)Instantiate(gd.wheels[w].model, kartSkel.BackRPosition, Quaternion.Euler(0, 180, 180));
             backrWheelCollider.name = "BackR Wheel";
-            backrWheelCollider.parent = kartBody.FindChild("Colliders");
+            backrWheelCollider.parent = kartBody.Find("Colliders");
             SetUpWheelCollider(backrWheelCollider);
 
             //Add Kart Script
-            kartScript ks = kb.AddComponent<kartScript>();
+            KartScript ks = kb.AddComponent<KartScript>();
 
             ks.characterID = c;
             ks.engineSound = kartSkel.engineSound;
@@ -141,15 +141,16 @@ public class KartMaker : MonoBehaviour
             ks.wheelColliders.Add(backrWheelCollider.GetComponent<WheelCollider>());
 
             ks.wheelBackUps = new List<SphereCollider>();
-            //ks.wheelBackUps.Add(frontlWheelCollider.gameObject.AddComponent<SphereCollider>());
-            //ks.wheelBackUps.Add(frontrWheelCollider.gameObject.AddComponent<SphereCollider>());
-            //ks.wheelBackUps.Add(backlWheelCollider.gameObject.AddComponent<SphereCollider>());
-            //ks.wheelBackUps.Add(backrWheelCollider.gameObject.AddComponent<SphereCollider>());
+            ks.wheelBackUps.Add(frontlWheelCollider.gameObject.AddComponent<SphereCollider>());
+            ks.wheelBackUps.Add(frontrWheelCollider.gameObject.AddComponent<SphereCollider>());
+            ks.wheelBackUps.Add(backlWheelCollider.gameObject.AddComponent<SphereCollider>());
+            ks.wheelBackUps.Add(backrWheelCollider.gameObject.AddComponent<SphereCollider>());
 
+            //Used to stop wheels going through the ground
             foreach(SphereCollider sc in ks.wheelBackUps)
             {
-                sc.radius = frontlWheelCollider.GetComponent<WheelCollider>().radius - 0.2f;
-                sc.enabled = false;
+                sc.radius = frontlWheelCollider.GetComponent<WheelCollider>().radius * 0.75f;
+                sc.material = kb.GetComponentInChildren<BoxCollider>().material;
             }
 
             ks.wheelMeshes = new List<Transform>();
@@ -168,7 +169,7 @@ public class KartMaker : MonoBehaviour
             foreach (string particle in particleNames)
             {
                 //Add Particle System to dictioanry of kart's particles
-                Transform currentparticle = particlesPack.FindChild(particle);
+                Transform currentparticle = particlesPack.Find(particle);
                 ks.particleSystems.Add(particle, currentparticle.GetComponent<ParticleSystem>());
 
                 switch (count)

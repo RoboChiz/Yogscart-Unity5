@@ -395,7 +395,7 @@ public class MainMenu : MonoBehaviour
                     case MenuState.SinglePlayer:
                         switch (options[currentSelection])
                         {
-                           /* case "Tournament":
+                            case "Tournament":
                                 temp = (Race)CurrentGameData.currentGamemode;
                                 temp.raceType = RaceType.GrandPrix;
 
@@ -406,7 +406,7 @@ public class MainMenu : MonoBehaviour
                                 temp.raceType = RaceType.VSRace;
 
                                 ChangeMenu(MenuState.Difficulty);
-                                break;*/
+                                break;
                             case "Time Trial":
                                 temp = (Race)CurrentGameData.currentGamemode;
                                 temp.raceType = RaceType.TimeTrial;
@@ -417,8 +417,7 @@ public class MainMenu : MonoBehaviour
                                 break;
                         }
                     break;
-                    case MenuState.Multiplayer:
-                        /*
+                    case MenuState.Multiplayer:                      
                        switch (options[currentSelection])
                        {
                             case "Tournament":
@@ -433,7 +432,7 @@ public class MainMenu : MonoBehaviour
 
                                ChangeMenu(MenuState.Difficulty);
                                break;
-                       }*/
+                       }
                         break;
                     case MenuState.Difficulty:
                         switch (options[currentSelection])

@@ -26,12 +26,12 @@ public class SoundManager : MonoBehaviour
         lastMuv = musicVolume;
         lastsfV = sfxVolume;
 
-        mSource = transform.FindChild("Music").GetComponent<AudioSource>();
-        mSourceInfo = transform.FindChild("Music").GetComponent<AudioSourceInfo>();
+        mSource = transform.Find("Music").GetComponent<AudioSource>();
+        mSourceInfo = transform.Find("Music").GetComponent<AudioSourceInfo>();
         mSourceInfo.idealVolume = musicVolume;
 
-        sfxSource = transform.FindChild("SFX").GetComponent<AudioSource>();
-        sfxSourceInfo = transform.FindChild("SFX").GetComponent<AudioSourceInfo>();
+        sfxSource = transform.Find("SFX").GetComponent<AudioSource>();
+        sfxSourceInfo = transform.Find("SFX").GetComponent<AudioSourceInfo>();
         sfxSourceInfo.idealVolume = sfxVolume;
 
         mSource.loop = true;

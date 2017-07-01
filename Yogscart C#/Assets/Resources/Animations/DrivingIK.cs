@@ -5,7 +5,7 @@ using UnityEngine;
 public class DrivingIK : MonoBehaviour
 {
     private Animator animator;
-    private kartScript ks;
+    private KartScript ks;
     private InterestManager interestManager;
 
     public Transform leftHandTarget, rightHandTarget, leftFootTarget, rightFootTarget, steeringWheel;
@@ -26,10 +26,10 @@ public class DrivingIK : MonoBehaviour
 
         myParent = transform;
 
-        while (myParent.parent != null && myParent.GetComponent<kartScript>() == null)
+        while (myParent.parent != null && myParent.GetComponent<KartScript>() == null)
             myParent = myParent.parent;
 
-        ks = myParent.GetComponent<kartScript>();
+        ks = myParent.GetComponent<KartScript>();
 
         //Set up Pedal Animation Position
         startThrottleRot = rightFootTarget.localRotation;

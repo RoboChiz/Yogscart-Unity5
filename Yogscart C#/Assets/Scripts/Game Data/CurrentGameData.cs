@@ -237,7 +237,7 @@ public class CurrentGameData : MonoBehaviour {
         }     
     }
 
-    void ResetData()
+    public void ResetData()
     {
         Debug.Log("Data not compatible!");
         PlayerPrefs.SetString("YogscartData", "");

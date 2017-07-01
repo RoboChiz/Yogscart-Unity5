@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class kartScript : MonoBehaviour
+public class KartScript : MonoBehaviour
 {
     //Lock all kart controls
     public bool locked = true;
@@ -151,14 +151,12 @@ public class kartScript : MonoBehaviour
             skidMarkTransform = Resources.Load<Transform>("Prefabs/SkidMarks");
 
         ResetParticles();
-
-        wheelBackupsStartRadius = wheelColliders[0].radius * 0.8f;
     }
 
     public void ResetParticles()
     {
         //Get Kart Body
-        kartBody = transform.FindChild("Kart Body");
+        kartBody = transform.Find("Kart Body");
 
         //Get Particles
         startCloudParticles = new ParticleSystem[] { particleSystems["L_StartClouds"], particleSystems["R_StartClouds"] };
@@ -215,13 +213,6 @@ public class kartScript : MonoBehaviour
                 expectedSpeed = -5f;
                 Debug.Log("Ahhh a wall!!! " + expectedSpeed);
                 CancelBoost();
-            }
-
-            //Used to stop wheels going through the floor
-            for (int i = 0; i < wheelBackUps.Count; i++)
-            {
-                wheelBackUps[i].enabled = true;
-                wheelBackUps[i].radius = isFalling ? wheelBackupsStartRadius : wheelBackupsStartRadius * 0.4f;
             }
 
             float nA = (ExpectedSpeed - actualSpeed) / lastTime;
@@ -889,7 +880,7 @@ public class kartScript : MonoBehaviour
             locked = true;
 
             //Play Sound
-            Animator ani = kartBody.FindChild("Character").GetComponent<Animator>();
+            Animator ani = kartBody.Find("Character").GetComponent<Animator>();
             ani.SetBool("Hit", true);
 
             yield return StartCoroutine("SpinKartBody", Vector3.up);

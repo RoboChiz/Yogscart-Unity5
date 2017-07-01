@@ -210,7 +210,7 @@ public class InputManager : MonoBehaviour
         }
 
         //Hide Mouse if it's not used
-        if(Input.anyKeyDown && !Input.GetMouseButton(0))
+        if((Input.anyKey || (controllers.Count > 0 && (controllers[0].GetRawInput("MenuHorizontal") != 0 || controllers[0].GetRawInput("MenuVertical") != 0))) && !Input.GetMouseButton(0))
         {
             Cursor.visible = false;
         }
