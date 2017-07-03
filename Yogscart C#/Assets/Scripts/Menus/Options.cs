@@ -14,10 +14,10 @@ public class Options : MonoBehaviour
 
     private DropDown resDropDown, qualityDropDown;
     private Toggle fullscreenToggle;
-    private int currentResolution = 0, currentQuality = 0;
-
+    
     private float cancelScale = 1f, applyScale = 1f, plusScale = 2f, minusScale = 2f, editScale;
-    private bool fullScreen, somethingChanged = false, editName = false;
+    private bool editName = false;
+    public bool somethingChanged = false;
 
     public int currentLayoutSelection = 0, selectedInput = -1;
     private Vector2 layoutScrollPosition, configScrollPosition;
@@ -27,6 +27,10 @@ public class Options : MonoBehaviour
     public string[] availableChanges, availableNames;
 
     public bool locked = false;
+
+    //Graphics Settings
+    private bool fullScreen, lastFullscreen;
+    private int currentResolution = 0, currentQuality = 0, lastResolution, lastQuality;
 
     //Keyboard / Controller Controls
     private int currentSelection = 0;
@@ -76,6 +80,16 @@ public class Options : MonoBehaviour
             possibleScreens[i] = Screen.resolutions[i].width + " x " + Screen.resolutions[i].height + " - " + Screen.resolutions[i].refreshRate + "hz";
 
         qualityNames = QualitySettings.names;
+
+        //Get Current values
+        currentResolution = Screen.resolutions.ToList().IndexOf(Screen.currentResolution);
+        fullScreen = Screen.fullScreen;
+        currentQuality = QualitySettings.GetQualityLevel();
+        lastResolution = currentResolution;
+        lastFullscreen = fullScreen;
+        lastQuality = currentQuality;
+
+
     }
 
     public void ShowOptions()
@@ -176,7 +190,7 @@ public class Options : MonoBehaviour
                             {
                                 //Find the PopUp Window and Show it
                                 locked = true;
-                                FindObjectOfType<ResetGamePopup>().ShowPopUp();
+                                FindObjectOfType<GamePopup>().ShowPopUp();
                             }
                         }
 
@@ -385,12 +399,21 @@ public class Options : MonoBehaviour
         }
     }
 
-    private void Quit()
+    public void Quit()
     {
-        if (FindObjectOfType<MainMenu>() != null)
-            FindObjectOfType<MainMenu>().BackMenu();
+        if (somethingChanged)
+        {
+            //Find the PopUp Window and Show it
+            locked = true;
+            FindObjectOfType<CancelChanges>().ShowPopUp();
+        }
         else
-            HideOptions();
+        {
+            if (FindObjectOfType<MainMenu>() != null)
+                FindObjectOfType<MainMenu>().BackMenu();
+            else
+                HideOptions();
+        }
     }
 
     //Called when variables used for Controller inputs need to be reset
@@ -449,7 +472,7 @@ public class Options : MonoBehaviour
     {
         GUI.depth = -50;
 
-        if (guiAlpha > 0f && GUIHelper.DrawBack(1f))
+        if (guiAlpha > 0f && GUIHelper.DrawBack(1f) && !locked)
         {
             Quit();
         }
@@ -561,13 +584,16 @@ public class Options : MonoBehaviour
 
                 if (FindObjectOfType<MainMenu>() != null)
                 {
-                    GUI.Label(new Rect(20, 400, 300, 100), "Reset Save Data", (currentSelection == 3 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    Rect saveReset = new Rect(50, 400, 300, 100);
+                    Rect actualSave = new Rect(saveReset.x + tabAreaRect.x, saveReset.y + tabAreaRect.y, saveReset.width, saveReset.height);
 
-                    if (!locked && GUI.Button(new Rect(20, 400, 300, 100),""))
+                    GUI.Label(saveReset, "Reset Save Data", (currentSelection == 3 && !Cursor.visible) || (Cursor.visible && actualSave.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
+
+                    if (!locked && GUI.Button(saveReset, ""))
                     {
                         //Find the PopUp Window and Show it
                         locked = true;
-                        FindObjectOfType<ResetGamePopup>().ShowPopUp();
+                        FindObjectOfType<GamePopup>().ShowPopUp();
                     }
                 }
 
@@ -991,19 +1017,19 @@ public class Options : MonoBehaviour
 
     private void ResetEverything()
     {
-#if !(UNITY_EDITOR)
-        //Get current resolution
-        currentResolution = Screen.resolutions.ToList().IndexOf(Screen.currentResolution);
-
-        fullScreen = Screen.fullScreen;
-        currentQuality = QualitySettings.GetQualityLevel();
-#endif
+        currentResolution = lastResolution;
+        fullScreen = lastFullscreen;
+        currentQuality = lastQuality;
     }
 
-    private void SaveEverything()
+    public void SaveEverything()
     {
         Screen.SetResolution(Screen.resolutions[currentResolution].width, Screen.resolutions[currentResolution].height, fullScreen);
         QualitySettings.SetQualityLevel(currentQuality);
+
+        lastResolution = currentResolution;
+        lastFullscreen = fullScreen;
+        lastQuality = currentQuality;
     }
 
     private void ChangeType(int i)

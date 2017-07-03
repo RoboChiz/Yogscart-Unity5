@@ -32,12 +32,12 @@ public class KartNetworker : NetworkBehaviour
     public string kartPlayerName = "Player";
 
     private KartScript ks;
-    private kartItem ki;
+    private KartItem ki;
 
     void Start()
     {
         ks = GetComponent<KartScript>();
-        ki = GetComponent<kartItem>();
+        ki = GetComponent<KartItem>();
     }
 
     // Update is called once per frame

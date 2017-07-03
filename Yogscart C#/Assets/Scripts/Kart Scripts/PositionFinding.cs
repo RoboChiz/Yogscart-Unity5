@@ -97,7 +97,10 @@ public class PositionFinding : MonoBehaviour {
 
                 foreach (Vector2 option in percentagesAndXPos)
                     if (Mathf.Abs(option.y) <= 15f)
+                    {
                         closePoint = true;
+                        break;
+                    }
 
                 //If we're a little too far from any point, check we're still close to it
                 if(!closePoint)
@@ -108,6 +111,19 @@ public class PositionFinding : MonoBehaviour {
                     //If we're closer to another point, don't use this data
                     if (closestPoint != hold)
                         return;
+                }
+                else //Check if we're closer to a nearby point
+                {
+                    float currentDistance = Vector3.Distance(transform.position, closestPoint.lastPos);
+
+                    foreach (PointHandler option in closestPoint.connections)
+                    {
+                        if(Vector3.Distance(transform.position, option.lastPos) < currentDistance)
+                        {
+                            closestPoint = option;
+                            currentDistance = Vector3.Distance(transform.position, closestPoint.lastPos);
+                        }
+                    }
                 }
 
                 //If we're not near any of it's connetions try finding ourselfs

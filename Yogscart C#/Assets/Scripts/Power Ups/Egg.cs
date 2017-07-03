@@ -13,10 +13,8 @@ public class Egg : Projectile
     private static AudioClip fireSound, bounceSound;
     private bool playedSound = false;
 
-    public override void Setup(Vector3 _direction, bool _actingShield)
+    public override void Setup(float _direction, bool _actingShield)
     {
-        _direction.y = 0f;
-
         base.Setup(_direction, _actingShield);
         desiredY = transform.position.y;
     }
@@ -32,7 +30,7 @@ public class Egg : Projectile
     }
 	
 	// Update is called once per frame
-	protected virtual void Update ()
+	protected virtual void FixedUpdate ()
     {
         if (!actingShield)
         {
@@ -41,7 +39,7 @@ public class Egg : Projectile
             var layerMask = 1 << 10;
             layerMask = ~layerMask;
 
-            if (Physics.Raycast(transform.position + Vector3.up,Vector3.down,out hit, Mathf.Infinity, layerMask))
+            if (Physics.Raycast(transform.position + (Vector3.up * 2f) + (direction),Vector3.down,out hit, Mathf.Infinity, layerMask))
             {
                 desiredY = hit.point.y + offset;
             }
@@ -53,7 +51,7 @@ public class Egg : Projectile
             if (overrideYPos)
             {
                 if (desiredY < newPosition.y)
-                    newPosition.y = Mathf.Lerp(newPosition.y, desiredY, Time.deltaTime * 20f);
+                    newPosition.y = Mathf.Lerp(newPosition.y, desiredY, Time.deltaTime * 45f);
                 else
                     newPosition.y = desiredY;
             }
@@ -80,6 +78,9 @@ public class Egg : Projectile
 
     void OnCollisionEnter(Collision collision)
     {
+
+        Debug.Log("Collided with " + collision.transform.name);
+
         if(collision.transform.GetComponent<KartScript>() != null)
         {
             //Spin the Kart Out

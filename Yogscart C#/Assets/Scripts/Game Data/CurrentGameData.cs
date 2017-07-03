@@ -356,4 +356,7 @@ public class PowerUp
     public bool multipleUses;
     public bool useableShield;
     public int[] likelihood;
+
+    public enum AIUnderstanding { SpeedBoost, Lapis, Dirt, Egg, JR};
+    public AIUnderstanding aiUnderstanding = AIUnderstanding.SpeedBoost;
 }

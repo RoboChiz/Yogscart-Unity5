@@ -14,31 +14,33 @@ public class TrackGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //Check current Nodes against old Node
-        bool changesFound = false;
-
-        connections = FindObjectsOfType<NodeConnector>().ToList();
-
-        if (connections.Count != lastConnections.Count)
-            changesFound = true;
-        else
+        if (!Application.isPlaying)
         {
-            for (int i = 0; i < connections.Count; i++)
+            //Check current Nodes against old Node
+            bool changesFound = false;
+
+            connections = FindObjectsOfType<NodeConnector>().ToList();
+
+            if (connections.Count != lastConnections.Count)
+                changesFound = true;
+            else
             {
-                //Check Node Connection against other Node Connection
-                if (connections[i].a != null && connections[i].b != null && !connections[i].SameNodeConnector(lastConnections[i]))
+                for (int i = 0; i < connections.Count; i++)
                 {
-                    changesFound = true;
-                    break;
+                    //Check Node Connection against other Node Connection
+                    if (connections[i].a != null && connections[i].b != null && !connections[i].SameNodeConnector(lastConnections[i]))
+                    {
+                        changesFound = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (changesFound)
-        {
-            UpdateLC();
+            if (changesFound)
+            {
+                UpdateLC();
+            }
         }
-
     }
 
     void UpdateLC()

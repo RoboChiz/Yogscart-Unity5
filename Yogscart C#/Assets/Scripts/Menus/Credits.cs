@@ -72,6 +72,7 @@ public class Credits : MonoBehaviour
     "Trophy Design", "Duck",
     "Music By", "Pico",
     "Yogscast Outro performed by", "Ben Binderow",
+    "Testing", "Thorn",
     "Additional Music By", "Kevin MacLeod (incompetech.com) \n Licensed under Creative Commons: By Attribution 3.0 \n http://creativecommons.org/licenses/by/3.0/",
     "", "",
     "", "Thanks for Playing!",

@@ -184,8 +184,8 @@ public class NetworkRaceClient : Race
         foreach (kartInfo ki in kies)
             ki.hidden = false;
 
-        kartItem[] kitemes = FindObjectsOfType<kartItem>();
-        foreach (kartItem ki in kitemes)
+        KartItem[] kitemes = FindObjectsOfType<KartItem>();
+        foreach (KartItem ki in kitemes)
             ki.hidden = false;
 
         kartInput[] kines = GameObject.FindObjectsOfType<kartInput>();

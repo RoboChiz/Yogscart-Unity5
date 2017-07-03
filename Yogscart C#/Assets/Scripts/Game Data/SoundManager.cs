@@ -5,7 +5,7 @@ public class SoundManager : MonoBehaviour
 {
 
     public static float masterVolume = 1f, musicVolume = 1f, sfxVolume = 1f;
-    private float lastMav = -1f, lastMuv = -1f, lastsfV = -1f;
+    public float lastMav = -1f, lastMuv = -1f, lastsfV = -1f;
 
     const float fadeTime = 0.5f;
 
@@ -28,11 +28,9 @@ public class SoundManager : MonoBehaviour
 
         mSource = transform.Find("Music").GetComponent<AudioSource>();
         mSourceInfo = transform.Find("Music").GetComponent<AudioSourceInfo>();
-        mSourceInfo.idealVolume = musicVolume;
 
         sfxSource = transform.Find("SFX").GetComponent<AudioSource>();
         sfxSourceInfo = transform.Find("SFX").GetComponent<AudioSourceInfo>();
-        sfxSourceInfo.idealVolume = sfxVolume;
 
         mSource.loop = true;
     }
@@ -140,6 +138,7 @@ public class SoundManager : MonoBehaviour
             yield return null;
         }
 
+        mSourceInfo.idealVolume = endVolume;
     }
 
     public void SetMusicPitch(float value)

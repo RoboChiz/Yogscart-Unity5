@@ -564,7 +564,7 @@ public class TrackData : MonoBehaviour
                 foundExit = true;
                 exitOnThisNode = true;
             }
-            else if (loopedTrack && otherPoint.style == PointHandler.Point.End && routes[myRoute].length >= 3)
+            else if (loopedTrack && otherPoint.style == PointHandler.Point.End && startPoint.style != PointHandler.Point.Start && routes[myRoute] != null && routes[myRoute].length >= 3)
             {
                 routes[myRoute].AddPoint(otherPoint);
                 foundExit = true;

@@ -27,7 +27,6 @@ public class DeathCatch : MonoBehaviour {
 
         if(transform.GetComponent<KartScript>() != null)
         {
-            TrackData td = GameObject.Find("Track Manager").GetComponent<TrackData>();
             PositionFinding pf = transform.GetComponent<PositionFinding>();
 
             Vector3 newPos = pf.closestPoint.transform.position;

@@ -394,7 +394,7 @@ public class DropDown
             if (scrollRect.Contains(newMousePos - GUIHelper.groupOffset))
             {
                 staysOutside = false;
-                Debug.Log("Stays Outside!");
+                //Debug.Log("Stays Outside!");
             }              
 
             scrollPosition = GUIHelper.BeginScrollView(scrollRect, scrollPosition, new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 2f) - 20, rect.height * options.Length));

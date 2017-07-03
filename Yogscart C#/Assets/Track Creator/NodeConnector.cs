@@ -45,20 +45,23 @@ public class NodeConnector : MonoBehaviour
 
     void Update()
     {
-        transform.name = "";
+        if (!Application.isPlaying)
+        {
+            transform.name = "";
 
-        if (a != null)
-            transform.name += a.name;
+            if (a != null)
+                transform.name += a.name;
 
-        if (transform.name != "" && b != null)
-            transform.name += " & ";
+            if (transform.name != "" && b != null)
+                transform.name += " & ";
 
-        if (b != null)
-            transform.name += b.name;
+            if (b != null)
+                transform.name += b.name;
 
-        transform.name += " Road";
+            transform.name += " Road";
 
-        transform.position = Vector3.zero;
+            transform.position = Vector3.zero;
+        }
     }
 
     public bool SameNodeConnector(NodeConnectorCopy nc)

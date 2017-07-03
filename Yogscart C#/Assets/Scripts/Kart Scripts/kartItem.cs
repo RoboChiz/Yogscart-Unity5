@@ -3,7 +3,7 @@ using System.Collections;
 
 public enum ItemOwner { Mine, Ai, Online };
 
-public class kartItem : MonoBehaviour
+public class KartItem : MonoBehaviour
 {
     private CurrentGameData gd;
     private kartInfo ki;
@@ -73,7 +73,7 @@ public class kartItem : MonoBehaviour
                 myItem.parent = transform;
 
                 if (myItem.GetComponent<Projectile>() != null)
-                    myItem.GetComponent<Projectile>().Setup(transform.forward * inputDirection,false);
+                    myItem.GetComponent<Projectile>().Setup(inputDirection,false);
 
                 if (myItem.GetComponent<DamagingItem>() != null)
                     myItem.GetComponent<DamagingItem>().owner = GetComponent<KartScript>();
@@ -102,7 +102,7 @@ public class kartItem : MonoBehaviour
                     myItem.GetComponent<Rigidbody>().isKinematic = true;
 
                 if (myItem.GetComponent<Projectile>() != null)
-                    myItem.GetComponent<Projectile>().Setup(transform.forward, true);
+                    myItem.GetComponent<Projectile>().Setup(1, true);
 
                 if (myItem.GetComponent<DamagingItem>() != null)
                     myItem.GetComponent<DamagingItem>().owner = GetComponent<KartScript>();
@@ -130,7 +130,7 @@ public class kartItem : MonoBehaviour
                 }
 
                 //Start Projectile Behaviour
-                myItem.GetComponent<Projectile>().Setup(transform.forward * inputDirection, false);
+                myItem.GetComponent<Projectile>().Setup(inputDirection, false);
             }
 
             myItem.parent = null;

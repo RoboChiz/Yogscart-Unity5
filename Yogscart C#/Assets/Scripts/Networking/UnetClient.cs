@@ -240,8 +240,8 @@ public class UnetClient : NetworkManager
         foreach (KartScript ks in kses)
             ks.locked = false;
 
-        kartItem[] kitemes = FindObjectsOfType<kartItem>();
-        foreach (kartItem ki in kitemes)
+        KartItem[] kitemes = FindObjectsOfType<KartItem>();
+        foreach (KartItem ki in kitemes)
             ki.locked = false;
 
         //Unlock the Pause Menu

@@ -209,8 +209,8 @@ public class KartMaker : MonoBehaviour
                 //kb.AddComponent<kartInfo>();
             }
 
-            kb.AddComponent<kartItem>();
-            kb.GetComponent<kartItem>().itemDistance = kartSkel.ItemDrop;
+            kb.AddComponent<KartItem>();
+            kb.GetComponent<KartItem>().itemDistance = kartSkel.ItemDrop;
 
             kb.AddComponent<KartCollider>();
         }

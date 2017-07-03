@@ -8,9 +8,9 @@ abstract public class Projectile : MonoBehaviour
     protected Vector3 direction;
     protected bool actingShield = false;
 
-    public virtual void Setup(Vector3 _direction, bool _actingShield)
+    public virtual void Setup(float _direction, bool _actingShield)
     {
-        direction = _direction;
+        direction = MathHelper.ZeroYPos(transform.forward * _direction);
         actingShield = _actingShield;
     }
 }

@@ -2,6 +2,20 @@
 
 ## Changelog : Started 04/08/2016
 
+## 03/07/2017
+* Fixed JR not looping on looped Tracks
+* Added firing JR backwards
+* Fixed music volume bug
+* Fixed reset save button not changing colour
+* Made Sjin's Farm final lap slower
+
+## 02/07/2017
+* Fixed bug where option to reset data was below options
+* Added popup when you don't confirm graphics changes
+* Added Basic AI item usage
+* Added D-Pad support to Menus
+* Redid JR PowerUp
+
 ## 01/07/2017
 * Added Option to delete save data
 * Added Pop Up to confirm save data deletion

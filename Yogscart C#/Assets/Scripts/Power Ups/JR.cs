@@ -1,102 +1,133 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
+[RequireComponent(typeof(PositionFinding))]
 public class JR : Egg
 {
+    private GameObject owner;
 
-    private Transform parent, target;
-    private bool lockOff = false;
-    private int currentPoint;
+    private List<KartScript> possibleTargets;
+    private KartScript mainTarget;
+
+    private TrackData.Route followRoute;
+
     private TrackData td;
+    private PositionFinding myPositionFinding;
+
+    private bool cancelFollowing = false;
+
+    public override void Setup(float _direction, bool _actingShield)
+    {
+        if (_direction < 0)
+            cancelFollowing = true;
+
+        base.Setup(_direction, _actingShield);
+    }
 
     protected void Start()
     {
-        parent = transform.parent;
-        currentPoint = 0;
-        offset = 1.5f;
-        bounces = 0;
+        if (!cancelFollowing)
+        {
+            //Setup the Egg
+            owner = transform.parent.gameObject;
+            offset = 1.5f;
+            bounces = 0;
+
+            //Get Track Data
+            td = FindObjectOfType<TrackData>();
+            myPositionFinding = GetComponent<PositionFinding>();
+
+            //Get a list of possible targets
+            possibleTargets = new List<KartScript>();
+            KartScript ownerKS = owner.GetComponent<KartScript>();
+            KartScript[] allKS = FindObjectsOfType<KartScript>();
+
+            PositionFinding ownerPF = ownerKS.GetComponent<PositionFinding>();
+            float ownerPercent = ownerKS.GetComponent<PositionFinding>().currentPercent;
+
+            foreach (KartScript ks in allKS)
+            {
+                PositionFinding pf = ks.GetComponent<PositionFinding>();
+
+                if (ks != ownerKS &&
+                    ((!td.loopedTrack && pf.currentPercent > ownerPercent)
+                    || (td.loopedTrack && ((pf.lap == ownerPF.lap && pf.currentPercent > ownerPercent) || pf.lap > ownerPF.lap))))
+                    possibleTargets.Add(ks);
+            }
+
+            StartCoroutine(FindRoute());
+        }
+    }
+
+    private IEnumerator FindRoute()
+    {
+        while (myPositionFinding.closestPoint == null)
+            yield return null;
+
+        //Get a Default Route to follow
+        foreach (TrackData.Route route in td.validRoutes)
+        {
+            int routeIndex = route.points.IndexOf(myPositionFinding.closestPoint);
+            if (routeIndex != -1)
+            {
+                followRoute = route;
+                break;
+            }
+        }
     }
 
 	// Update is called once per frame
-	protected override void Update ()
+	protected override void FixedUpdate()
     {
-        //Get Track Data
-        td = FindObjectOfType<TrackData>();
-
-        //Update Position to Add Player in Front
-        if (!actingShield)
+        if (!cancelFollowing)
         {
-            //Find Target, Only when released
-            if (target == null && !lockOff)
+            //Pick a main target based on who we're closer to
+            if (mainTarget == null)
             {
-                PositionFinding pf = parent.GetComponent<PositionFinding>();
-                Vector3 roadDir = Vector3.forward; // td.positionPoints[MathHelper.NumClamp(currentPoint + 1, 0, td.positionPoints.Count)].position - td.positionPoints[currentPoint].position;
-
-                //If not in first
-                if (pf.racePosition > 0)
+                foreach (KartScript ks in possibleTargets)
                 {
-                    PositionFinding[] pfArray = FindObjectsOfType<PositionFinding>();
-
-                    foreach (PositionFinding possiblePF in pfArray)
+                    RaycastHit hit;
+                    if (Physics.Raycast(new Ray(transform.position - (Vector3.up * 0.25f), ks.transform.position - transform.position), out hit) && hit.transform == ks.transform)
                     {
-                        if (possiblePF.racePosition == pf.racePosition - 1)
-                        {
-                            //Check facing the right direction
-                            if (Vector3.Dot(parent.forward, roadDir) > 0)
-                            {
-                                target = possiblePF.transform;
+                        mainTarget = ks;
 
-                                //Inform Kart Info or Attack
-                                kartInfo kartInfo = target.GetComponent<kartInfo>();
-                                if(kartInfo != null)
-                                {
-                                    kartInfo.NewAttack(Resources.Load<Texture2D>("UI/Power Ups/Clucky_1JR"), gameObject);
-                                }
-                            }
-                            break;
-                        }
+                        //Tell Target we're attacking it
+                        kartInfo kartInfo = mainTarget.GetComponent<kartInfo>();
+                        if (kartInfo != null)
+                            kartInfo.NewAttack(Resources.Load<Texture2D>("UI/Power Ups/Clucky_1JR"), gameObject);
+                        break;
                     }
                 }
             }
 
-            lockOff = true;
-
-            if (target != null)
+            //Lets hunt our target
+            if (!actingShield && followRoute != null)
             {
-                //Test if we can hit the Target
-                Vector3 attackDir = target.position - transform.position;
-                RaycastHit hit;
-
-                if (0 <= currentPoint + 3 && Physics.Raycast(transform.position, attackDir, out hit, Mathf.Infinity) && hit.transform == target)
+                //Follow Connections
+                if (mainTarget == null)
                 {
-                    direction = attackDir.normalized;
-                    overrideYPos = true;
+                    int routeIndex = followRoute.points.IndexOf(myPositionFinding.closestPoint);
+
+                    if (routeIndex != -1)
+                    {
+                        if (td.loopedTrack)
+                            direction = MathHelper.ZeroYPos(followRoute.points[MathHelper.NumClamp(routeIndex + 1, 0, followRoute.points.Count)].lastPos - transform.position).normalized;
+                        else if (routeIndex + 1 < followRoute.points.Count)
+                            direction = MathHelper.ZeroYPos(followRoute.points[routeIndex + 1].lastPos - transform.position).normalized;
+                    }
                 }
+                //If close enough attack target
                 else
                 {
-                    //Otherwise travel along track, until we can hit the target
-                   // attackDir = (td.positionPoints[currentPoint].position - transform.position);
-                    attackDir.y = 0;
-
-                    direction = attackDir.normalized;
+                    direction = mainTarget.transform.position - transform.position;
                     overrideYPos = false;
                 }
             }
-
-            Vector3 targetPoint = Vector3.zero; //td.positionPoints[currentPoint].position;
-            targetPoint.y = 0;
-            Vector3 lastPoint = Vector3.zero; //td.positionPoints[MathHelper.NumClamp(currentPoint - 1, 0, td.positionPoints.Count)].position;
-            lastPoint.y = 0;
-            Vector3 myPos = transform.position;
-            myPos.y = 0;
-
-            //If distance to last point is greater than entire road distance
-            if (Vector3.Distance(lastPoint, myPos) >= Vector3.Distance(targetPoint, lastPoint))
-                currentPoint = MathHelper.NumClamp(currentPoint + 1, 0, 100);//td.positionPoints.Count
-
         }
 
-        base.Update();
+        base.FixedUpdate();
+
 	}
 }

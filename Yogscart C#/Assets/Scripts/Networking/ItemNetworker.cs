@@ -10,18 +10,18 @@ public class ItemNetworker : NetworkBehaviour {
     public override void OnStartAuthority()
     {
         base.OnStartAuthority();
-        NetworkRaceClient.myKart.GetComponent<kartItem>().myItem = transform;
+        NetworkRaceClient.myKart.GetComponent<KartItem>().myItem = transform;
         transform.parent = NetworkRaceClient.myKart.transform;
 
-        transform.parent.GetComponent<kartItem>().itemSpawned = true;
+        transform.parent.GetComponent<KartItem>().itemSpawned = true;
     }
 
     public void Update()
     {
         if(!hasAuthority && !attachedKartItem && transform.parent != null)
         {
-            transform.parent.GetComponent<kartItem>().myItem = transform;
-            transform.parent.GetComponent<kartItem>().itemSpawned = true;
+            transform.parent.GetComponent<KartItem>().myItem = transform;
+            transform.parent.GetComponent<KartItem>().itemSpawned = true;
 
             attachedKartItem = true;
         }

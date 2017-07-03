@@ -134,7 +134,7 @@ public class Race : GameMode
 
                 if (raceType == RaceType.TimeTrial)
                 {
-                    racers[i].ingameObj.GetComponent<kartItem>().RecieveItem(2);
+                    racers[i].ingameObj.GetComponent<KartItem>().RecieveItem(2);
                 }
             }
             else
@@ -188,8 +188,8 @@ public class Race : GameMode
         foreach (kartInfo ki in kies)
             ki.hidden = false;
 
-        kartItem[] kitemes = FindObjectsOfType<kartItem>();
-        foreach (kartItem ki in kitemes)
+        KartItem[] kitemes = FindObjectsOfType<KartItem>();
+        foreach (KartItem ki in kitemes)
             ki.hidden = false;
 
         //Show Map
@@ -208,7 +208,7 @@ public class Race : GameMode
         foreach (KartScript ks in kses)
             ks.locked = false;
 
-        foreach (kartItem ki in kitemes)
+        foreach (KartItem ki in kitemes)
             ki.locked = false;
 
         //Unlock the Pause Menu
@@ -786,10 +786,10 @@ public class Race : GameMode
         racer.ingameObj.gameObject.AddComponent<AI>();
         Destroy(racer.ingameObj.GetComponent<kartInput>());
         //Hide Kart Item
-        if (racer.ingameObj.GetComponent<kartItem>() != null)
+        if (racer.ingameObj.GetComponent<KartItem>() != null)
         {
-            racer.ingameObj.GetComponent<kartItem>().locked = true;
-            racer.ingameObj.GetComponent<kartItem>().hidden = true;
+            racer.ingameObj.GetComponent<KartItem>().locked = true;
+            racer.ingameObj.GetComponent<KartItem>().hidden = true;
         }
 
         racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");

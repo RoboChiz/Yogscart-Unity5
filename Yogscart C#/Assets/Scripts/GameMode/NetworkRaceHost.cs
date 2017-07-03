@@ -309,7 +309,7 @@ public class NetworkRaceHost : Race
                 if (gd.powerUps[kn.currentItem].onlineModel != null)
                 {
                     GameObject go = (GameObject)Instantiate(gd.powerUps[kn.currentItem].onlineModel.gameObject,
-                        r.ingameObj.position - (r.ingameObj.forward * r.ingameObj.GetComponent<kartItem>().itemDistance),
+                        r.ingameObj.position - (r.ingameObj.forward * r.ingameObj.GetComponent<KartItem>().itemDistance),
                         r.ingameObj.rotation);
                     go.transform.parent = r.ingameObj;
                     go.GetComponent<Rigidbody>().isKinematic = true;
@@ -335,7 +335,7 @@ public class NetworkRaceHost : Race
                 if (gd.powerUps[kn.currentItem].onlineModel != null)
                 {
                     GameObject go = (GameObject)Instantiate(gd.powerUps[kn.currentItem].onlineModel.gameObject,
-                        r.ingameObj.position - (r.ingameObj.forward * r.ingameObj.GetComponent<kartItem>().itemDistance),
+                        r.ingameObj.position - (r.ingameObj.forward * r.ingameObj.GetComponent<KartItem>().itemDistance),
                         r.ingameObj.rotation);
                     go.transform.parent = r.ingameObj;
                     SpawnObjectToClient(go, r.conn);
