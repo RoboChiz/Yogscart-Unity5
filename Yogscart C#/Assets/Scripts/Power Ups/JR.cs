@@ -8,8 +8,8 @@ public class JR : Egg
 {
     private GameObject owner;
 
-    private List<KartScript> possibleTargets;
-    private KartScript mainTarget;
+    private List<KartMovement> possibleTargets;
+    private KartMovement mainTarget;
 
     private TrackData.Route followRoute;
 
@@ -32,7 +32,6 @@ public class JR : Egg
         {
             //Setup the Egg
             owner = transform.parent.gameObject;
-            offset = 1.5f;
             bounces = 0;
 
             //Get Track Data
@@ -40,14 +39,14 @@ public class JR : Egg
             myPositionFinding = GetComponent<PositionFinding>();
 
             //Get a list of possible targets
-            possibleTargets = new List<KartScript>();
-            KartScript ownerKS = owner.GetComponent<KartScript>();
-            KartScript[] allKS = FindObjectsOfType<KartScript>();
+            possibleTargets = new List<KartMovement>();
+            KartMovement ownerKS = owner.GetComponent<KartMovement>();
+            KartMovement[] allKS = FindObjectsOfType<KartMovement>();
 
             PositionFinding ownerPF = ownerKS.GetComponent<PositionFinding>();
             float ownerPercent = ownerKS.GetComponent<PositionFinding>().currentPercent;
 
-            foreach (KartScript ks in allKS)
+            foreach (KartMovement ks in allKS)
             {
                 PositionFinding pf = ks.GetComponent<PositionFinding>();
 
@@ -86,7 +85,7 @@ public class JR : Egg
             //Pick a main target based on who we're closer to
             if (mainTarget == null)
             {
-                foreach (KartScript ks in possibleTargets)
+                foreach (KartMovement ks in possibleTargets)
                 {
                     RaycastHit hit;
                     if (Physics.Raycast(new Ray(transform.position - (Vector3.up * 0.25f), ks.transform.position - transform.position), out hit) && hit.transform == ks.transform)
@@ -121,8 +120,7 @@ public class JR : Egg
                 //If close enough attack target
                 else
                 {
-                    direction = mainTarget.transform.position - transform.position;
-                    overrideYPos = false;
+                    direction = (mainTarget.transform.position - transform.position).normalized;
                 }
             }
         }

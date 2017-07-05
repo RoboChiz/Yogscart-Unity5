@@ -5,5 +5,5 @@ using UnityEngine;
 public class DamagingItem : MonoBehaviour
 {
     [HideInInspector]
-    public KartScript owner;
+    public KartMovement owner;
 }

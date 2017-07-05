@@ -10,7 +10,7 @@ public class kartCamera : MonoBehaviour {
     private Quaternion finalRot;
 	
 	// Update is called once per frame
-	void Update ()
+	void LateUpdate ()
     {
         if(target != null)
         {

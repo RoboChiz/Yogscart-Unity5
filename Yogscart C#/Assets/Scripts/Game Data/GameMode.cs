@@ -159,14 +159,14 @@ abstract public class GameMode : MonoBehaviour
             racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
             //Set speeds of Kart depending on Difficulty
-            SetDifficulty(racers[i].ingameObj.GetComponent<KartScript>());
+            SetDifficulty(racers[i].ingameObj.GetComponent<KartMovement>());
 
             if (racers[i].Human != -1)
             {
                 Transform inGameCam = (Transform)Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), startPos, Quaternion.identity);
                 inGameCam.name = "InGame Cams";
 
-                kartInput ki = racers[i].ingameObj.GetComponent<kartInput>();
+                KartInput ki = racers[i].ingameObj.GetComponent<KartInput>();
                 ki.myController = racers[i].Human;
                 ki.camLocked = true;
                 ki.frontCamera = inGameCam.GetChild(1).GetComponent<Camera>();
@@ -180,19 +180,19 @@ abstract public class GameMode : MonoBehaviour
             }
             else
             {
-                Destroy(racers[i].ingameObj.GetComponent<kartInput>());
+                Destroy(racers[i].ingameObj.GetComponent<KartInput>());
             }
         }
     }
 
-    public void SetDifficulty(KartScript KartScript)
+    public void SetDifficulty(KartMovement kartMovement)
     {
         //Set speeds of Kart depending on Difficulty
         switch (CurrentGameData.difficulty)
         {
-            case 0: KartScript.modifier = 0.9f; break;
-            case 1: KartScript.modifier = 1f; break;
-            default: KartScript.modifier = 1.1f; break;
+            case 0: kartMovement.speedModifier = 0.9f; break;
+            case 1: kartMovement.speedModifier = 1f; break;
+            default: kartMovement.speedModifier = 1.1f; break;
         }
     }
 
@@ -208,14 +208,14 @@ abstract public class GameMode : MonoBehaviour
         racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
 
         //Set speeds of Kart depending on Difficulty
-        SetDifficulty(racers[i].ingameObj.GetComponent<KartScript>());
+        SetDifficulty(racers[i].ingameObj.GetComponent<KartMovement>());
 
         if (racers[i].Human != -1)
         {
             Transform inGameCam = (Transform)Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), startPos, Quaternion.identity);
             inGameCam.name = "InGame Cams";
 
-            kartInput ki = racers[i].ingameObj.GetComponent<kartInput>();
+            KartInput ki = racers[i].ingameObj.GetComponent<KartInput>();
             ki.myController = racers[i].Human;
             ki.camLocked = true;
             ki.frontCamera = inGameCam.GetChild(1).GetComponent<Camera>();
@@ -232,7 +232,7 @@ abstract public class GameMode : MonoBehaviour
         }
         else
         {
-            Destroy(racers[i].ingameObj.GetComponent<kartInput>());
+            Destroy(racers[i].ingameObj.GetComponent<KartInput>());
             //Destroy(racers[i].ingameObj.GetComponent<kartInfo>());
             //racers[i].ingameObj.gameObject.AddComponent<AIRacer>();
             //racers[i].ingameObj.GetComponent<AIRacer>().stupidity = racers[i].aiStupidity;
@@ -254,7 +254,7 @@ abstract public class GameMode : MonoBehaviour
         for (int i = 3; i >= 0; i--)
         {
             countdownText = i;
-            KartScript.startBoostVal = i;
+            KartMovement.startBoostVal = i;
 
             countdownScale = 1.1f;
             countdownAlpha = 0f;
@@ -265,7 +265,7 @@ abstract public class GameMode : MonoBehaviour
         }
 
         countdownText = -1;
-        KartScript.startBoostVal = -1;
+        KartMovement.startBoostVal = -1;
 
         countdowning = false;
     }

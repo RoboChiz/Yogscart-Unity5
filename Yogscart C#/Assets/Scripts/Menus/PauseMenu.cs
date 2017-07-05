@@ -35,7 +35,7 @@ public class PauseMenu : MonoBehaviour
         if (!onlineGame) //Only freeze time if game is offline
             Time.timeScale = 0f;
         else
-            FindObjectOfType<kartInput>().enabled = false;
+            FindObjectOfType<KartInput>().enabled = false;
     }
 
     public void HidePause()
@@ -46,7 +46,7 @@ public class PauseMenu : MonoBehaviour
             Time.timeScale = 1f;
 
         if(onlineGame)
-            FindObjectOfType<kartInput>().enabled = true;
+            FindObjectOfType<KartInput>().enabled = true;
     }
 
     private IEnumerator FadeGui(float start, float end)

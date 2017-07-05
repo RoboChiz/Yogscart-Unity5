@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class Egg : Projectile
 {
-    public const float travelSpeed = 45f;
-    private float desiredY = 0f, colliderOff = 0f;
-    protected float offset = 1f;
+    public const float travelSpeed = 35f;
     protected int bounces = 5;
-    protected bool overrideYPos = true;
+    public float desiredY = 0f;
 
     private static AudioClip fireSound, bounceSound;
     private bool playedSound = false;
+    private float colliderOff;
+
+    readonly string[] raycastIgnoreTags = new string[] {"Kart", "Crate", "PowerUp" };
+    readonly string[] ignoreTags = new string[] { "OffRoad", "Ground", "Kart", "Crate", "PowerUp" };
 
     public override void Setup(float _direction, bool _actingShield)
     {
@@ -36,28 +38,38 @@ public class Egg : Projectile
         {
             //Make sure that it always stays a fix distance above ground
             RaycastHit hit;
-            var layerMask = 1 << 10;
-            layerMask = ~layerMask;
 
-            if (Physics.Raycast(transform.position + (Vector3.up * 2f) + (direction),Vector3.down,out hit, Mathf.Infinity, layerMask))
+            if (Physics.Raycast(transform.position, Vector3.down, out hit) && hit.transform.GetComponent<Collider>() != null && !hit.transform.GetComponent<Collider>().isTrigger)
             {
-                desiredY = hit.point.y + offset;
+                bool ignore = false;
+                foreach (string tag in raycastIgnoreTags)
+                {
+                    if (hit.transform.tag == tag)
+                    {
+                        ignore = true;
+                        break;
+                    }
+                }
+
+                if (!ignore)
+                {
+                    desiredY = hit.point.y + 0.5f;
+                }
             }
+            
+            //Move Egg along direction
+            Vector3 position = transform.position;
+            position += (MathHelper.ZeroYPos(direction) * travelSpeed * Time.deltaTime);
 
-            Vector3 newPosition = transform.position;
+            //Make Egg Travel to required height
+            if (desiredY > position.y)
+                position.y = Mathf.Clamp(position.y + (Time.deltaTime * 10f), position.y, desiredY);
+            else if (desiredY < position.y)
+                position.y = Mathf.Clamp(position.y - (Time.deltaTime * 10f), desiredY, position.y);
 
-            newPosition += direction * travelSpeed * Time.deltaTime;
+            transform.position = position;
 
-            if (overrideYPos)
-            {
-                if (desiredY < newPosition.y)
-                    newPosition.y = Mathf.Lerp(newPosition.y, desiredY, Time.deltaTime * 45f);
-                else
-                    newPosition.y = desiredY;
-            }
-
-            transform.position = newPosition;
-
+            //Rotate Egg
             transform.rotation *= Quaternion.Euler(Vector3.one * Time.deltaTime * 45f);
 
             if (!playedSound)
@@ -69,52 +81,66 @@ public class Egg : Projectile
             if(colliderOff > 0)
             {
                 colliderOff -= Time.deltaTime;
+                GetComponent<Collider>().enabled = false;
             }
             else
-                GetComponent<SphereCollider>().enabled = true;
+            {
+                GetComponent<Collider>().enabled = true;
+            }
 
         }
 	}
 
     void OnCollisionEnter(Collision collision)
     {
-
-        Debug.Log("Collided with " + collision.transform.name);
-
-        if(collision.transform.GetComponent<KartScript>() != null)
+        bool ignore = false;
+        foreach (string tag in ignoreTags)
         {
-            //Spin the Kart Out
-            collision.transform.GetComponent<KartScript>().SpinOut(true);
-
-            //Make Owner Taunt
-            DamagingItem di = GetComponent<DamagingItem>();
-            if (di.owner != collision.transform.GetComponent<KartScript>())         
-                di.owner.DoTaunt();
-
-            //Get rid of the GameObject
-            Destroy(gameObject);
-        }
-        else if(collision.transform.GetComponent<Egg>()) //If hit another Power Up
-        {
-            Destroy(gameObject);
-        }
-        else
-        {
-            //Bounce the Egg off a Wall
-            if(bounces > 0)
+            if (collision.transform.tag == tag)
             {
-                direction = Vector3.Reflect(direction, collision.contacts[0].normal);
-                bounces --;
-
-                colliderOff = 0.25f;
-                GetComponent<SphereCollider>().enabled = false;
-
-                GetComponent<AudioSource>().PlayOneShot(bounceSound, 3f);
+                ignore = true;
+                break;
             }
-            else
+        }
+
+        if (!ignore)
+        {
+            Debug.Log("Collided with " + collision.transform.name);
+
+            if (collision.transform.GetComponent<KartMovement>() != null)
+            {
+                //Spin the Kart Out
+                collision.transform.GetComponent<KartMovement>().SpinOut(true);
+
+                //Make Owner Taunt
+                DamagingItem di = GetComponent<DamagingItem>();
+                if (di.owner != collision.transform.GetComponent<KartMovement>())
+                    di.owner.DoTaunt();
+
+                //Get rid of the GameObject
+                Destroy(gameObject);
+            }
+            else if (collision.transform.GetComponent<Egg>()) //If hit another Power Up
             {
                 Destroy(gameObject);
             }
-        }
-    }
+            else
+            {
+                //Bounce the Egg off a Wall
+                if (bounces > 0)
+                {
+                    direction = Vector3.Reflect(direction, collision.contacts[0].normal);
+                    bounces--;
+
+                    colliderOff = 0.2f;
+
+                    GetComponent<AudioSource>().PlayOneShot(bounceSound, 3f);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
+            }
+
+        }    }
 }

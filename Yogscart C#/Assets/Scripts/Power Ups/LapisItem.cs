@@ -7,7 +7,7 @@ public class LapisItem : MonoBehaviour {
     IEnumerator Start()
     {
 
-        KartScript ks = transform.parent.GetComponent<KartScript>();
+        KartMovement ks = transform.parent.GetComponent<KartMovement>();
         ks.lapisAmount += 4;
 
         yield return new WaitForSeconds(2f);

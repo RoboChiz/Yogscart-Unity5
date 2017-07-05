@@ -66,4 +66,9 @@ public class MathHelper
     {
         return Vector3.Scale(position, new Vector3(1f, 0f, 1f));
     }
+
+    public static bool HaveTheSameSign(float first, float second)
+    {
+        return (Mathf.Sign(first) == Mathf.Sign(second));
+    }
 }

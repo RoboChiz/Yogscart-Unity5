@@ -31,5 +31,6 @@ public class AudioSourceInfo : MonoBehaviour {
             modifier = SoundManager.sfxVolume * SoundManager.masterVolume;
 
         audioSource.volume = idealVolume * modifier;
+        audioSource.dopplerLevel = 0f;
     }
 }

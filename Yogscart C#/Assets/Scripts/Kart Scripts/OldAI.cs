@@ -66,15 +66,15 @@ public class OldAI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        KartScript ks = GetComponent<KartScript>();
+        KartMovement ks = GetComponent<KartMovement>();
 
         //Handles Start Boosting
-        if (KartScript.startBoostVal != -1)
+        if (KartMovement.startBoostVal != -1)
         {
-            if ((myStartType == StartType.WillBoost && KartScript.startBoostVal <= 2) || (myStartType == StartType.WillSpin && KartScript.startBoostVal <= 3))
+            if ((myStartType == StartType.WillBoost && KartMovement.startBoostVal <= 2) || (myStartType == StartType.WillSpin && KartMovement.startBoostVal <= 3))
                 ks.throttle = 1;
 
-            if (KartScript.startBoostVal <= 1)
+            if (KartMovement.startBoostVal <= 1)
                 canDrive = true;
         }
 

@@ -1,28 +1,29 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(KartScript))]
-public class kartInput : MonoBehaviour
+[RequireComponent(typeof(KartMovement))]
+public class KartInput : MonoBehaviour
 {
-
-    private KartScript ks;
+    private KartMovement km;
     public int myController;
     public bool camLocked = false;
     public Camera frontCamera, backCamera;
+
+    void Start()
+    {
+        km = GetComponent<KartMovement>(); 
+    }
 
     // Update is called once per frame
     void Update ()
     {
         if (InputManager.controllers.Count > myController)
         {
-            if (ks == null)
-                ks = GetComponent<KartScript>();
+            km.throttle = Mathf.Abs(InputManager.controllers[myController].GetInput("Throttle"));
+            km.throttle -= Mathf.Abs(InputManager.controllers[myController].GetInput("Brake"));
 
-            ks.throttle = Mathf.Abs(InputManager.controllers[myController].GetInput("Throttle"));
-            ks.throttle -= Mathf.Abs(InputManager.controllers[myController].GetInput("Brake"));
-
-            ks.steer = Mathf.Abs(InputManager.controllers[myController].GetInput("SteerRight")) - Mathf.Abs(InputManager.controllers[myController].GetInput("SteerLeft"));
-            ks.drift = (InputManager.controllers[myController].GetInput("Drift") != 0);
+            km.steer = Mathf.Abs(InputManager.controllers[myController].GetInput("SteerRight")) - Mathf.Abs(InputManager.controllers[myController].GetInput("SteerLeft"));
+            km.drift = (InputManager.controllers[myController].GetInput("Drift") != 0);
 
             bool lookBehind = (InputManager.controllers[myController].GetInput("RearView") != 0);
 

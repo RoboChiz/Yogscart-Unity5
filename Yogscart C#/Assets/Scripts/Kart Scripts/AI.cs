@@ -6,7 +6,7 @@ using UnityEngine;
 /// AI V3 *Sighs*
 /// Coded by Robo_Chiz 2017
 /// </summary>
-[RequireComponent(typeof(KartScript), typeof(PositionFinding), typeof(KartItem))]
+[RequireComponent(typeof(KartMovement), typeof(PositionFinding), typeof(KartItem))]
 public class AI : MonoBehaviour
 {
     public bool canDrive = true;
@@ -18,7 +18,7 @@ public class AI : MonoBehaviour
     public enum AIStupidity { Stupid, Bad, Good, Great, Perfect };
     public AIStupidity intelligence = AIStupidity.Stupid;
 
-    private KartScript ks;
+    private KartMovement ks;
     private KartItem kartItem;
     private PositionFinding pf;
     private TrackData td;
@@ -37,7 +37,7 @@ public class AI : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-        ks = GetComponent<KartScript>();
+        ks = GetComponent<KartMovement>();
         kartItem = GetComponent<KartItem>();
 
         pf = GetComponent<PositionFinding>();
@@ -81,13 +81,22 @@ public class AI : MonoBehaviour
 	void Update ()
     {
         //Handles Start Boosting
-        if (KartScript.startBoostVal != -1)
+        if (KartMovement.startBoostVal != -1)
         {
-            if ((myStartType == StartType.WillBoost && KartScript.startBoostVal <= 2) || (myStartType == StartType.WillSpin && KartScript.startBoostVal <= 3))
+            if ((myStartType == StartType.WillBoost && KartMovement.startBoostVal <= 2) || (myStartType == StartType.WillSpin && KartMovement.startBoostVal <= 3))
                 ks.throttle = 1;
 
-            if (KartScript.startBoostVal <= 1)
+            if (KartMovement.startBoostVal <= 1)
                 canDrive = true;
+        }
+
+        //Stop Driving if reach finish
+        if (!td.loopedTrack && pf.currentPercent >= 1f)
+        {
+            canDrive = false;
+            ks.throttle = 0f;
+            ks.steer = 0f;
+            ks.drift = false;
         }
 
         if (canDrive && pf.closestPoint != null)
@@ -123,15 +132,6 @@ public class AI : MonoBehaviour
                 if(Mathf.Abs(angle) < requiredAngle * 2f)
                     reversing = false;
             }
-        }
-
-        //Stop Driving if reach finish
-        if (!td.loopedTrack && pf.currentPercent >= 1f)
-        {
-            canDrive = false;
-            ks.throttle = 0f;
-            ks.steer = 0f;
-            ks.drift = false;
         }
 
         //Item Behaviour
@@ -173,7 +173,7 @@ public class AI : MonoBehaviour
                         }
 
                         //If kart is behind us drop the dirt                    
-                        if(Physics.Raycast(transform.position, -transform.forward,out hit) && hit.transform.GetComponent<KartScript>() == true)
+                        if(Physics.Raycast(transform.position, -transform.forward,out hit) && hit.transform.GetComponent<KartMovement>() == true)
                         {
                             kartItem.DropShield(-1);
                         }
@@ -192,7 +192,7 @@ public class AI : MonoBehaviour
                         }
 
                         //If kart is in front of us drop the dirt
-                        if (Physics.Raycast(transform.position + (transform.forward * 2f), transform.forward, out hit) && hit.transform.GetComponent<KartScript>() == true)
+                        if (Physics.Raycast(transform.position + (transform.forward * 2f), transform.forward, out hit) && hit.transform.GetComponent<KartMovement>() == true)
                         {
                             kartItem.DropShield(1);
                         }

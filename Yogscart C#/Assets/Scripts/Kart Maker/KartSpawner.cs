@@ -22,12 +22,12 @@ public class KartSpawner : MonoBehaviour
         Transform kart = km.SpawnKart(KartType.Local, transform.position, transform.rotation * Quaternion.Euler(0, -90, 0), character, hat, kartVal, wheels);
 
         //Set speeds of Kart depending on Difficulty
-        KartScript ks = kart.GetComponent<KartScript>();
-        ks.modifier = modifer;
-        ks.locked = false;
-        KartScript.raceStarted = true;
+        KartMovement kmove = kart.GetComponent<KartMovement>();
+        kmove.speedModifier = modifer;
+        kmove.locked = false;
+        KartMovement.raceStarted = true;
 
-        kartInput ki = kart.GetComponent<kartInput>();
+        KartInput ki = kart.GetComponent<KartInput>();
         ki.myController = 0;
         ki.camLocked = false;
 
@@ -51,7 +51,7 @@ public class KartSpawner : MonoBehaviour
             if (spawnCamera)
                 ki.backCamera.enabled = false;
 
-            Destroy(kart.GetComponent<kartInput>());
+            Destroy(kart.GetComponent<KartInput>());
             AI ai = kart.gameObject.AddComponent<AI>();
             ai.intelligence = stupidty;
         }

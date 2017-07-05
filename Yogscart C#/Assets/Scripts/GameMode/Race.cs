@@ -81,8 +81,8 @@ public class Race : GameMode
             r.timer = 0;
         }
 
-        KartScript.raceStarted = false;
-        KartScript.beQuiet = true;
+        KartMovement.raceStarted = false;
+        KartMovement.beQuiet = true;
 
         lastcurrentRace = currentRace;
         showMap = false;
@@ -95,9 +95,6 @@ public class Race : GameMode
 
         readyToLevelSelect = true;
         finishedCount = 0;
-
-        //Adjust Gravity depending on difficulty
-        Physics.gravity = -Vector3.up * Mathf.Lerp(12f, 15f, CurrentGameData.difficulty / 2f);
 
         //Get rid of Item Boxes
         if (raceType == RaceType.TimeTrial)
@@ -127,8 +124,8 @@ public class Race : GameMode
                 ki.hidden = true;
 
                 Camera[] cameras = new Camera[2];
-                cameras[0] = racers[i].ingameObj.GetComponent<kartInput>().frontCamera;
-                cameras[1] = racers[i].ingameObj.GetComponent<kartInput>().backCamera;
+                cameras[0] = racers[i].ingameObj.GetComponent<KartInput>().frontCamera;
+                cameras[1] = racers[i].ingameObj.GetComponent<KartInput>().backCamera;
 
                 ki.cameras = cameras;
 
@@ -175,11 +172,11 @@ public class Race : GameMode
         yield return StartCoroutine("DoIntro");
 
         //Show what race we're on
-        KartScript.beQuiet = false;
+        KartMovement.beQuiet = false;
         yield return StartCoroutine(ChangeState(RaceGUI.RaceInfo));
 
-        kartInput[] kines = FindObjectsOfType<kartInput>();
-        foreach (kartInput ki in kines)
+        KartInput[] kines = FindObjectsOfType<KartInput>();
+        foreach (KartInput ki in kines)
             ki.camLocked = false;
 
         yield return new WaitForSeconds(3f);
@@ -204,8 +201,8 @@ public class Race : GameMode
         StartTimer();
 
         //Unlock the karts
-        KartScript[] kses = FindObjectsOfType<KartScript>();
-        foreach (KartScript ks in kses)
+        KartMovement[] kses = FindObjectsOfType<KartMovement>();
+        foreach (KartMovement ks in kses)
             ks.locked = false;
 
         foreach (KartItem ki in kitemes)
@@ -241,7 +238,7 @@ public class Race : GameMode
         //Locl the Pause Menu
         PauseMenu.canPause = false;
 
-        foreach (kartInput ki in kines)
+        foreach (KartInput ki in kines)
             ki.camLocked = false;
 
         //Give any operations time to stop
@@ -784,7 +781,7 @@ public class Race : GameMode
     protected IEnumerator FinishKart(Racer racer)
     {
         racer.ingameObj.gameObject.AddComponent<AI>();
-        Destroy(racer.ingameObj.GetComponent<kartInput>());
+        Destroy(racer.ingameObj.GetComponent<KartInput>());
         //Hide Kart Item
         if (racer.ingameObj.GetComponent<KartItem>() != null)
         {

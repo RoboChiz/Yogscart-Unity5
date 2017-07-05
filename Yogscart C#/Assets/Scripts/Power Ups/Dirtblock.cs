@@ -6,14 +6,14 @@ public class Dirtblock : DamagingItem
 {
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.GetComponent<KartScript>() != null)
+        if (collision.transform.GetComponent<KartMovement>() != null)
         {
             //Spin the Kart Out
-            collision.transform.GetComponent<KartScript>().SpinOut(true);
+            collision.transform.GetComponent<KartMovement>().SpinOut(true);
 
             //Make Owner Taunt
             DamagingItem di = GetComponent<DamagingItem>();
-            if (di.owner != collision.transform.GetComponent<KartScript>())
+            if (di.owner != collision.transform.GetComponent<KartMovement>())
                 di.owner.DoTaunt();
 
             //Get rid of the GameObject

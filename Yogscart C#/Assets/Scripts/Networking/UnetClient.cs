@@ -236,8 +236,8 @@ public class UnetClient : NetworkManager
     private void OnUnlockKart(NetworkMessage netMsg)
     {
         //Unlock the karts
-        KartScript[] kses = FindObjectsOfType<KartScript>();
-        foreach (KartScript ks in kses)
+        KartMovement[] kses = FindObjectsOfType<KartMovement>();
+        foreach (KartMovement ks in kses)
             ks.locked = false;
 
         KartItem[] kitemes = FindObjectsOfType<KartItem>();

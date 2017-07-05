@@ -188,8 +188,8 @@ public class NetworkRaceClient : Race
         foreach (KartItem ki in kitemes)
             ki.hidden = false;
 
-        kartInput[] kines = GameObject.FindObjectsOfType<kartInput>();
-        foreach (kartInput ki in kines)
+        KartInput[] kines = GameObject.FindObjectsOfType<KartInput>();
+        foreach (KartInput ki in kines)
             ki.camLocked = false;
 
         yield return StartCoroutine(ChangeState(RaceGUI.Countdown));
@@ -233,7 +233,7 @@ public class NetworkRaceClient : Race
             Transform inGameCam = (Transform)Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), myKart.transform.position, Quaternion.identity);
             inGameCam.name = "InGame Cams";
 
-            kartInput ki = myKart.AddComponent<kartInput>();
+            KartInput ki = myKart.AddComponent<KartInput>();
             ki.myController = 0;
             ki.camLocked = true;
             ki.frontCamera = inGameCam.GetChild(1).GetComponent<Camera>();
@@ -249,8 +249,8 @@ public class NetworkRaceClient : Race
             kain.hidden = true;
 
             Camera[] cameras = new Camera[2];
-            cameras[0] = myKart.GetComponent<kartInput>().frontCamera;
-            cameras[1] = myKart.GetComponent<kartInput>().backCamera;
+            cameras[0] = myKart.GetComponent<KartInput>().frontCamera;
+            cameras[1] = myKart.GetComponent<KartInput>().backCamera;
             kain.cameras = cameras;
         }     
     }

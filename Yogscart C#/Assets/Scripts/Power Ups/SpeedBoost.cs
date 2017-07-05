@@ -6,8 +6,8 @@ public class SpeedBoost : MonoBehaviour {
 	// Use this for initialization
 	IEnumerator Start () {
 
-        KartScript ks = transform.parent.GetComponent<KartScript>();
-        ks.Boost(2,KartScript.BoostMode.Boost);
+        KartMovement ks = transform.parent.GetComponent<KartMovement>();
+        ks.Boost(2,KartMovement.BoostMode.Boost);
 
         yield return null;
         Destroy(gameObject);

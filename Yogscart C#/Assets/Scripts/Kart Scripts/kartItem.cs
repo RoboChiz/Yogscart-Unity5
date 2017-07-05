@@ -7,7 +7,7 @@ public class KartItem : MonoBehaviour
 {
     private CurrentGameData gd;
     private kartInfo ki;
-    private kartInput kaI;
+    private KartInput kaI;
     private PositionFinding pf;
     private SoundManager sm;
 
@@ -48,7 +48,7 @@ public class KartItem : MonoBehaviour
     void Start()
     {
         ki = GetComponent<kartInfo>();
-        kaI = GetComponent<kartInput>();
+        kaI = GetComponent<KartInput>();
         pf = GetComponent<PositionFinding>();
     }
 
@@ -76,7 +76,7 @@ public class KartItem : MonoBehaviour
                     myItem.GetComponent<Projectile>().Setup(inputDirection,false);
 
                 if (myItem.GetComponent<DamagingItem>() != null)
-                    myItem.GetComponent<DamagingItem>().owner = GetComponent<KartScript>();
+                    myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
 
                 itemSpawned = true;
             }       
@@ -105,7 +105,7 @@ public class KartItem : MonoBehaviour
                     myItem.GetComponent<Projectile>().Setup(1, true);
 
                 if (myItem.GetComponent<DamagingItem>() != null)
-                    myItem.GetComponent<DamagingItem>().owner = GetComponent<KartScript>();
+                    myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
 
                 itemSpawned = true;
             }

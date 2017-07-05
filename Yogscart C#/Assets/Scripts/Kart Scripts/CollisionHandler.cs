@@ -37,7 +37,7 @@ public class CollisionHandler : MonoBehaviour
                         //Do Collision between i & j
                         collisions[i, j] = true;
 
-                        KartScript thingI = things[i].GetComponent<KartScript>(), thingJ = things[j].GetComponent<KartScript>();
+                        KartMovement thingI = things[i].GetComponent<KartMovement>(), thingJ = things[j].GetComponent<KartMovement>();
                         //Find out which object was travelling fastest or was in God Mode
                         if (thingI != null && thingJ != null)
                         {
@@ -59,12 +59,12 @@ public class CollisionHandler : MonoBehaviour
         }
     }
     
-    private void DoKartCollision(KartScript kartA, KartScript kartB)
+    private void DoKartCollision(KartMovement kartA, KartMovement kartB)
     {
         //Find the fastest Kart
         bool aFastest = Mathf.Abs(kartA.actualSpeed) > Mathf.Abs(kartB.actualSpeed);
 
-        KartScript fastest, slowest;
+        KartMovement fastest, slowest;
         if(aFastest)
         {
             fastest = kartA;
@@ -97,7 +97,7 @@ public class CollisionHandler : MonoBehaviour
         fastest.GetComponentInChildren<DrivingIK>().ForceLook(slowest.transform);
     } 
 
-    private void DoKartGodCollision(KartScript kart, KartCollider god)
+    private void DoKartGodCollision(KartMovement kart, KartCollider god)
     {
         //Push the kart
         float leftSpace = ((god.transform.position - god.transform.right) - kart.transform.position).magnitude;
@@ -111,7 +111,7 @@ public class CollisionHandler : MonoBehaviour
             kart.GetComponent<CowTipping>().pushState = CowTipping.PushState.RightNormal;
 
         kart.GetComponent<CowTipping>().TipCow();
-        kart.GetComponent<KartScript>().SpinOut();
+        kart.GetComponent<KartMovement>().SpinOut();
     }
 
     private IEnumerator WaitForCollision(int i, int j)

@@ -10,10 +10,10 @@ public class Cannon : MonoBehaviour {
     {
         Transform parent = other.transform;
 
-        while (parent.parent != null && parent.GetComponent<KartScript>() == null)
+        while (parent.parent != null && parent.GetComponent<KartMovement>() == null)
             parent = parent.parent;
 
-        if (parent.GetComponent<KartScript>() != null)
+        if (parent.GetComponent<KartMovement>() != null)
         {
             StartCoroutine(FlyKart(parent));
         }
@@ -21,7 +21,7 @@ public class Cannon : MonoBehaviour {
 
     IEnumerator FlyKart(Transform kart)
     {
-        kart.GetComponent<KartScript>().locked = true;
+        kart.GetComponent<KartMovement>().locked = true;
         kart.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
 
         float startTime = Time.time;
@@ -40,7 +40,7 @@ public class Cannon : MonoBehaviour {
         kart.position = endPos;
         kart.rotation = exitPoint.rotation;
 
-        kart.GetComponent<KartScript>().locked = false;
+        kart.GetComponent<KartMovement>().locked = false;
         kart.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
     }
 }

@@ -11,8 +11,8 @@ public class DeathCatch : MonoBehaviour {
         {
             deathParticles.Play();
 
-            if(transform.GetComponent<PositionFinding>() != null && transform.GetComponent<KartScript>() != null)
-                transform.GetComponent<KartScript>().ExpectedSpeed = 0;
+            if(transform.GetComponent<PositionFinding>() != null && transform.GetComponent<KartMovement>() != null)
+                transform.GetComponent<KartMovement>().expectedSpeed = 0;
 
             StartCoroutine("DoRespawn");
 
@@ -25,7 +25,7 @@ public class DeathCatch : MonoBehaviour {
 
         GetComponent<Rigidbody>().isKinematic = true;
 
-        if(transform.GetComponent<KartScript>() != null)
+        if(transform.GetComponent<KartMovement>() != null)
         {
             PositionFinding pf = transform.GetComponent<PositionFinding>();
 
@@ -42,7 +42,7 @@ public class DeathCatch : MonoBehaviour {
             transform.position = newPos;
             transform.rotation = Quaternion.LookRotation(nextPoint.transform.position - newPos, Vector3.up);
 
-            transform.GetComponent<KartScript>().tricking = false;
+            transform.GetComponent<KartMovement>().tricking = false;
         }
 
         GetComponent<Rigidbody>().isKinematic = false;

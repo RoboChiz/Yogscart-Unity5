@@ -64,6 +64,7 @@ public class TrackGenerator : MonoBehaviour
             lastConnections.Add(new NodeConnectorCopy(nc));
 
             nc.transform.parent = trackChild;
+            nc.transform.tag = "Ground";
             nc.generatedMesh = false;
         }
 
@@ -209,6 +210,7 @@ public class TrackGenerator : MonoBehaviour
         {
             node.connections = new List<NodeConnector>();
             node.transform.parent = transform;
+            node.transform.tag = "Ground";
         }
 
         foreach (AnchorPoint anchor in allAnchors)

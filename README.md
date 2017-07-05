@@ -2,6 +2,21 @@
 
 ## Changelog : Started 04/08/2016
 
+## 05/07/2017
+* Removed any and all traces of Wheel Colliders
+* Created new FauxCollider (Replacing Wheel Colliders)
+* Created new KartMovement (Replacing KartScript)
+* Created new KartInput (Replacing kartInput)
+* Fixed Sound Distorion
+* Fixed Character Taunts being distorted
+* Fixed Egg/JR snapping to ground
+* Fixed Egg/JR colliding with ground
+* Fixed JR jumping to target
+* Fixed AI continuing to drive at end of non-looped track
+* Added New Tags
+* Made Track Layout Editor force it's children to be tagged as roads
+* Fixed Boost Noise playing multiple times
+
 ## 03/07/2017
 * Fixed JR not looping on looped Tracks
 * Added firing JR backwards

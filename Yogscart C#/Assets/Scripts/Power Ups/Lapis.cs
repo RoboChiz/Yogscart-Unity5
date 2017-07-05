@@ -12,14 +12,14 @@ public class Lapis : MonoBehaviour
         StartCoroutine(Hit());
 
         Transform parent = other.transform;
-        while(parent.parent != null && parent.GetComponent<KartScript>() == null)
+        while(parent.parent != null && parent.GetComponent<KartMovement>() == null)
         {
             parent = parent.parent;
         }
 
-        if(parent.GetComponent<KartScript>() != null)
+        if(parent.GetComponent<KartMovement>() != null)
         {
-            parent.GetComponent<KartScript>().lapisAmount++;
+            parent.GetComponent<KartMovement>().lapisAmount++;
             GetComponent<AudioSource>().PlayOneShot(sounds[Random.Range(0, sounds.Length)]);
         }
 

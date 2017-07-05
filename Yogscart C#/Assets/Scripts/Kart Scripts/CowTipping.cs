@@ -10,7 +10,7 @@ public class CowTipping : MonoBehaviour
     public PushState pushState;
     private bool waitPush = false, waitLand;
 
-    private float pushSpeed = 5f, pushTime = 0.2f, currentPushTime, desiredY, offset = 0.5f;
+    private float pushSpeed = 2f, pushTime = 0.1f, currentPushTime, desiredY, offset = 0.5f;
 
     private new Rigidbody rigidbody;
     private Vector3 lastVelocity;
@@ -24,7 +24,7 @@ public class CowTipping : MonoBehaviour
 	// Update is called once per frame
 	void FixedUpdate ()
     {
-
+        /*
         Vector3 relativeVelocity = transform.InverseTransformDirection(rigidbody.velocity);
 
         if(currentPushTime > 0)
@@ -36,23 +36,18 @@ public class CowTipping : MonoBehaviour
                 case PushState.RightNormal: finalPush = pushSpeed; break;
                 case PushState.LeftHalf: finalPush = -pushSpeed/2f; break;
                 case PushState.RightHalf: finalPush = pushSpeed/2f; break;
-            }      
+            }
 
-            rigidbody.AddRelativeForce(finalPush - relativeVelocity.x, 0, 0, ForceMode.VelocityChange);
+            Vector3 upNormal = Vector3.up;
 
             RaycastHit hit;
-            var layerMask = 1 << 8;
-            layerMask = ~layerMask;
-
-            if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out hit, Mathf.Infinity, layerMask))
+            if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out hit, Mathf.Infinity) && hit.transform.tag == "Ground" || hit.transform.tag == "OffRoad")
             {
-                desiredY = hit.point.y + offset;
-
-                float difference = desiredY - transform.position.y;
-
-                if(difference > 1)
-                    transform.position = transform.position + new Vector3(0, difference, 0);
+                upNormal = hit.normal;
             }
+
+            Vector3 dir = Vector3.ProjectOnPlane(transform.right, upNormal).normalized;
+            rigidbody.AddForce(dir * (finalPush - relativeVelocity.x), ForceMode.VelocityChange);
 
             currentPushTime -= Time.fixedDeltaTime;
         }
@@ -73,7 +68,7 @@ public class CowTipping : MonoBehaviour
                 currentPushTime = 0;
 
             //Keep Kart travelling forward after Push
-            if (GetComponent<KartScript>().isFalling)
+            if (GetComponent<KartMovement>().isFalling)
             {
                 if(waitLand)
                     rigidbody.velocity = Vector3.Scale(rigidbody.velocity,new Vector3(0f, 1f, 0f)) + Vector3.Scale(lastVelocity, new Vector3(1f, 0, 1f));
@@ -82,7 +77,7 @@ public class CowTipping : MonoBehaviour
             {
                 waitLand = false;
             }
-        }
+        }*/
 	}
 
     public void TipCow()

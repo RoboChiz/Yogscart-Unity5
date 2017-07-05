@@ -3,14 +3,14 @@ using System.Collections;
 
 public class kartAnimator : MonoBehaviour {
 
-    KartScript ks;
+    KartMovement ks;
     public Animator ani;
     private InterestManager interestManager;
 
     // Use this for initialization
     void Start ()
     {
-        ks = transform.GetComponent<KartScript>();
+        ks = transform.GetComponent<KartMovement>();
         interestManager = FindObjectOfType<InterestManager>();
     }
 	

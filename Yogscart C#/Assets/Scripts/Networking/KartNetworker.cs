@@ -31,12 +31,12 @@ public class KartNetworker : NetworkBehaviour
     [SyncVar]
     public string kartPlayerName = "Player";
 
-    private KartScript ks;
+    private KartMovement ks;
     private KartItem ki;
 
     void Start()
     {
-        ks = GetComponent<KartScript>();
+        ks = GetComponent<KartMovement>();
         ki = GetComponent<KartItem>();
     }
 
@@ -65,13 +65,13 @@ public class KartNetworker : NetworkBehaviour
             ks.throttle = throttle;
             ks.steer = steer;
             ks.drift = drift;
-            ks.ExpectedSpeed = expectedSpeed;
+            ks.expectedSpeed = expectedSpeed;
             ks.onlineMode = true;
             ks.lapisAmount = lapisAmount;
 
             if (boostTime > 0)
             {
-                ks.Boost(boostTime, (KartScript.BoostMode)boostType);
+                ks.Boost(boostTime, (KartMovement.BoostMode)boostType);
                 boostTime = 0;
                 boostType = 0;
             }
@@ -120,7 +120,7 @@ public class KartNetworker : NetworkBehaviour
     [ClientCallback]
     private void SendKartInfo()
     {
-        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.ExpectedSpeed, FindObjectOfType<NetworkGUI>().playerName, ks.lapisAmount, spinOut);
+        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.expectedSpeed, FindObjectOfType<NetworkGUI>().playerName, ks.lapisAmount, spinOut);
     }
 
     [Command]
@@ -136,7 +136,7 @@ public class KartNetworker : NetworkBehaviour
     }
 
     [ClientCallback]
-    public void SendBoost(float time, KartScript.BoostMode type)
+    public void SendBoost(float time, KartMovement.BoostMode type)
     {
         if(isLocalPlayer)
         {
@@ -168,8 +168,8 @@ public class KartNetworker : NetworkBehaviour
         Transform newKart = FindObjectOfType<KartMaker>().SpawnKart(KartType.Local, transform.position, transform.rotation, currentChar, currentHat, currentKart, currentWheel);
 
         //Replace the values in the Original Kart Object to point to the new parts
-        GetComponent<KartScript>().particleSystems = newKart.GetComponent<KartScript>().particleSystems;
-        GetComponent<KartScript>().ResetParticles();
+        GetComponent<KartMovement>().particleSystems = newKart.GetComponent<KartMovement>().particleSystems;
+        GetComponent<KartMovement>().SetupKart();
 
         GetComponent<DeathCatch>().deathParticles = newKart.GetComponent<DeathCatch>().deathParticles;
         GetComponent<kartAnimator>().ani = newKart.GetComponent<kartAnimator>().ani;
