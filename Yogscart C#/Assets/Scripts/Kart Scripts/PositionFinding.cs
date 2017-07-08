@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PositionFinding : MonoBehaviour {
@@ -183,6 +184,10 @@ public class PositionFinding : MonoBehaviour {
             //Get a List of nearby points
             List<PointHandler> nearbyPoints = new List<PointHandler>();
             nearbyPoints = td.pointTree.Retrieve(nearbyPoints, transform.position);
+
+            //Last Resort check against every point
+            if (nearbyPoints.Count == 0)
+                nearbyPoints = FindObjectsOfType<PointHandler>().ToList();
 
             //Find which point we are closest too
             PointHandler nearestPoint = nearbyPoints[0];

@@ -14,14 +14,12 @@ public class FauxCollider : MonoBehaviour
     public float suspensionDistance = 0.35f;
     public float springCoefficent = 10f, dampeningCoefficent = 10f;
 
-    private SphereCollider sphereCollider;
     private Rigidbody ownerRigidBody;
 
     private float lastX = 0.25f;
 
     void Start()
     {
-        sphereCollider = GetComponent<SphereCollider>();
         ownerRigidBody = GetComponentInParent<Rigidbody>();
     }
 

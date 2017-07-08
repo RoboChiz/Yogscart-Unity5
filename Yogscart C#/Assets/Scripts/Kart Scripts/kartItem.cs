@@ -58,6 +58,9 @@ public class KartItem : MonoBehaviour
         //Debug.Log("Recieved Item " + item.ToString());
         heldPowerUp = item;
         iteming = true;
+
+        //Send Message for Recorder
+        gameObject.BroadcastMessage("RecievedItem", item, SendMessageOptions.DontRequireReceiver);
     }
 
     //Makes the local version of the kart use an item, the effect should appear the same on all clients
@@ -82,6 +85,9 @@ public class KartItem : MonoBehaviour
             }       
 
             EndItemUse();
+
+            //Send Message for Recorder
+            gameObject.BroadcastMessage("UsedItem", SendMessageOptions.DontRequireReceiver);
         }
     }
 
@@ -109,7 +115,10 @@ public class KartItem : MonoBehaviour
 
                 itemSpawned = true;
             }
-        }
+
+            //Send Message for Recorder
+            gameObject.BroadcastMessage("UsedShield", SendMessageOptions.DontRequireReceiver);
+        }      
     }
 
     public void DropShield(float dir)
@@ -141,6 +150,9 @@ public class KartItem : MonoBehaviour
             myItem = null;        
 
             EndItemUse();
+
+            //Send Message for Recorder
+            gameObject.BroadcastMessage("DroppedShield", dir, SendMessageOptions.DontRequireReceiver);
         }
     }
 

@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+# 08/07/2017
+* Reduced Debug Track to 1 lap
+* Fixed DPad only working in one direction
+* Fixed End of Race menu being inverted
+* Added Kart Recorder
+* Added Kart Replayer
+* Added Replay option to races
+
 ## 05/07/2017
 * Removed any and all traces of Wheel Colliders
 * Created new FauxCollider (Replacing Wheel Colliders)

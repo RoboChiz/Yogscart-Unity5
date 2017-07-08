@@ -120,6 +120,8 @@
     <Compile Include="Assets\Scripts\Kart V2\FauxCollider.cs" />
     <Compile Include="Assets\Scripts\Kart V2\KartInput.cs" />
     <Compile Include="Assets\Scripts\Kart V2\KartMovement.cs" />
+    <Compile Include="Assets\Scripts\Kart V2\KartRecorder.cs" />
+    <Compile Include="Assets\Scripts\Kart V2\KartReplayer.cs" />
     <Compile Include="Assets\Scripts\Level Scripts\PigMovement.cs" />
     <Compile Include="Assets\Scripts\Managers\BSPTree.cs" />
     <Compile Include="Assets\Scripts\Managers\InterestManager.cs" />

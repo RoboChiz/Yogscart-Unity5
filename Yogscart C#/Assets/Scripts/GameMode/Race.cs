@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using UnityEngine.Networking;
+using System.IO;
 
 public enum RaceType { GrandPrix, VSRace, TimeTrial, Online };
 public enum RaceGUI { Blank, CutScene, RaceInfo, Countdown, RaceGUI, ScoreBoard, NextMenu, Win, LevelSelect };
@@ -36,6 +37,10 @@ public class Race : GameMode
 
     protected MapViewer mapViewer;
     protected Coroutine currentGame;
+
+    //Used for Replay
+    private int[] previousOrder;
+    private string[] previousDrive;
 
     public override void StartGameMode()
     {
@@ -111,6 +116,9 @@ public class Race : GameMode
         td = FindObjectOfType<TrackData>();
 
         //Spawn the karts
+        previousOrder = new int[racers.Count];
+        previousDrive = new string[racers.Count];
+
         if (raceType == RaceType.TimeTrial)
             SpawnLoneKart(td.spawnPoint.position, td.spawnPoint.rotation, 0);
         else
@@ -128,11 +136,6 @@ public class Race : GameMode
                 cameras[1] = racers[i].ingameObj.GetComponent<KartInput>().backCamera;
 
                 ki.cameras = cameras;
-
-                if (raceType == RaceType.TimeTrial)
-                {
-                    racers[i].ingameObj.GetComponent<KartItem>().RecieveItem(2);
-                }
             }
             else
             {
@@ -140,6 +143,11 @@ public class Race : GameMode
                 ai.intelligence = (AI.AIStupidity)racers[i].AiStupidity;
                 ai.canDrive = false;
             }
+
+            racers[i].ingameObj.gameObject.AddComponent<KartRecorder>();
+
+            //Setup Replay stuff 
+            previousOrder[i] = racers[i].position;
         }
 
         if (InputManager.controllers.Count == 2)
@@ -179,6 +187,9 @@ public class Race : GameMode
         foreach (KartInput ki in kines)
             ki.camLocked = false;
 
+        foreach (KartRecorder kr in FindObjectsOfType<KartRecorder>())
+            kr.Record();
+
         yield return new WaitForSeconds(3f);
 
         kartInfo[] kies = FindObjectsOfType<kartInfo>();
@@ -187,7 +198,11 @@ public class Race : GameMode
 
         KartItem[] kitemes = FindObjectsOfType<KartItem>();
         foreach (KartItem ki in kitemes)
+        {
             ki.hidden = false;
+            if (raceType == RaceType.TimeTrial)
+                ki.RecieveItem(2);
+        }
 
         //Show Map
         showMap = true;
@@ -252,10 +267,14 @@ public class Race : GameMode
         for(int i = 0; i < racers.Count; i++)
         {
             Racer r = racers[i];
+
+            r.ingameObj.GetComponent<KartRecorder>().Pause();
+            previousDrive[i] = r.ingameObj.GetComponent<KartRecorder>().ToString();
+
             r.points += 15 - r.position;
 
             sortedRacers[r.position] = new DisplayRacer(r);
-            sortedRacers[r.position].finished = true;
+            sortedRacers[r.position].finished = true;     
         }
 
         if (currentRace == 4 || raceType == RaceType.TimeTrial)
@@ -449,6 +468,207 @@ public class Race : GameMode
         }
     }
 
+    protected IEnumerator StartReplay()
+    {
+        while (!gd.isBlackedOut)
+        {
+            CurrentGameData.blackOut = true;
+            yield return null;
+        }
+
+        //Tidy Up and Reset Position
+        int[] actualPositions = new int[racers.Count];
+        int count = 0;
+
+        foreach (Racer r in racers)
+        {
+            r.finished = false;
+            r.currentPercent = 0;
+            r.lap = 0;
+            r.timer = 0;
+
+            actualPositions[count] = racers[count].position;
+            racers[count].position = previousOrder[count];
+
+            count++;
+        }
+
+        KartMovement.raceStarted = false;
+        KartMovement.beQuiet = true;
+
+        lastcurrentRace = currentRace;
+        showMap = false;
+
+        //Load the Level
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
+
+        while (!sync.isDone)
+            yield return null;
+
+        readyToLevelSelect = true;
+        finishedCount = 0;
+
+        //Get rid of Item Boxes
+        if (raceType == RaceType.TimeTrial)
+        {
+            ItemBox[] itemBoxes = FindObjectsOfType<ItemBox>();
+
+            foreach (ItemBox ib in itemBoxes)
+            {
+                Destroy(ib.gameObject);
+            }
+        }
+
+        //Load the Track Manager
+        td = FindObjectOfType<TrackData>();
+
+        //Spawn the karts
+        if (raceType == RaceType.TimeTrial)
+            SpawnLoneKart(td.spawnPoint.position, td.spawnPoint.rotation, 0);
+        else
+            SpawnAllKarts(td.spawnPoint.position, td.spawnPoint.rotation);
+
+        for (int i = 0; i < racers.Count; i++)
+        {
+            if (racers[i].Human != -1)
+                Destroy(racers[i].ingameObj.gameObject.GetComponent<KartInput>());
+            else
+            {
+                AI ai = racers[i].ingameObj.gameObject.AddComponent<AI>();
+                ai.intelligence = (AI.AIStupidity)racers[i].AiStupidity;
+                ai.canDrive = false;
+                ai.enabled = false;
+            }
+
+            //Add and Setup Kart Replayer
+            KartReplayer kr = racers[i].ingameObj.gameObject.AddComponent<KartReplayer>();
+            kr.LoadReplay(previousDrive[i]);
+        }
+
+        yield return new WaitForSeconds(1f);
+
+        //Setup Map Viewer
+        mapViewer.objects = new List<MapObject>();
+
+        foreach (Racer racer in racers)
+            mapViewer.objects.Add(new MapObject(racer.ingameObj, gd.characters[racer.Character].icon, racer.position));
+
+        yield return null;
+
+        CurrentGameData.blackOut = false;
+
+        //Show what race we're on
+        KartMovement.beQuiet = false;
+        yield return StartCoroutine(ChangeState(RaceGUI.RaceInfo));
+
+        KartInput[] kines = FindObjectsOfType<KartInput>();
+        foreach (KartInput ki in kines)
+            ki.camLocked = false;
+
+        foreach (KartReplayer kr in FindObjectsOfType<KartReplayer>())
+            kr.Play();
+
+        yield return new WaitForSeconds(3f);
+
+        KartItem[] kitemes = FindObjectsOfType<KartItem>();
+        foreach (KartItem ki in kitemes)
+        {
+            ki.hidden = false;
+            if (raceType == RaceType.TimeTrial)
+                ki.RecieveItem(2);
+        }
+
+        //Show Map
+        showMap = true;
+
+        yield return StartCoroutine(ChangeState(RaceGUI.Countdown));
+
+        //Do the Countdown
+        StartCoroutine("StartCountdown");
+        yield return new WaitForSeconds(3.4f);
+
+        StartTimer();
+
+        //Unlock the karts
+        KartMovement[] kses = FindObjectsOfType<KartMovement>();
+        foreach (KartMovement ks in kses)
+            ks.locked = false;
+
+        foreach (KartItem ki in kitemes)
+            ki.locked = false;
+
+        //Unlock the Pause Menu
+        PauseMenu.onlineGame = false;
+
+        yield return StartCoroutine(ChangeState(RaceGUI.RaceGUI));
+        yield return null;
+
+        //Unlock the Pause Menu
+        PauseMenu.canPause = true;
+
+        //Wait for the gamemode to be over
+        while (!raceFinished && timer < 3600)
+        {
+            ClientUpdate();
+
+            if (!clientOnly)
+                HostUpdate();
+
+            yield return new WaitForSeconds(0.25f);
+        }
+
+        //Show Results
+        Debug.Log("It's over!");
+        finished = true;
+        showMap = false;
+
+        StopTimer();
+
+        //Locl the Pause Menu
+        PauseMenu.canPause = false;
+
+        //Give any operations time to stop
+        yield return new WaitForSeconds(1);
+
+        for (int i = 0; i < racers.Count; i++)
+        {
+            Racer r = racers[i];
+            r.position = actualPositions[i];
+        }
+
+        DisplayRacer[] sortedRacers = new DisplayRacer[racers.Count];
+
+        while (sortedRacers.Length != racers.Count)
+            yield return null;
+
+        for (int i = 0; i < racers.Count; i++)
+        {
+            Racer r = racers[i];
+
+            sortedRacers[r.position] = new DisplayRacer(r);
+            sortedRacers[r.position].finished = true;
+        }
+
+        yield return new WaitForSeconds(2.5f);
+
+        StartCoroutine(ChangeState(RaceGUI.ScoreBoard));
+
+        Leaderboard lb = gameObject.AddComponent<Leaderboard>();
+        lb.racers = new List<DisplayRacer>(sortedRacers);
+
+        if (raceType == RaceType.TimeTrial)
+            lb.StartTimeTrial();
+        else
+            lb.StartLeaderBoard();
+
+        //Tidy Up
+        timer = 0;
+        finished = false;
+        raceFinished = false;
+
+        yield return null;
+    }
+
     // Update is called once per frame
     public override void OnGUI()
     {
@@ -533,19 +753,19 @@ public class Race : GameMode
                 if (raceType != RaceType.TimeTrial)
                 {
                     if (lastcurrentRace + 1 <= 4)
-                        options = new string[] { "Next Race", "Quit" };
+                        options = new string[] { "Next Race", "Replay", "Quit" };
                     else
                         options = new string[] { "Finish" };
                 }
                 else
                 {
-                    options = new string[] { "Restart", "Quit" };
+                    options = new string[] { "Restart", "Replay", "Quit" };
                 }
 
                 float IdealHeight = Screen.height / 8f;
                 float ratio = IdealHeight / 100f;
 
-                int vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
+                int vert = -InputManager.controllers[0].GetMenuInput("MenuVertical");
 
                 if (changingState)
                     vert = 0;
@@ -610,7 +830,8 @@ public class Race : GameMode
                             StartCoroutine("StartRace");
                             break;
                         case "Replay":
-                            //Not implemented
+                            StartCoroutine(ChangeState(RaceGUI.Blank));
+                            StartCoroutine(StartReplay());
                             break;
                         case "Finish":
                             StartCoroutine(ChangeState(RaceGUI.Win));
@@ -747,6 +968,17 @@ public class Race : GameMode
 
                 if (racers[i].Human >= 0)
                     StartCoroutine(FinishKart(racers[i]));
+
+                //Stop Recorder
+                KartRecorder kr = racers[i].ingameObj.GetComponent<KartRecorder>();
+
+                if(kr != null)
+                    previousDrive[i] = kr.ToString();
+
+                if (kr != null)
+                {
+                    kr.Pause();
+                }
             }
 
             //Finish Race
@@ -789,36 +1021,40 @@ public class Race : GameMode
             racer.ingameObj.GetComponent<KartItem>().hidden = true;
         }
 
-        racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");
+        if(racer.ingameObj.GetComponent<kartInfo>() != null)
+            racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");
 
-        racer.cameras.GetChild(0).GetComponent<Camera>().enabled = false;
-        racer.cameras.GetChild(1).GetComponent<Camera>().enabled = true;
-
-        yield return new WaitForSeconds(2f);
-
-        racer.ingameObj.GetComponent<kartInfo>().hidden = true;
-
-        float startTime = Time.time;
-        const float travelTime = 3f;
-        kartCamera kc = racer.cameras.GetChild(1).GetComponent<kartCamera>();
-
-        while (Time.time - startTime < travelTime)
+        if (racer.cameras != null)
         {
-            float percent = (Time.time - startTime) / travelTime;
+            racer.cameras.GetChild(0).GetComponent<Camera>().enabled = false;
+            racer.cameras.GetChild(1).GetComponent<Camera>().enabled = true;
 
-            kc.angle = Mathf.Lerp(0f, 180f, percent);
-            kc.height = Mathf.Lerp(2f, 1f, percent);
-            kc.playerHeight = Mathf.Lerp(2f, 1f, percent);
-            kc.sideAmount = Mathf.Lerp(0, -1.9f, percent * 4f);
+            yield return new WaitForSeconds(2f);
 
-            yield return null;
+            if (racer.ingameObj.GetComponent<kartInfo>() != null)
+                racer.ingameObj.GetComponent<kartInfo>().hidden = true;
+
+            float startTime = Time.time;
+            const float travelTime = 3f;
+            kartCamera kc = racer.cameras.GetChild(1).GetComponent<kartCamera>();
+
+            while (Time.time - startTime < travelTime)
+            {
+                float percent = (Time.time - startTime) / travelTime;
+
+                kc.angle = Mathf.Lerp(0f, 180f, percent);
+                kc.height = Mathf.Lerp(2f, 1f, percent);
+                kc.playerHeight = Mathf.Lerp(2f, 1f, percent);
+                kc.sideAmount = Mathf.Lerp(0, -1.9f, percent * 4f);
+
+                yield return null;
+            }
+
+            kc.angle = 180f;
+            kc.height = 1f;
+            kc.playerHeight = 1f;
+            kc.sideAmount = -1.9f;
         }
-
-        kc.angle = 180f;
-        kc.height = 1f;
-        kc.playerHeight = 1f;
-        kc.sideAmount = -1.9f;
-
     }
 
     private void DetermineWinner()

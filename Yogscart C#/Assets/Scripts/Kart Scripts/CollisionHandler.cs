@@ -10,7 +10,7 @@ public class CollisionHandler : MonoBehaviour
     bool[,] collisions;
     private int thingCount = 0;
 
-    private const float distance = 2f, pushUpAmount = 3f, pushAcrossAmount = 10f;
+    private const float distance = 1.5f;
 
     void LateUpdate()
     {
@@ -41,15 +41,15 @@ public class CollisionHandler : MonoBehaviour
                         //Find out which object was travelling fastest or was in God Mode
                         if (thingI != null && thingJ != null)
                         {
-                            DoKartCollision(thingI, thingJ);
+                            DoKartCollision(thingI, thingJ, distance - compareVect.magnitude);
                         }
                         else if (thingI != null && things[j].godMode)
                         {
-                            DoKartGodCollision(thingI, things[j]);
+                            DoKartGodCollision(thingI, things[j], distance - compareVect.magnitude);
                         }
                         else if (thingJ != null && things[i].godMode)
                         {
-                            DoKartGodCollision(thingJ, things[i]);
+                            DoKartGodCollision(thingJ, things[i], distance - compareVect.magnitude);
                         }
 
                         StartCoroutine(WaitForCollision(i, j));
@@ -59,7 +59,7 @@ public class CollisionHandler : MonoBehaviour
         }
     }
     
-    private void DoKartCollision(KartMovement kartA, KartMovement kartB)
+    private void DoKartCollision(KartMovement kartA, KartMovement kartB, float distance)
     {
         //Find the fastest Kart
         bool aFastest = Mathf.Abs(kartA.actualSpeed) > Mathf.Abs(kartB.actualSpeed);
@@ -95,9 +95,21 @@ public class CollisionHandler : MonoBehaviour
         fastest.GetComponent<CowTipping>().TipCow();
 
         fastest.GetComponentInChildren<DrivingIK>().ForceLook(slowest.transform);
+
+        //Push Player away
+        Vector3 dir = (slowest.transform.position - fastest.transform.position);
+        Vector3 normal = Vector3.up;
+
+        RaycastHit hit;
+        if (Physics.Raycast(slowest.transform.position, -slowest.transform.up, out hit, 4f))
+            normal = hit.normal;
+
+        dir = Vector3.ProjectOnPlane(dir, normal).normalized * distance;
+        slowest.transform.position += dir;
+
     } 
 
-    private void DoKartGodCollision(KartMovement kart, KartCollider god)
+    private void DoKartGodCollision(KartMovement kart, KartCollider god, float distance)
     {
         //Push the kart
         float leftSpace = ((god.transform.position - god.transform.right) - kart.transform.position).magnitude;
@@ -112,11 +124,22 @@ public class CollisionHandler : MonoBehaviour
 
         kart.GetComponent<CowTipping>().TipCow();
         kart.GetComponent<KartMovement>().SpinOut();
+
+        //Push Player away
+        Vector3 dir = (kart.transform.position - god.transform.position);
+        Vector3 normal = Vector3.up;
+
+        RaycastHit hit;
+        if (Physics.Raycast(kart.transform.position, -kart.transform.up, out hit, 4f))
+            normal = hit.normal;
+
+        dir = Vector3.ProjectOnPlane(dir, normal).normalized * distance;
+        kart.transform.position += dir;
     }
 
     private IEnumerator WaitForCollision(int i, int j)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.1f);
         collisions[i, j] = false;
     }
 

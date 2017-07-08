@@ -48,7 +48,7 @@ public class InputManager : MonoBehaviour
         //Load default Input
         allConfigs = new List<InputLayout>();
         allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,SteerRight:d,SteerLeft:a,Drift:space,Item:return,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q,Toggle:space"));
-        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,SteerRight:L_XAxis+,SteerLeft:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,MenuHorizontal:DPad_XAxis_Inv,MenuVertical:DPad_YAxis_Inv,Rotate:R_XAxis,TabChange:RB,TabChange:LB,Toggle:X,Minus:Y,Edit:X,ViewScroll:R_YAxis+,ViewScroll:R_YAxis-"));
+        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,SteerRight:L_XAxis+,SteerLeft:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,MenuHorizontal:DPad_XAxis_Inv,MenuVertical:DPad_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB,Toggle:X,Minus:Y,Edit:X,ViewScroll:R_YAxis+,ViewScroll:R_YAxis-"));
 
         bool saveNeeded = false;
 
@@ -447,9 +447,9 @@ public class InputController
                         }
 
                         if (!getRaw)
-                            value = (!invert ? -1f : 1f) * Mathf.Abs(Input.GetAxis(inputAxisTwo + controllerName));
+                            value = (!invert ? -1f : 1f) * Input.GetAxis(inputAxisTwo + controllerName);
                         else
-                            value = (!invert ? -1f : 1f) * Mathf.Abs(Input.GetAxisRaw(inputAxisTwo + controllerName));
+                            value = (!invert ? -1f : 1f) * Input.GetAxisRaw(inputAxisTwo + controllerName);
 
                         //Reset value if it is not the correct sign
                         if (requiredSignMinus > 0 && value < 0)

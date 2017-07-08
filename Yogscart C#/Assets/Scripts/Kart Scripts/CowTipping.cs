@@ -10,7 +10,7 @@ public class CowTipping : MonoBehaviour
     public PushState pushState;
     private bool waitPush = false, waitLand;
 
-    private float pushSpeed = 2f, pushTime = 0.1f, currentPushTime, desiredY, offset = 0.5f;
+    private float pushSpeed = 10f, pushTime = 0.2f, currentPushTime, desiredY;
 
     private new Rigidbody rigidbody;
     private Vector3 lastVelocity;
@@ -23,8 +23,7 @@ public class CowTipping : MonoBehaviour
 	
 	// Update is called once per frame
 	void FixedUpdate ()
-    {
-        /*
+    {       
         Vector3 relativeVelocity = transform.InverseTransformDirection(rigidbody.velocity);
 
         if(currentPushTime > 0)
@@ -77,7 +76,7 @@ public class CowTipping : MonoBehaviour
             {
                 waitLand = false;
             }
-        }*/
+        }
 	}
 
     public void TipCow()

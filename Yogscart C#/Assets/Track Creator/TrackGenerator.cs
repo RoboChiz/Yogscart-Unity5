@@ -11,6 +11,16 @@ public class TrackGenerator : MonoBehaviour
     public List<NodeConnector> connections = new List<NodeConnector>();
     private List<NodeConnectorCopy> lastConnections = new List<NodeConnectorCopy>();
 
+    void Start()
+    {
+        //Set Tags
+        foreach (Node node in FindObjectsOfType<Node>())
+            node.transform.tag = "Ground";
+
+        foreach (NodeConnector nc in FindObjectsOfType<NodeConnector>())
+            nc.transform.tag = "Ground";
+    }
+
     // Update is called once per frame
     void Update()
     {
