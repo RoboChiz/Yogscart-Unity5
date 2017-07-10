@@ -107,8 +107,13 @@ public class kartInfo : MonoBehaviour
 
         if (gamemode != null)
         {
-            if (gamemode.raceType != RaceType.TimeTrial)
+            if (gamemode is TimeTrial)
             {
+                //Draw Timer
+                GUI.Label(new Rect(Screen.width - 10 - Screen.width / 5f, Screen.height - 20 - GUI.skin.label.fontSize, Screen.width / 5f, GUI.skin.label.fontSize + 5), TimeManager.ToString(gamemode.Timer));
+            }
+            else
+            { 
                 //Render Position GUI
                 if (position != -1)
                 {
@@ -129,11 +134,6 @@ public class kartInfo : MonoBehaviour
                     if (postexture != null)
                         GUI.DrawTexture(posRenderArea, postexture, ScaleMode.ScaleToFit);
                 }
-            }
-            else
-            {
-                //Draw Timer
-                GUI.Label(new Rect(Screen.width - 10 - Screen.width / 5f, Screen.height - 20 - GUI.skin.label.fontSize, Screen.width / 5f, GUI.skin.label.fontSize + 5), TimeManager.ToString(gamemode.Timer));
             }
         }
 

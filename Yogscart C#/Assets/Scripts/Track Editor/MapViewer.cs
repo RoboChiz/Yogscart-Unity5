@@ -11,6 +11,30 @@ public class MapViewer : MonoBehaviour
 
     public List<MapObject> objects = new List<MapObject>();
 
+    public void ShowMapViewer()
+    {
+        StartCoroutine(FadeMapTo(1f));
+    }
+
+    public void HideMapViewer()
+    {
+        StartCoroutine(FadeMapTo(0f));
+    }
+
+    private IEnumerator FadeMapTo(float finalVal)
+    {
+        float travelTime = 0.5f;
+        float startTime = Time.time, startVal = mapAlpha;
+
+        while(Time.time - startTime < travelTime)
+        {
+            mapAlpha = Mathf.Lerp(startVal, finalVal, (Time.time - startTime) / travelTime);
+            yield return null;
+        }
+
+        mapAlpha = finalVal;
+    }
+
     // Update is called once per frame
     void OnGUI()
     {

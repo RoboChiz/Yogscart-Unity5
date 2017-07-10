@@ -105,7 +105,7 @@ public class Egg : Projectile
 
         if (!ignore)
         {
-            Debug.Log("Collided with " + collision.transform.name);
+            //Debug.Log("Collided with " + collision.transform.name);
 
             if (collision.transform.GetComponent<KartMovement>() != null)
             {

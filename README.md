@@ -2,6 +2,30 @@
 
 ## Changelog : Started 04/08/2016
 
+# 10/07/2017
+* Created a new Race Script
+* Created a new Tournament Script from Race Script
+* Created a new VS RaceScript from Race Script
+* Created a new Time Trial Script from Race Script
+* Added Ghost Saving
+* Adjusted timer to stop more accurately on Time Trial
+* Redesigned Race Info screen
+* Redesigned Next Menu screen
+* Fixed Character Select using mouse when not visible
+* Fixed corner Back Button on Character Select
+* Fixed corner Back Button on Level Select
+* Added Time Trial Menu
+* Fixed broken save data bug
+* A lot of bug fixes and improvements
+* Created Win Screen
+* Added (Debug) Clapping Animation
+* Started animating Win Screen Animation
+
+# 09/07/2017
+* Made drift tighter
+* Fixed JR not always targetting closest player
+* Added Next Race option to VS / Tournament Replays
+
 # 08/07/2017
 * Reduced Debug Track to 1 lap
 * Fixed DPad only working in one direction

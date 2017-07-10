@@ -6,7 +6,7 @@ public class PauseMenu : MonoBehaviour
 {
 
     public static bool canPause = false, onlineGame = false;
-    private int paused = -1;
+    public int paused = -1, pauseHold = -1;
     private bool hide;
 
     private float guiAlpha;
@@ -26,9 +26,16 @@ public class PauseMenu : MonoBehaviour
         sm = FindObjectOfType<SoundManager>();
     }
 
-    private void ShowPause()
+    public void ShowPause() { ShowPause(false); }
+
+    public void ShowPause(bool usePauseHold)
     {
         currentSelection = 0;
+
+        if (usePauseHold && pauseHold != -1)
+            paused = pauseHold;
+
+        pauseHold = -1;
 
         StartCoroutine(FadeGui(0f, 1f));
 
@@ -38,11 +45,14 @@ public class PauseMenu : MonoBehaviour
             FindObjectOfType<KartInput>().enabled = false;
     }
 
-    public void HidePause()
+
+    public void HidePause() { HidePause(true); }
+
+    public void HidePause(bool fixTime)
     {
         StartCoroutine(FadeGui(guiAlpha, 0f));
 
-        if (Time.timeScale != 1)
+        if (fixTime && Time.timeScale != 1)
             Time.timeScale = 1f;
 
         if(onlineGame)
@@ -74,9 +84,9 @@ public class PauseMenu : MonoBehaviour
                     if (InputManager.controllers[i].GetRawMenuInput("Pause") != 0)
                     {
                         if (paused == -1)//Game is not currently paused so pause now
-                        {
-                            ShowPause();
+                        {                           
                             paused = i;
+                            ShowPause();
                         }
                         else if (i == paused)//Otherwise if the person who pressed before has just pressed again, close the pause menu
                         {
@@ -104,21 +114,19 @@ public class PauseMenu : MonoBehaviour
             List<string> options = new List<string>() { "Resume", "Options", "Quit" };
 
             Race race = FindObjectOfType<Race>();
-            if (race != null && race.raceType == RaceType.TimeTrial)
+            if (race != null && race is TimeTrial)
+                options.Insert(2, "Restart");                       
+
+            if (optionsSize.Length != options.Count)
             {
-                options.Insert(2, "Restart");
+                float[] holder = optionsSize;
+                optionsSize = new float[options.Count];
 
-                if(optionsSize.Length != options.Count)
-                {
-                    float[] holder = optionsSize;
-                    optionsSize = new float[options.Count];
-
-                    for (int i = 0; i < holder.Length; i++)
-                        optionsSize[i] = holder[i];
-                }
+                for (int i = 0; i < Mathf.Min(holder.Length, optionsSize.Length); i++)
+                    optionsSize[i] = holder[i];
             }
 
-            for(int i = 0; i < options.Count; i++)
+            for (int i = 0; i < options.Count; i++)
             {
                 if(currentSelection == i)
                 {
@@ -141,7 +149,7 @@ public class PauseMenu : MonoBehaviour
 
             }
 
-            if (paused != -1)
+            if (paused != -1 && guiAlpha == 1f)
             {
                 int vertical = InputManager.controllers[paused].GetRawMenuInput("MenuVertical");
                 bool submitBool = (InputManager.controllers[paused].GetRawMenuInput("Submit") != 0);
@@ -174,6 +182,13 @@ public class PauseMenu : MonoBehaviour
                             paused = -1;
 
                             FindObjectOfType<GameMode>().Restart();
+                            break;
+                        case "Next Race":
+                            HidePause(false);
+                            pauseHold = paused;
+                            paused = -1;
+
+                            FindObjectOfType<Race>().NextRace();
                             break;
                         case "Quit":
                             HidePause();

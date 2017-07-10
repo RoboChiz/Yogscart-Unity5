@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System;
 
-public class NetworkRaceClient : Race
+public class NetworkRaceClient : OldRace
 {
     protected NetworkClient client;
 
@@ -299,7 +299,7 @@ public class NetworkRaceClient : Race
         }
 
         GetComponent<Leaderboard>().racers = nList;
-        GetComponent<Leaderboard>().StartLeaderBoard();
+       // GetComponent<Leaderboard>().StartLeaderBoard();
 
         StartCoroutine(OnAllPlayerFinishedWait());
 

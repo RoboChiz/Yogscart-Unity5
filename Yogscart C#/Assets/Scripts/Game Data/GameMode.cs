@@ -359,7 +359,7 @@ abstract public class GameMode : MonoBehaviour
         CurrentGameData.blackOut = true;
         yield return new WaitForSeconds(0.5f);
 
-        AsyncOperation sync =SceneManager.LoadSceneAsync("Main_Menu");
+        AsyncOperation sync = SceneManager.LoadSceneAsync("Main_Menu");
 
         while(!sync.isDone)
             yield return null;
@@ -422,14 +422,14 @@ public class Racer
 {
     //Racer Information //////////////////////////////////
     //What input the racer is -1 = AI, 0 - 3 Human
-    private int human = -1;
+    protected int human = -1;
     public int Human
     {
         get { return human; }
         set { }
     }
 
-    private int aiStupidity = -1;
+    protected int aiStupidity = -1;
     public int AiStupidity
     {
         get { return aiStupidity; }
@@ -437,28 +437,28 @@ public class Racer
     }
 
     //Race Loading Infomation //////////////////////////////////
-    private int character;
+    protected int character;
     public int Character
     {
         get { return character; }
         set { }
     }
 
-    private int hat;
+    protected int hat;
     public int Hat
     {
         get { return hat; }
         set { }
     }
 
-    private int kart;
+    protected int kart;
     public int Kart
     {
         get { return kart; }
         set { }
     }
 
-    private int wheel;
+    protected int wheel;
     public int Wheel
     {
         get { return wheel; }
@@ -477,7 +477,7 @@ public class Racer
     public float currentPercent;
 
     //After Race Information //////////////////////////////////
-    public int points  = 0;
+    public int points = 0;
     public int team;
 
     //Constructor
@@ -514,5 +514,51 @@ public class Racer
         wheel = -1;
         position = -1;
     }
+}
+
+public class ReplayRacer : Racer
+{
+    //Ghost Data
+    public List<List<string>> ghostData;
+
+    public ReplayRacer(Racer otherRacer)
+    {
+        human = otherRacer.Human;
+        aiStupidity = otherRacer.AiStupidity;
+        character = otherRacer.Character;
+        hat = otherRacer.Hat;
+        kart = otherRacer.Kart;
+        wheel = otherRacer.Wheel;
+        position = otherRacer.position;
+        overallPosition = otherRacer.overallPosition;
+    }
+
+    public string DataToString()
+    {
+        string finalString = "";
+
+        foreach (List<string> actionList in ghostData)
+        {
+            if (actionList.Count > 0)
+            {
+                foreach (string action in actionList)
+                {
+                    finalString += action + ";";
+                }
+
+                //Remove the last ; to stop errors
+                finalString = finalString.Remove(finalString.Length - 1);
+            }
+
+            //Denote end of frame
+            finalString += ">";
+        }
+
+        //Remove the last > to stop errors
+        finalString = finalString.Remove(finalString.Length - 1);
+
+        return finalString;
+    }
+
 }
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class OldAI : MonoBehaviour
-{    /// <summary>
+{   /* /// <summary>
      /// Stupid - Basic driving, slows down to turn
      /// Bad - Drives, dosen't slow down at turn. Dosen't startline boost or drift
      /// Good - May Boost at Start Line, Drifts some times
@@ -352,10 +352,8 @@ public class OldAI : MonoBehaviour
             Debug.DrawRay(startPos + (transform.right / 2f), transform.forward * distance, hitColor);
             Debug.DrawRay(startPos - (transform.right / 2f), transform.forward * distance, hitColor);
         }
-*/
-    }
 
-   /* private void CalculatePercent()
+    private void CalculatePercent()
     {
         Vector3 currentNodePos = td.positionPoints[currentNode].transform.position;
         Vector3 nextNodePos = td.positionPoints[MathHelper.NumClamp(currentNode + 1,0,td.positionPoints.Count)].transform.position;
@@ -393,7 +391,7 @@ public class OldAI : MonoBehaviour
         }
 
         return false;
-    }*/
+    }
 
     const float turnAngleRequired = 5f, roadNeededtoStraightenOut = 6f;
     /// <summary>
@@ -407,197 +405,196 @@ public class OldAI : MonoBehaviour
             AITrackInfo = new List<List<TrackRoadInfo>>();
         }
 
-        /*
-        NEW AI DESIGN
-        ----------------------------------------------
-        Fill array of angles for each next path
+    NEW AI DESIGN
+    ----------------------------------------------
+    Fill array of angles for each next path
 
-        Then for each position point
-            Check behind me, was I turning last 
-            If so
-                Look ahead, will I need to turn
-                    If So
-                        Will I turn in the same direction
+    Then for each position point
+        Check behind me, was I turning last 
+        If so
+            Look ahead, will I need to turn
+                If So
+                    Will I turn in the same direction
+                        If So
+                            How Long is this path? Do I have time to straighten out?
                             If So
-                                How Long is this path? Do I have time to straighten out?
-                                If So
-                                    Set Steer to zero at 20%
-                                    Set Steer to old turn direction at 80%
-                                    DONE!
-                                If Not
-                                    Add turn at 0%
-                                    DONE!
-                            If Not
                                 Set Steer to zero at 20%
-                                Set Steer to new turn direction at 80%
+                                Set Steer to old turn direction at 80%
                                 DONE!
-                    If Not
-                        Set Steer to zero at 20%
-                        DONE!
-            If Not
-                Look ahead, will I need to turn
-                    If So
-                        Set Steer to new turn direction at 80%
-                        DONE!
-                    If Not
-                        DONE!
-        
+                            If Not
+                                Add turn at 0%
+                                DONE!
+                        If Not
+                            Set Steer to zero at 20%
+                            Set Steer to new turn direction at 80%
+                            DONE!
+                If Not
+                    Set Steer to zero at 20%
+                    DONE!
+        If Not
+            Look ahead, will I need to turn
+                If So
+                    Set Steer to new turn direction at 80%
+                    DONE!
+                If Not
+                    DONE!
 
-        //Find out the angles and lengths of all the paths
-        angles = new float[td.positionPoints.Count];
-        Vector3[] directions = new Vector3[td.positionPoints.Count];
-        pathLengths = new List<float>();
 
-        for (int i = 0; i < td.positionPoints.Count; i++)
+    //Find out the angles and lengths of all the paths
+    angles = new float[td.positionPoints.Count];
+    Vector3[] directions = new Vector3[td.positionPoints.Count];
+    pathLengths = new List<float>();
+
+    for (int i = 0; i < td.positionPoints.Count; i++)
+    {
+        int nextPoint = MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count);
+        int nextNextPoint = MathHelper.NumClamp(i + 2, 0, td.positionPoints.Count);
+
+        Vector3 currentPos = Vector3.Scale(td.positionPoints[i].position, new Vector3(1f, 0f, 1f));
+        Vector3 nextPos = Vector3.Scale(td.positionPoints[nextPoint].position, new Vector3(1f, 0f, 1f));
+        Vector3 nextnextPos = Vector3.Scale(td.positionPoints[nextNextPoint].position, new Vector3(1f, 0f, 1f));
+
+        Vector3 currentDir = nextPos - currentPos;
+        Vector3 nextDir = nextnextPos - nextPos;
+
+        angles[i] = MathHelper.Angle(currentDir, nextDir);
+        directions[i] = currentDir;
+
+        pathLengths.Add(currentDir.magnitude);
+
+        //FindObjectOfType<InEngineRender>().roadColours.Add(Color.red);
+    }
+
+    //Find Driftable Areas
+    DriftType[] driftable = new DriftType[angles.Length];
+    float angleNeeded = 15f;
+
+    for (int driftCount = 0; driftCount < td.positionPoints.Count; driftCount++)
+    {
+        if (Mathf.Abs(angles[driftCount]) > minAngle && pathLengths[driftCount] < 15f)
         {
-            int nextPoint = MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count);
-            int nextNextPoint = MathHelper.NumClamp(i + 2, 0, td.positionPoints.Count);
-
-            Vector3 currentPos = Vector3.Scale(td.positionPoints[i].position, new Vector3(1f, 0f, 1f));
-            Vector3 nextPos = Vector3.Scale(td.positionPoints[nextPoint].position, new Vector3(1f, 0f, 1f));
-            Vector3 nextnextPos = Vector3.Scale(td.positionPoints[nextNextPoint].position, new Vector3(1f, 0f, 1f));
-
-            Vector3 currentDir = nextPos - currentPos;
-            Vector3 nextDir = nextnextPos - nextPos;
-
-            angles[i] = MathHelper.Angle(currentDir, nextDir);
-            directions[i] = currentDir;
-
-            pathLengths.Add(currentDir.magnitude);
-
-            //FindObjectOfType<InEngineRender>().roadColours.Add(Color.red);
-        }
-
-        //Find Driftable Areas
-        DriftType[] driftable = new DriftType[angles.Length];
-        float angleNeeded = 15f;
-
-        for (int driftCount = 0; driftCount < td.positionPoints.Count; driftCount++)
-        {
-            if (Mathf.Abs(angles[driftCount]) > minAngle && pathLengths[driftCount] < 15f)
+            float totalAngle = angles[driftCount];
+            int currentNode = driftCount;
+            //Find the total angle of the Turn
+            while (true)
             {
-                float totalAngle = angles[driftCount];
-                int currentNode = driftCount;
-                //Find the total angle of the Turn
-                while (true)
-                {
-                    currentNode = currentNode + 1;
+                currentNode = currentNode + 1;
 
-                    //Stop looking when turn changes direction or the change in angle is too small or if the Road straightens out..
-                    if (currentNode >= angles.Length || MathHelper.Sign(angles[currentNode]) != MathHelper.Sign(totalAngle) || Mathf.Abs(angles[currentNode]) < minAngle || pathLengths[driftCount] >= roadNeededtoStraightenOut * 2f)
-                        break;
+                //Stop looking when turn changes direction or the change in angle is too small or if the Road straightens out..
+                if (currentNode >= angles.Length || MathHelper.Sign(angles[currentNode]) != MathHelper.Sign(totalAngle) || Mathf.Abs(angles[currentNode]) < minAngle || pathLengths[driftCount] >= roadNeededtoStraightenOut * 2f)
+                    break;
 
-                    //Otherwise add the sum of the angles
-                    totalAngle += angles[currentNode];
-                }
-
-                //If the Turn is bigger than the required Angle
-                if (Mathf.Abs(totalAngle) > angleNeeded)
-                {
-                    //Change the driftable for this Node and all Nodes included
-                    for (int j = driftCount; j <= currentNode; j++)
-                    {
-                        // if(j == currentNode)
-                        //    driftable[j] = DriftType.Normal;
-                        if (Mathf.Abs(angles[j]) > 20f && pathLengths[j] < 8f)
-                        {
-                            driftable[j] = DriftType.Close;
-                          //  FindObjectOfType<InEngineRender>().roadColours[j] = Color.cyan;
-                        }
-                        else if (Mathf.Abs(angles[j]) < 14f)
-                        {
-                            driftable[j] = DriftType.Wide;
-                           // FindObjectOfType<InEngineRender>().roadColours[j] = Color.green;
-                        }
-                        else
-                        {
-                            driftable[j] = DriftType.Normal;
-                            //FindObjectOfType<InEngineRender>().roadColours[j] = Color.yellow;
-                        }
-
-                    }
-                }
-
-                //Skip ahead as we've checked up to this Node
-                driftCount = currentNode - 1;
+                //Otherwise add the sum of the angles
+                totalAngle += angles[currentNode];
             }
-        }
 
-        //Do Behaviour
-        for (int i = 0; i < td.positionPoints.Count; i++)
-        {
-            List<TrackRoadInfo> newTrackList = new List<TrackRoadInfo>();
-
-            //Check behind me, was I turning last
-            int lastPoint = MathHelper.NumClamp(i - 1, 0, td.positionPoints.Count);
-            if (Mathf.Abs(angles[lastPoint]) > turnAngleRequired)
+            //If the Turn is bigger than the required Angle
+            if (Mathf.Abs(totalAngle) > angleNeeded)
             {
-                // Look ahead, will I need to turn
-                if (Mathf.Abs(angles[i]) > turnAngleRequired)
+                //Change the driftable for this Node and all Nodes included
+                for (int j = driftCount; j <= currentNode; j++)
                 {
-                    //Will I turn in the same direction
-                    if (MathHelper.Sign(angles[lastPoint]) == MathHelper.Sign(angles[i]))
+                    // if(j == currentNode)
+                    //    driftable[j] = DriftType.Normal;
+                    if (Mathf.Abs(angles[j]) > 20f && pathLengths[j] < 8f)
                     {
-                        //How Long is this path? Do I have time to straighten out?
-                        if (pathLengths[i] >= roadNeededtoStraightenOut * 2f)
-                        {
-                            // Set Steer to zero at 20%
-                            newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, driftable[i], directions[i]));
-                            // Set Steer to old turn direction at 80 %
-                            newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), driftable[i], directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
-                        }
-                        else
-                        {
-                            // Add turn at 0%
-                            newTrackList.Add(new TrackRoadInfo(0, MathHelper.Sign(angles[i]), driftable[i], directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
-                        }
+                        driftable[j] = DriftType.Close;
+                      //  FindObjectOfType<InEngineRender>().roadColours[j] = Color.cyan;
+                    }
+                    else if (Mathf.Abs(angles[j]) < 14f)
+                    {
+                        driftable[j] = DriftType.Wide;
+                       // FindObjectOfType<InEngineRender>().roadColours[j] = Color.green;
                     }
                     else
                     {
+                        driftable[j] = DriftType.Normal;
+                        //FindObjectOfType<InEngineRender>().roadColours[j] = Color.yellow;
+                    }
+
+                }
+            }
+
+            //Skip ahead as we've checked up to this Node
+            driftCount = currentNode - 1;
+        }
+    }
+
+    //Do Behaviour
+    for (int i = 0; i < td.positionPoints.Count; i++)
+    {
+        List<TrackRoadInfo> newTrackList = new List<TrackRoadInfo>();
+
+        //Check behind me, was I turning last
+        int lastPoint = MathHelper.NumClamp(i - 1, 0, td.positionPoints.Count);
+        if (Mathf.Abs(angles[lastPoint]) > turnAngleRequired)
+        {
+            // Look ahead, will I need to turn
+            if (Mathf.Abs(angles[i]) > turnAngleRequired)
+            {
+                //Will I turn in the same direction
+                if (MathHelper.Sign(angles[lastPoint]) == MathHelper.Sign(angles[i]))
+                {
+                    //How Long is this path? Do I have time to straighten out?
+                    if (pathLengths[i] >= roadNeededtoStraightenOut * 2f)
+                    {
                         // Set Steer to zero at 20%
-                        newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, DriftType.NoDrift, directions[i]));
-                        //Set Steer to new turn direction at 80 %
+                        newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, driftable[i], directions[i]));
+                        // Set Steer to old turn direction at 80 %
                         newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), driftable[i], directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
+                    }
+                    else
+                    {
+                        // Add turn at 0%
+                        newTrackList.Add(new TrackRoadInfo(0, MathHelper.Sign(angles[i]), driftable[i], directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
                     }
                 }
                 else
                 {
                     // Set Steer to zero at 20%
                     newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, DriftType.NoDrift, directions[i]));
+                    //Set Steer to new turn direction at 80 %
+                    newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), driftable[i], directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
                 }
             }
             else
             {
-                // Look ahead, will I need to turn
-                if (Mathf.Abs(angles[i]) > turnAngleRequired)
-                {
-                    // Set Steer to new turn direction at 80 %
-                    newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), driftable[i], directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
-                }
+                // Set Steer to zero at 20%
+                newTrackList.Add(new TrackRoadInfo(roadNeededtoStraightenOut, 0, DriftType.NoDrift, directions[i]));
             }
-
-            AITrackInfo.Add(newTrackList);
-        }*/
-    }
-
-    enum DriftType { NoDrift, Normal, Wide, Close };
-
-    private class TrackRoadInfo
-    {
-        public float distance { get; private set; }
-        //0 if no turn is needed
-        public float turnAmount { get; private set; }
-        //This turn is started before the end of a straight path
-        public DriftType drift { get; private set; }
-        //The direction should stop following the instruction in
-        public Vector3 finalDir { get; private set; }
-
-        public TrackRoadInfo(float _distance, float _turnAmount, DriftType _drift, Vector3 _finalDir)
-        {
-            distance = _distance;
-            turnAmount = _turnAmount;
-            drift = _drift;
-            finalDir = _finalDir;
         }
+        else
+        {
+            // Look ahead, will I need to turn
+            if (Mathf.Abs(angles[i]) > turnAngleRequired)
+            {
+                // Set Steer to new turn direction at 80 %
+                newTrackList.Add(new TrackRoadInfo(pathLengths[i] - roadNeededtoStraightenOut, MathHelper.Sign(angles[i]), driftable[i], directions[MathHelper.NumClamp(i + 1, 0, td.positionPoints.Count)]));
+            }
+        }
+
+        AITrackInfo.Add(newTrackList);
     }
+}
+
+enum DriftType { NoDrift, Normal, Wide, Close };
+
+private class TrackRoadInfo
+{
+    public float distance { get; private set; }
+    //0 if no turn is needed
+    public float turnAmount { get; private set; }
+    //This turn is started before the end of a straight path
+    public DriftType drift { get; private set; }
+    //The direction should stop following the instruction in
+    public Vector3 finalDir { get; private set; }
+
+    public TrackRoadInfo(float _distance, float _turnAmount, DriftType _drift, Vector3 _finalDir)
+    {
+        distance = _distance;
+        turnAmount = _turnAmount;
+        drift = _drift;
+        finalDir = _finalDir;
+    }
+}*/
 }

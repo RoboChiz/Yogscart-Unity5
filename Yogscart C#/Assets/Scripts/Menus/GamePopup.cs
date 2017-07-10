@@ -10,9 +10,11 @@ public class GamePopup : MonoBehaviour
     protected bool noSelected = true;
 
     public virtual string text { get { return "Are you sure you want to reset all save data?"; } }
+    public virtual bool showYesNo { get { return true; } }
+    public virtual Vector2 size { get { return new Vector2(400, 200); } }
 
-	// Update is called once per frame
-	void OnGUI ()
+    // Update is called once per frame
+    void OnGUI ()
     {
 		if(guiAlpha > 0f)
         {
@@ -21,31 +23,40 @@ public class GamePopup : MonoBehaviour
             GUI.matrix = GUIHelper.GetMatrix();
             GUI.depth = -100;
 
-            GUIShape.RoundedRectangle(GUIHelper.CentreRect(new Rect(760, 440, 400, 200), guiAlpha), 20, new Color(52 /255f, 152 / 255f, 219 / 255f, guiAlpha));
-            GUIHelper.CentreRectLabel(new Rect(800, 460, 320, 130), guiAlpha, text, Color.white);
+            Rect boxRect = GUIHelper.CentreRect(new Rect(960 - (size.x/2f), 540 - (size.y/2f), size.x, size.y), guiAlpha);
+            GUIShape.RoundedRectangle(boxRect, 20, new Color(52 /255f, 152 / 255f, 219 / 255f, guiAlpha));
+            GUIHelper.CentreRectLabel(new Rect(boxRect.x + 10, boxRect.y + 10, boxRect.width - 20, boxRect.height - 70), guiAlpha, text, Color.white);
 
-            Rect yesRect = new Rect(800, 600, 150, 30), noRect = new Rect(950, 600, 150, 30);
-
-            GUIHelper.CentreRectLabel(yesRect, guiAlpha, "Yes", (noSelected) ? Color.white : Color.yellow);
-            GUIHelper.CentreRectLabel(noRect, guiAlpha, "No", (noSelected) ? Color.yellow : Color.white);
-
-            if (GUI.Button(yesRect, ""))
+            if (showYesNo)
             {
-                noSelected = false;
-                DoInput();
-            }
+                Rect yesRect = new Rect(boxRect.x + 10, boxRect.y + boxRect.height - 70, (size.x/2f) - 20, 60), noRect = new Rect(boxRect.x + (size.x / 2f) + 20, boxRect.y + boxRect.height - 70, (size.x / 2f) - 20, 60);
 
-            if (GUI.Button(noRect, ""))
+                GUIHelper.CentreRectLabel(yesRect, guiAlpha, "Yes", (noSelected) ? Color.white : Color.yellow);
+                GUIHelper.CentreRectLabel(noRect, guiAlpha, "No", (noSelected) ? Color.yellow : Color.white);
+
+                if (GUI.Button(yesRect, ""))
+                {
+                    noSelected = false;
+                    DoInput();
+                }
+
+                if (GUI.Button(noRect, ""))
+                {
+                    noSelected = true;
+                    DoInput();
+                }
+
+                if (Cursor.visible && yesRect.Contains(GUIHelper.GetMousePosition()))
+                    noSelected = false;
+
+                if (Cursor.visible && noRect.Contains(GUIHelper.GetMousePosition()))
+                    noSelected = true;
+            }
+            else
             {
-                noSelected = true;
-                DoInput();
+                if (Cursor.visible && GUI.Button(boxRect, ""))
+                    HidePopUp();
             }
-
-            if(Cursor.visible && yesRect.Contains(GUIHelper.GetMousePosition()))
-                noSelected = false;
-
-            if (Cursor.visible && noRect.Contains(GUIHelper.GetMousePosition()))
-                noSelected = true;
 
         }
 	}
@@ -57,11 +68,17 @@ public class GamePopup : MonoBehaviour
             if (InputManager.controllers.Count > 0)
             {
                 bool submit = InputManager.controllers[0].GetRawMenuInput("Submit") != 0;
-                bool horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal") != 0;
+                bool horizontal = false;
+
+                if(showYesNo)
+                    horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal") != 0;
 
                 if (submit)
                 {
-                    DoInput();
+                    if (showYesNo)
+                        DoInput();
+                    else
+                        HidePopUp();
                 }
 
                 if (horizontal)

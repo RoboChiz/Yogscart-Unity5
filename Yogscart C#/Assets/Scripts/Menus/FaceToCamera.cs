@@ -12,8 +12,13 @@ public class FaceToCamera : MonoBehaviour
     void LookAtCamera()
     {
         //Find Camera and Face it
-        if(forceCamera == null)
-            transform.LookAt(Camera.main.transform);
+        if (forceCamera == null)
+        {
+            if (Camera.main != null)
+                transform.LookAt(Camera.main.transform);
+            else
+                gameObject.SetActive(false);
+        }
         else
             transform.LookAt(forceCamera);
     }

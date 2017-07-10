@@ -44,16 +44,13 @@ public class JR : Egg
             KartMovement[] allKS = FindObjectsOfType<KartMovement>();
 
             PositionFinding ownerPF = ownerKS.GetComponent<PositionFinding>();
-            float ownerPercent = ownerKS.GetComponent<PositionFinding>().currentPercent;
 
             foreach (KartMovement ks in allKS)
             {
                 PositionFinding pf = ks.GetComponent<PositionFinding>();
-
-                if (ks != ownerKS &&
-                    ((!td.loopedTrack && pf.currentPercent > ownerPercent)
-                    || (td.loopedTrack && ((pf.lap == ownerPF.lap && pf.currentPercent > ownerPercent) || pf.lap > ownerPF.lap))))
+                if (ks != ownerKS && pf.racePosition < ownerPF.racePosition)
                     possibleTargets.Add(ks);
+
             }
 
             StartCoroutine(FindRoute());
@@ -85,6 +82,29 @@ public class JR : Egg
             //Pick a main target based on who we're closer to
             if (mainTarget == null)
             {
+                //Order Karts by distance
+                KartMovement[] sortedArray = new KartMovement[possibleTargets.Count];
+
+                while(possibleTargets.Count > 0)
+                {
+                    KartMovement closest = possibleTargets[0];
+                    float closestDistance = Vector3.Distance(closest.transform.position, transform.position);
+
+                    for(int i = 1; i < possibleTargets.Count; i++)
+                    {
+                        if(Vector3.Distance(possibleTargets[i].transform.position, transform.position) < closestDistance)
+                        {
+                            closest = possibleTargets[i];
+                            closestDistance = Vector3.Distance(possibleTargets[i].transform.position, transform.position);
+                        }
+                    }
+
+                    sortedArray[sortedArray.Length - possibleTargets.Count] = closest;
+                    possibleTargets.Remove(closest);                   
+                }
+
+                possibleTargets = sortedArray.ToList();
+
                 foreach (KartMovement ks in possibleTargets)
                 {
                     RaycastHit hit;

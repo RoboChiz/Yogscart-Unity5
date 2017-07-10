@@ -5,7 +5,6 @@ public class LevelSelect : MonoBehaviour
 {
     CurrentGameData gd;
     public GUISkin skin;
-
     bool state = false;
 
     int currentCup = 0, currentTrack = 0;
@@ -67,7 +66,7 @@ public class LevelSelect : MonoBehaviour
             if (!state && (contains || currentCup == i))
             {
                 if (cupScales[i] < 1.1f)
-                    cupScales[i] += Time.deltaTime;
+                    cupScales[i] += Time.unscaledDeltaTime;
                 else
                     cupScales[i] = 1.1f;
 
@@ -80,7 +79,7 @@ public class LevelSelect : MonoBehaviour
             else
             {
                 if (cupScales[i] > 1f)
-                    cupScales[i] -= Time.deltaTime;
+                    cupScales[i] -= Time.unscaledDeltaTime;
                 else
                     cupScales[i] = 1f;
             }
@@ -97,7 +96,7 @@ public class LevelSelect : MonoBehaviour
         {
             Texture2D trackPreview;
 
-            if (gamemode.raceType != RaceType.GrandPrix && state && i != currentTrack)
+            if ((gamemode is TimeTrial || gamemode is VSRace) && state && i != currentTrack)
             {
                 trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo_GreyOut;
             }
@@ -113,7 +112,7 @@ public class LevelSelect : MonoBehaviour
             if (state && (contains || currentTrack == i))
             {
                 if (trackScales[i] < 1.1f)
-                    trackScales[i] += Time.deltaTime;
+                    trackScales[i] += Time.unscaledDeltaTime;
                 else
                     trackScales[i] = 1.1f;
 
@@ -126,7 +125,7 @@ public class LevelSelect : MonoBehaviour
             else
             {
                 if (trackScales[i] > 1f)
-                    trackScales[i] -= Time.deltaTime;
+                    trackScales[i] -= Time.unscaledDeltaTime;
                 else
                     trackScales[i] = 1f;
             }
@@ -136,18 +135,18 @@ public class LevelSelect : MonoBehaviour
 
         Rect timeRect = new Rect(800, 880, 1000, 200);
 
-        if (state && gamemode.raceType == RaceType.TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
+        if (state && gamemode is TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
         {         
             string timeString = TimeManager.ToString(gd.tournaments[tempCurrentCup].tracks[currentTrack].bestTime);
-            GUIHelper.OutLineLabel(timeRect, timeString, 3, Color.black);
+            GUIHelper.OutLineLabel(timeRect, "Best Time:  " + timeString, 2, Color.black);
         }
-        else if(gamemode.raceType == RaceType.GrandPrix)
+        else if(gamemode is TournamentRace && !(gamemode is VSRace))
         {
             string rank = gd.tournaments[tempCurrentCup].lastRank[CurrentGameData.difficulty].ToString();
             if (rank == "NoRank")
                 rank = "No Rank";
 
-            GUIHelper.OutLineLabel(timeRect, rank, 3, Color.black);
+            GUIHelper.OutLineLabel(timeRect, rank, 2, Color.black);
         }
 
         //Inputs
@@ -193,15 +192,15 @@ public class LevelSelect : MonoBehaviour
             currentCup = MathHelper.NumClamp(currentCup, 0, gd.tournaments.Length);
         }
 
-        if (gamemode.raceType != RaceType.Online)
-        {
-            Race.currentTrack = currentTrack;
-            Race.currentCup = currentCup;
-        }
+        //if (gamemode is OnlineRace)
+       // {
+       //     Race.currentTrack = currentTrack;
+       //     Race.currentCup = currentCup;
+       // }
 
         if (submit)
         {
-            if (gamemode.raceType == RaceType.GrandPrix)
+            if (gamemode is TournamentRace && !(gamemode is VSRace))
             {
                 FinishLevelSelect();
             }
@@ -218,21 +217,26 @@ public class LevelSelect : MonoBehaviour
 
         if (cancel)
         {
-            if(FindObjectOfType<MainMenu>() == null || state)
-                sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/back"));
-
-            if (!state)
-            {
-                CancelLevelSelect();
-            }
-            else
-            {
-                state = false;
-            }
+            DoCancel();
         }
 
         GUI.color = Color.white;
 
+    }
+
+    public void DoCancel()
+    {
+        if (FindObjectOfType<MainMenu>() == null || state)
+            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/back"));
+
+        if (!state)
+        {
+            CancelLevelSelect();
+        }
+        else
+        {
+            state = false;
+        }
     }
 
     public void CancelLevelSelect()
@@ -242,19 +246,32 @@ public class LevelSelect : MonoBehaviour
         currentCup = -1;
         currentTrack = -1;
 
-        Race gamemode = (Race)CurrentGameData.currentGamemode;
+        GameMode gameMode = CurrentGameData.currentGamemode;
 
         //If backing out of Level Select make sure Voting Screen is showed
-        if (gamemode.raceType == RaceType.Online)
+        /*if (gamemode.raceType == RaceType.Online)
         {
             if (FindObjectOfType<VotingScreen>() == null)
                 gd.gameObject.AddComponent<VotingScreen>();
 
             FindObjectOfType<VotingScreen>().ShowScreen();
-        }
-        else if(gamemode.raceType == RaceType.VSRace)
+        }*/
+
+        if(gameMode is VSRace)
         {
-            gamemode.CancelLevelSelect();
+            VSRace race = gameMode as VSRace;
+            race.CancelLevelSelect();      
+        }
+
+        if(gameMode is ReplayGameMode)
+        {
+            PauseMenu pm = FindObjectOfType<PauseMenu>();
+
+            if (pm != null)
+            {
+                pm.ShowPause(true);
+                StartCoroutine(KillLevelSelect());
+            }
         }
     }
 
@@ -263,7 +280,7 @@ public class LevelSelect : MonoBehaviour
         currentCup = 0;
         currentTrack = 0;
 
-        if (FindObjectOfType<MainMenu>() != null)
+        if (FindObjectOfType<MainMenu>() != null && FindObjectOfType<MainMenu>().state != MainMenu.MenuState.LevelSelect)
             FindObjectOfType<MainMenu>().ChangeMenu(MainMenu.MenuState.LevelSelect);
 
         StartCoroutine(ActualShowLevelSelect());
@@ -272,14 +289,14 @@ public class LevelSelect : MonoBehaviour
     {
         sliding = true;
 
-        float startTime = Time.time;
+        float startTime = Time.realtimeSinceStartup;
         float travelTime = 0.25f;
         //Slide Off //////////////////////////////
         menuAlpha = 0f;
 
-        while (Time.time - startTime < travelTime)
+        while (Time.realtimeSinceStartup - startTime < travelTime)
         {
-            menuAlpha = Mathf.Lerp(0f, 1f, (Time.time - startTime) / travelTime);
+            menuAlpha = Mathf.Lerp(0f, 1f, (Time.realtimeSinceStartup - startTime) / travelTime);
             yield return null;
         }
 
@@ -290,8 +307,19 @@ public class LevelSelect : MonoBehaviour
 
     private void FinishLevelSelect()
     {
-        Race gamemode = (Race)CurrentGameData.currentGamemode;
-        if (gamemode.raceType == RaceType.Online)
+        if (Time.timeScale != 1f)
+            Time.timeScale = 1f;
+
+        PauseMenu pm = FindObjectOfType<PauseMenu>();
+        if (pm != null)
+        {
+            pm.pauseHold = -1;
+            pm.paused = -1;
+            PauseMenu.canPause = false;
+        }
+
+        Race gameMode = CurrentGameData.currentGamemode as Race;
+        /*if (gamemode.raceType == RaceType.Online)
         {
             //Send data to server
             FindObjectOfType<NetworkRaceClient>().SendVote(currentCup, currentTrack);
@@ -300,12 +328,9 @@ public class LevelSelect : MonoBehaviour
                 gd.gameObject.AddComponent<VotingScreen>();
 
             FindObjectOfType<VotingScreen>().ShowScreen();
-        }
-        else if(gamemode.raceType == RaceType.VSRace)
-        {
-            gamemode.FinishLevelSelect(currentCup, currentTrack);
-        }
+        }*/
 
+        gameMode.FinishLevelSelect(currentCup, currentTrack);
         StartCoroutine(HideLevelSelect());
     }
 
@@ -318,14 +343,14 @@ public class LevelSelect : MonoBehaviour
     {
         sliding = true;
 
-        float startTime = Time.time;
+        float startTime = Time.realtimeSinceStartup;
         float travelTime = 0.25f;
         //Slide Off //////////////////////////////
         menuAlpha = 1f;
 
-        while (Time.time - startTime < travelTime)
+        while (Time.realtimeSinceStartup - startTime < travelTime)
         {
-            menuAlpha = Mathf.Lerp(1f, 0f, (Time.time - startTime) / travelTime);
+            menuAlpha = Mathf.Lerp(1f, 0f, (Time.realtimeSinceStartup - startTime) / travelTime);
             yield return null;
         }
 
@@ -333,5 +358,11 @@ public class LevelSelect : MonoBehaviour
 
         sliding = false;
         enabled = false;
+    }
+
+    private IEnumerator KillLevelSelect()
+    {
+        yield return HideLevelSelect();
+        Destroy(this);
     }
 }

@@ -506,7 +506,7 @@ public class KartMovement : MonoBehaviour
         {
             finalSteer = (float)MathHelper.Sign(driftSteer) * MathHelper.Sign(actualSpeed);
             //Make turn more tight
-            finalSteer *= 1.1f;
+            finalSteer *= 1.25f;
 
             float driftAdjust = 0;
 

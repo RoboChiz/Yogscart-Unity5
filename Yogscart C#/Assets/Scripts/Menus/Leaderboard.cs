@@ -14,6 +14,8 @@ public class Leaderboard : MonoBehaviour
     const float slideTime = 0.5f;
     private float sideAmount = 0, guiAlpha = 0f;
 
+    public bool showing { get; private set; }
+
     public LBType state = LBType.AddingPoints;
 
     public List<DisplayRacer> racers;
@@ -23,6 +25,8 @@ public class Leaderboard : MonoBehaviour
 
     private float pointCount, pcSpeed = 2f;
     private bool startedSecond = false, speeding = false;
+
+    private Race race;
 
     // Use this for initialization
     void Awake()
@@ -38,8 +42,9 @@ public class Leaderboard : MonoBehaviour
         pcSpeed = 2f;
     }
 
-    public void StartLeaderBoard()
+    public void StartLeaderBoard(Race gamemode)
     {
+        race = gamemode;
         StartCoroutine(ActualStartLeaderBoard());   
     }
 
@@ -56,8 +61,9 @@ public class Leaderboard : MonoBehaviour
         pointCount = 0;
     }
 
-    public void StartTimeTrial()
+    public void StartTimeTrial(TimeTrial gamemode)
     {
+        race = gamemode;
         hidden = false;
         state = LBType.TimeTrial;
     }
@@ -135,6 +141,8 @@ public class Leaderboard : MonoBehaviour
             if (!hidden && sideAmount > 960)
                 StartCoroutine("ShowGUI");
         }
+
+        showing = guiAlpha != 0f;
     }
 
     private IEnumerator ShowGUI()
@@ -212,7 +220,6 @@ public class Leaderboard : MonoBehaviour
 
     void OnGUI()
     {
-
         //Version 2
         GUI.skin = Resources.Load<GUISkin>("GUISkins/Leaderboard");
         GUI.matrix = GUIHelper.GetMatrix();
@@ -228,7 +235,7 @@ public class Leaderboard : MonoBehaviour
             case LBType.TimeTrial:
                 if (racers != null && racers.Count > 0)
                 {
-                    float bestTime = gd.tournaments[Race.currentCup].tracks[Race.currentTrack].bestTime;
+                    float bestTime = gd.tournaments[race.currentCup].tracks[race.currentTrack].bestTime;
                     float playerTime = racers[0].timer;
 
                     if (playerTime <= bestTime || bestTime == 0)
@@ -377,7 +384,7 @@ public class DisplayRacer
         points = racer.points;
         timer = racer.timer;
         position = racer.position;
-        finished = racer.finished;
+        finished = true;
     }
 
     public override string ToString()

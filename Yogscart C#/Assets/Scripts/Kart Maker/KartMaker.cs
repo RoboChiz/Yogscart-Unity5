@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-public enum KartType { Display, Local, Online, Spectator };
+public enum KartType { Display, Local, Online, Spectator, Replay};
 
 public class KartMaker : MonoBehaviour
 {
@@ -168,30 +168,42 @@ public class KartMaker : MonoBehaviour
                 count++;
             }
 
-            //Add Death Catch
-            kb.AddComponent<DeathCatch>();
-            kb.GetComponent<DeathCatch>().deathParticles = km.particleSystems["Death Particles"];
+            if (type != KartType.Replay)
+            {
+                //Add Death Catch
+                kb.AddComponent<DeathCatch>();
+                kb.GetComponent<DeathCatch>().deathParticles = km.particleSystems["Death Particles"];
 
-            kb.AddComponent<CowTipping>();
+                kb.AddComponent<CowTipping>();
 
-            //Add Other Kart Scripts
-            kb.AddComponent<PositionFinding>();
-            //Sort out Character Noises
+                //Add Other Kart Scripts
+                kb.AddComponent<PositionFinding>();
+                //Sort out Character Noises
+            }
 
             //Add Animator Script
             kb.AddComponent<kartAnimator>();
             kb.GetComponent<kartAnimator>().ani = characterMesh.GetComponent<Animator>();
 
-            if (type != KartType.Spectator)
+            if (type != KartType.Spectator && type != KartType.Replay)
             {
                 kb.AddComponent<KartInput>();
                 //kb.AddComponent<kartInfo>();
             }
 
-            kb.AddComponent<KartItem>();
-            kb.GetComponent<KartItem>().itemDistance = kartSkel.ItemDrop;
+            if (type != KartType.Replay)
+            {
+                kb.AddComponent<KartItem>();
+                kb.GetComponent<KartItem>().itemDistance = kartSkel.ItemDrop;
+            }
 
             kb.AddComponent<KartCollider>();
+
+
+            if (type == KartType.Replay)
+            {
+                kartBody.gameObject.AddComponent<KartReplayer>();
+            }
         }
 
         Destroy(kartSkel);
@@ -200,10 +212,21 @@ public class KartMaker : MonoBehaviour
         kartBody.position = pos;
         kartBody.rotation = rot;
 
-        kartBody.gameObject.layer = 8;//Set the Kart's Layer to "Kart" for Kart Collisions 
+        if (type == KartType.Replay)
+            SetLayer(kartBody.gameObject, 11);// Set the Kart's Layer to "Ghost Kart" for Kart Collisions 
+        else
+            SetLayer(kartBody.gameObject, 8);// Set the Kart's Layer to "Kart" for Kart Collisions 
 
         return kartBody.transform;
 
+    }
+
+    public void SetLayer(GameObject gameObject, int layer)
+    {
+        gameObject.layer = layer;
+
+        foreach (Transform child in gameObject.transform)
+            SetLayer(child.gameObject, layer);
     }
 
     void SetUpWheelCollider(Transform collider)

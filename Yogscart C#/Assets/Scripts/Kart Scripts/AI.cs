@@ -118,7 +118,7 @@ public class AI : MonoBehaviour
             if(Physics.Raycast(transform.position, transform.forward, out hit, 1.5f) && (hit.transform.GetComponent<Collider>() == null || !hit.transform.GetComponent<Collider>().isTrigger) 
                 && hit.transform.tag != "Ground" && hit.transform.tag != "OffRoad" && hit.transform != transform)
             {
-                Debug.Log("Ahh! I hit " + hit.transform.name);
+                //Debug.Log("Ahh! I hit " + hit.transform.name);
                 reversing = true;
             }
 
@@ -169,18 +169,23 @@ public class AI : MonoBehaviour
                         if (!shielding)
                         {
                             shielding = true;
+                            Debug.Log("I'm using a shield");
                             kartItem.UseShield();                          
                         }
 
                         //If kart is behind us drop the dirt                    
                         if(Physics.Raycast(transform.position, -transform.forward,out hit) && hit.transform.GetComponent<KartMovement>() == true)
                         {
+                            Debug.Log("I'm dropping a shield");
                             kartItem.DropShield(-1);
                         }
 
                         //If we are near more item boxes drop dirt
-                        if(NearItemBoxes())
+                        if (NearItemBoxes())
+                        {
+                            Debug.Log("I'm dropping a shield");
                             kartItem.DropShield(-1);
+                        }
 
                         break;
                     case PowerUp.AIUnderstanding.Egg:
@@ -188,46 +193,61 @@ public class AI : MonoBehaviour
                         if (!shielding)
                         {
                             shielding = true;
+                            Debug.Log("I'm using a shield");
                             kartItem.UseShield();
                         }
 
                         //If kart is in front of us drop the dirt
                         if (Physics.Raycast(transform.position + (transform.forward * 2f), transform.forward, out hit) && hit.transform.GetComponent<KartMovement>() == true)
                         {
+                            Debug.Log("I'm dropping a shield");
                             kartItem.DropShield(1);
                         }
 
                         //If we are near more item boxes fire egg behind
                         if (NearItemBoxes())
+                        {
+                            Debug.Log("I'm dropping a shield");
                             kartItem.DropShield(-1);
-
+                        }
                         break;
                     case PowerUp.AIUnderstanding.JR:
 
                         if (!shielding)
                         {
                             shielding = true;
+                            Debug.Log("I'm using a shield");
                             kartItem.UseShield();
                         }
 
                         //Fire if we're not in first
                         if (pf.racePosition > 0)
+                        {
+                            Debug.Log("I'm dropping a shield");
                             kartItem.DropShield(1);
+                        }
 
                         //If we are near more item boxes fire egg behind
                         if (NearItemBoxes())
+                        {
+                            Debug.Log("I'm dropping a shield");
                             kartItem.DropShield(-1);
+                        }
 
                         break;
                     case PowerUp.AIUnderstanding.Lapis:
+                        Debug.Log("I'm using a lapis");
                         kartItem.UseItem();
 
                         break;
-                    case PowerUp.AIUnderstanding.SpeedBoost:   
-                                          
+                    case PowerUp.AIUnderstanding.SpeedBoost:
+
                         //Wait till we're on a straight and not near shortcut
-                        if(ks.steer == 0)
+                        if (ks.steer == 0)
+                        {
+                            Debug.Log("I'm using jaffa");
                             kartItem.UseItem();
+                        }
 
                         break;
                 }

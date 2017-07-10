@@ -151,97 +151,94 @@ public class CurrentGameData : MonoBehaviour {
             Debug.Log("No Data Available");
             SaveGame();
         }
-        else
+
+        try
         {
-            try
+            string[] splitData = gameData.Split(";"[0]);
+
+            //Data Layout
+            //0 - Version Number
+            /*switch (splitData[0])
             {
-                string[] splitData = gameData.Split(";"[0]);
-
-                //Data Layout
-                //0 - Version Number
-                switch (splitData[0])
-                {
-                    case "C# Version 0.1":
-                        Debug.Log("Version is compatible!");
-                        break;
-                    default:
-                        ResetData();
-                        return;
-                }
-                //1 - Unlocked Characters
-                //2 - Unlocked Hats
-                //3 - Unlocked Karts
-                //4 - Unlocked Wheels
-                //5 - Tournament Ranks
-                string[] tournamentRanks = splitData[5].Split(","[0]);
-                //Debug.Log("tournamentRanks:" + tournamentRanks.Length + " tournaments.Length:" + tournaments.Length);
-
-                if (tournamentRanks.Length != (tournaments.Length * 4))
-                {
+                case "C# Version 0.1":
+                    Debug.Log("Version is compatible!");
+                    break;
+                default:
                     ResetData();
                     return;
-                }
-                else
-                {
-                    Debug.Log("Tournament Ranks is compatible!");
-                    int rankCount = 0;
-                    for (int i = 0; i < tournaments.Length; i++)
-                    {
-                        Rank[] ranks = new Rank[4];
+            }*/
+            //1 - Unlocked Characters
+            //2 - Unlocked Hats
+            //3 - Unlocked Karts
+            //4 - Unlocked Wheels
+            //5 - Tournament Ranks
+            string[] tournamentRanks = splitData[5].Split(","[0]);
+            //Debug.Log("tournamentRanks:" + tournamentRanks.Length + " tournaments.Length:" + tournaments.Length);
 
-                        for (int j = 0; j < ranks.Length; j++)
-                        {
-                            int outVal = -1;
-
-                            if (!int.TryParse(tournamentRanks[rankCount], out outVal) || ranks[j] < 0 || (int)ranks[j] >= 5)
-                            {
-                                ResetData();
-                                return;
-                            }
-
-                            ranks[j] = (Rank)outVal;
-
-                            rankCount++;
-                        }
-
-                        tournaments[i].lastRank = ranks;
-                    }
-                }
-                //6 - Track Times
-                string[] trackTimes = splitData[6].Split(","[0]);
-                int timeCount = 0;
+            if (tournamentRanks.Length != (tournaments.Length * 4))
+            {
+                ResetData();
+                return;
+            }
+            else
+            {
+                Debug.Log("Tournament Ranks is compatible!");
+                int rankCount = 0;
                 for (int i = 0; i < tournaments.Length; i++)
                 {
-                    for (int j = 0; j < tournaments[i].tracks.Length; j++)
+                    Rank[] ranks = new Rank[4];
+
+                    for (int j = 0; j < ranks.Length; j++)
                     {
-                        float outFloat = -1;
-                        if (!float.TryParse(trackTimes[timeCount], out outFloat) || outFloat < 0 || outFloat >= 3600)
+                        int outVal = -1;
+
+                        if (!int.TryParse(tournamentRanks[rankCount], out outVal) || ranks[j] < 0 || (int)ranks[j] >= 5)
                         {
                             ResetData();
                             return;
                         }
 
-                        tournaments[i].tracks[j].bestTime = outFloat;
+                        ranks[j] = (Rank)outVal;
 
-                        timeCount++;
+                        rankCount++;
                     }
-                }
-                Debug.Log("Track Times is compatible!");
-            }
-            catch
-            {
-                ResetData();
-            }
 
-            Debug.Log("All data loaded!");
-        }     
+                    tournaments[i].lastRank = ranks;
+                }
+            }
+            //6 - Track Times
+            string[] trackTimes = splitData[6].Split(","[0]);
+            int timeCount = 0;
+            for (int i = 0; i < tournaments.Length; i++)
+            {
+                for (int j = 0; j < tournaments[i].tracks.Length; j++)
+                {
+                    float outFloat = -1;
+                    if (!float.TryParse(trackTimes[timeCount], out outFloat) || outFloat < 0 || outFloat >= 3600)
+                    {
+                        ResetData();
+                        return;
+                    }
+
+                    tournaments[i].tracks[j].bestTime = outFloat;
+
+                    timeCount++;
+                }
+            }
+            Debug.Log("Track Times is compatible!");
+        }
+        catch
+        {
+            ResetData();
+        }
+
+        Debug.Log("All data loaded!"); 
     }
 
     public void ResetData()
     {
         Debug.Log("Data not compatible!");
-        PlayerPrefs.SetString("YogscartData", "");
-        LoadGame();
+        SaveGame();
     }
 }
 

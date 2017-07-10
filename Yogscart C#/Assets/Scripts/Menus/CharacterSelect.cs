@@ -214,7 +214,7 @@ public class CharacterSelect : MonoBehaviour
                                 GUI.DrawTexture(iconRect, icon);
 
                                 //Mouse Controls
-                                if (!showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                if (Cursor.visible && !showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
                                 {
                                     choice[0].character = characterInt;
                                     canClick = true;
@@ -257,7 +257,7 @@ public class CharacterSelect : MonoBehaviour
                                 GUI.DrawTexture(iconRect, icon);
 
                                 //Mouse Controls
-                                if (!showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                if (Cursor.visible && !showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
                                 {
                                     choice[0].hat = hatInt;
                                     canClick = true;
@@ -636,7 +636,7 @@ public class CharacterSelect : MonoBehaviour
                                     showLayout[i] = false;
                                 }
 
-                                if (labelRect.Contains(mousePos - GUIHelper.groupOffset))
+                                if (Cursor.visible && labelRect.Contains(mousePos - GUIHelper.groupOffset))
                                     selectedLayout[i] = j;
                             }
                         }

@@ -157,7 +157,12 @@ public class MainMenu : MonoBehaviour
                 if (state == MenuState.CharacterSelect)
                     FindObjectOfType<CharacterSelect>().Back(0);
                 else if (state == MenuState.LevelSelect)
-                    FindObjectOfType<LevelSelect>().CancelLevelSelect();
+                {
+                    if (FindObjectOfType<TimeTrialMenu>() == null || FindObjectOfType<TimeTrialMenu>().hiding)
+                        FindObjectOfType<LevelSelect>().DoCancel();
+                    else
+                        FindObjectOfType<TimeTrialMenu>().DoCancel();
+                }
 
                 if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect)
                     BackMenu();
@@ -348,26 +353,16 @@ public class MainMenu : MonoBehaviour
                 if (lastloadedPicture < 0 ||(state == MenuState.Main && possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture]))
                     StartCoroutine(ActualChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
 
-                Race temp;
-
                 switch (state)
                 {
                     case MenuState.Main:
                         switch (options[currentSelection])
                         {
                             case "Single Player":
-                                if (CurrentGameData.currentGamemode != null)
-                                    DestroyImmediate(CurrentGameData.currentGamemode);
-
-                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<Race>();
                                 ChangeMenu(MenuState.SinglePlayer);
                                 gd.GetComponent<InputManager>().RemoveOtherControllers();
                                 break;
                             case "Multiplayer":
-                                if (CurrentGameData.currentGamemode != null)
-                                    DestroyImmediate(CurrentGameData.currentGamemode);
-
-                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<Race>();
                                 ChangeMenu(MenuState.Multiplayer);
                                 break;
                             case "Online":
@@ -396,20 +391,23 @@ public class MainMenu : MonoBehaviour
                         switch (options[currentSelection])
                         {
                             case "Tournament":
-                                temp = (Race)CurrentGameData.currentGamemode;
-                                temp.raceType = RaceType.GrandPrix;
+                                if (CurrentGameData.currentGamemode != null)
+                                    DestroyImmediate(CurrentGameData.currentGamemode);
+                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TournamentRace>();
 
                                 ChangeMenu(MenuState.Difficulty);
                                 break;
                             case "VS Race":
-                                temp = (Race)CurrentGameData.currentGamemode;
-                                temp.raceType = RaceType.VSRace;
+                                if (CurrentGameData.currentGamemode != null)
+                                    DestroyImmediate(CurrentGameData.currentGamemode);
+                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<VSRace>();
 
                                 ChangeMenu(MenuState.Difficulty);
                                 break;
                             case "Time Trial":
-                                temp = (Race)CurrentGameData.currentGamemode;
-                                temp.raceType = RaceType.TimeTrial;
+                                if (CurrentGameData.currentGamemode != null)
+                                    DestroyImmediate(CurrentGameData.currentGamemode);
+                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TimeTrial>();
 
                                 CurrentGameData.difficulty = 1;
                                 moveTitle = true;
@@ -421,16 +419,18 @@ public class MainMenu : MonoBehaviour
                        switch (options[currentSelection])
                        {
                             case "Tournament":
-                               temp = (Race)CurrentGameData.currentGamemode;
-                               temp.raceType = RaceType.GrandPrix;
+                                if (CurrentGameData.currentGamemode != null)
+                                    DestroyImmediate(CurrentGameData.currentGamemode);
+                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TournamentRace>();
 
-                               ChangeMenu(MenuState.Difficulty);
+                                ChangeMenu(MenuState.Difficulty);
                                break;
                            case "VS Race":
-                               temp = (Race)CurrentGameData.currentGamemode;
-                               temp.raceType = RaceType.VSRace;
+                                if (CurrentGameData.currentGamemode != null)
+                                    DestroyImmediate(CurrentGameData.currentGamemode);
+                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<VSRace>();
 
-                               ChangeMenu(MenuState.Difficulty);
+                                ChangeMenu(MenuState.Difficulty);
                                break;
                        }
                         break;

@@ -61,52 +61,6 @@ public class CollisionHandler : MonoBehaviour
     
     private void DoKartCollision(KartMovement kartA, KartMovement kartB, float distance)
     {
-        //Find the fastest Kart
-        bool aFastest = Mathf.Abs(kartA.actualSpeed) > Mathf.Abs(kartB.actualSpeed);
-
-        KartMovement fastest, slowest;
-        if(aFastest)
-        {
-            fastest = kartA;
-            slowest = kartB;
-        }
-        else
-        {
-            fastest = kartB;
-            slowest = kartA;
-        }
-
-        //Push the slowest
-        float leftSpace = ((fastest.transform.position - fastest.transform.right) - slowest.transform.position).magnitude;
-        float rightSpace = ((fastest.transform.position + fastest.transform.right) - slowest.transform.position).magnitude;
-
-        if(leftSpace < rightSpace)
-        {
-            slowest.GetComponent<CowTipping>().pushState = CowTipping.PushState.LeftNormal;
-            fastest.GetComponent<CowTipping>().pushState = CowTipping.PushState.RightHalf;
-        }
-        else
-        {
-            slowest.GetComponent<CowTipping>().pushState = CowTipping.PushState.RightNormal;
-            fastest.GetComponent<CowTipping>().pushState = CowTipping.PushState.LeftHalf;
-        }
-
-        slowest.GetComponent<CowTipping>().TipCow(); 
-        fastest.GetComponent<CowTipping>().TipCow();
-
-        fastest.GetComponentInChildren<DrivingIK>().ForceLook(slowest.transform);
-
-        //Push Player away
-        Vector3 dir = (slowest.transform.position - fastest.transform.position);
-        Vector3 normal = Vector3.up;
-
-        RaycastHit hit;
-        if (Physics.Raycast(slowest.transform.position, -slowest.transform.up, out hit, 4f))
-            normal = hit.normal;
-
-        dir = Vector3.ProjectOnPlane(dir, normal).normalized * distance;
-        slowest.transform.position += dir;
-
     } 
 
     private void DoKartGodCollision(KartMovement kart, KartCollider god, float distance)

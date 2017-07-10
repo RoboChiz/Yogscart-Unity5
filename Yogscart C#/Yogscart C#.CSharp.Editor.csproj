@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Editor:5</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.6.2f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -155,10 +157,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Resources\Fonts\read me.txt" />
-    <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShader1.shader" />
-    <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShaderEmission.shader" />
-    <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\GenericBlendShaderSplatWorkAround2.shader" />
-    <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\Standard_TwoSided.shader" />
+    <None Include="Assets\Scenes\Tracks\Sjin's Farm\Honey\HoneyShader1.shader" />
+    <None Include="Assets\Scenes\Tracks\Sjin's Farm\Honey\HoneyShaderEmission.shader" />
+    <None Include="Assets\Scenes\Tracks\Sjin's Farm\Shaders\GenericBlendShaderSplatWorkAround2.shader" />
+    <None Include="Assets\Scenes\Tracks\Sjin's Farm\Shaders\Standard_TwoSided.shader" />
     <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
     <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\BlendModesOverlay.shader" />
     <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\BlurEffectConeTaps.shader" />
