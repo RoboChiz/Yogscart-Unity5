@@ -12,6 +12,10 @@ public class TimeTrial : Race
     private bool skipCS = false, ghostSaved = false;
 
     //Save Ghost Data
+    [System.NonSerialized, HideInInspector]
+    public GhostData ghost;
+    private Transform ghostTransform;
+    private bool finishGhost = false;
 
     protected override IEnumerator ActualStartGameMode()
     {
@@ -68,7 +72,7 @@ public class TimeTrial : Race
         StartRace();
     }
 
-    protected override void OnLevelLoad()
+    public override void OnLevelLoad()
     {
         //Clear all itemboxes 
         ItemBox[] itemBoxes = FindObjectsOfType<ItemBox>();
@@ -78,23 +82,131 @@ public class TimeTrial : Race
 
     protected override void OnSpawnKart()
     {
-        SpawnLoneKart(td.spawnPoint.position, td.spawnPoint.rotation, 0);
+        Vector3 spawnPosition = td.spawnPoint.position;
+        Quaternion spawnRotation = td.spawnPoint.rotation;
+
+        SpawnLoneKart(spawnPosition, spawnRotation, 0);
+
+        if(ghost != null)
+        {
+            //Get Spawn Point
+            Vector3 startPos = spawnPosition + (spawnRotation * Vector3.forward * (3 * 1.5f) * -1.5f);
+            Vector3 x2 = spawnRotation * (Vector3.forward * 4.5f) + (Vector3.forward * .75f * 3);
+            Vector3 y2 = spawnRotation * (Vector3.right * 6);
+            startPos += x2 + y2;
+
+            ghostTransform = FindObjectOfType<KartMaker>().SpawnKart(KartType.Ghost, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), ghost.character, ghost.hat, ghost.kart, ghost.wheel);
+            ghostTransform.GetComponent<KartReplayer>().LoadReplay(ghost.data);
+
+            foreach (MeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<MeshRenderer>())
+            {
+                Material material = mr.material;
+
+                material.SetFloat("_Mode", 2);
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                //material.SetInt("_ZWrite", 0);
+                material.DisableKeyword("_ALPHATEST_ON");
+                material.EnableKeyword("_ALPHABLEND_ON");
+                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                material.renderQueue = 3000;
+                material.color = new Color(1f, 1f, 1f, 0.4f);              
+            }
+
+            foreach (SkinnedMeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                Material material = mr.material;
+
+                material.SetFloat("_Mode", 2);
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                //material.SetInt("_ZWrite", 0);
+                material.DisableKeyword("_ALPHATEST_ON");
+                material.EnableKeyword("_ALPHABLEND_ON");
+                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                material.renderQueue = 3000;
+                material.color = new Color(1f, 1f, 1f, 0.4f);
+            }
+        }
     }
 
-    protected override void OnKartStarting()
+    protected override void AddMapViewObjects()
+    {
+        if(ghostTransform != null)
+            mapViewer.objects.Add(new MapObject(ghostTransform, gd.characters[ghost.character].icon, 0));
+    }
+
+    protected override void OnPreKartStarting()
+    {
+        if(ghostTransform != null)
+            ghostTransform.GetComponent<KartReplayer>().Play();
+    }
+
+    protected override void OnPostKartStarting()
     {
         foreach (KartItem ki in FindObjectsOfType<KartItem>())
             ki.RecieveItem(2);
     }
 
-    protected override void OnRaceFinished() { DetermineWinner(); }
+    protected override void OnRaceFinished()
+    {
+        DetermineWinner();
+        CheckGhostKill();
+    }
+
+    public override void HostUpdate()
+    {
+        base.HostUpdate();
+        CheckGhostKill();
+    }
+
+    public void CheckGhostKill()
+    {
+        //Finish Ghost
+        if (ghostTransform != null && ghostTransform.GetComponent<PositionFinding>().lap >= td.Laps && !finishGhost)
+        {
+            finishGhost = true;
+            Destroy(ghostTransform.GetComponent<KartReplayer>());
+
+            StartCoroutine(KillGhost());
+        }
+    }
+
+    private IEnumerator KillGhost()
+    {
+        //Fade Ghost Away
+        foreach (MeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<MeshRenderer>())
+            StartCoroutine(FadeMaterial(mr.material));
+
+        foreach (SkinnedMeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>())
+            StartCoroutine(FadeMaterial(mr.material));
+
+        yield return new WaitForSeconds(1.1f);
+
+        //Destroy Ghost
+        Destroy(ghostTransform.gameObject);
+    }
+
+    private IEnumerator FadeMaterial(Material material)
+    {
+        float startTime = Time.time, travelTime = 1f;
+        Color startVal = material.color;
+
+        while(Time.time - startTime < travelTime)
+        {
+            material.color = Color.Lerp(startVal, Color.clear, (Time.time - startTime) / travelTime);
+            yield return null;
+        }
+
+        material.color = Color.clear;
+    }
 
     protected override void OnStartLeaderBoard(Leaderboard lb)
     {
         lb.StartTimeTrial(this);
     }
 
-    protected override string[] GetNextMenuOptions()
+    public override string[] GetNextMenuOptions()
     {
         return new string[] { "Restart", "Replay", "Save Ghost", "Quit" };
     }
@@ -155,12 +267,15 @@ public class TimeTrial : Race
         FileStream sw = null;
         try
         {
+            if (!Directory.Exists(Application.persistentDataPath + "/Ghost Data/"))
+                Directory.CreateDirectory(Application.persistentDataPath + "/Ghost Data/");
+
             DateTime now = System.DateTime.Now;
-            string saveLocation = Application.persistentDataPath + "/Ghost " + now.Day + "_" + now.Month + "_" + now.Year + "_" + now.Hour.ToString("00") + "_" + now.Minute.ToString("00") + ".GhostData";
+            string saveLocation = Application.persistentDataPath + "/Ghost Data/" + now.Day + "_" + now.Month + "_" + now.Year + "_" + now.Hour.ToString("00") + "_" + now.Minute.ToString("00") + ".GhostData";
 
             BinaryFormatter bf = new BinaryFormatter();
             sw = File.Create(saveLocation);
-            bf.Serialize(sw, new GhostData(racers[0], preRaceState[0].DataToString()));
+            bf.Serialize(sw, new GhostData(racers[0], preRaceState[0].DataToString(), currentCup, currentTrack, gd.playerName));
             sw.Flush();
 
             popUp = gameObject.AddComponent<InfoPopUp>();
@@ -209,25 +324,32 @@ public class TimeTrial : Race
 
         StartRace();
     }
+}
 
-    [System.Serializable]
-    public class GhostData
+[System.Serializable]
+public class GhostData
+{
+    public int character, hat, kart, wheel, track, cup;
+    public float time;
+    public string data, playerName;
+
+    public GhostData(Racer racer, string _data, int _cup, int _track, string _playerName)
     {
-        public int character, hat, kart, wheel, level, cup;
-        public float time;
-        public string data;
+        character = racer.Character;
+        hat = racer.Hat;
+        kart = racer.Kart;
+        wheel = racer.Wheel;
 
-        public GhostData(Racer racer, string _data)
-        {
-            character = racer.Character;
-            hat = racer.Hat;
-            kart = racer.Kart;
-            wheel = racer.Wheel;
+        time = racer.timer;
+        data = _data;
 
-            time = racer.timer;
-            data = _data;
-        }
+        track = _track;
+        cup = _cup;
+        playerName = _playerName;
     }
 
-
+    public GhostData()
+    {
+        data = "";
+    }
 }

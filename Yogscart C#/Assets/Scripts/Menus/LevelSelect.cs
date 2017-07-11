@@ -7,7 +7,9 @@ public class LevelSelect : MonoBehaviour
     public GUISkin skin;
     bool state = false;
 
-    int currentCup = 0, currentTrack = 0;
+    private int currentCup = 0, currentTrack = 0;
+    public int trackNum = 4;
+
 
     //Transtition
     private float menuAlpha = 1f;
@@ -148,9 +150,21 @@ public class LevelSelect : MonoBehaviour
 
             GUIHelper.OutLineLabel(timeRect, rank, 2, Color.black);
         }
+        else if(gamemode is VSRace)
+        {
+            if (GetComponent<MainMenu>() != null)
+            {
+                GUIHelper.OutLineLabel(timeRect, "Races: " + trackNum, 2, Color.black);
+            }
+            else
+            {
+                VSRace vs = gamemode as VSRace;
+                GUIHelper.OutLineLabel(timeRect, "Race " + (gamemode.currentRace + 1).ToString() + " / " + vs.raceCount, 2, Color.black);
+            }
+        }
 
         //Inputs
-        int vert = 0, hori = 0;
+        int vert = 0, hori = 0, tabChange = 0;
         bool submit = false, cancel = false;
 
         if (!sliding && (FindObjectOfType<MainMenu>() == null || !FindObjectOfType<MainMenu>().sliding))
@@ -159,8 +173,9 @@ public class LevelSelect : MonoBehaviour
             hori = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
             submit = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
             cancel = (InputManager.controllers[0].GetMenuInput("Cancel") != 0);
+            tabChange = InputManager.controllers[0].GetMenuInput("TabChange");
 
-            if(vert != 0 || hori != 0 || submit || cancel)
+            if (vert != 0 || hori != 0 || submit || cancel)
                 mouseLast = false;
 
             if (canClick && Input.GetMouseButton(0))
@@ -190,6 +205,11 @@ public class LevelSelect : MonoBehaviour
 
             currentTrack = MathHelper.NumClamp(currentTrack, 0, 4);
             currentCup = MathHelper.NumClamp(currentCup, 0, gd.tournaments.Length);
+
+            if(tabChange != 0 && gamemode is VSRace && GetComponent<MainMenu>() != null)
+            {
+                trackNum = MathHelper.NumClamp(trackNum + tabChange, 1, 64);
+            }
         }
 
         //if (gamemode is OnlineRace)
@@ -257,21 +277,14 @@ public class LevelSelect : MonoBehaviour
             FindObjectOfType<VotingScreen>().ShowScreen();
         }*/
 
-        if(gameMode is VSRace)
+        if(FindObjectOfType<Replay>() != null)
+        {
+            FindObjectOfType<Replay>().GoBack();
+        }
+        else if (gameMode is VSRace)
         {
             VSRace race = gameMode as VSRace;
-            race.CancelLevelSelect();      
-        }
-
-        if(gameMode is ReplayGameMode)
-        {
-            PauseMenu pm = FindObjectOfType<PauseMenu>();
-
-            if (pm != null)
-            {
-                pm.ShowPause(true);
-                StartCoroutine(KillLevelSelect());
-            }
+            race.CancelLevelSelect();
         }
     }
 
@@ -279,6 +292,7 @@ public class LevelSelect : MonoBehaviour
     {
         currentCup = 0;
         currentTrack = 0;
+        trackNum = 4;
 
         if (FindObjectOfType<MainMenu>() != null && FindObjectOfType<MainMenu>().state != MainMenu.MenuState.LevelSelect)
             FindObjectOfType<MainMenu>().ChangeMenu(MainMenu.MenuState.LevelSelect);

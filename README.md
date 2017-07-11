@@ -2,6 +2,27 @@
 
 ## Changelog : Started 04/08/2016
 
+# 11/07/2017
+* Added ability to change number of races in VS Race
+* Added Ghost Selection for Time Trial
+* Added Ghost Racing in Time Trial
+* Added Dev Ghosts
+* Changed Company Name in Unity Player
+* Created Replay Component
+* Added basic Replay Functionality
+* Added delay to end of kart recording
+* Added Player Names
+* Added Change Player Name Dialogue
+* Added forcing new players to give a name
+* Created a new function for scaling rects relative to other rects
+* Updated Executable Icon
+* Added Ghosts to Map Viewer during Time Trial
+* Fixed issues with FauxCollider and other karts (ghosts)
+* Fixed issues with FauxCollider and some walls
+* Made Ghost disappear when it finishes
+* Fixed Kart Recorder not instantly taking reading
+* Added Drift Steer to Kart Recorder
+
 # 10/07/2017
 * Created a new Race Script
 * Created a new Tournament Script from Race Script

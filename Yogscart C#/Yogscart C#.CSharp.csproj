@@ -98,7 +98,7 @@
     <Compile Include="Assets\Scripts\GameMode\NetworkRaceHost.cs" />
     <Compile Include="Assets\Scripts\GameMode\OldRace.cs" />
     <Compile Include="Assets\Scripts\GameMode\Race.cs" />
-    <Compile Include="Assets\Scripts\GameMode\ReplayGameMode.cs" />
+    <Compile Include="Assets\Scripts\GameMode\Replay.cs" />
     <Compile Include="Assets\Scripts\GameMode\TimeTrial.cs" />
     <Compile Include="Assets\Scripts\GameMode\TournamentRace.cs" />
     <Compile Include="Assets\Scripts\GameMode\VSRace.cs" />
@@ -132,6 +132,7 @@
     <Compile Include="Assets\Scripts\Managers\BSPTree.cs" />
     <Compile Include="Assets\Scripts\Managers\InterestManager.cs" />
     <Compile Include="Assets\Scripts\Menus\CancelChanges.cs" />
+    <Compile Include="Assets\Scripts\Menus\ChangeName.cs" />
     <Compile Include="Assets\Scripts\Menus\CharacterSelect.cs" />
     <Compile Include="Assets\Scripts\Menus\Credits.cs" />
     <Compile Include="Assets\Scripts\Menus\FaceToCamera.cs" />
@@ -179,6 +180,7 @@
     <Compile Include="Assets\Track Creator\Vertex.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Resources\Dev Ghosts\11_7_2017_11_57.txt" />
     <None Include="Assets\Resources\Fonts\read me.txt" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShader1.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShaderEmission.shader" />

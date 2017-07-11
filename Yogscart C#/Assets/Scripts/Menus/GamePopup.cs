@@ -24,32 +24,42 @@ public class GamePopup : MonoBehaviour
             GUI.depth = -100;
 
             Rect boxRect = GUIHelper.CentreRect(new Rect(960 - (size.x/2f), 540 - (size.y/2f), size.x, size.y), guiAlpha);
-            GUIShape.RoundedRectangle(boxRect, 20, new Color(52 /255f, 152 / 255f, 219 / 255f, guiAlpha));
-            GUIHelper.CentreRectLabel(new Rect(boxRect.x + 10, boxRect.y + 10, boxRect.width - 20, boxRect.height - 70), guiAlpha, text, Color.white);
+            GUIShape.RoundedRectangle(boxRect, 20, new Color(52 /255f, 152 / 255f, 219 / 255f, guiAlpha * 0.8f));
+
+            GUIStyle adjustedLabel = new GUIStyle(skin.label);
+            adjustedLabel.fontSize = (int)(adjustedLabel.fontSize * guiAlpha);
+
+            //Instructions
+            GUI.Label(GUIHelper.RectScaledbyOtherRect(new Rect(boxRect.x + 10, boxRect.y + 10, boxRect.width - 20, boxRect.height - 70), boxRect, guiAlpha), text, adjustedLabel);
 
             if (showYesNo)
             {
                 Rect yesRect = new Rect(boxRect.x + 10, boxRect.y + boxRect.height - 70, (size.x/2f) - 20, 60), noRect = new Rect(boxRect.x + (size.x / 2f) + 20, boxRect.y + boxRect.height - 70, (size.x / 2f) - 20, 60);
 
-                GUIHelper.CentreRectLabel(yesRect, guiAlpha, "Yes", (noSelected) ? Color.white : Color.yellow);
-                GUIHelper.CentreRectLabel(noRect, guiAlpha, "No", (noSelected) ? Color.yellow : Color.white);
+                adjustedLabel.normal.textColor = noSelected ? Color.white : Color.yellow;
+                Rect actualYes = GUIHelper.RectScaledbyOtherRect(yesRect, boxRect, guiAlpha);
+                GUI.Label(actualYes, "Yes", adjustedLabel);
 
-                if (GUI.Button(yesRect, ""))
+                adjustedLabel.normal.textColor = !noSelected ? Color.white : Color.yellow;
+                Rect actualNo = GUIHelper.RectScaledbyOtherRect(noRect, boxRect, guiAlpha);
+                GUI.Label(actualNo, "No", adjustedLabel);
+
+                if (GUI.Button(actualYes, ""))
                 {
                     noSelected = false;
                     DoInput();
                 }
 
-                if (GUI.Button(noRect, ""))
+                if (GUI.Button(actualNo, ""))
                 {
                     noSelected = true;
                     DoInput();
                 }
 
-                if (Cursor.visible && yesRect.Contains(GUIHelper.GetMousePosition()))
+                if (Cursor.visible && actualYes.Contains(GUIHelper.GetMousePosition()))
                     noSelected = false;
 
-                if (Cursor.visible && noRect.Contains(GUIHelper.GetMousePosition()))
+                if (Cursor.visible && actualNo.Contains(GUIHelper.GetMousePosition()))
                     noSelected = true;
             }
             else

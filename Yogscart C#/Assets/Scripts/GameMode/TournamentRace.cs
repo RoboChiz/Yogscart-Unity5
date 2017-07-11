@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class TournamentRace : Race
 {
     //How many races will there be total
-    public int raceCount { get; private set; }
+    public int raceCount { get; protected set; }
 
     public Rank ranking;
 
@@ -87,7 +87,7 @@ public class TournamentRace : Race
         lb.StartLeaderBoard(this);
     }
 
-    protected override string[] GetNextMenuOptions()
+    public override string[] GetNextMenuOptions()
     {
         if (currentRace < raceCount)
             return new string[] { "Next Race", "Replay", "Quit" };

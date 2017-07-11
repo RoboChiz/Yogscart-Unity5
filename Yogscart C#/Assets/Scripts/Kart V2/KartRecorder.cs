@@ -11,27 +11,29 @@ public class KartRecorder : MonoBehaviour
     private int frameCount, framesPerSecond;
     public float lastThrottle = -1;
     public float lastSteer = -1;
-    public int lastDrift = -1;
+    public int lastDrift = -1, lastDriftSteer = -1;
 
     private KartMovement kartMovement;
     private Rigidbody kartRigidbody;
 
-    public const string throttle = "t:", steer = "s:", drift = "d:", expectedSpeed = "e:", position = "p:", rotation = "r:", velocity = "v:", angularVelocity = "a:", recieveItem = "i:", itemAction = "c:", dropShield = "u:";
+    public const string throttle = "t:", steer = "s:", drift = "d:", driftSteer = "z:", expectedSpeed = "e:", position = "p:", rotation = "r:", velocity = "v:", angularVelocity = "a:", recieveItem = "i:", itemAction = "c:", dropShield = "u:";
     public List<List<string>> actions; //Each List of strings represents all actions that happened that frame. Actions are recorded at Unity's Time Step value (40fps)
 
     public void Start()
     {
         kartMovement = GetComponent<KartMovement>();
         kartRigidbody = GetComponent<Rigidbody>();
-        frameCount = framesPerSecond;
-
         Reset();
     }
 
     public void Record()
     {
-        isRecording = true;
-        framesPerSecond = (int)(1f / Time.fixedDeltaTime);
+        if (!isRecording)
+        {
+            isRecording = true;
+            framesPerSecond = (int)(1f / Time.fixedDeltaTime);
+            frameCount = framesPerSecond;
+        }
     }
 
     public void Pause()
@@ -45,6 +47,7 @@ public class KartRecorder : MonoBehaviour
         lastThrottle = -1;
         lastSteer = -1;
         lastDrift = -1;
+        lastDriftSteer = -1;
         actions = new List<List<string>>();
     }
 
@@ -58,6 +61,7 @@ public class KartRecorder : MonoBehaviour
             bool throttleChanged = lastThrottle != kartMovement.throttle;
             bool steerChanged = lastSteer != kartMovement.steer;
             bool driftChange = lastDrift != (kartMovement.drift ? 1 : 0);
+            bool driftSteerChange = lastDriftSteer != kartMovement.driftSteer;
 
             //Add Throttle, Steer and Drift if they have changed
             if (throttleChanged)
@@ -68,6 +72,9 @@ public class KartRecorder : MonoBehaviour
 
             if (driftChange)
                 currentFrame.Add(drift + (kartMovement.drift ? 1 : 0));
+
+            if (driftSteerChange)
+                currentFrame.Add(driftSteer + kartMovement.driftSteer);
 
             frameCount++;
             if(frameCount >= framesPerSecond)
@@ -87,6 +94,9 @@ public class KartRecorder : MonoBehaviour
 
                 if (!driftChange)
                     currentFrame.Add(drift + (kartMovement.drift ? 1 : 0));
+
+                if (!driftSteerChange)
+                    currentFrame.Add(driftSteer + kartMovement.driftSteer);
 
                 frameCount = 0;
             }

@@ -186,7 +186,13 @@ public class Options : MonoBehaviour
                         {
                             if(currentSelection < 3)
                                 changingSlider = !changingSlider;
-                            else
+                            else if(currentSelection == 3)
+                            {
+                                //Find the Name Window and Show it
+                                locked = true;
+                                FindObjectOfType<ChangeName>().Show();
+                            }
+                            else if(currentSelection == 4)
                             {
                                 //Find the PopUp Window and Show it
                                 locked = true;
@@ -200,7 +206,7 @@ public class Options : MonoBehaviour
                             int maxVal = 3;
 
                             if (FindObjectOfType<MainMenu>() != null)
-                                maxVal = 4;
+                                maxVal = 5;
 
                             if (vertical != 0)
                                 currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, maxVal);
@@ -524,15 +530,15 @@ public class Options : MonoBehaviour
         Rect tabRect = new Rect(180, 90, 1550, 870);
         Rect tabAreaRect = new Rect(180, 170, 1550, 800);
         //Required GUIStyles
-        GUIStyle normalLabel = GUI.skin.label;
+        GUIStyle normalLabel = new GUIStyle(GUI.skin.label);
         GUIStyle selectedLabel = new GUIStyle(GUI.skin.label);
-        selectedLabel.normal.textColor = Color.yellow;
 
+        selectedLabel.normal.textColor = Color.yellow;
         switch (currentTab)
         {
             case OptionsTab.Game:
                 GUI.DrawTexture(tabRect, blueTab);
-                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 550), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
+                GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 650), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
 
                 GUIHelper.BeginGroup(tabAreaRect);
 
@@ -563,17 +569,17 @@ public class Options : MonoBehaviour
                         if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
                         {
                             if (!changingSlider)
-                                GUI.Label(new Rect(20, 500, 1445, 50), "Press A to select an option!", centreLabel);
+                                GUI.Label(new Rect(20, 600, 1445, 50), "Press A to select an option!", centreLabel);
                             else
-                                GUI.Label(new Rect(20, 500, 1445, 50), "Press B to deselect the option!", centreLabel);
+                                GUI.Label(new Rect(20, 600, 1445, 50), "Press B to deselect the option!", centreLabel);
                         }
 
                         if (InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard)
                         {
                             if (!changingSlider)
-                                GUI.Label(new Rect(20, 500, 1445, 50), "Press Return to select an option!", centreLabel);
+                                GUI.Label(new Rect(20, 600, 1445, 50), "Press Return to select an option!", centreLabel);
                             else
-                                GUI.Label(new Rect(20, 500, 1445, 50), "Press Return to deselect the option!", centreLabel);
+                                GUI.Label(new Rect(20, 600, 1445, 50), "Press Return to deselect the option!", centreLabel);
                         }
                     }
                     else
@@ -584,12 +590,28 @@ public class Options : MonoBehaviour
 
                 if (FindObjectOfType<MainMenu>() != null)
                 {
-                    Rect saveReset = new Rect(50, 400, 300, 100);
+                    normalLabel.alignment = TextAnchor.MiddleLeft;
+                    selectedLabel.alignment = TextAnchor.MiddleLeft;
+
+                    Rect nameRect = new Rect(50, 400, 600, 100);
+                    Rect actualName = new Rect(nameRect.x + tabAreaRect.x, nameRect.y + tabAreaRect.y, nameRect.width, nameRect.height);
+                    GUI.Label(nameRect, "Change Player Name", (currentSelection == 3 && !Cursor.visible) || (Cursor.visible && actualName.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
+
+                    if (!locked && Cursor.visible && GUI.Button(nameRect, ""))
+                    {
+                        //Find the PopUp Window and Show it
+                        locked = true;
+                        //Do Name Menu
+                        FindObjectOfType<ChangeName>().Show();
+                    }
+
+
+                    Rect saveReset = new Rect(50, 500, 300, 100);
                     Rect actualSave = new Rect(saveReset.x + tabAreaRect.x, saveReset.y + tabAreaRect.y, saveReset.width, saveReset.height);
 
-                    GUI.Label(saveReset, "Reset Save Data", (currentSelection == 3 && !Cursor.visible) || (Cursor.visible && actualSave.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
+                    GUI.Label(saveReset, "Reset Save Data", (currentSelection == 4 && !Cursor.visible) || (Cursor.visible && actualSave.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
 
-                    if (!locked && GUI.Button(saveReset, ""))
+                    if (!locked && Cursor.visible && GUI.Button(saveReset, ""))
                     {
                         //Find the PopUp Window and Show it
                         locked = true;

@@ -118,6 +118,7 @@
     <Compile Include="Assets\Standard Assets\Effects\ImageEffects\Scripts\Vortex.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Resources\Dev Ghosts\11_7_2017_11_57.txt" />
     <None Include="Assets\Resources\Fonts\read me.txt" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShader1.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShaderEmission.shader" />

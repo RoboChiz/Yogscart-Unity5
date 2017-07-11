@@ -288,6 +288,9 @@ public abstract class Race : GameMode
         foreach (Racer racer in racers)
             mapViewer.objects.Add(new MapObject(racer.ingameObj, gd.characters[racer.Character].icon, racer.position));
 
+        //Let Gamemode add Map Viewer Objects
+        AddMapViewObjects();
+
         yield return null;
 
         //Do the intro to the Map
@@ -312,6 +315,9 @@ public abstract class Race : GameMode
         foreach (KartRecorder kr in kartRecorders)
             kr.Record();
 
+        //Let Gamemode make changes to karts
+        OnPreKartStarting();
+
         yield return new WaitForSeconds(3f);
        
         foreach (kartInfo ki in kies)
@@ -321,7 +327,7 @@ public abstract class Race : GameMode
             ki.hidden = false;
 
         //Let Gamemode make changes to karts
-        OnKartStarting();
+        OnPostKartStarting();
 
         //Show Map
         mapViewer.ShowMapViewer();
@@ -373,8 +379,6 @@ public abstract class Race : GameMode
         //Turn off Kart Components
         foreach (KartInput ki in kines)
             ki.camLocked = false;
-        foreach (KartRecorder kr in kartRecorders)
-            kr.Pause();
 
         //Send over replay data
         for(int i = 0; i < racers.Count; i++)
@@ -390,7 +394,14 @@ public abstract class Race : GameMode
         {
             racer.points += 15 - racer.position;
             sortedRacers[racer.position] = new DisplayRacer(racer);
+
+            if(racer.Human != -1)
+            {
+                gd.overallLapisCount += racer.ingameObj.GetComponent<KartMovement>().lapisAmount;
+            }
         }
+
+        gd.SaveGame();
 
         //Increment the race count
         currentRace++;
@@ -399,6 +410,9 @@ public abstract class Race : GameMode
         OnRaceFinished();
 
         yield return new WaitForSeconds(2.5f);
+
+        foreach (KartRecorder kr in kartRecorders)
+            kr.Pause();
 
         StartCoroutine(ChangeState(RaceState.ScoreBoard));
 
@@ -433,10 +447,12 @@ public abstract class Race : GameMode
         yield return OnEndLeaderBoard();
     }
 
-    protected virtual void OnLevelLoad() { }
+    public virtual void OnLevelLoad() { }
     protected abstract void OnSpawnKart();
+    protected virtual void AddMapViewObjects() { }
     protected abstract string GetRaceName();
-    protected virtual void OnKartStarting() { }
+    protected virtual void OnPreKartStarting() { }
+    protected virtual void OnPostKartStarting() { }
     protected abstract void OnRaceFinished();
     protected abstract void OnStartLeaderBoard(Leaderboard lb);
     protected abstract void OnLeaderboardUpdate(Leaderboard lb);
@@ -461,7 +477,7 @@ public abstract class Race : GameMode
         }
     }
 
-    protected abstract string[] GetNextMenuOptions();
+    public abstract string[] GetNextMenuOptions();
 
     public override void EndGamemode()
     {
@@ -754,6 +770,9 @@ public abstract class Race : GameMode
                 break;
             case "Replay":
                 //Launch Replay GameMode
+                Replay replay = gameObject.AddComponent<Replay>();
+                replay.Setup(this, preRaceState);
+                StartCoroutine(ChangeState(RaceState.Blank));
                 break;
             case "Quit":
                 StartCoroutine(ChangeState(RaceState.Blank));

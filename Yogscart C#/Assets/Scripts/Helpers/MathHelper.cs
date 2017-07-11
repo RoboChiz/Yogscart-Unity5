@@ -5,6 +5,9 @@ public class MathHelper
 {
     public static int NumClamp(int value, int min, int max)
     {
+        if (min == max)
+            return value;
+
         int diff = (max - min);
 
         while (value >= max)

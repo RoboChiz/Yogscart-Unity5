@@ -318,6 +318,19 @@ public class GUIHelper
         return nReturn;
     }
 
+    public static Rect RectScaledbyOtherRect(Rect original, Rect originalParent, float scale)
+    {
+        float xRelative      = (original.x - originalParent.x) * scale, 
+              yRelative      = (original.y - originalParent.y) * scale,
+              widthRelative  = original.width                  * scale,
+              heightRelative = original.height                 * scale;
+
+
+        Rect parentNow = CentreRect(originalParent, scale);
+
+        return new Rect(parentNow.x + xRelative, parentNow.y + yRelative, widthRelative, heightRelative);
+    }
+
 }
 
 [System.Serializable]
@@ -338,7 +351,7 @@ public class DropDown
     {
         float diff = (value * optionHeight) - scrollPosition.y;
         if (Mathf.Abs(diff) > 1f)
-            scrollPosition.y += Mathf.Sign(diff) * Time.deltaTime * 200f;
+            scrollPosition.y += diff * Time.deltaTime * 2f;
     }
 
     public int Draw(Rect rect,Vector2 adjuster, int toggleSize, int value, string[] options)

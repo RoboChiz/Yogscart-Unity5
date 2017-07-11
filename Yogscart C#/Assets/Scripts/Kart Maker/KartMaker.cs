@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-public enum KartType { Display, Local, Online, Spectator, Replay};
+public enum KartType { Display, Local, Online, Spectator, Replay, Ghost};
 
 public class KartMaker : MonoBehaviour
 {
@@ -168,30 +168,28 @@ public class KartMaker : MonoBehaviour
                 count++;
             }
 
-            if (type != KartType.Replay)
-            {
-                //Add Death Catch
-                kb.AddComponent<DeathCatch>();
-                kb.GetComponent<DeathCatch>().deathParticles = km.particleSystems["Death Particles"];
+            //Add Death Catch
+            kb.AddComponent<DeathCatch>();
+            kb.GetComponent<DeathCatch>().deathParticles = km.particleSystems["Death Particles"];
 
+            if(type != KartType.Ghost)
                 kb.AddComponent<CowTipping>();
 
-                //Add Other Kart Scripts
-                kb.AddComponent<PositionFinding>();
-                //Sort out Character Noises
-            }
+            //Add Other Kart Scripts
+            kb.AddComponent<PositionFinding>();
+            //Sort out Character Noises
 
             //Add Animator Script
             kb.AddComponent<kartAnimator>();
             kb.GetComponent<kartAnimator>().ani = characterMesh.GetComponent<Animator>();
 
-            if (type != KartType.Spectator && type != KartType.Replay)
+            if (type != KartType.Spectator && type != KartType.Replay && type != KartType.Ghost)
             {
                 kb.AddComponent<KartInput>();
                 //kb.AddComponent<kartInfo>();
             }
 
-            if (type != KartType.Replay)
+            if (type != KartType.Replay && type != KartType.Ghost)
             {
                 kb.AddComponent<KartItem>();
                 kb.GetComponent<KartItem>().itemDistance = kartSkel.ItemDrop;
@@ -200,7 +198,7 @@ public class KartMaker : MonoBehaviour
             kb.AddComponent<KartCollider>();
 
 
-            if (type == KartType.Replay)
+            if (type == KartType.Replay || type == KartType.Ghost)
             {
                 kartBody.gameObject.AddComponent<KartReplayer>();
             }
@@ -212,7 +210,7 @@ public class KartMaker : MonoBehaviour
         kartBody.position = pos;
         kartBody.rotation = rot;
 
-        if (type == KartType.Replay)
+        if (type == KartType.Ghost)
             SetLayer(kartBody.gameObject, 11);// Set the Kart's Layer to "Ghost Kart" for Kart Collisions 
         else
             SetLayer(kartBody.gameObject, 8);// Set the Kart's Layer to "Kart" for Kart Collisions 

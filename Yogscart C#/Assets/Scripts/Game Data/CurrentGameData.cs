@@ -4,7 +4,8 @@ using System.Collections;
 public class CurrentGameData : MonoBehaviour {
 
     public string version;
-    public int overallLapisCount;
+    public int overallLapisCount = 0;
+    public string playerName = "";
 
     //Used for current Game Mode
     static public LoadOut[] currentChoices;
@@ -54,6 +55,8 @@ public class CurrentGameData : MonoBehaviour {
         blackTexture = new Texture2D(1, 1);
         blackTexture.SetPixel(0, 0, Color.black);
         blackTexture.Apply();
+
+        playerName = "";
 
         LoadGame();
 
@@ -137,6 +140,14 @@ public class CurrentGameData : MonoBehaviour {
                 }
             }
         }
+        gameData += ";";
+
+        //7 - Lapis
+        gameData += overallLapisCount;
+        gameData += ";";
+
+        //8 - Player Name
+        gameData += playerName;
 
         PlayerPrefs.SetString("YogscartData", gameData);
     }
@@ -226,6 +237,10 @@ public class CurrentGameData : MonoBehaviour {
                 }
             }
             Debug.Log("Track Times is compatible!");
+            //7 - Lapis
+            overallLapisCount = int.Parse(splitData[7]);
+            //8 - Player Name
+            playerName = splitData[8];
         }
         catch
         {
@@ -238,8 +253,32 @@ public class CurrentGameData : MonoBehaviour {
     public void ResetData()
     {
         Debug.Log("Data not compatible!");
+
+        //Data Layout
+        //0 - Version Number
+        //1 - Unlocked Characters
+        //2 - Unlocked Hats
+        //3 - Unlocked Karts
+        //4 - Unlocked Wheels
+        //5 - Tournament Ranks
+        for (int i = 0; i < tournaments.Length; i++)
+        {
+            tournaments[i].lastRank = new Rank[4];
+        }
+        //6 - Track Times
+        for (int i = 0; i < tournaments.Length; i++)
+        {
+            for (int j = 0; j < tournaments[i].tracks.Length; j++)
+            {
+                tournaments[i].tracks[j].bestTime = 0f;
+            }
+        }
+        //7 - Lapis
+        overallLapisCount = 0;
+
         SaveGame();
     }
+
 }
 
 //Other Classes

@@ -8,8 +8,8 @@ public class IntroScript : MonoBehaviour {
 
     public GUISkin skin;
 
-        // Use this for initialization
-        void Start ()
+    // Use this for initialization
+    void Start ()
     {
         StartCoroutine("PlayIntro");
 	}
@@ -26,7 +26,7 @@ public class IntroScript : MonoBehaviour {
     IEnumerator PlayIntro()
     {
         CurrentGameData.blackOut = true;
-        showText = true;
+        showText = true;     
 
         yield return new WaitForSeconds(1f);
 
@@ -41,9 +41,20 @@ public class IntroScript : MonoBehaviour {
     IEnumerator End()
     {
         ending = true;
-        CurrentGameData.blackOut = true;
 
+        CurrentGameData.blackOut = true;
         yield return new WaitForSeconds(0.5f);
+
+        while (FindObjectOfType<CurrentGameData>().playerName == "")
+        {
+            ChangeName cn = FindObjectOfType<ChangeName>();
+            cn.Show();
+
+            yield return null;
+
+            while (cn.showing)
+                yield return null;
+        }
 
         SceneManager.LoadSceneAsync("Main_Menu");
     }

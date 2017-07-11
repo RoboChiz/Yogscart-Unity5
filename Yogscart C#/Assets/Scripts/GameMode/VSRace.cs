@@ -40,6 +40,10 @@ public class VSRace : TournamentRace
             StartCoroutine(KillLevelSelect());
             StartRace();
         }
+        else
+        {
+            raceCount = FindObjectOfType<LevelSelect>().trackNum;
+        }
     }
 
     public IEnumerator KillLevelSelect()
