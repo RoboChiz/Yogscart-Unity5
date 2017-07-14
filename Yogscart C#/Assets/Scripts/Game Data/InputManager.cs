@@ -34,6 +34,8 @@ public class InputManager : MonoBehaviour
     static public bool allowedToChange = false;
 #endif
 
+    static public bool keyboardAllowed = true;
+
     static public List<InputController> controllers = new List<InputController>();
     static private bool mouseLock = false;
 
@@ -153,17 +155,20 @@ public class InputManager : MonoBehaviour
         if (controllers == null)
             controllers = new List<InputController>();
 
+        if (controllers.Count > 0)
+        {
+            foreach (InputController c in controllers)
+            {
+                if (c.buttonLock != "" && c.GetRawInput(c.buttonLock) == 0 && c.framesTillUnlock <= 0)
+                    c.buttonLock = "";
+
+                if(c.framesTillUnlock > 0)
+                    c.framesTillUnlock--;
+            }
+        }
+
         if (!lockEverything)
         {
-            if (controllers.Count > 0)
-            {
-                foreach (InputController c in controllers)
-                {
-                    if (c.buttonLock != "" && c.GetRawInput(c.buttonLock) == 0)
-                        c.buttonLock = "";
-                }
-            }
-
             //Reset Mouse Lock
             if (Input.GetMouseButtonUp(0))
                 mouseLock = false;
@@ -173,25 +178,25 @@ public class InputManager : MonoBehaviour
             {
                 if (controllers.Count < 4)
                 {
-                    if (Input.GetKey("return") || (Input.GetMouseButton(0) && controllers.Count == 0))
+                    if ((Input.GetKey("return") || (Input.GetMouseButton(0) && controllers.Count == 0)) && keyboardAllowed)
                         AddController("Key_");
 
-                    if (Input.GetAxis("Start_1") != 0)
+                    if (Input.GetAxis("Start_1") != 0 || Input.GetAxis("A_1") != 0)
                         AddController("_1");
 
-                    if (Input.GetAxis("Start_2") != 0)
+                    if (Input.GetAxis("Start_2") != 0 || Input.GetAxis("A_2") != 0)
                         AddController("_2");
 
-                    if (Input.GetAxis("Start_3") != 0)
+                    if (Input.GetAxis("Start_3") != 0 || Input.GetAxis("A_3") != 0)
                         AddController("_3");
 
-                    if (Input.GetAxis("Start_4") != 0)
+                    if (Input.GetAxis("Start_4") != 0 || Input.GetAxis("A_4") != 0)
                         AddController("_4");
                 }
 
                 if (controllers.Count >= 1)
                 {
-                    if (Input.GetKey("backspace"))
+                    if (Input.GetKey("backspace") && keyboardAllowed)
                         RemoveController("Key_");
 
                     if (Input.GetAxis("Back_1") != 0)
@@ -334,6 +339,9 @@ public class InputController
     public InputLayout controlLayout;
 
     public string buttonLock;
+    public int framesTillUnlock = 0;
+
+    const int frameLockTo = 3;
 
     public InputController(string inputName)
     {
@@ -345,6 +353,7 @@ public class InputController
             controlLayout = InputManager.AllConfigs[1];
 
         buttonLock = "Submit";
+        framesTillUnlock = frameLockTo;
     }
 
     public float GetInput(string axis)
@@ -476,6 +485,7 @@ public class InputController
         if (buttonLock == "" && returnValue != 0)
         {
             buttonLock = axis;
+            framesTillUnlock = frameLockTo;
             return (int)Mathf.Sign(returnValue);
         }
         else
@@ -492,6 +502,7 @@ public class InputController
         if (buttonLock == "" && returnValue != 0)
         {
             buttonLock = axis;
+            framesTillUnlock = frameLockTo;
             return (int)Mathf.Sign(returnValue);
         }
         else

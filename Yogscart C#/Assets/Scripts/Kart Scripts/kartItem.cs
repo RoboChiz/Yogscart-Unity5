@@ -66,111 +66,123 @@ public class KartItem : MonoBehaviour
     //Makes the local version of the kart use an item, the effect should appear the same on all clients
     public void UseItem()
     {
-        if (heldPowerUp != -1)
+        if (Time.timeScale != 0f)
         {
-            //Debug.Log("Used Item");
-            //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
-            if (!onlineGame || gd.powerUps[heldPowerUp].onlineModel == null)
+            if (heldPowerUp != -1)
             {
-                myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
-                myItem.parent = transform;
+                //Debug.Log("Used Item");
+                //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
+                if (!onlineGame || gd.powerUps[heldPowerUp].onlineModel == null)
+                {
+                    myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
+                    myItem.parent = transform;
 
-                if (myItem.GetComponent<Projectile>() != null)
-                    myItem.GetComponent<Projectile>().Setup(inputDirection,false);
+                    if (myItem.GetComponent<Projectile>() != null)
+                        myItem.GetComponent<Projectile>().Setup(inputDirection, false);
 
-                if (myItem.GetComponent<DamagingItem>() != null)
-                    myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
+                    if (myItem.GetComponent<DamagingItem>() != null)
+                        myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
 
-                itemSpawned = true;
-            }       
+                    itemSpawned = true;
+                }
 
-            EndItemUse();
+                EndItemUse();
 
-            //Send Message for Recorder
-            gameObject.BroadcastMessage("UsedItem", SendMessageOptions.DontRequireReceiver);
+                //Send Message for Recorder
+                gameObject.BroadcastMessage("UsedItem", SendMessageOptions.DontRequireReceiver);
+            }
         }
     }
 
     public void UseShield()
     {
-        if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].useableShield)
+        if (Time.timeScale != 0f)
         {
-            //Debug.Log("Used Shield");
-            sheilding = true;
-
-            //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
-            if (!onlineGame || gd.powerUps[heldPowerUp].onlineModel == null)
+            if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].useableShield)
             {
-                myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
-                myItem.parent = transform;
+                //Debug.Log("Used Shield");
+                sheilding = true;
 
-                if(myItem.GetComponent<Rigidbody>() != null)
-                    myItem.GetComponent<Rigidbody>().isKinematic = true;
+                //If the current game is not online or if there is no online model for the powerup spawn it normally, otherwise the server will do it
+                if (!onlineGame || gd.powerUps[heldPowerUp].onlineModel == null)
+                {
+                    myItem = (Transform)Instantiate(gd.powerUps[heldPowerUp].model, transform.position - (transform.forward * itemDistance), transform.rotation);
+                    myItem.parent = transform;
 
-                if (myItem.GetComponent<Projectile>() != null)
-                    myItem.GetComponent<Projectile>().Setup(1, true);
+                    if (myItem.GetComponent<Rigidbody>() != null)
+                        myItem.GetComponent<Rigidbody>().isKinematic = true;
 
-                if (myItem.GetComponent<DamagingItem>() != null)
-                    myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
+                    if (myItem.GetComponent<Projectile>() != null)
+                        myItem.GetComponent<Projectile>().Setup(1, true);
 
-                itemSpawned = true;
+                    if (myItem.GetComponent<DamagingItem>() != null)
+                        myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
+
+                    itemSpawned = true;
+                }
+
+                //Send Message for Recorder
+                gameObject.BroadcastMessage("UsedShield", SendMessageOptions.DontRequireReceiver);
             }
-
-            //Send Message for Recorder
-            gameObject.BroadcastMessage("UsedShield", SendMessageOptions.DontRequireReceiver);
-        }      
+        }   
     }
 
     public void DropShield(float dir)
     {
-        //Debug.Log("Dropped Shield");
-        if (myItem != null)
+        if (Time.timeScale != 0f)
         {
-            sheilding = false;
-
-            //Fire the Item if it's a Projectile
-            if (myItem.GetComponent<Projectile>() != null)
+            //Debug.Log("Dropped Shield");
+            if (myItem != null)
             {
-                //Move Item
-                if (inputDirection >= 0)
+                sheilding = false;
+
+                //Fire the Item if it's a Projectile
+                if (myItem.GetComponent<Projectile>() != null)
                 {
-                    myItem.position = transform.position + (transform.forward * itemDistance * 2f) + (transform.up * 0.5f);
-                    inputDirection = 1;
+                    //Move Item
+                    if (inputDirection >= 0)
+                    {
+                        myItem.position = transform.position + (transform.forward * itemDistance * 2f) + (transform.up * 0.5f);
+                        inputDirection = 1;
+                    }
+
+                    //Start Projectile Behaviour
+                    myItem.GetComponent<Projectile>().Setup(inputDirection, false);
                 }
 
-                //Start Projectile Behaviour
-                myItem.GetComponent<Projectile>().Setup(inputDirection, false);
+                myItem.parent = null;
+
+                if (myItem.GetComponent<Rigidbody>() != null)
+                    myItem.GetComponent<Rigidbody>().isKinematic = false;
+
+                myItem = null;
+
+                EndItemUse();
+
+                //Send Message for Recorder
+                gameObject.BroadcastMessage("DroppedShield", dir, SendMessageOptions.DontRequireReceiver);
             }
-
-            myItem.parent = null;
-
-            if(myItem.GetComponent<Rigidbody>() != null)
-                myItem.GetComponent<Rigidbody>().isKinematic = false;
-
-            myItem = null;        
-
-            EndItemUse();
-
-            //Send Message for Recorder
-            gameObject.BroadcastMessage("DroppedShield", dir, SendMessageOptions.DontRequireReceiver);
         }
     }
 
     private void EndItemUse()
     {
-        itemSpawned = false;
+        if (Time.timeScale != 0f)
+        {
+            itemSpawned = false;
 
-        if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].multipleUses)
-        {
-            int tempPowerUp = heldPowerUp - 1;
-            RecieveItem(tempPowerUp);
-        }
-        else
-        {
-            //Nothing left to do turn off items
-            heldPowerUp = -1;
-            renderItem = null;
-            iteming = false;          
+            if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].multipleUses)
+            {
+                int tempPowerUp = heldPowerUp - 1;
+                RecieveItem(tempPowerUp);
+            }
+            else
+            {
+                //Nothing left to do turn off items
+                heldPowerUp = -1;
+                renderItem = null;
+                iteming = false;
+            }
         }
 
     }
@@ -295,81 +307,84 @@ public class KartItem : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        if (itemOwner != ItemOwner.Ai && GetComponent<AI>())//If AI detected must be AI
-            itemOwner = ItemOwner.Ai;
-
-        if (kaI != null && InputManager.controllers.Count > kaI.myController)
+        if (Time.timeScale != 0f)
         {
-            input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;
+            if (itemOwner != ItemOwner.Ai && GetComponent<AI>())//If AI detected must be AI
+                itemOwner = ItemOwner.Ai;
 
-            if (InputManager.controllers[kaI.myController].GetInput("RearView") != 0)
+            if (kaI != null && InputManager.controllers.Count > kaI.myController)
             {
-                inputDirection = -1;
-            }
-            else
-            {
-                inputDirection = 1;
+                input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;
 
-                if (InputManager.controllers[kaI.myController].controllerName != "Key_")
+                if (InputManager.controllers[kaI.myController].GetInput("RearView") != 0)
                 {
-                    inputDirection = -InputManager.controllers[kaI.myController].GetInput("MenuVertical");
-                }
-            }
-
-        }
-
-        if (!input)
-            inputLock = false;
-
-        if (itemOwner == ItemOwner.Mine)
-        {
-            if (heldPowerUp != -1)
-            {
-                if (!gd.powerUps[heldPowerUp].useableShield)
-                {
-                    bool itemKey = input && !inputLock && !locked;
-                    if (itemKey)
-                    {
-                        UseItem();
-                        //If Online tell Server about the item use
-                        if (onlineGame && itemOwner == ItemOwner.Mine)
-                            FindObjectOfType<UnetClient>().client.Send(UnetMessages.useItemMsg, new EmptyMessage());
-
-                        inputLock = true;
-                    }
+                    inputDirection = -1;
                 }
                 else
                 {
-                    if (input)
+                    inputDirection = 1;
+
+                    if (InputManager.controllers[kaI.myController].controllerName != "Key_")
                     {
-                        if (!sheilding)
+                        inputDirection = -InputManager.controllers[kaI.myController].GetInput("MenuVertical");
+                    }
+                }
+
+            }
+
+            if (!input)
+                inputLock = false;
+
+            if (itemOwner == ItemOwner.Mine)
+            {
+                if (heldPowerUp != -1)
+                {
+                    if (!gd.powerUps[heldPowerUp].useableShield)
+                    {
+                        bool itemKey = input && !inputLock && !locked;
+                        if (itemKey)
                         {
-                            UseShield();
-                            //If Online tell Server about the shield use
+                            UseItem();
+                            //If Online tell Server about the item use
                             if (onlineGame && itemOwner == ItemOwner.Mine)
-                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.useShieldMsg, new EmptyMessage());                           
+                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.useItemMsg, new EmptyMessage());
+
+                            inputLock = true;
                         }
                     }
                     else
                     {
-                        if (sheilding)
+                        if (input)
                         {
-                            DropShield(inputDirection);
-                            //If Online tell Server about the shield drop
-                            if (onlineGame && itemOwner == ItemOwner.Mine)
-                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new floatMessage(inputDirection));     
+                            if (!sheilding)
+                            {
+                                UseShield();
+                                //If Online tell Server about the shield use
+                                if (onlineGame && itemOwner == ItemOwner.Mine)
+                                    FindObjectOfType<UnetClient>().client.Send(UnetMessages.useShieldMsg, new EmptyMessage());
+                            }
+                        }
+                        else
+                        {
+                            if (sheilding)
+                            {
+                                DropShield(inputDirection);
+                                //If Online tell Server about the shield drop
+                                if (onlineGame && itemOwner == ItemOwner.Mine)
+                                    FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new floatMessage(inputDirection));
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if (sheilding && myItem == null && itemSpawned)
-        {
-            sheilding = false;
-            EndItemUse();
+            if (sheilding && myItem == null && itemSpawned)
+            {
+                sheilding = false;
+                EndItemUse();
+            }
         }
     }
 

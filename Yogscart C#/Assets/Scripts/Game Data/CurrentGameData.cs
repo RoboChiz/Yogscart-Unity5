@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class CurrentGameData : MonoBehaviour {
 
@@ -232,6 +235,7 @@ public class CurrentGameData : MonoBehaviour {
                     }
 
                     tournaments[i].tracks[j].bestTime = outFloat;
+                    tournaments[i].tracks[j].ghosts = 0;
 
                     timeCount++;
                 }
@@ -247,7 +251,11 @@ public class CurrentGameData : MonoBehaviour {
             ResetData();
         }
 
-        Debug.Log("All data loaded!"); 
+        Debug.Log("All data loaded!");
+
+        CountGhosts();
+
+        Debug.Log("All ghosts loaded!");
     }
 
     public void ResetData()
@@ -277,6 +285,48 @@ public class CurrentGameData : MonoBehaviour {
         overallLapisCount = 0;
 
         SaveGame();
+    }
+
+    public void CountGhosts()
+    {
+        for (int i = 0; i < tournaments.Length; i++)
+            for (int j = 0; j < tournaments[i].tracks.Length; j++)
+                tournaments[i].tracks[j].ghosts = 0;
+
+        try
+        {
+            if (!Directory.Exists(Application.persistentDataPath + "/Ghost Data/"))
+                Directory.CreateDirectory(Application.persistentDataPath + "/Ghost Data/");
+
+            //Check every file in Ghost Data folder
+            var info = new DirectoryInfo(Application.persistentDataPath + "/Ghost Data/");
+            var fileInfo = info.GetFiles();
+            foreach (FileInfo file in fileInfo)
+            {
+                FileStream fileStream = null;
+                try
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    fileStream = file.Open(FileMode.Open);
+
+                    GhostData gd = (GhostData)bf.Deserialize(fileStream);
+
+                    if(CompatibleVersion(gd.version))
+                        tournaments[gd.cup].tracks[gd.track].ghosts++;
+                }
+                finally
+                {
+                    if (fileStream != null)
+                        fileStream.Close();
+                }
+            }
+        }
+        catch { }
+    }
+
+    public bool CompatibleVersion(string versionName)
+    {
+        return versionName == version;
     }
 
 }
@@ -362,6 +412,8 @@ public class Track
 
     public float bestTime;
     public string sceneID;
+
+    public int ghosts;
 }
 
 public enum Rank { NoRank, Bronze, Silver, Gold, Perfect};

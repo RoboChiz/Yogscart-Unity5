@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 //GUI Helper V1.0
 //Created by Robert (Robo_Chiz)
@@ -474,4 +475,297 @@ public class Toggle
         return toggled;
     }
 
+}
+
+public class GUIKeyboard
+{
+    public Rect drawRect;
+    private Rect lastRect;
+    public float guiAlpha = 1f;
+
+    private Vector2 currentSelection;
+    private bool upperCase, capsLockUpperCase;
+
+    private float buttonSize = 0f;
+
+    readonly static int[] lettersPerRow = new int[] {11, 10, 9, 9, 2 };
+    const int maxLetters = 11;
+
+    private float[] xOffsets;
+    private float yOffset;
+    private float xBeforeSpace = -1;
+
+    const string lettersInOrder = "1234567890<qwertyuiopasdfghjkl^zxcvbnm_ /";
+    const float iconSpacing = 10f;
+
+    public bool completed, buttonlock;
+
+    public GUIKeyboard(Rect _drawRect)
+    {
+        drawRect = _drawRect;
+        currentSelection = Vector2.zero;
+
+        ResetValues();
+    }
+
+    public void ResetValues()
+    {
+        buttonSize = Mathf.Min((drawRect.width - (iconSpacing * maxLetters)) / maxLetters, (drawRect.height - (iconSpacing * lettersPerRow.Length)) / lettersPerRow.Length);
+
+        xOffsets = new float[lettersPerRow.Length];
+
+        for (int i = 0; i < lettersPerRow.Length; i++)
+        {
+            xOffsets[i] = (drawRect.width / 2f) - ((iconSpacing + ((buttonSize + iconSpacing) * lettersPerRow[i])) / 2f);
+
+            if (i == 0)
+                xOffsets[0] -= buttonSize/2f;
+        }
+
+        yOffset = (drawRect.height - (iconSpacing + ((buttonSize + iconSpacing) * lettersPerRow.Length)))/2f;
+    }
+
+    public string Draw(string originalString, int maxLetters, float scale, bool useController, bool submit, bool cancel, float verticalInput, float horizontalInput)
+    {
+        bool showSelected = !Cursor.visible && useController;
+
+        //Resize constants if needed
+        if(lastRect.x != drawRect.x || lastRect.y != drawRect.y || lastRect.width != drawRect.width || lastRect.height != drawRect.height)
+        {
+            lastRect = new Rect(drawRect);
+            ResetValues();
+        }
+
+        //Get Styles
+        GUIStyle normalLabel = new GUIStyle(GUI.skin.label), selectedLabel = new GUIStyle(GUI.skin.label);
+        selectedLabel.normal.textColor = Color.yellow;
+
+        normalLabel.fontSize = (int)(normalLabel.fontSize * scale * 0.8f);
+        selectedLabel.fontSize = normalLabel.fontSize;
+
+        //Draw Letters
+        int x = 0, y = 0, currentVal = -1;
+        for(int i = 0; i < lettersInOrder.Length; i++)
+        {
+            Rect buttonRect = new Rect(xOffsets[y] + drawRect.x + iconSpacing + (x * (buttonSize + iconSpacing)), yOffset + drawRect.y + iconSpacing + (y * (buttonSize + iconSpacing)), buttonSize, buttonSize);
+            
+            if(i == lettersInOrder.Length - 2)
+            {
+                buttonRect.width = buttonSize * 6f;
+                buttonRect.x -= buttonSize * 3f;
+            }
+
+            if (i == lettersInOrder.Length - 1)
+            {
+                buttonRect.x += buttonSize * 2f;
+                buttonRect.width = buttonSize * 2f;
+            }
+
+
+            if (i == 10)
+            {
+                buttonRect.width = buttonSize * 2f;
+            }
+
+            Rect actualButton = GUIHelper.RectScaledbyOtherRect(buttonRect, drawRect, 1f);
+            GUIShape.RoundedRectangle(actualButton, 10, new Color(1f, 1f, 1f, 0.2f));
+
+            string letterString = lettersInOrder[i].ToString();
+
+            if (letterString == " ")
+                letterString = "Space";
+            else if (letterString == "<")
+                letterString = "Delete";
+            else if (letterString == "/")
+                letterString = "Enter";
+            else if (letterString != "^")
+                letterString = upperCase ? letterString.ToUpper() : letterString.ToLower();
+
+            if (!completed)
+            {
+                if (Cursor.visible && actualButton.Contains(GUIHelper.GetMousePosition()))
+                {
+                    showSelected = true;
+                    currentSelection = new Vector2(x, y);
+                }
+            }
+
+            GUI.Label(actualButton, letterString, (showSelected && x == currentSelection.x && y == currentSelection.y) ? selectedLabel : normalLabel);
+
+            if (showSelected && x == currentSelection.x && y == currentSelection.y)
+                currentVal = i;
+
+            if(!completed)
+            {
+                if (Cursor.visible && GUI.Button(actualButton, ""))
+                {
+                    currentSelection = new Vector2(x, y);
+                    currentVal = i;
+                    DoInput(currentVal, ref originalString);
+                }
+            }
+
+            //Increment position 
+            x++;
+
+            if(x >= lettersPerRow[y])
+            {
+                x = 0;
+                y++;
+            }
+        }
+
+        //Do Inputs
+        if (!completed && guiAlpha == 1f)
+        {
+            if (useController)
+            {
+                //Controller Controls
+                if (submit && currentVal >= 0)
+                {
+                    DoInput(currentVal, ref originalString);
+                }
+
+                if (cancel && originalString.Length >= 1)
+                {
+                    originalString = originalString.Remove(originalString.Length - 1);
+                }
+
+                if (horizontalInput != 0)
+                    currentSelection.x = MathHelper.NumClamp(currentSelection.x + horizontalInput, 0, lettersPerRow[(int)currentSelection.y]);
+
+                if (verticalInput != 0)
+                {
+                    currentSelection.y = MathHelper.NumClamp(currentSelection.y + verticalInput, 0, lettersPerRow.Length);
+
+                    //If hitting space bar, remember where we were
+                    if (currentSelection.y == lettersPerRow.Length - 1)
+                    {
+                        xBeforeSpace = currentSelection.x;
+                    }
+                    else if (xBeforeSpace != -1)
+                    {
+                        currentSelection.x = xBeforeSpace;
+                        xBeforeSpace = -1;
+                    }
+
+                    //Make sure impossible keys aren't selected
+                    while (currentSelection.x >= lettersPerRow[(int)currentSelection.y])
+                        currentSelection.x--;
+                }
+            }
+            else
+            {
+                bool inputDetected = false;
+
+                //Keyboard Controls
+                foreach (char character in lettersInOrder)
+                {
+                    if (character == '^' || character == '<' || character == '/' || character == ' ' || character == '_')
+                    {
+                        //Duff, Don't do anything
+                    }
+                    else if (Input.GetKey(character.ToString()))
+                    {
+                        inputDetected = true;
+                        if (!buttonlock)
+                        {
+                            originalString += upperCase ? character.ToString().ToUpper() : character.ToString().ToLower();
+                            buttonlock = true;
+                        }
+                    }
+                }
+
+                if (Input.GetKey(KeyCode.Backspace) && originalString.Length >= 1)
+                {
+                    inputDetected = true;
+                    if (!buttonlock)
+                    {
+                        originalString = originalString.Remove(originalString.Length - 1);
+                        buttonlock = true;
+                    }
+                }
+
+                if (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.Escape))
+                {
+                    inputDetected = true;
+                    if (!buttonlock)
+                    {
+                        if(originalString != "")
+                            completed = true;
+                        buttonlock = true;
+                    }
+                }
+
+                if (Input.GetKey(KeyCode.Space))
+                {
+                    inputDetected = true;
+                    if (!buttonlock)
+                    {
+                        originalString += " ";
+                        buttonlock = true;
+                    }
+                }
+
+                if (Input.GetKey(KeyCode.Minus))
+                {
+                    inputDetected = true;
+                    if (!buttonlock)
+                    {
+                        originalString += "_";
+                        buttonlock = true;
+                    }
+                }
+
+                if (Input.GetKey(KeyCode.CapsLock))
+                {
+                    inputDetected = true;
+                    if (!buttonlock)
+                    {
+                        capsLockUpperCase = !capsLockUpperCase;
+                        buttonlock = true;
+                    }
+                }
+
+                if (!inputDetected && buttonlock)
+                    buttonlock = false;
+
+                upperCase = capsLockUpperCase;
+
+
+                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                    upperCase = !upperCase;
+
+
+            }
+        }
+
+        if (originalString.Length > maxLetters)
+            originalString = originalString.Remove(maxLetters);
+
+        return originalString;
+    }
+
+    private void DoInput(int currentVal, ref string originalString)
+    {
+        if (lettersInOrder[currentVal] == '^')
+        {
+            upperCase = !upperCase;
+        }
+        else if (lettersInOrder[currentVal] == '<')
+        {
+            if (originalString.Length >= 1)
+                originalString = originalString.Remove(originalString.Length - 1);
+        }
+        else if (lettersInOrder[currentVal] == '/' && originalString != "")
+        {
+            //Complete Keyboard
+            completed = true;
+        }
+        else
+        {
+            string letterString = lettersInOrder[currentVal].ToString();
+            originalString += upperCase ? letterString.ToUpper() : letterString.ToLower();
+        }
+    }
 }

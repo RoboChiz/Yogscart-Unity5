@@ -8,7 +8,12 @@ public class InfoPopUp : GamePopup
 
     public override string text { get { return info; } }
     public override bool showYesNo { get { return false; } }
-    public override Vector2 size { get { return new Vector2(800,400); } }
+
+    public override Rect boxRect { get { return new Rect(560, 340, 800, 400); } }
+    public override Rect labelRect { get { return new Rect(570, 350, 780, 330); } }
+
+    public override Rect yesRect { get { return new Rect(570, 670, 380, 60); } }
+    public override Rect noRect { get { return new Rect(960, 670, 380, 60); } }
 
     public void Setup(string _info)
     {

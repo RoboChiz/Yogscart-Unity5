@@ -2,6 +2,23 @@
 
 ## Changelog : Started 04/08/2016
 
+# 14/07/2017
+* Added Ghost Counter to Level Select
+* Fixed mouse hovering over options when there is a popup
+* Made 'A' add controller to game as well as 'Start'
+* Fixed popup rendering
+* Added explanation text to nickname window
+* Added keyboard to nickname window
+* Made Ghost faded in game (And turned it off cause it adds 15 minutes to build time)
+* Adjusted how nickname window uses input manager
+* Made default drift looser
+* Added wider range when drifting
+* Added mouse support to drifting
+* Made sure items can't be used when game is paused
+* Fixed Pause Menu issues
+* Fixed Reset Data button
+* Added version compatibility to Ghost Data
+
 # 11/07/2017
 * Added ability to change number of races in VS Race
 * Added Ghost Selection for Time Trial

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class CancelChanges : GamePopup
 {
-
     public override string text { get { return "Would you like to confirm changes?"; } }
 
     protected override void DoInput()

@@ -31,6 +31,7 @@ public class TimeTrialMenu : MonoBehaviour
     private float[] timeTrialScales;
 
     private Vector2 sliderPosition;
+    private float deleteButtonScale;
 
     public void Show()
     {
@@ -50,10 +51,10 @@ public class TimeTrialMenu : MonoBehaviour
         ReadInDevGhosts();
 
         //Get Ghosts for this track
-        foreach (GhostData gd in validTimeTrials.ToArray())
+        foreach (GhostData ghostData in validTimeTrials.ToArray())
         {
-            if (gd.cup != timeTrial.currentCup || gd.track != timeTrial.currentTrack)
-                validTimeTrials.Remove(gd);
+            if (ghostData.cup != timeTrial.currentCup || ghostData.track != timeTrial.currentTrack || !gd.CompatibleVersion(ghostData.version))
+                validTimeTrials.Remove(ghostData);
         }
 
         //Get Dev Ghosts
@@ -108,6 +109,7 @@ public class TimeTrialMenu : MonoBehaviour
                     fileStream = file.Open(FileMode.Open);
 
                     validTimeTrials.Add((GhostData)bf.Deserialize(fileStream));
+                    validTimeTrials[validTimeTrials.Count - 1].fileLocation = file.FullName;
                 }
                 finally
                 {
@@ -196,6 +198,26 @@ public class TimeTrialMenu : MonoBehaviour
                     if (validTimeTrials.Count > 0)
                     {
                         RenderList(validTimeTrials);
+
+                        //Talk about deletion
+                        if(choosingGhost && menuState == TTMMenuState.ChoosingLocal)
+                        {
+                            GUI.DrawTexture(new Rect(1150, 510, 100, 100), 
+                                Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard) ? "Space" : "X")), ScaleMode.ScaleToFit);
+
+                            GUIHelper.LeftRectLabel(new Rect(1300, 510, 500, 100), deleteButtonScale, "Delete Record", deleteButtonScale == 1f ? Color.white : Color.yellow);
+
+                            Rect buttonRect = new Rect(1150, 510, 600, 100);
+                            if (GUI.Button(buttonRect, ""))
+                            {
+                                DeleteCurrentGhost();
+                            }
+
+                            if(buttonRect.Contains(GUIHelper.GetMousePosition()))
+                                deleteButtonScale = Mathf.Clamp(deleteButtonScale + (Time.deltaTime * 2f), 1f, 1.2f);
+                            else
+                                deleteButtonScale = Mathf.Clamp(deleteButtonScale - (Time.deltaTime * 2f), 1f, 1.2f);
+                        }
                     }
                     else
                     {
@@ -221,57 +243,60 @@ public class TimeTrialMenu : MonoBehaviour
 
     void RenderList(List<GhostData> data)
     {
-        if (timeTrialScales == null || timeTrialScales.Length != data.Count)
-            timeTrialScales = new float[data.Count];
-
-        Rect sliderArea = new Rect(100, 500, 1000, 420);
-        sliderPosition = GUIHelper.BeginScrollView(sliderArea, sliderPosition, new Rect(0, 0, 950, data.Count * 100));
-
-        for (int i = 0; i < data.Count; i++)
+        if (data != null && data.Count > 0)
         {
-            Color textColor = new Color(1f, 1f, 1f, guiAlpha);
+            if (timeTrialScales == null || timeTrialScales.Length != data.Count)
+                timeTrialScales = new float[data.Count];
 
-            if (choosingGhost && selectedTT == i)
+            Rect sliderArea = new Rect(100, 500, 1000, 420);
+            sliderPosition = GUIHelper.BeginScrollView(sliderArea, sliderPosition, new Rect(0, 0, 950, data.Count * 100));
+
+            for (int i = 0; i < data.Count; i++)
             {
-                textColor = Color.yellow;
-                textColor.a = guiAlpha;
+                Color textColor = new Color(1f, 1f, 1f, guiAlpha);
 
-                timeTrialScales[i] = Mathf.Clamp(timeTrialScales[i] + (Time.deltaTime * 3f), 1f, 1.2f);
-            }
-            else
-                timeTrialScales[i] = Mathf.Clamp(timeTrialScales[i] - (Time.deltaTime * 3f), 1f, 1.2f);
-
-            Rect labelRect = new Rect(10, 100 * i, 990, 90);
-            GUIHelper.LeftRectLabel(labelRect, timeTrialScales[i], data[i].playerName + " - " + TimeManager.ToString(data[i].time), textColor);
-
-            if (choosingGhost && Cursor.visible)
-            {
-                Rect actualRect = new Rect(labelRect.x + sliderArea.x, +labelRect.y + sliderArea.y - sliderPosition.y, labelRect.width, labelRect.height);
-                if (actualRect.Contains(GUIHelper.GetMousePosition()))
-                    selectedTT = i;
-
-                if (GUI.Button(labelRect, ""))
+                if (choosingGhost && selectedTT == i)
                 {
-                    selectedTT = i;
-                    DoSubmit();
+                    textColor = Color.yellow;
+                    textColor.a = guiAlpha;
+
+                    timeTrialScales[i] = Mathf.Clamp(timeTrialScales[i] + (Time.deltaTime * 3f), 1f, 1.2f);
                 }
+                else
+                    timeTrialScales[i] = Mathf.Clamp(timeTrialScales[i] - (Time.deltaTime * 3f), 1f, 1.2f);
 
+                Rect labelRect = new Rect(10, 100 * i, 990, 90);
+                GUIHelper.LeftRectLabel(labelRect, timeTrialScales[i], data[i].playerName + " - " + TimeManager.ToString(data[i].time), textColor);
+
+                if (choosingGhost && Cursor.visible)
+                {
+                    Rect actualRect = new Rect(labelRect.x + sliderArea.x, +labelRect.y + sliderArea.y - sliderPosition.y, labelRect.width, labelRect.height);
+                    if (actualRect.Contains(GUIHelper.GetMousePosition()))
+                        selectedTT = i;
+
+                    if (GUI.Button(labelRect, ""))
+                    {
+                        selectedTT = i;
+                        DoSubmit();
+                    }
+
+                }
             }
+
+            GUIHelper.EndScrollView();
+
+            //Draw Info about selected Data
+            GUIShape.RoundedRectangle(new Rect(1100, 100, 700, 300), 10, new Color(0.6f, 0.6f, 0.6f, guiAlpha * 0.5f));
+
+            GUI.DrawTexture(new Rect(1110, 110, 140, 140), gd.characters[data[selectedTT].character].icon);
+            GUI.DrawTexture(new Rect(1250, 110, 140, 140), gd.hats[data[selectedTT].hat].icon);
+
+            GUI.DrawTexture(new Rect(1110, 250, 140, 140), gd.karts[data[selectedTT].kart].icon);
+            GUI.DrawTexture(new Rect(1250, 250, 140, 140), gd.wheels[data[selectedTT].wheel].icon);
+
+            GUI.Label(new Rect(1400, 110, 490, 50), data[selectedTT].playerName);
+            GUI.Label(new Rect(1400, 170, 490, 50), TimeManager.ToString(data[selectedTT].time));
         }
-
-        GUIHelper.EndScrollView();
-
-        //Draw Info about selected Data
-        GUIShape.RoundedRectangle(new Rect(1100, 100, 700, 300), 10, new Color(0.6f, 0.6f, 0.6f, guiAlpha * 0.5f));
-
-        GUI.DrawTexture(new Rect(1110, 110, 140, 140), gd.characters[data[selectedTT].character].icon);
-        GUI.DrawTexture(new Rect(1250, 110, 140, 140), gd.hats[data[selectedTT].hat].icon);
-
-        GUI.DrawTexture(new Rect(1110, 250, 140, 140), gd.karts[data[selectedTT].kart].icon);
-        GUI.DrawTexture(new Rect(1250, 250, 140, 140), gd.wheels[data[selectedTT].wheel].icon);
-
-        GUI.Label(new Rect(1400, 110, 490, 50), data[selectedTT].playerName);
-        GUI.Label(new Rect(1400, 170, 490, 50), TimeManager.ToString(data[selectedTT].time));
     }
 
     void Update()
@@ -281,6 +306,7 @@ public class TimeTrialMenu : MonoBehaviour
             int vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
             bool submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
             bool cancelBool = (InputManager.controllers[0].GetMenuInput("Cancel") != 0);
+            bool ToggleBool = (InputManager.controllers[0].GetMenuInput("Toggle") != 0);
 
             if (vert != 0)
             {
@@ -310,6 +336,12 @@ public class TimeTrialMenu : MonoBehaviour
             if (cancelBool)
                 DoCancel();
 
+            if(ToggleBool)
+            {
+                //Delete the current Ghost
+                DeleteCurrentGhost();
+            }
+
             if (!choosingGhost && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
             {
                 sliderPosition.y += InputManager.controllers[0].GetRawInput("ViewScroll") * Time.deltaTime * 300f;
@@ -321,6 +353,9 @@ public class TimeTrialMenu : MonoBehaviour
                 if (Mathf.Abs(diff) > 1f)
                     sliderPosition.y += diff * Time.deltaTime * 3f;
             }
+
+            if (choosingGhost && menuState == TTMMenuState.ChoosingLocal && validTimeTrials.Count == 0)
+                choosingGhost = false;
         }
     }
 
@@ -367,5 +402,13 @@ public class TimeTrialMenu : MonoBehaviour
                 FindObjectOfType<TimeTrial>().FinishTimeTrialMenu();
             }
         }
+    }
+
+    void DeleteCurrentGhost()
+    {
+        GhostData kill = validTimeTrials[selectedTT];
+        File.Delete(kill.fileLocation);
+
+        validTimeTrials.Remove(kill);
     }
 }

@@ -16,6 +16,8 @@ public class PauseMenu : MonoBehaviour
     private int currentSelection = 0;
     private SoundManager sm;
 
+    private List<string> options;
+
     public void Awake()
     {
         optionsSize = new float[3] { 1, 1, 1 };
@@ -111,7 +113,7 @@ public class PauseMenu : MonoBehaviour
             Texture2D boardTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Backing");
             GUI.DrawTexture(new Rect(660, 100, 600, 800), boardTexture);
 
-            List<string> options = new List<string>() { "Resume", "Options", "Quit" };
+            options = new List<string>() { "Resume", "Options", "Quit" };
 
             Race race = FindObjectOfType<Race>();
             if (race != null && race is TimeTrial)
@@ -145,7 +147,19 @@ public class PauseMenu : MonoBehaviour
 
                 float yCentre = 500 - ((options.Count * 100) / 2f);
 
-                GUIHelper.CentreRectLabel(new Rect(670, yCentre + (i * 100), 580, 100), optionsSize[i], options[i], (currentSelection == i)?Color.yellow:Color.white);
+                Rect optionRect = new Rect(670, yCentre + (i * 100), 580, 100);
+                GUIHelper.CentreRectLabel(optionRect, optionsSize[i], options[i], (currentSelection == i)?Color.yellow:Color.white);
+
+                if(Cursor.visible && optionRect.Contains(GUIHelper.GetMousePosition()))
+                {
+                    currentSelection = i;
+                }
+
+                if(Cursor.visible && GUI.Button(optionRect,""))
+                {
+                    currentSelection = i;
+                    DoInput();
+                }
 
             }
 
@@ -164,43 +178,7 @@ public class PauseMenu : MonoBehaviour
                 {
                     sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
 
-                    switch (options[currentSelection])
-                    {
-                        case "Resume":
-                            HidePause();
-                            paused = -1;
-                            break;
-                        case "Options":
-                            Debug.Log("Load the options menu");
-                            StartCoroutine(FadeGui(1f, 0f));
-
-                            GetComponent<Options>().enabled = true;
-                            GetComponent<Options>().ShowOptions();
-                            break;
-                        case "Restart":
-                            HidePause();
-                            paused = -1;
-
-                            FindObjectOfType<GameMode>().Restart();
-                            break;
-                        case "Next Race":
-                            HidePause(false);
-                            pauseHold = paused;
-                            paused = -1;
-
-                            FindObjectOfType<Race>().NextRace();
-                            break;
-                        case "Quit":
-                            HidePause();
-
-                            paused = -1;
-                            canPause = false;
-
-                            //Change Pitch Back
-                            FindObjectOfType<SoundManager>().SetMusicPitch(1f);
-                            FindObjectOfType<GameMode>().EndGamemode();
-                            break;
-                    }
+                    DoInput();
                 }
             }
         }
@@ -211,5 +189,46 @@ public class PauseMenu : MonoBehaviour
         }
 
         GUIHelper.ResetColor();
+    }
+
+    private void DoInput()
+    {
+        switch (options[currentSelection])
+        {
+            case "Resume":
+                HidePause();
+                paused = -1;
+                break;
+            case "Options":
+                Debug.Log("Load the options menu");
+                StartCoroutine(FadeGui(1f, 0f));
+
+                GetComponent<Options>().enabled = true;
+                GetComponent<Options>().ShowOptions();
+                break;
+            case "Restart":
+                HidePause();
+                paused = -1;
+
+                FindObjectOfType<GameMode>().Restart();
+                break;
+            case "Next Race":
+                HidePause(false);
+                pauseHold = paused;
+                paused = -1;
+
+                FindObjectOfType<Race>().NextRace();
+                break;
+            case "Quit":
+                HidePause();
+
+                paused = -1;
+                canPause = false;
+
+                //Change Pitch Back
+                FindObjectOfType<SoundManager>().SetMusicPitch(1f);
+                FindObjectOfType<GameMode>().EndGamemode();
+                break;
+        }
     }
 }

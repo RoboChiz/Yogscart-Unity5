@@ -50,9 +50,6 @@ public class MainMenu : MonoBehaviour
 
     public static bool lockInputs = false;
 
-    private bool mouseLastUsed = false;
-    private Vector2 lastMousePos;
-
 	// Use this for initialization
 	IEnumerator Start ()
     {
@@ -73,8 +70,6 @@ public class MainMenu : MonoBehaviour
 
         if (menuMusic != null)
             sm.PlayMusic(menuMusic);
-
-        lastMousePos = GUIHelper.GetMousePosition();
 
         InputManager.lockEverything = false;
 
@@ -178,12 +173,6 @@ public class MainMenu : MonoBehaviour
         string randoImage = "UI/New Main Menu/Side Images/" + randomImage.ToString();
         string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage };
 
-        if ((lastMousePos - newMousePos).sqrMagnitude > 10)
-        {
-            mouseLastUsed = true;
-            lastMousePos = newMousePos;
-        }
-
         if (state == MenuState.Main || state == MenuState.Start)
         {
 
@@ -221,7 +210,7 @@ public class MainMenu : MonoBehaviour
                     optionSizes = new float[] { 1f };
 
                 Rect startRect = GUIHelper.CentreRectLabel(new Rect(sideAmount + GUIHelper.width / 8f - 100, 700, 600, 100), optionSizes[0], "Press Start / Enter!", Color.white);
-                if (mouseLastUsed)
+                if (Cursor.visible)
                     optionSizes[0] = GUIHelper.SizeHover(startRect, optionSizes[0],1f,1.25f,4f);            
 
                 if (!sliding && GUI.Button(startRect, ""))
@@ -304,7 +293,7 @@ public class MainMenu : MonoBehaviour
 
                 if (!sliding)
                 {
-                    if (mouseLastUsed && optionRect.Contains(newMousePos))
+                    if (Cursor.visible && optionRect.Contains(newMousePos))
                         currentSelection = i;
 
                     if (GUI.Button(optionRect, ""))
@@ -321,16 +310,14 @@ public class MainMenu : MonoBehaviour
         if (!sliding && InputManager.controllers.Count > 0)
         {
             int vertical = 0, horizontal = 0;
-            bool submitBool = false;
+            bool submitBool = false, cancelBool = false;
 
             if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs)
             {
                 vertical = InputManager.controllers[0].GetMenuInput("MenuVertical");
                 horizontal = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
                 submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
-
-                if (vertical != 0 || horizontal != 0 || submitBool)
-                    mouseLastUsed = false;
+                cancelBool = InputManager.controllers[0].GetMenuInput("Cancel") != 0;
 
                 if (nextButtonPressed)
                     submitBool = nextButtonPressed;
@@ -465,9 +452,10 @@ public class MainMenu : MonoBehaviour
                     break;
                 }
             }
-            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs && cancelBool)
             {
                 BackMenu();
+                cancelBool = false;
             }
         }
         GUI.color = Color.white;

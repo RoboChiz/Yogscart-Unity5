@@ -196,7 +196,7 @@ public class Options : MonoBehaviour
                             {
                                 //Find the PopUp Window and Show it
                                 locked = true;
-                                FindObjectOfType<GamePopup>().ShowPopUp();
+                                FindObjectOfType<MainMenu>().GetComponent<GamePopup>().ShowPopUp();
                             }
                         }
 
@@ -547,15 +547,15 @@ public class Options : MonoBehaviour
                 GUIStyle selectedSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb);
                 selectedSliderThumb.normal.background = selectedSliderThumb.active.background;
 
-                GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:", (currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                GUI.Label(new Rect(20, 70, 300, 100), "Master Volume:", (!locked && currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
                 SoundManager.masterVolume = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), SoundManager.masterVolume, 0f, 1f, normalSlider, (currentSelection == 0 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 70, 250, 100), (int)(SoundManager.masterVolume * 100f) + "%");
 
-                GUI.Label(new Rect(20, 180, 300, 100), "Music Volume:", (currentSelection == 1 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                GUI.Label(new Rect(20, 180, 300, 100), "Music Volume:", (!locked && currentSelection == 1 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
                 SoundManager.musicVolume = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), SoundManager.musicVolume, 0f, 1f, normalSlider, (currentSelection == 1 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 180, 250, 100), (int)(SoundManager.musicVolume * 100f) + "%");
 
-                GUI.Label(new Rect(20, 290, 300, 100), "SFX Volume:", (currentSelection == 2 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                GUI.Label(new Rect(20, 290, 300, 100), "SFX Volume:", (!locked && currentSelection == 2 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
                 SoundManager.sfxVolume = GUI.HorizontalSlider(new Rect(330, 330, 1000, 100), SoundManager.sfxVolume, 0f, 1f, normalSlider, (currentSelection == 2 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
                 GUI.Label(new Rect(1300, 290, 250, 100), (int)(SoundManager.sfxVolume * 100f) + "%");
 
@@ -595,7 +595,7 @@ public class Options : MonoBehaviour
 
                     Rect nameRect = new Rect(50, 400, 600, 100);
                     Rect actualName = new Rect(nameRect.x + tabAreaRect.x, nameRect.y + tabAreaRect.y, nameRect.width, nameRect.height);
-                    GUI.Label(nameRect, "Change Player Name", (currentSelection == 3 && !Cursor.visible) || (Cursor.visible && actualName.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
+                    GUI.Label(nameRect, "Change Player Name", (!locked && currentSelection == 3 && !Cursor.visible) || (!locked && Cursor.visible && actualName.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
 
                     if (!locked && Cursor.visible && GUI.Button(nameRect, ""))
                     {
@@ -609,13 +609,13 @@ public class Options : MonoBehaviour
                     Rect saveReset = new Rect(50, 500, 300, 100);
                     Rect actualSave = new Rect(saveReset.x + tabAreaRect.x, saveReset.y + tabAreaRect.y, saveReset.width, saveReset.height);
 
-                    GUI.Label(saveReset, "Reset Save Data", (currentSelection == 4 && !Cursor.visible) || (Cursor.visible && actualSave.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
+                    GUI.Label(saveReset, "Reset Save Data", (!locked && currentSelection == 4 && !Cursor.visible) || (!locked && Cursor.visible && actualSave.Contains(GUIHelper.GetMousePosition())) ? selectedLabel : normalLabel);
 
                     if (!locked && Cursor.visible && GUI.Button(saveReset, ""))
                     {
                         //Find the PopUp Window and Show it
                         locked = true;
-                        FindObjectOfType<GamePopup>().ShowPopUp();
+                        FindObjectOfType<MainMenu>().GetComponent<GamePopup>().ShowPopUp();
                     }
                 }
 

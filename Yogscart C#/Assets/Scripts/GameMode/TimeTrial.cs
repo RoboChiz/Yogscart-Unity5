@@ -275,7 +275,7 @@ public class TimeTrial : Race
 
             BinaryFormatter bf = new BinaryFormatter();
             sw = File.Create(saveLocation);
-            bf.Serialize(sw, new GhostData(racers[0], preRaceState[0].DataToString(), currentCup, currentTrack, gd.playerName));
+            bf.Serialize(sw, new GhostData(racers[0], preRaceState[0].DataToString(), currentCup, currentTrack, gd.playerName, gd.version));
             sw.Flush();
 
             popUp = gameObject.AddComponent<InfoPopUp>();
@@ -331,9 +331,12 @@ public class GhostData
 {
     public int character, hat, kart, wheel, track, cup;
     public float time;
-    public string data, playerName;
+    public string data, playerName, version;
 
-    public GhostData(Racer racer, string _data, int _cup, int _track, string _playerName)
+    [System.NonSerialized]
+    public string fileLocation;
+
+    public GhostData(Racer racer, string _data, int _cup, int _track, string _playerName, string _version)
     {
         character = racer.Character;
         hat = racer.Hat;
@@ -345,11 +348,14 @@ public class GhostData
 
         track = _track;
         cup = _cup;
-        playerName = _playerName;
+        version = _version;
     }
 
     public GhostData()
     {
         data = "";
+        playerName = "";
+        fileLocation = "";
+        version = "";
     }
 }

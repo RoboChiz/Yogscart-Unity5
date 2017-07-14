@@ -25,6 +25,8 @@ public class LevelSelect : MonoBehaviour
         gd = FindObjectOfType<CurrentGameData>();
         sm = FindObjectOfType<SoundManager>();
 
+        gd.CountGhosts();
+
         trackScales = new float[] { 1f, 1f, 1f, 1f };
         cupScales = new float[gd.tournaments.Length];
 
@@ -135,12 +137,16 @@ public class LevelSelect : MonoBehaviour
             GUI.DrawTexture(previewRect, trackPreview, ScaleMode.ScaleToFit);
         }
 
-        Rect timeRect = new Rect(800, 880, 1000, 200);
+        Rect timeRect = new Rect(800, 900, 1000, 100);
+        Rect ghostRect = new Rect(800, 950, 1000, 100);
 
         if (state && gamemode is TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
         {         
             string timeString = TimeManager.ToString(gd.tournaments[tempCurrentCup].tracks[currentTrack].bestTime);
             GUIHelper.OutLineLabel(timeRect, "Best Time:  " + timeString, 2, Color.black);
+
+            string ghostString = gd.tournaments[tempCurrentCup].tracks[currentTrack].ghosts.ToString();
+            GUIHelper.OutLineLabel(ghostRect, "Local Ghosts:  " + ghostString, 2, Color.black);
         }
         else if(gamemode is TournamentRace && !(gamemode is VSRace))
         {
@@ -189,6 +195,8 @@ public class LevelSelect : MonoBehaviour
                         currentTrack = MathHelper.NumClamp(currentTrack + hori, 0, 2);
                     else
                         currentTrack = MathHelper.NumClamp(currentTrack + hori, 2, 4);
+
+                    hori = 0;
                 }
             }
 
@@ -201,6 +209,8 @@ public class LevelSelect : MonoBehaviour
                     currentCup += vert;
                     currentTrack = 0;
                 }
+
+                vert = 0;
             }
 
             currentTrack = MathHelper.NumClamp(currentTrack, 0, 4);
@@ -209,6 +219,7 @@ public class LevelSelect : MonoBehaviour
             if(tabChange != 0 && gamemode is VSRace && GetComponent<MainMenu>() != null)
             {
                 trackNum = MathHelper.NumClamp(trackNum + tabChange, 1, 64);
+                tabChange = 0;
             }
         }
 
@@ -233,11 +244,13 @@ public class LevelSelect : MonoBehaviour
             }
 
             sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
+            submit = false;
         }
 
         if (cancel)
         {
             DoCancel();
+            cancel = false;
         }
 
         GUI.color = Color.white;

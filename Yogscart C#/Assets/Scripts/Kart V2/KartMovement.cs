@@ -34,6 +34,7 @@ public class KartMovement : MonoBehaviour
     public AnimationCurve speedAffectCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.1f, 0.1f), new Keyframe(0.5f, 1f), new Keyframe(1, 0.75f));
 
     //Drifting 
+    private const float driftTurn = 1.15f, intoRange = 0.6f, outOfRange = -0.5f;
     public enum DriftMode { Not, Drifting };
     public DriftMode isDrifting = DriftMode.Not;
     public int driftSteer = 0; //What direction we are drifting
@@ -506,7 +507,7 @@ public class KartMovement : MonoBehaviour
         {
             finalSteer = (float)MathHelper.Sign(driftSteer) * MathHelper.Sign(actualSpeed);
             //Make turn more tight
-            finalSteer *= 1.25f;
+            finalSteer *= driftTurn;
 
             float driftAdjust = 0;
 
@@ -514,9 +515,9 @@ public class KartMovement : MonoBehaviour
             float steerSign = MathHelper.Sign(steer), driftSteerSign = MathHelper.Sign(driftSteer);
 
             if (driftSteerSign == steerSign)
-                driftAdjust += 0.4f * driftSteerSign;
+                driftAdjust += intoRange * driftSteerSign;
             else if (driftSteerSign == -steerSign)
-                driftAdjust -= 0.5f * driftSteerSign;
+                driftAdjust += outOfRange * driftSteerSign;
 
             finalSteer += driftAdjust;
 
