@@ -174,8 +174,11 @@ abstract public class GameMode : MonoBehaviour
 
                 inGameCam.GetChild(1).tag = "MainCamera";
 
-                inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
-                inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
+                inGameCam.GetChild(0).transform.GetComponent<KartCamera>().target = racers[i].ingameObj.GetComponent<KartMovement>().kartBody;
+                inGameCam.GetChild(1).transform.GetComponent<KartCamera>().target = racers[i].ingameObj.GetComponent<KartMovement>().kartBody;
+
+                inGameCam.GetChild(0).transform.GetComponent<KartCamera>().rotTarget = racers[i].ingameObj;
+                inGameCam.GetChild(1).transform.GetComponent<KartCamera>().rotTarget = racers[i].ingameObj;
                 racers[i].cameras = inGameCam;
             }
             else
@@ -223,8 +226,12 @@ abstract public class GameMode : MonoBehaviour
 
             inGameCam.GetChild(1).tag = "MainCamera";
 
-            inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
-            inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = racers[i].ingameObj;
+            inGameCam.GetChild(0).transform.GetComponent<KartCamera>().target = racers[i].ingameObj.GetComponent<KartMovement>().kartBody;
+            inGameCam.GetChild(1).transform.GetComponent<KartCamera>().target = racers[i].ingameObj.GetComponent<KartMovement>().kartBody;
+
+            inGameCam.GetChild(0).transform.GetComponent<KartCamera>().rotTarget = racers[i].ingameObj;
+            inGameCam.GetChild(1).transform.GetComponent<KartCamera>().rotTarget = racers[i].ingameObj;
+
             racers[i].cameras = inGameCam;
 
             //Setup Camera

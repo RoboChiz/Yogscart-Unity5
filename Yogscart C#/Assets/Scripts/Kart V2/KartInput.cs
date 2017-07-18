@@ -25,17 +25,20 @@ public class KartInput : MonoBehaviour
             km.steer = Mathf.Abs(InputManager.controllers[myController].GetInput("SteerRight")) - Mathf.Abs(InputManager.controllers[myController].GetInput("SteerLeft"));
             km.drift = (InputManager.controllers[myController].GetInput("Drift") != 0);
 
-            bool lookBehind = (InputManager.controllers[myController].GetInput("RearView") != 0);
+            if (frontCamera != null && backCamera != null)
+            {
+                bool lookBehind = (InputManager.controllers[myController].GetInput("RearView") != 0);
 
-            if (!camLocked && lookBehind)
-            {
-                backCamera.enabled = true;
-                frontCamera.enabled = false;
-            }
-            else
-            {
-                backCamera.enabled = false;
-                frontCamera.enabled = true;
+                if (!camLocked && lookBehind)
+                {
+                    backCamera.enabled = true;
+                    frontCamera.enabled = false;
+                }
+                else
+                {
+                    backCamera.enabled = false;
+                    frontCamera.enabled = true;
+                }
             }
         }
     }

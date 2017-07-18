@@ -12,6 +12,9 @@ public class WinScreen : MonoBehaviour
 
     private CurrentGameData gd;
     private KartMaker km;
+    private SoundManager sm;
+
+    public AudioClip music;
 
     const string playerOneReplay = "",
         playerTwoReplay = "",
@@ -21,7 +24,9 @@ public class WinScreen : MonoBehaviour
     {
         gd = FindObjectOfType<CurrentGameData>();
         km = FindObjectOfType<KartMaker>();
+        sm = FindObjectOfType<SoundManager>();
 
+        sm.PlayMusic(music);
         //Debug
         /*List<Racer> test = new List<Racer>();
 

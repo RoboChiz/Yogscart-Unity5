@@ -238,16 +238,51 @@ public class Leaderboard : MonoBehaviour
                     float bestTime = gd.tournaments[race.currentCup].tracks[race.currentTrack].bestTime;
                     float playerTime = racers[0].timer;
 
-                    if (playerTime <= bestTime || bestTime == 0)
-                        GUI.Label(new Rect(10, 10, BoardRect.width - 20, BoardRect.height), "New Best Time!!!");
+                    TimeTrial tt = FindObjectOfType<TimeTrial>();
+
+                    if(tt == null || tt.ghost == null)
+                    { 
+                        if (playerTime <= bestTime || bestTime == 0)
+                            GUI.Label(new Rect(10, 10, BoardRect.width - 20, BoardRect.height), "New Best Time!!!");
+                        else
+                            GUI.Label(new Rect(10, 10, BoardRect.width - 20, BoardRect.height), "You Lost!!!");
+
+                        GUI.Label(new Rect(10, 10 + (optionHeight), BoardRect.width - 20, optionHeight), "Best Time");
+                        GUI.Label(new Rect(10, 10 + 2 * (optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(bestTime));
+
+                        GUI.Label(new Rect(10, 10 + 3 * (optionHeight), BoardRect.width - 20, optionHeight), "Your Time");
+                        GUI.Label(new Rect(10, 10 + 4 * (optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(playerTime));
+                    }
                     else
-                        GUI.Label(new Rect(10, 10, BoardRect.width - 20, BoardRect.height), "You Lost!!!");
+                    {
+                        string text = "";
 
-                    GUI.Label(new Rect(10, 10 + (optionHeight), BoardRect.width - 20, optionHeight), "Best Time");
-                    GUI.Label(new Rect(10, 10 + 2 * (optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(bestTime));
+                        if(playerTime < bestTime || bestTime == 0)
+                        {
+                            if (playerTime < tt.ghost.time)
+                                text = "You beat the Ghost and set a new Best Time!!!";
+                            else
+                                text = "You didn't beat the Ghost but set a new Best Time!!!";
+                        }
+                        else
+                        {
+                            if (playerTime < tt.ghost.time)
+                                text = "You beat the ghost, but didn't set a new Best Time!!!";
+                            else
+                                text = "You lose!!";
+                        }
 
-                    GUI.Label(new Rect(10, 10 + 3 * (optionHeight), BoardRect.width - 20, optionHeight), "Your Time");
-                    GUI.Label(new Rect(10, 10 + 4 * (optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(playerTime));
+                        GUI.Label(new Rect(10, 10 + (optionHeight), BoardRect.width - 20, optionHeight), text);
+
+                        GUI.Label(new Rect(10, 10 + (3 * optionHeight), BoardRect.width - 20, optionHeight), "Best Time");
+                        GUI.Label(new Rect(10, 10 + (4 * optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(bestTime));
+
+                        GUI.Label(new Rect(10, 10 + (5 * optionHeight), BoardRect.width - 20, optionHeight), "Ghost Time");
+                        GUI.Label(new Rect(10, 10 + (6 * optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(tt.ghost.time));
+
+                        GUI.Label(new Rect(10, 10 + (7 * optionHeight), BoardRect.width - 20, optionHeight), "Your Time");
+                        GUI.Label(new Rect(10, 10 + (8 * optionHeight), BoardRect.width - 20, optionHeight), TimeManager.ToString(playerTime));
+                    }
                 }
                 break;
             default:

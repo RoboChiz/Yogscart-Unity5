@@ -13,7 +13,7 @@ public class Egg : Projectile
     private float colliderOff;
 
     readonly string[] raycastIgnoreTags = new string[] {"Kart", "Crate", "PowerUp" };
-    readonly string[] ignoreTags = new string[] { "OffRoad", "Ground", "Kart", "Crate", "PowerUp" };
+    readonly string[] ignoreTags = new string[] { "OffRoad", "Ground"};
 
     public override void Setup(float _direction, bool _actingShield)
     {
@@ -106,7 +106,6 @@ public class Egg : Projectile
         if (!ignore)
         {
             //Debug.Log("Collided with " + collision.transform.name);
-
             if (collision.transform.GetComponent<KartMovement>() != null)
             {
                 //Spin the Kart Out
@@ -120,7 +119,7 @@ public class Egg : Projectile
                 //Get rid of the GameObject
                 Destroy(gameObject);
             }
-            else if (collision.transform.GetComponent<Egg>()) //If hit another Power Up
+            else if (collision.gameObject.layer == 9 || collision.gameObject.layer == 10) //If hit another Power Up
             {
                 Destroy(gameObject);
             }

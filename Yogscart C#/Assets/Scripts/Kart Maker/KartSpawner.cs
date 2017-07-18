@@ -42,8 +42,11 @@ public class KartSpawner : MonoBehaviour
 
             inGameCam.GetChild(1).tag = "MainCamera";
 
-            inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = kart;
-            inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = kart;
+            inGameCam.GetChild(0).transform.GetComponent<KartCamera>().target = kmove.kartBody;
+            inGameCam.GetChild(1).transform.GetComponent<KartCamera>().target = kmove.kartBody;
+
+            inGameCam.GetChild(0).transform.GetComponent<KartCamera>().rotTarget = kmove.transform;
+            inGameCam.GetChild(1).transform.GetComponent<KartCamera>().rotTarget = kmove.transform;
         }
 
         if(ai)

@@ -1060,7 +1060,7 @@ public class OldRace : GameMode
 
             float startTime = Time.time;
             const float travelTime = 3f;
-            kartCamera kc = racer.cameras.GetChild(1).GetComponent<kartCamera>();
+            KartCamera kc = racer.cameras.GetChild(1).GetComponent<KartCamera>();
 
             while (Time.time - startTime < travelTime)
             {

@@ -2,6 +2,44 @@
 
 ## Changelog : Started 04/08/2016
 
+# 18/07/2017
+* Added Kart Collisions (Again)
+* Added twist animation to Kart Collisions
+* Added Particle Effect to Kart Collisions
+* Fixed Pigs
+* Added particle effect to ghost death
+* Fixed issue where ghosts wouldn't fade away on repeats
+* Adjusted Kart Camera to focus on Kart Body
+* Added Kart Collisions to Head IK
+* Fixed Ghost Karts colliding with real ones
+* Made a basic taint shader for Sjin's Farm
+
+# 17/07/2017
+* Added Replay Camera Modes
+* Added Replay UI
+
+# 16/07/2017
+* Stopped Ghost from collecting Lapis
+* Fixed Music Pitch not resetting on Race Start
+* Made Music Pitch slowly change rather than snapping to the new pitch
+
+# 15/07/2017
+* Fixed Kart Item auto using items when button held down
+* Added info about ghost to Time Trial Leaderboard
+* Fixed Replay Item Usage
+* Fixed Replay Start Boosting
+* Added 'Inputs Locked' UI
+* Added Outro Music to Win Screen
+* Disabled Online
+* Fixed using items as shields
+* Adjusted Kart IK to look at karts spinning out only
+* Add Growing Animation for Items
+* Add UI and buttons for number of races in VS Race
+* Fixed broken Dev Ghost selection and use
+* Fixed Ghosts not having names
+* Fixed double submit noises on Time Trial Menu
+* Adjusted times to get drift boost, depending on wheter you steer into a drift
+
 # 14/07/2017
 * Added Ghost Counter to Level Select
 * Fixed mouse hovering over options when there is a popup
@@ -18,6 +56,7 @@
 * Fixed Pause Menu issues
 * Fixed Reset Data button
 * Added version compatibility to Ghost Data
+* Added unlocking delay to Input Manager
 
 # 11/07/2017
 * Added ability to change number of races in VS Race

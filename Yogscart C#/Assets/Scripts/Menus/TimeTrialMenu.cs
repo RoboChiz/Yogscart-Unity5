@@ -376,7 +376,7 @@ public class TimeTrialMenu : MonoBehaviour
 
     void DoSubmit()
     {
-        sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
+        bool didSomething = false;
 
         if (!choosingGhost)
         {
@@ -385,11 +385,21 @@ public class TimeTrialMenu : MonoBehaviour
                 case "Race by Yourself":
                     Hide();
                     FindObjectOfType<TimeTrial>().FinishTimeTrialMenu();
+                    didSomething = true;
                     break;
                 case "Race Ghost":
-                case "Race Developer Ghost":
-                    if(validTimeTrials.Count > 0)
+                    if (validTimeTrials.Count > 0)
+                    {
                         choosingGhost = true;
+                        didSomething = true;
+                    }
+                    break;
+                case "Race Developer Ghost":
+                    if (devTimeTrials.Count > 0)
+                    {
+                        choosingGhost = true;
+                        didSomething = true;
+                    }
                     break;
             }
         }
@@ -397,11 +407,18 @@ public class TimeTrialMenu : MonoBehaviour
         {
             if(menuState == TTMMenuState.ChoosingLocal || menuState == TTMMenuState.ChoosingDev)
             {
-                timeTrial.ghost = validTimeTrials[selectedTT];
+                if(menuState == TTMMenuState.ChoosingLocal)
+                    timeTrial.ghost = validTimeTrials[selectedTT];
+                else
+                    timeTrial.ghost = devTimeTrials[selectedTT];
+
                 Hide();
                 FindObjectOfType<TimeTrial>().FinishTimeTrialMenu();
             }
         }
+
+        if (didSomething)
+            sm.PlaySFX(Resources.Load<AudioClip>("Music & Sounds/SFX/confirm"));
     }
 
     void DeleteCurrentGhost()

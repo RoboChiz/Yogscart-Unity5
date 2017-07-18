@@ -241,8 +241,12 @@ public class NetworkRaceClient : OldRace
 
             inGameCam.GetChild(1).tag = "MainCamera";
 
-            inGameCam.GetChild(0).transform.GetComponent<kartCamera>().target = myRacer.ingameObj;
-            inGameCam.GetChild(1).transform.GetComponent<kartCamera>().target = myRacer.ingameObj;
+            inGameCam.GetChild(0).transform.GetComponent<KartCamera>().target = myRacer.ingameObj.GetComponent<KartMovement>().kartBody;
+            inGameCam.GetChild(1).transform.GetComponent<KartCamera>().target = myRacer.ingameObj.GetComponent<KartMovement>().kartBody;
+
+            inGameCam.GetChild(0).transform.GetComponent<KartCamera>().rotTarget = myRacer.ingameObj;
+            inGameCam.GetChild(1).transform.GetComponent<KartCamera>().rotTarget = myRacer.ingameObj;
+
             myRacer.cameras = inGameCam;
 
             kartInfo kain = myKart.AddComponent<kartInfo>();

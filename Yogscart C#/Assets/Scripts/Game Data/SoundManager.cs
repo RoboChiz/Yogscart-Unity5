@@ -143,6 +143,19 @@ public class SoundManager : MonoBehaviour
 
     public void SetMusicPitch(float value)
     {
-        mSource.pitch = value;
+        StartCoroutine(ChangePitch(value));
+    }
+
+    private IEnumerator ChangePitch(float finalVal)
+    {
+        float startTime = Time.time, startVal = mSource.pitch, travelTime = 0.5f;
+
+        while(Time.time - startTime < travelTime)
+        {
+            mSource.pitch = Mathf.Lerp(startVal, finalVal, (Time.time - startTime) / travelTime);
+            yield return null;
+        }
+
+        mSource.pitch = finalVal;
     }
 }

@@ -34,7 +34,7 @@ public class KartMovement : MonoBehaviour
     public AnimationCurve speedAffectCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.1f, 0.1f), new Keyframe(0.5f, 1f), new Keyframe(1, 0.75f));
 
     //Drifting 
-    private const float driftTurn = 1.15f, intoRange = 0.6f, outOfRange = -0.5f;
+    private const float driftTurn = 1.15f, intoRange = 0.6f, outOfRange = -0.5f, driftTimeAddTurnIn = 2f, driftTimeAddTurnOut = 0.7f;
     public enum DriftMode { Not, Drifting };
     public DriftMode isDrifting = DriftMode.Not;
     public int driftSteer = 0; //What direction we are drifting
@@ -76,13 +76,14 @@ public class KartMovement : MonoBehaviour
     private Rigidbody kartRigidbody;
 
     //Store Systems as arrays for convinence
-    Transform kartBody;
+    public Transform kartBody { get; private set; }
     ParticleSystem[] startCloudParticles, flameParticles, driftParticles, driftCloudParticles;
     ParticleSystem trickParticles;
 
     //Boost at Start
     private float startBoostAmount, wheelSpinExtra, wheelSpinPercent;
     public static int startBoostVal = -1;
+    private int lastStartBoostVal = -1;
     public static bool raceStarted = false, beQuiet = true;
     private bool spinOut = false, allowedStartBoost;
 
@@ -97,6 +98,12 @@ public class KartMovement : MonoBehaviour
 
     //Used for Character Specific Taunts
     public int characterID;
+
+    void Awake()
+    {
+        //Get Kart Body
+        kartBody = transform.Find("Kart Body");
+    }
 
     void Start()
     {
@@ -263,10 +270,13 @@ public class KartMovement : MonoBehaviour
             //Stop Kart from drivng into walls
             RaycastHit hit;
             string[] ignoreTags = new string[] { "OffRoad", "Ground", "Kart", "Crate", "PowerUp" };
+
+            int layerMask = ~((1 << 8) | (1 << 9) | (1 << 10) | (1 << 11));
+
             for (int i = -1; i <= 1; i += 2)
             {
                 Debug.DrawRay(transform.position, transform.forward * (2f * i), Color.red);
-                if (Physics.Raycast(transform.position, transform.forward * i, out hit, 2f) && hit.transform.GetComponent<Collider>() != null && !hit.transform.GetComponent<Collider>().isTrigger)
+                if (Physics.Raycast(transform.position, transform.forward * i, out hit, 2f, layerMask) && hit.transform.GetComponent<Collider>() != null && !hit.transform.GetComponent<Collider>().isTrigger)
                 {
                     bool ignore = false;
                     foreach (string tag in ignoreTags)
@@ -374,6 +384,12 @@ public class KartMovement : MonoBehaviour
 
                 if (startBoostVal == 0)
                     raceStarted = true;
+            }
+
+            if(startBoostVal != lastStartBoostVal)
+            {
+                gameObject.BroadcastMessage("StartBoostVal", startBoostVal, SendMessageOptions.DontRequireReceiver);
+                lastStartBoostVal = startBoostVal;
             }
 
             //Play engine Audio
@@ -559,7 +575,7 @@ public class KartMovement : MonoBehaviour
         if (isDrifting == DriftMode.Drifting)
         {
             //Increment Drift Time
-            driftTime += Time.fixedDeltaTime * Mathf.Abs(driftSteer + (steer / 2f));
+            driftTime += Time.fixedDeltaTime * Mathf.Lerp(driftTimeAddTurnOut, driftTimeAddTurnIn, Mathf.Abs((driftSteer + steer))/2f);
 
             //Rotate the kart to face the drift direction
             kartBody.localRotation = Quaternion.Slerp(kartBody.localRotation, Quaternion.Euler(0, kartBodySlide * driftSteer, 0), Time.fixedDeltaTime * 2);

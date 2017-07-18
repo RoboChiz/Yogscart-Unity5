@@ -16,7 +16,7 @@ public class KartRecorder : MonoBehaviour
     private KartMovement kartMovement;
     private Rigidbody kartRigidbody;
 
-    public const string throttle = "t:", steer = "s:", drift = "d:", driftSteer = "z:", expectedSpeed = "e:", position = "p:", rotation = "r:", velocity = "v:", angularVelocity = "a:", recieveItem = "i:", itemAction = "c:", dropShield = "u:";
+    public const string throttle = "t:", steer = "s:", drift = "d:", driftSteer = "z:", expectedSpeed = "e:", position = "p:", rotation = "r:", velocity = "v:", angularVelocity = "a:", recieveItem = "i:", itemAction = "c:", dropShield = "u:", startBoostVal = "k:";
     public List<List<string>> actions; //Each List of strings represents all actions that happened that frame. Actions are recorded at Unity's Time Step value (40fps)
 
     public void Start()
@@ -136,6 +136,13 @@ public class KartRecorder : MonoBehaviour
     }
 
     //Methods called by other components
+    void StartBoostVal(int val)
+    {
+        if (isRecording)
+        {
+            actions[actions.Count - 1].Add(startBoostVal + val);
+        }
+    }
 
     void RecievedItem(int item)
     {

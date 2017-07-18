@@ -85,6 +85,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Resources\Animations\DrivingIK.cs" />
+    <Compile Include="Assets\Scripts\Camera Scripts\FreeCam.cs" />
+    <Compile Include="Assets\Scripts\Camera Scripts\OrbitCam.cs" />
     <Compile Include="Assets\Scripts\Character Scripts\StandingCharacter.cs" />
     <Compile Include="Assets\Scripts\Game Data\AudioSourceInfo.cs" />
     <Compile Include="Assets\Scripts\Game Data\CurrentGameData.cs" />
@@ -113,14 +115,13 @@
     <Compile Include="Assets\Scripts\Kart Scripts\AI.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\CanvasCam.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\CollisionHandler.cs" />
-    <Compile Include="Assets\Scripts\Kart Scripts\CowTipping.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\DeathCatch.cs" />
+    <Compile Include="Assets\Scripts\Kart Scripts\KartCamera.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\KartCollider.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\OldAI.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\PositionFinding.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\PositionFindingOld.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartAnimator.cs" />
-    <Compile Include="Assets\Scripts\Kart Scripts\kartCamera.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartItem.cs" />
     <Compile Include="Assets\Scripts\Kart V2\FauxCollider.cs" />
@@ -128,6 +129,7 @@
     <Compile Include="Assets\Scripts\Kart V2\KartMovement.cs" />
     <Compile Include="Assets\Scripts\Kart V2\KartRecorder.cs" />
     <Compile Include="Assets\Scripts\Kart V2\KartReplayer.cs" />
+    <Compile Include="Assets\Scripts\Kart V2\ParticleKill.cs" />
     <Compile Include="Assets\Scripts\Level Scripts\PigMovement.cs" />
     <Compile Include="Assets\Scripts\Managers\BSPTree.cs" />
     <Compile Include="Assets\Scripts\Managers\InterestManager.cs" />
@@ -180,11 +182,12 @@
     <Compile Include="Assets\Track Creator\Vertex.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Resources\Dev Ghosts\11_7_2017_11_57.txt" />
+    <None Include="Assets\Resources\Dev Ghosts\15_7_2017_20_05.txt" />
     <None Include="Assets\Resources\Fonts\read me.txt" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShader1.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShaderEmission.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\GenericBlendShaderSplatWorkAround2.shader" />
+    <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\Grass.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\Standard_TwoSided.shader" />
     <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
     <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\BlendModesOverlay.shader" />

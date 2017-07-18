@@ -31,6 +31,7 @@ public class KartItem : MonoBehaviour
     public bool inputLock = false;
     private float inputDirection;
     public float itemDistance = 2f;
+    private float itemScale = 0f;
 
 
     // Use this for initialization
@@ -41,7 +42,7 @@ public class KartItem : MonoBehaviour
             
         frame = Resources.Load<Texture2D>("UI/Power Ups/item frame");
 
-        if (GetComponent<AI>())//If AI detected must be AI
+        if (GetComponent<AI>() || GetComponent<KartReplayer>())//If AI detected must be AI
             itemOwner = ItemOwner.Ai;
     }
 
@@ -53,14 +54,17 @@ public class KartItem : MonoBehaviour
     }
 
     //Informs all clients that this kart has recieved an item
-    public void RecieveItem(int item)
+    public void RecieveItem(int item) { RecieveItem(item, true); }
+
+    public void RecieveItem(int item, bool sendBroadcast)
     {
         //Debug.Log("Recieved Item " + item.ToString());
         heldPowerUp = item;
         iteming = true;
 
         //Send Message for Recorder
-        gameObject.BroadcastMessage("RecievedItem", item, SendMessageOptions.DontRequireReceiver);
+        if(sendBroadcast)
+            gameObject.BroadcastMessage("RecievedItem", item, SendMessageOptions.DontRequireReceiver);
     }
 
     //Makes the local version of the kart use an item, the effect should appear the same on all clients
@@ -83,13 +87,15 @@ public class KartItem : MonoBehaviour
                     if (myItem.GetComponent<DamagingItem>() != null)
                         myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
 
+                    myItem.localScale = Vector3.one;
+
                     itemSpawned = true;
                 }
 
-                EndItemUse();
-
                 //Send Message for Recorder
                 gameObject.BroadcastMessage("UsedItem", SendMessageOptions.DontRequireReceiver);
+
+                EndItemUse();
             }
         }
     }
@@ -117,6 +123,8 @@ public class KartItem : MonoBehaviour
 
                     if (myItem.GetComponent<DamagingItem>() != null)
                         myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
+
+                    myItem.localScale = Vector3.one;
 
                     itemSpawned = true;
                 }
@@ -155,12 +163,14 @@ public class KartItem : MonoBehaviour
                 if (myItem.GetComponent<Rigidbody>() != null)
                     myItem.GetComponent<Rigidbody>().isKinematic = false;
 
-                myItem = null;
+                myItem.localScale = Vector3.one;
 
-                EndItemUse();
+                myItem = null;           
 
                 //Send Message for Recorder
                 gameObject.BroadcastMessage("DroppedShield", dir, SendMessageOptions.DontRequireReceiver);
+
+                EndItemUse();
             }
         }
     }
@@ -174,7 +184,7 @@ public class KartItem : MonoBehaviour
             if (heldPowerUp != -1 && gd.powerUps[heldPowerUp].multipleUses)
             {
                 int tempPowerUp = heldPowerUp - 1;
-                RecieveItem(tempPowerUp);
+                RecieveItem(tempPowerUp, false);
             }
             else
             {
@@ -358,12 +368,14 @@ public class KartItem : MonoBehaviour
                     {
                         if (input)
                         {
-                            if (!sheilding)
+                            if (!sheilding && !inputLock)
                             {
                                 UseShield();
                                 //If Online tell Server about the shield use
                                 if (onlineGame && itemOwner == ItemOwner.Mine)
                                     FindObjectOfType<UnetClient>().client.Send(UnetMessages.useShieldMsg, new EmptyMessage());
+
+                                inputLock = true;
                             }
                         }
                         else
@@ -385,6 +397,19 @@ public class KartItem : MonoBehaviour
                 sheilding = false;
                 EndItemUse();
             }
+        }
+    }
+
+    void Update()
+    {
+        if(myItem != null)
+        {
+            itemScale = Mathf.Clamp(itemScale + (Time.deltaTime * 8f), 0f, 1f);
+            myItem.localScale = Vector3.one * itemScale;
+        }
+        else
+        {
+            itemScale = 0f;
         }
     }
 

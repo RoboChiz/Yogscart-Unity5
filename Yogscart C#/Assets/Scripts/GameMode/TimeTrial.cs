@@ -69,6 +69,7 @@ public class TimeTrial : Race
     {
         StartCoroutine(ChangeState(RaceState.Blank));
         ghostSaved = false;
+        finishGhost = false;
         StartRace();
     }
 
@@ -97,6 +98,7 @@ public class TimeTrial : Race
 
             ghostTransform = FindObjectOfType<KartMaker>().SpawnKart(KartType.Ghost, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), ghost.character, ghost.hat, ghost.kart, ghost.wheel);
             ghostTransform.GetComponent<KartReplayer>().LoadReplay(ghost.data);
+            ghostTransform.GetComponent<KartReplayer>().ignoreLocalStartBoost = true;
 
             foreach (MeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<MeshRenderer>())
             {
@@ -168,7 +170,7 @@ public class TimeTrial : Race
             finishGhost = true;
             Destroy(ghostTransform.GetComponent<KartReplayer>());
 
-            StartCoroutine(KillGhost());
+            StartCoroutine(KillGhost());       
         }
     }
 
@@ -181,7 +183,17 @@ public class TimeTrial : Race
         foreach (SkinnedMeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>())
             StartCoroutine(FadeMaterial(mr.material));
 
-        yield return new WaitForSeconds(1.1f);
+        //Spawn Ghost Particles
+       GameObject ghostParticles = Instantiate(Resources.Load<GameObject>("Prefabs/GhostFlame"), ghostTransform.transform.position,
+       Quaternion.Euler(-90, 0, 0));
+
+        //Make Particles follow ghost
+        float startTime = Time.time;
+        while(Time.time - startTime < 0.25f)
+        {
+            ghostParticles.transform.position = ghostTransform.position;
+            yield return null;
+        }
 
         //Destroy Ghost
         Destroy(ghostTransform.gameObject);
@@ -189,7 +201,7 @@ public class TimeTrial : Race
 
     private IEnumerator FadeMaterial(Material material)
     {
-        float startTime = Time.time, travelTime = 1f;
+        float startTime = Time.time, travelTime = 2f;
         Color startVal = material.color;
 
         while(Time.time - startTime < travelTime)
@@ -349,6 +361,7 @@ public class GhostData
         track = _track;
         cup = _cup;
         version = _version;
+        playerName = _playerName;
     }
 
     public GhostData()

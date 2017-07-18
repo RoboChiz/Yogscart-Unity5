@@ -36,7 +36,7 @@ public class FauxCollider : MonoBehaviour
             RaycastHit hit = new RaycastHit();
             var layerMask = ~((1 << 8) | (1 << 9) | (1 << 10) | (1 << 11));
 
-            if (upright && Physics.Raycast(transform.position, -transform.up, out hit, suspensionDistance, layerMask) && Vector3.Angle(hit.normal, Vector3.up) < 35f)
+            if (upright && Physics.Raycast(transform.position + (transform.up * 0.25f), -transform.up, out hit, suspensionDistance + 0.25f, layerMask) && Vector3.Angle(hit.normal, Vector3.up) < 35f)
             {
                 groundHit = true;
                 surfaceImpactPoint = hit.point;

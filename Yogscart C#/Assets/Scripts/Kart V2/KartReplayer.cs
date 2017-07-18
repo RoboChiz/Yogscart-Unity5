@@ -10,11 +10,13 @@ public class KartReplayer : MonoBehaviour
     public bool isPlaying { get; private set; }
     private int frameCount, framesPerSecond;
 
-    public const char throttle = 't', steer = 's', drift = 'd', driftSteer = 'z', expectedSpeed = 'e', position = 'p', rotation = 'r', velocity = 'v', angularVelocity = 'a', recieveItem = 'i', itemAction = 'c', dropShield = 'u';
+    public const char throttle = 't', steer = 's', drift = 'd', driftSteer = 'z', expectedSpeed = 'e', position = 'p', rotation = 'r', velocity = 'v', angularVelocity = 'a', recieveItem = 'i', itemAction = 'c', dropShield = 'u', startBoostVal = 'k';
 
     private KartMovement kartMovement;
     private KartItem kartItem;
     private Rigidbody kartRigidbody;
+
+    public bool ignoreLocalStartBoost = false;
 
 
     public void Start()
@@ -145,6 +147,10 @@ public class KartReplayer : MonoBehaviour
                         break;
                     case driftSteer:
                         kartMovement.driftSteer = int.Parse(value);
+                        break;
+                    case startBoostVal:
+                        if(!ignoreLocalStartBoost)
+                            KartMovement.startBoostVal = int.Parse(value);
                         break;
                 }
             }

@@ -10,11 +10,9 @@ public class LevelSelect : MonoBehaviour
     private int currentCup = 0, currentTrack = 0;
     public int trackNum = 4;
 
-
     //Transtition
     private float menuAlpha = 1f;
-    public bool sliding = false, canClick = false, mouseLast = false;
-    private Vector2 lastMousePos;
+    public bool sliding = false, canClick = false;
     private float[] cupScales, trackScales;
 
     private SoundManager sm;
@@ -48,12 +46,7 @@ public class LevelSelect : MonoBehaviour
         canClick = false;
 
         GUIHelper.SetGUIAlpha(menuAlpha);
-        Vector2 mousePos = GUIHelper.GetMousePosition();
-        if (mousePos != lastMousePos)
-        {
-            mouseLast = true;
-            lastMousePos = mousePos;
-        }       
+        Vector2 mousePos = GUIHelper.GetMousePosition(); 
 
         float cupNameHeight = GUIHelper.height / 2f;
         float individualHeight = cupNameHeight / Mathf.Clamp(gd.tournaments.Length, 4, 8);
@@ -66,7 +59,7 @@ public class LevelSelect : MonoBehaviour
             GUI.DrawTexture(rectRect, rectangle);
 
             //Scale the Cup Names
-            bool contains = mouseLast && rectRect.Contains(mousePos);
+            bool contains = Cursor.visible && rectRect.Contains(mousePos);
             if (!state && (contains || currentCup == i))
             {
                 if (cupScales[i] < 1.1f)
@@ -112,7 +105,7 @@ public class LevelSelect : MonoBehaviour
             Rect previewRect = GUIHelper.CentreRect(new Rect(800 + (500 * (i % 2)), 150 + (390 * (i / 2)), 400, 365), trackScales[i]);
 
             //Scale the Track Names
-            bool contains = mouseLast && previewRect.Contains(mousePos);
+            bool contains = Cursor.visible && previewRect.Contains(mousePos);
             if (state && (contains || currentTrack == i))
             {
                 if (trackScales[i] < 1.1f)
@@ -160,6 +153,25 @@ public class LevelSelect : MonoBehaviour
         {
             if (GetComponent<MainMenu>() != null)
             {
+                //Draw Inputs
+                Rect leftRect = new Rect(1000, 905, 160, 80);
+                Rect rightRect = new Rect(1450, 905, 160, 80);
+
+                GUI.DrawTexture(leftRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/LB") : Resources.Load<Texture2D>("UI/Options/Q"));
+                GUI.DrawTexture(rightRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/RB") : Resources.Load<Texture2D>("UI/Options/E"));
+
+                GUIStyle customButton = new GUIStyle();
+
+                if(GUI.Button(leftRect, "", customButton))
+                {
+                    trackNum = MathHelper.NumClamp(trackNum - 1, 1, 64);
+                }
+
+                if (GUI.Button(rightRect, "", customButton))
+                {
+                    trackNum = MathHelper.NumClamp(trackNum + 1, 1, 64);
+                }
+
                 GUIHelper.OutLineLabel(timeRect, "Races: " + trackNum, 2, Color.black);
             }
             else
@@ -180,9 +192,6 @@ public class LevelSelect : MonoBehaviour
             submit = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
             cancel = (InputManager.controllers[0].GetMenuInput("Cancel") != 0);
             tabChange = InputManager.controllers[0].GetMenuInput("TabChange");
-
-            if (vert != 0 || hori != 0 || submit || cancel)
-                mouseLast = false;
 
             if (canClick && Input.GetMouseButton(0))
                 submit = true;

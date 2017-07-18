@@ -9,7 +9,9 @@ public class Lapis : MonoBehaviour
 
 	void OnTriggerEnter(Collider other)
     {
-        StartCoroutine(Hit());
+        //If not a ghost, destroy lapis
+        if(other.gameObject.layer != 11)
+            StartCoroutine(Hit());
 
         Transform parent = other.transform;
         while(parent.parent != null && parent.GetComponent<KartMovement>() == null)

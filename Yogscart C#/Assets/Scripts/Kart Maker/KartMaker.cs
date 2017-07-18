@@ -172,9 +172,6 @@ public class KartMaker : MonoBehaviour
             kb.AddComponent<DeathCatch>();
             kb.GetComponent<DeathCatch>().deathParticles = km.particleSystems["Death Particles"];
 
-            if(type != KartType.Ghost)
-                kb.AddComponent<CowTipping>();
-
             //Add Other Kart Scripts
             kb.AddComponent<PositionFinding>();
             //Sort out Character Noises
@@ -189,19 +186,15 @@ public class KartMaker : MonoBehaviour
                 //kb.AddComponent<kartInfo>();
             }
 
-            if (type != KartType.Replay && type != KartType.Ghost)
-            {
-                kb.AddComponent<KartItem>();
-                kb.GetComponent<KartItem>().itemDistance = kartSkel.ItemDrop;
-            }
-
-            kb.AddComponent<KartCollider>();
-
-
             if (type == KartType.Replay || type == KartType.Ghost)
-            {
                 kartBody.gameObject.AddComponent<KartReplayer>();
-            }
+
+            kb.AddComponent<KartItem>();
+            kb.GetComponent<KartItem>().itemDistance = kartSkel.ItemDrop;
+
+            if (type != KartType.Ghost)
+                kb.AddComponent<KartCollider>();
+          
         }
 
         Destroy(kartSkel);

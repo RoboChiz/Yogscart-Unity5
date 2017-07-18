@@ -353,10 +353,10 @@ public class MainMenu : MonoBehaviour
                                 ChangeMenu(MenuState.Multiplayer);
                                 break;
                             case "Online":
-                                ChangeMenu(MenuState.Online);
-                                gd.GetComponent<InputManager>().RemoveOtherControllers();
-                                FindObjectOfType<NetworkGUI>().enabled = true;
-                                FindObjectOfType<NetworkGUI>().ShowMenu();
+                                //ChangeMenu(MenuState.Online);
+                                //gd.GetComponent<InputManager>().RemoveOtherControllers();
+                                //FindObjectOfType<NetworkGUI>().enabled = true;
+                                //FindObjectOfType<NetworkGUI>().ShowMenu();
                                 break;
                             case "Options":
                                 ChangeMenu(MenuState.Options);

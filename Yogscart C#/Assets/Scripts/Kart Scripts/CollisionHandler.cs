@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 //The Straight Port of the Slightly Efficent Kart Finding System 
 
@@ -14,11 +15,18 @@ public class CollisionHandler : MonoBehaviour
 
     void LateUpdate()
     {
-        KartCollider[] things = FindObjectsOfType<KartCollider>();
+        List<KartCollider> things = FindObjectsOfType<KartCollider>().ToList();
 
-        if(things.Length != thingCount)
+        //Remove Invalid Things
+        foreach(KartCollider thing in things.ToArray())
         {
-            thingCount = things.Length;
+            if (thing.gameObject.layer != 8)
+                things.Remove(thing);
+        }
+
+        if(things.Count != thingCount)
+        {
+            thingCount = things.Count;
             collisions = new bool[thingCount, thingCount];
         }
 
@@ -61,39 +69,162 @@ public class CollisionHandler : MonoBehaviour
     
     private void DoKartCollision(KartMovement kartA, KartMovement kartB, float distance)
     {
-    } 
+        KartMovement fastest, slowest;
+
+        //Find Faster Vehicle
+        if (kartA.actualSpeed > kartB.actualSpeed)
+        {
+            fastest = kartA;
+            slowest = kartB;
+        }
+        else
+        {
+            fastest = kartB;
+            slowest = kartA;
+        }
+
+
+        Vector3 fastRight = Vector3.zero, slowRight = Vector3.zero;
+
+        //Move Vehicles so they aren't colliding anymore
+        Vector3 relativePosition = fastest.transform.InverseTransformPoint(slowest.transform.position);
+
+        if (relativePosition.x > 0f)
+        {
+            //Move Slowest Right, Fastest Left
+            fastRight = -fastest.transform.right;
+            slowRight = fastest.transform.right;
+        }
+        else
+        {
+            //Move Slowest Left, Fastest Right
+            fastRight = fastest.transform.right;
+            slowRight = -fastest.transform.right;
+        }
+
+        //Project onto Ground
+        RaycastHit hit;
+        if (Physics.Raycast(fastest.transform.position, -fastest.transform.up, out hit, 2f))
+            fastRight = Vector3.ProjectOnPlane(fastRight/2f, hit.normal);
+
+        if (Physics.Raycast(slowest.transform.position, -slowest.transform.up, out hit, 2f))
+            slowRight = Vector3.ProjectOnPlane(slowRight/2f, hit.normal);
+
+        //Store where kart was
+        Vector3 fastestWorldPos = fastest.transform.position, slowestWorldPos = slowest.transform.position;
+
+        //Force Kart Move
+        fastest.transform.position += fastRight;
+        slowest.transform.position += slowRight;
+
+        //Leave Kart Body where kart was
+        fastest.kartBody.position = fastestWorldPos;
+        slowest.kartBody.position = slowestWorldPos;
+
+        //Slide Kartbody back to actual kart position
+        StartCoroutine(SlideKartBody(fastest.kartBody));
+        StartCoroutine(SlideKartBody(slowest.kartBody));
+
+        //Do Twist Animation
+        StartCoroutine(TwistKartBody(fastest.kartBody, (relativePosition.x > 0f) ? 1f : -1f));
+        StartCoroutine(TwistKartBody(slowest.kartBody, (relativePosition.x > 0f) ? -1f : 1f));
+
+        //Spawn Sparks
+        Instantiate(Resources.Load<GameObject>("Prefabs/Sparks"), fastest.transform.position + ((relativePosition.x > 0f) ? fastest.transform.right : -fastest.transform.right),
+            fastest.transform.rotation * Quaternion.AngleAxis(20f, fastest.transform.forward) * Quaternion.AngleAxis(90f + ((relativePosition.x > 0f) ? 0f : 180f), fastest.transform.up),
+            fastest.transform);
+
+        Instantiate(Resources.Load<GameObject>("Prefabs/Sparks"), slowest.transform.position + ((relativePosition.x > 0f) ? -slowest.transform.right : slowest.transform.right),
+            slowest.transform.rotation * Quaternion.AngleAxis(20f, slowest.transform.forward) * Quaternion.AngleAxis(90f + ((relativePosition.x > 0f) ? 180f : 0f), slowest.transform.up), 
+            slowest.transform);
+
+        FindObjectOfType<InterestManager>().AddInterest(fastest.transform, InterestType.Kart, Vector3.up);
+        FindObjectOfType<InterestManager>().AddInterest(slowest.transform, InterestType.Kart, Vector3.up);
+    }
 
     private void DoKartGodCollision(KartMovement kart, KartCollider god, float distance)
     {
-        //Push the kart
-        float leftSpace = ((god.transform.position - god.transform.right) - kart.transform.position).magnitude;
-        float rightSpace = ((god.transform.position + god.transform.right) - kart.transform.position).magnitude;
 
-        bool pushLeft = (leftSpace < rightSpace);
+        Vector3 kartRight = Vector3.zero;
 
-        if(pushLeft)
-            kart.GetComponent<CowTipping>().pushState = CowTipping.PushState.LeftNormal;
+        //Move Vehicles so they aren't colliding anymore
+        Vector3 relativePosition = god.transform.InverseTransformPoint(kart.transform.position);
+
+        if (relativePosition.x > 0f)
+        {
+            //Move Kart Right
+            kartRight = kart.transform.right;
+        }
         else
-            kart.GetComponent<CowTipping>().pushState = CowTipping.PushState.RightNormal;
+        {
+            //Move Kart Left
+            kartRight = -kart.transform.right;
+        }
 
-        kart.GetComponent<CowTipping>().TipCow();
-        kart.GetComponent<KartMovement>().SpinOut();
-
-        //Push Player away
-        Vector3 dir = (kart.transform.position - god.transform.position);
-        Vector3 normal = Vector3.up;
-
+        //Project onto Ground
         RaycastHit hit;
-        if (Physics.Raycast(kart.transform.position, -kart.transform.up, out hit, 4f))
-            normal = hit.normal;
+        if (Physics.Raycast(kart.transform.position, -kart.transform.up, out hit, 2f))
+            kartRight = Vector3.ProjectOnPlane(kartRight, hit.normal);
 
-        dir = Vector3.ProjectOnPlane(dir, normal).normalized * distance;
-        kart.transform.position += dir;
+        //Force Kart Move
+        kart.transform.position += kartRight;
+
+        //Slide Kartbody back to actual kart position
+        StartCoroutine(SlideKartBody(kart.kartBody));
+
+        //Do Twist Animation
+        StartCoroutine(TwistKartBody(kart.kartBody, (relativePosition.x > 0f) ? -1f : 1f));
+
+        kart.SpinOut();
+
+        FindObjectOfType<InterestManager>().AddInterest(kart.transform, InterestType.Attack, Vector3.up);
+        FindObjectOfType<InterestManager>().AddInterest(god.transform, InterestType.Attack, Vector3.zero);
+    }
+
+    private IEnumerator SlideKartBody(Transform child)
+    {
+        float startTime = Time.time, travelTime = 0.2f;
+        Vector3 startVal = child.localPosition;
+
+        while(Time.time - startTime < travelTime)
+        {
+            child.localPosition = Vector3.Lerp(startVal, Vector3.zero, (Time.time - startTime) / travelTime);
+            yield return null;
+        }
+
+        child.localPosition = Vector3.zero;
+    }
+
+    private IEnumerator TwistKartBody(Transform child, float modifier)
+    {
+        float startTime = Time.time, travelTime = 0.2f, twistAmount= 15f;
+
+        while (Time.time - startTime < travelTime)
+        {
+            SetZRotation(child, Mathf.Lerp(0f, twistAmount * modifier, (Time.time - startTime) / travelTime));
+            yield return null;
+        }
+
+        startTime = Time.time;
+        while (Time.time - startTime < travelTime)
+        {
+            SetZRotation(child, Mathf.Lerp(twistAmount * modifier, 0f, (Time.time - startTime) / travelTime));
+            yield return null;
+        }
+
+        SetZRotation(child, 0f);
+    }
+
+    private void SetZRotation(Transform toTransform, float value)
+    {
+        Vector3 euler = toTransform.localRotation.eulerAngles;
+        euler.z = value;
+        toTransform.localRotation = Quaternion.Euler(euler);
     }
 
     private IEnumerator WaitForCollision(int i, int j)
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.3f);
         collisions[i, j] = false;
     }
 

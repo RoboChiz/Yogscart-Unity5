@@ -149,6 +149,10 @@ public class TournamentRace : Race
             yield return null;
         }
 
+        Replay replay = FindObjectOfType<Replay>();
+        if (replay != null)
+            Destroy(replay);
+
         //Load the Level
         AsyncOperation sync = SceneManager.LoadSceneAsync("WinScreen");
 

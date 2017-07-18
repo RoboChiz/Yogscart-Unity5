@@ -40,17 +40,47 @@ public class InputManager : MonoBehaviour
     static private bool mouseLock = false;
 
     public List<float> iconHeights = new List<float>();
-    public static readonly List<string> menuInputs = new List<string>(new string[] { "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle", "Edit", "Minus", "ViewScroll" });
+    public static readonly List<string> menuInputs = new List<string>(new string[] { "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange","AltTabChange", "Toggle", "Edit", "Minus", "ViewScroll", "Quit", "HideUI", "RightStickHori", "RightStickVert", "HeightChange", "SprintToggle" });
+    public static readonly List<string> validCommands = new List<string>() { "Throttle", "Brake", "SteerLeft", "SteerRight", "Drift", "Item", "RearView"};
 
     private Vector2 lastMousePos;
+
+    private float changeChangeTimer = 0, cantChangeAlpha = 0f;
+
+    public GUISkin skin;
+
+    public void Awake()
+    {
+        validCommands.AddRange(menuInputs);
+    }
 
     //Loads Saved Input Configurations
     public static void LoadConfig()
     {
         //Load default Input
         allConfigs = new List<InputLayout>();
-        allConfigs.Add(new InputLayout("Default,Keyboard,Throttle:w,Brake:s,SteerRight:d,SteerLeft:a,Drift:space,Item:return,RearView:q,Pause:escape,Submit:return,Cancel:escape,MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w,Rotate:e,Rotate:q,TabChange:e,TabChange:q,Toggle:space"));
-        allConfigs.Add(new InputLayout("Default,Xbox360,Throttle:A,Brake:B,SteerRight:L_XAxis+,SteerLeft:L_XAxis-,Drift:TriggerL,Drift:TriggerR,Item:LB,Item:RB,RearView:X,Pause:Start,Submit:Start,Submit:A,Cancel:B,MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,MenuHorizontal:DPad_XAxis_Inv,MenuVertical:DPad_YAxis,Rotate:R_XAxis,TabChange:RB,TabChange:LB,Toggle:X,Minus:Y,Edit:X,ViewScroll:R_YAxis+,ViewScroll:R_YAxis-"));
+        allConfigs.Add(new InputLayout("Default,Keyboard," +
+            "Throttle:w,Brake:s," + 
+            "SteerRight:d,SteerLeft:a,Drift:space," +
+            "Item:return,RearView:q," + 
+            "Pause:escape,Submit:return,Cancel:escape," +
+            "MenuHorizontal:d,MenuHorizontal:a,MenuVertical:s,MenuVertical:w," +
+            "Rotate:e,Rotate:q,TabChange:e,TabChange:q,Toggle:space," +
+            "HideUI:h," +
+            "AltTabChange:x,AltTabChange:z"));
+
+        allConfigs.Add(new InputLayout("Default,Xbox360," +
+            "Throttle:A,Brake:B," +
+            "SteerRight:L_XAxis+,SteerLeft:L_XAxis-,Drift:TriggerL,Drift:TriggerR," +
+            "Item:LB,Item:RB,RearView:X," +
+            "Pause:Start,Submit:Start,Submit:A,Cancel:B," +
+            "MenuHorizontal:L_XAxis,MenuVertical:L_YAxis,MenuHorizontal:DPad_XAxis_Inv,MenuVertical:DPad_YAxis," +
+            "Rotate:R_XAxis,TabChange:RB,TabChange:LB,Toggle:X," +
+            "Minus:Y,Edit:X,ViewScroll:R_YAxis+,ViewScroll:R_YAxis-," +
+            "HideUI:Y," +
+            "RightStickHori:R_XAxis,RightStickVert:R_YAxis," +
+            "HeightChange:TriggerR,HeightChange:TriggerL," +
+            "SprintToggle:LS"));
 
         bool saveNeeded = false;
 
@@ -107,6 +137,20 @@ public class InputManager : MonoBehaviour
     public void AddController(string input)
     {
         //Check that the controller isn't already in
+        bool alreadyIn = ContainsController(input);
+
+        //Add the Controller
+        if (!alreadyIn)
+        {
+            controllers.Add(new InputController(input));
+            StartCoroutine(ShowInput(controllers.Count - 1));
+            Debug.Log("Added " + input + " controllers:" + controllers.Count);
+        }
+    }
+
+    public bool ContainsController(string input)
+    {
+        //Check that the controller isn't already in
         bool alreadyIn = false;
         for (int i = 0; i < controllers.Count; i++)
         {
@@ -117,13 +161,7 @@ public class InputManager : MonoBehaviour
             }
         }
 
-        //Add the Controller
-        if (!alreadyIn)
-        {
-            controllers.Add(new InputController(input));
-            StartCoroutine(ShowInput(controllers.Count - 1));
-            Debug.Log("Added " + input + " controllers:" + controllers.Count);
-        }
+        return alreadyIn;
     }
 
     //Removes a Controller from the Input Manager
@@ -212,6 +250,43 @@ public class InputManager : MonoBehaviour
                         RemoveController("_4");
                 }
             }
+            else
+            {
+                bool inputTried = false;
+
+                if ((Input.GetKey("return") || (Input.GetMouseButton(0) && controllers.Count == 0)) && keyboardAllowed && !ContainsController("Key_"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Start_1") != 0 || Input.GetAxis("A_1") != 0 && !ContainsController("_1"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Start_2") != 0 || Input.GetAxis("A_2") != 0 && !ContainsController("_2"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Start_3") != 0 || Input.GetAxis("A_3") != 0 && !ContainsController("_3"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Start_4") != 0 || Input.GetAxis("A_4") != 0 && !ContainsController("_4"))
+                    inputTried = true;
+
+                if (Input.GetKey("backspace") && keyboardAllowed && ContainsController("Key_"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Back_1") != 0 && ContainsController("_1"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Back_2") != 0 && ContainsController("_2"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Back_3") != 0 && ContainsController("_3"))
+                    inputTried = true;
+
+                if (Input.GetAxis("Back_4") != 0 && ContainsController("_4"))
+                    inputTried = true;
+
+                if (inputTried && changeChangeTimer <= 0)
+                    changeChangeTimer = 1f;
+            }
         }
 
         //Hide Mouse if it's not used
@@ -224,10 +299,15 @@ public class InputManager : MonoBehaviour
             Cursor.visible = true;
 
         lastMousePos = Input.mousePosition;
+
+        if (changeChangeTimer > 0f)
+            changeChangeTimer = Mathf.Clamp(changeChangeTimer - Time.deltaTime, 0f, 3f);
     }
 
     void OnGUI()
     {
+        GUI.skin = skin;
+
         float iconSize = Screen.height / 6f;
         Texture2D icon;
 
@@ -246,7 +326,26 @@ public class InputManager : MonoBehaviour
             else
                 icon = Resources.Load<Texture2D>("UI/Controls/Gone");
 
-            GUI.Box(new Rect((i * (iconSize + 10)) + 10, Screen.height - iconHeights[i], iconSize, iconSize), icon);
+
+            GUIShape.RoundedRectangle(new Rect((i * (iconSize + 10)) + 10, Screen.height - iconHeights[i], iconSize, iconSize), 10, new Color(0.5f, 0.5f, 0.5f, 0.5f));
+            GUI.DrawTexture(new Rect((i * (iconSize + 10)) + 10, Screen.height - iconHeights[i], iconSize, iconSize), icon, ScaleMode.ScaleToFit);
+        }
+
+        if (changeChangeTimer > 0f)
+            cantChangeAlpha = Mathf.Clamp(cantChangeAlpha + (Time.deltaTime * 2f), 0f, 1f);
+        else
+            cantChangeAlpha = Mathf.Clamp(cantChangeAlpha - (Time.deltaTime * 2f), 0f, 1f);
+
+        if (cantChangeAlpha > 0f)
+        {
+            GUIHelper.SetGUIAlpha(cantChangeAlpha);
+            Matrix4x4 pre = GUI.matrix;
+            GUI.matrix = GUIHelper.GetMatrix();
+
+            GUIHelper.OutLineLabel(new Rect(20, 1000, 1880, 70), "Inputs Locked!", 2);
+
+            GUIHelper.ResetColor();
+            GUI.matrix = pre;
         }
     }
 
@@ -561,8 +660,6 @@ public class InputLayout
     public bool LoadInput(string contents)
     {
         string[] splitString = contents.Split(","[0]);
-
-        List<string> validCommands = new List<string>() { "Throttle", "Brake", "SteerLeft", "SteerRight", "Drift", "Item", "RearView", "Pause", "Submit", "Cancel", "MenuHorizontal", "MenuVertical", "Rotate", "TabChange", "Toggle", "Minus", "Edit", "ViewScroll" };
         commandsOne = new Dictionary<string, string>();
         commandsTwo = new Dictionary<string, string>();
 
@@ -583,7 +680,7 @@ public class InputLayout
             {
                 string[] inputSplit = splitString[i].Split(":"[0]);
 
-                if (inputSplit.Length == 2 && validCommands.Contains(inputSplit[0]))
+                if (inputSplit.Length == 2 && InputManager.validCommands.Contains(inputSplit[0]))
                 {
                     if (!commandsOne.ContainsKey(inputSplit[0]))
                     {

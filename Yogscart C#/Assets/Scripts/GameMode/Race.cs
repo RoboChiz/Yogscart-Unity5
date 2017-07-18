@@ -214,9 +214,16 @@ public abstract class Race : GameMode
         racersFinished = 0;
         lastLap = false;
 
+        Replay replay = FindObjectOfType<Replay>();
+        if (replay != null)
+            Destroy(replay);
+
         //Set static values for Karts
         KartMovement.raceStarted = false;
         KartMovement.beQuiet = true;
+
+        //Change Pitch Back
+        FindObjectOfType<SoundManager>().SetMusicPitch(1f);
 
         //Load the Level
         AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
@@ -568,7 +575,7 @@ public abstract class Race : GameMode
 
             float startTime = Time.time;
             const float travelTime = 3f;
-            kartCamera kc = racer.cameras.GetChild(1).GetComponent<kartCamera>();
+            KartCamera kc = racer.cameras.GetChild(1).GetComponent<KartCamera>();
 
             while (Time.time - startTime < travelTime)
             {

@@ -28,12 +28,28 @@ public class Replay : MonoBehaviour
     private Race currentRace;
     private TrackData td;
 
+    //Camera Stuff
+    private bool loadedRace = false;
+    private Camera replayCamera;
+    private KartCamera replayKartCamera;
+    private OrbitCam orbitCam;
+    private FreeCam freeCam;
+
+    private float controlAlpha = 0f;
+    private bool showUI;
+    private int target;
+
+    public enum CameraMode {PlayerCam, TargetCam, FreeCam, TrackCam}
+    public CameraMode cameraMode = CameraMode.PlayerCam;
+
     public void Setup(Race _race, List<ReplayRacer> _racers)
     {
         gd = FindObjectOfType<CurrentGameData>();
 
         currentRace = _race;
         racers = _racers;
+
+        loadedRace = false;
 
         StartCoroutine(StartReplay());
     }
@@ -87,15 +103,29 @@ public class Replay : MonoBehaviour
 
         //Create Debug Kart Camera
         GameObject camera = new GameObject();
-        kartCamera kc = camera.AddComponent<kartCamera>();
-        kc.target = racers[racers.Count - 1].ingameObj;
+
+        replayKartCamera = camera.AddComponent<KartCamera>();
+        target = racers.Count - 1;
+
         camera.AddComponent<AudioListener>();
+        replayCamera = camera.GetComponent<Camera>();
+        
+        //Make a Kart Camera Rotater and turn it off
+        orbitCam = camera.AddComponent<OrbitCam>();
+        orbitCam.enabled = false;
+
+        //Make a Free Cam
+        freeCam = camera.AddComponent<FreeCam>();
+        freeCam.enabled = false;
 
         yield return null;
 
         isPlaying = true;
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1.5f);
+
+        loadedRace = true;
+        showUI = true;
 
         CurrentGameData.blackOut = false;
     }
@@ -138,8 +168,6 @@ public class Replay : MonoBehaviour
 
         GUIHelper.SetGUIAlpha(guiAlpha);
 
-        //Show Controls
-
         if (guiAlpha > 0)
         {
             //Show Pause Menu
@@ -168,104 +196,227 @@ public class Replay : MonoBehaviour
                 GUIHelper.CentreRectLabel(new Rect(670, yCentre + (i * 100), 580, 100), optionsSize[i], nextMenuOptions[i], (currentSelection == i) ? Color.yellow : Color.white);
             }
         }
+
+        //Show Controls
+        if(controlAlpha > 0f)
+        {
+            GUIHelper.SetGUIAlpha(controlAlpha);
+
+            GUIStyle label = new GUIStyle(GUI.skin.label);
+            label.fontSize = (int)(label.fontSize * 0.7f);
+
+            //Cam Mode
+            GUI.Label(new Rect(10, 10, 1900, 50), "Camera Mode: " + cameraMode.ToString(), label);
+
+            if(cameraMode != CameraMode.FreeCam)
+                GUI.Label(new Rect(10, 60, 1900, 50), "Tracking: " + gd.characters[racers[target].Character].name, label);
+
+            //Controls
+            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            {
+                switch (cameraMode)
+                {
+                    case CameraMode.PlayerCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A", label);
+                        break;
+                    case CameraMode.TargetCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A       Rotate Camera: RS      Zoom: LS", label);
+                        break;
+                    case CameraMode.TrackCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A", label);
+                        break;
+                    case CameraMode.FreeCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A       Move Camera : LS LT/RT        Rotate Camera: RS", label);
+                        break;
+                }
+                
+            }
+            else if (InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard)
+            {
+                switch (cameraMode)
+                {
+                    case CameraMode.PlayerCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return", label);
+                        break;
+                    case CameraMode.TargetCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return       Rotate Camera: RMB      Zoom: Mouse Wheel", label);
+                        break;
+                    case CameraMode.TrackCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return", label);
+                        break;
+                    case CameraMode.FreeCam:
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return       Move Camera : WASDQE         Rotate Camera: RMB", label);
+                        break;
+                }
+
+            }
+        }
+
     }
 
     void Update()
     {
-        bool submitBool = false, cancelBool = false, pauseBool = false;
-        int vert = 0;
-
-        pauseBool = InputManager.controllers[0].GetMenuInput("Pause") != 0;
-
-        if (inputState != InputState.Locked && guiAlpha == 1f)
-        {            
-            submitBool = InputManager.controllers[0].GetMenuInput("Submit") != 0;
-            cancelBool = InputManager.controllers[0].GetMenuInput("Cancel") != 0;       
-            vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
-        }
-
-        if (inputState == InputState.Menu)
-            guiAlpha = Mathf.Clamp(guiAlpha + (Time.deltaTime * 3f), 0f, 1f);
-        else
-            guiAlpha = Mathf.Clamp(guiAlpha - (Time.deltaTime * 3f), 0f, 1f);
-
-        switch (inputState)
+        if (loadedRace)
         {
-            case InputState.Replay:
-                if (pauseBool)
-                {
-                    inputState = InputState.Menu;
-                    nextMenuOptions = currentRace.GetNextMenuOptions().ToList();
-                    nextMenuOptions.Remove("Replay");
-                    nextMenuOptions.Remove("Save Ghost");
+            bool submitBool = false, cancelBool = false, pauseBool = false, hideBool = false;
+            int vert = 0, tabChange = 0;
 
-                    optionsSize = new float[nextMenuOptions.Count];
+            pauseBool = InputManager.controllers[0].GetMenuInput("Pause") != 0;
 
-                    currentSelection = 0;
-                }
-                break;
-            case InputState.Menu:
-                if(submitBool)
-                {
-                    switch(nextMenuOptions[currentSelection])
+            if (inputState == InputState.Menu && guiAlpha == 1f)
+            {
+                submitBool = InputManager.controllers[0].GetMenuInput("Submit") != 0;
+                cancelBool = InputManager.controllers[0].GetMenuInput("Cancel") != 0;
+                vert = InputManager.controllers[0].GetMenuInput("MenuVertical");            
+            }
+            else if (inputState == InputState.Replay)
+            {
+                submitBool = InputManager.controllers[0].GetMenuInput("Submit") != 0;
+
+                if (InputManager.controllers[0].controlLayout.Type != ControllerType.Keyboard)
+                    tabChange = InputManager.controllers[0].GetMenuInput("TabChange");
+                else
+                    tabChange = InputManager.controllers[0].GetMenuInput("AltTabChange");
+
+                hideBool = InputManager.controllers[0].GetMenuInput("HideUI") != 0;
+            }
+
+
+            if (inputState == InputState.Menu)
+                guiAlpha = Mathf.Clamp(guiAlpha + (Time.deltaTime * 3f), 0f, 1f);
+            else
+                guiAlpha = Mathf.Clamp(guiAlpha - (Time.deltaTime * 3f), 0f, 1f);
+
+            switch (inputState)
+            {
+                case InputState.Replay:
+                    if (pauseBool)
                     {
-                        case "Next Race":
-                        case "Restart":
-                            currentRace.NextRace();
-                            break;
-                        case "Quit":
-                            currentRace.EndGamemode();
-                            break;
-                        case "Finish":
-                            TournamentRace tRace = currentRace as TournamentRace;
-                            tRace.StartCoroutine(tRace.DoEnd());
-                            break;
+                        inputState = InputState.Menu;
+                        nextMenuOptions = currentRace.GetNextMenuOptions().ToList();
+                        nextMenuOptions.Remove("Replay");
+                        nextMenuOptions.Remove("Save Ghost");
+
+                        optionsSize = new float[nextMenuOptions.Count];
+
+                        currentSelection = 0;
                     }
 
-                    if (!(currentRace is VSRace))
-                        StartCoroutine(KillSelf());
-                    else
-                        inputState = InputState.Locked;
-                }
+                    if (submitBool)
+                    {
+                        //Change Camera Mode
+                        cameraMode = (CameraMode)(MathHelper.NumClamp((int)cameraMode + 1, 0, 4));
 
-                if (vert != 0)
-                    currentSelection = MathHelper.NumClamp(currentSelection + vert, 0, nextMenuOptions.Count);
+                        //Turn on/off target cam
+                        if (cameraMode == CameraMode.TargetCam)
+                            orbitCam.enabled = true;
+                        else
+                            orbitCam.enabled = false;
 
-                if (pauseBool || cancelBool)
-                    inputState = InputState.Replay;
-                break;
-        }
+                        if (cameraMode == CameraMode.PlayerCam)
+                            replayKartCamera.enabled = true;
+                        else
+                            replayKartCamera.enabled = false;
 
-        KartMovement[] kses = FindObjectsOfType<KartMovement>();
-        KartItem[] kitemes = FindObjectsOfType<KartItem>();
+                        if (cameraMode == CameraMode.FreeCam)
+                        {
+                            freeCam.enabled = true;
+                            freeCam.SetStartRotation();
+                        }
+                        else
+                            freeCam.enabled = false;
+                    }
 
-        //Lock / Unlock Karts
-        if (frameCount < (int)(40 * 7.4f))
-        {
-            //Unlock the karts      
-            foreach (KartMovement ks in kses)
-                ks.locked = true;
+                    if (tabChange != 0)
+                    {
+                        //Swap Target
+                        target = MathHelper.NumClamp(target + tabChange, 0, racers.Count);
+                    }
 
-            foreach (KartItem ki in kitemes)
-                ki.locked = true;
-        }
-        else
-        {
-            //Unlock the karts      
-            foreach (KartMovement ks in kses)
-                ks.locked = false;
+                    if (hideBool)
+                    {
+                        //Hide UI
+                        showUI = !showUI;
+                    }
+                    break;
+                case InputState.Menu:
+                    if (submitBool)
+                    {
+                        switch (nextMenuOptions[currentSelection])
+                        {
+                            case "Next Race":
+                            case "Restart":
+                                currentRace.NextRace();
+                                break;
+                            case "Quit":
+                                currentRace.EndGamemode();
+                                break;
+                            case "Finish":
+                                TournamentRace tRace = currentRace as TournamentRace;
+                                tRace.StartCoroutine(tRace.DoEnd());
+                                break;
+                        }
 
-            foreach (KartItem ki in kitemes)
-                ki.locked = false;
-        }
+                        if (!(currentRace is VSRace))
+                            StartCoroutine(KillSelf());
+                        else
+                            inputState = InputState.Locked;
+                    }
 
-        if (frameCount > (int)(40 * 4f) && frameCount < (int)(40 * 7.4f))
-        {
-            KartMovement.startBoostVal = 3 - (((40 * 8) - frameCount) / 40);
-        }
-        else
-        {
-            KartMovement.startBoostVal = -1;
+                    if (vert != 0)
+                        currentSelection = MathHelper.NumClamp(currentSelection + vert, 0, nextMenuOptions.Count);
+
+                    if (pauseBool || cancelBool)
+                        inputState = InputState.Replay;
+                    break;
+            }
+
+            KartMovement[] kses = FindObjectsOfType<KartMovement>();
+            KartItem[] kitemes = FindObjectsOfType<KartItem>();
+
+            //Lock / Unlock Karts
+            if (frameCount < (int)(40 * 7.4f))
+            {
+                //Unlock the karts      
+                foreach (KartMovement ks in kses)
+                    ks.locked = true;
+
+                foreach (KartItem ki in kitemes)
+                    ki.locked = true;
+            }
+            else
+            {
+                //Unlock the karts      
+                foreach (KartMovement ks in kses)
+                    ks.locked = false;
+
+                foreach (KartItem ki in kitemes)
+                    ki.locked = false;
+            }
+
+            //Show Controls UI
+            if (showUI)
+                controlAlpha = Mathf.Clamp(controlAlpha + (Time.deltaTime * 3f), 0f, 1f);
+            else
+                controlAlpha = Mathf.Clamp(controlAlpha - (Time.deltaTime * 3f), 0f, 1f);
+
+            //Control Camera Targets
+            replayKartCamera.target = racers[target].ingameObj.GetComponent<KartMovement>().kartBody;
+            replayKartCamera.rotTarget = racers[target].ingameObj;
+
+            orbitCam.target = racers[target].ingameObj;
+
+            //Camera Controls
+            switch (cameraMode)
+            {
+                case CameraMode.PlayerCam:
+                    replayKartCamera.distance = 6;
+                    replayKartCamera.height = 2;
+                    replayKartCamera.playerHeight = 2;
+                    replayKartCamera.angle = 0;
+                    replayKartCamera.sideAmount = 0;
+                    break;
+            }
         }
     }
 
