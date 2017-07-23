@@ -99,6 +99,8 @@ public class KartMovement : MonoBehaviour
     //Used for Character Specific Taunts
     public int characterID;
 
+    private Coroutine kartBodySliding = null;
+
     void Awake()
     {
         //Get Kart Body
@@ -843,6 +845,30 @@ public class KartMovement : MonoBehaviour
             spunOut = false;
             spinningOut = false;
         }
+    }
+
+    public void SlideKartBody()
+    {
+        if (kartBodySliding != null)
+            StopCoroutine(kartBodySliding);
+
+        kartBodySliding = StartCoroutine(ActualSlideKartBody());
+    }
+
+    private IEnumerator ActualSlideKartBody()
+    {
+        float startTime = Time.time, travelTime = 0.25f;
+        Vector3 startVal = kartBody.localPosition;
+
+        while (Time.time - startTime < travelTime)
+        {
+            kartBody.localPosition = Vector3.Lerp(startVal, Vector3.zero, (Time.time - startTime) / travelTime);
+            yield return null;
+        }
+
+        kartBody.localPosition = Vector3.zero;
+
+        kartBodySliding = null;
     }
 
     public class KartWheel

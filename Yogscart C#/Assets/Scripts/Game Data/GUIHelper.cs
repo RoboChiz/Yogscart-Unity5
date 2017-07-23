@@ -449,9 +449,17 @@ public class Toggle
 
     public bool Draw(Rect rect, Vector2 adjuster, int toggleSize, bool toggled, string label)
     {
+        return Draw(rect, adjuster, toggleSize, toggled, label, GUI.skin.label);
+    }
+
+    public bool Draw(Rect rect, Vector2 adjuster, int toggleSize, bool toggled, string label, GUIStyle style)
+    {
+        GUIStyle labelStyle = new GUIStyle(style);
+        labelStyle.alignment = TextAnchor.MiddleLeft;
+
         //Draw the label
         Rect labelRect = new Rect(rect.x, rect.y, rect.width - toggleSize, rect.height);
-        GUI.Label(labelRect, label);
+        GUI.Label(labelRect, label, labelStyle);
 
         //Draw Toggle
         Rect toggleRect = GUIHelper.CentreRect(new Rect(rect.x + (rect.width - toggleSize), rect.y + (rect.height - toggleSize) / 2f, toggleSize, toggleSize), toggleScale);      

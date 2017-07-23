@@ -134,8 +134,13 @@ public class LevelSelect : MonoBehaviour
         Rect ghostRect = new Rect(800, 950, 1000, 100);
 
         if (state && gamemode is TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
-        {         
-            string timeString = TimeManager.ToString(gd.tournaments[tempCurrentCup].tracks[currentTrack].bestTime);
+        {
+            string timeString = "";
+            if (gd.tournaments[tempCurrentCup].tracks[currentTrack].bestTime != 0f)
+                timeString = TimeManager.ToString(gd.tournaments[tempCurrentCup].tracks[currentTrack].bestTime);
+            else
+                timeString = "N/A";
+
             GUIHelper.OutLineLabel(timeRect, "Best Time:  " + timeString, 2, Color.black);
 
             string ghostString = gd.tournaments[tempCurrentCup].tracks[currentTrack].ghosts.ToString();

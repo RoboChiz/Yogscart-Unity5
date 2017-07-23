@@ -122,8 +122,8 @@ public class CollisionHandler : MonoBehaviour
         slowest.kartBody.position = slowestWorldPos;
 
         //Slide Kartbody back to actual kart position
-        StartCoroutine(SlideKartBody(fastest.kartBody));
-        StartCoroutine(SlideKartBody(slowest.kartBody));
+        fastest.SlideKartBody();
+        slowest.SlideKartBody();
 
         //Do Twist Animation
         StartCoroutine(TwistKartBody(fastest.kartBody, (relativePosition.x > 0f) ? 1f : -1f));
@@ -170,7 +170,7 @@ public class CollisionHandler : MonoBehaviour
         kart.transform.position += kartRight;
 
         //Slide Kartbody back to actual kart position
-        StartCoroutine(SlideKartBody(kart.kartBody));
+        kart.SlideKartBody();
 
         //Do Twist Animation
         StartCoroutine(TwistKartBody(kart.kartBody, (relativePosition.x > 0f) ? -1f : 1f));
@@ -179,21 +179,7 @@ public class CollisionHandler : MonoBehaviour
 
         FindObjectOfType<InterestManager>().AddInterest(kart.transform, InterestType.Attack, Vector3.up);
         FindObjectOfType<InterestManager>().AddInterest(god.transform, InterestType.Attack, Vector3.zero);
-    }
-
-    private IEnumerator SlideKartBody(Transform child)
-    {
-        float startTime = Time.time, travelTime = 0.2f;
-        Vector3 startVal = child.localPosition;
-
-        while(Time.time - startTime < travelTime)
-        {
-            child.localPosition = Vector3.Lerp(startVal, Vector3.zero, (Time.time - startTime) / travelTime);
-            yield return null;
-        }
-
-        child.localPosition = Vector3.zero;
-    }
+    } 
 
     private IEnumerator TwistKartBody(Transform child, float modifier)
     {

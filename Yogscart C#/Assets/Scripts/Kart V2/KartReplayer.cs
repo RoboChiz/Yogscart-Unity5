@@ -106,10 +106,27 @@ public class KartReplayer : MonoBehaviour
                         kartMovement.expectedSpeed = float.Parse(value);
                         break;
                     case position:
+                        //Get the Kart's Old Position
+                        Vector3 oldPosition = transform.position;
+
+                        //Move the Kart to it's new position
                         transform.position = ParseForVector3(value);
+
+                        //Leave the Kart Body at it's old position
+                        kartMovement.kartBody.position = oldPosition;
+
+                        //Lerp the body back to the kart
+                        kartMovement.SlideKartBody();
                         break;
                     case rotation:
+                        //Get the Kart's Old rotation
+                        Quaternion oldRot = transform.rotation;
+
+                        //Move the Kart to it's new rotation
                         transform.rotation = Quaternion.Euler(ParseForVector3(value));
+
+                        //Leave the Kart Body at it's old rotation
+                        kartMovement.kartBody.rotation = oldRot;
                         break;
                     case velocity:
                         kartRigidbody.velocity = ParseForVector3(value);

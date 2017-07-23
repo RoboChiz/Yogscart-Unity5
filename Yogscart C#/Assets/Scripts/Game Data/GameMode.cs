@@ -94,12 +94,23 @@ abstract public class GameMode : MonoBehaviour
             int counter = minVal;
 
             List<int> characterShuffle = new List<int>();
+
+            //Create a list of characters being used by humans
+            List<int> inUseCharacters = new List<int>();
+            for (int i = 0; i < controllerCount; i++)
+                inUseCharacters.Add(CurrentGameData.currentChoices[i].character);
+
+            //Add all Characters avoiding the ones being used by humans
             for (int i = 0; i < gd.characters.Length; i++)
             {
-                characterShuffle.Add(i);
+                if(!inUseCharacters.Contains(i))
+                    characterShuffle.Add(i);
             }
 
             characterShuffle = ShuffleArray(characterShuffle);
+
+            //Add Human Racers as a last resort
+            characterShuffle.AddRange(inUseCharacters);
 
             //Add Hats if you feel like it XD
 

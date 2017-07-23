@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class FreeCam : MonoBehaviour
 {
-    public float moveSpeed = 8f, rotateControllerSpeed = 150f, rotateMouseSpeed = 5f, lerpSmooth = 5f;
-    public Vector3 targetEuler, actualEuler, lastMousePos;
+    public float moveSpeed = 14f, rotateControllerSpeed = 150f, rotateMouseSpeed = 150f, lerpSmooth = 5f;
+    public Vector3 targetEuler, actualEuler;
 
     private bool sprintToggle = false;
 
@@ -19,7 +19,6 @@ public class FreeCam : MonoBehaviour
     {
         targetEuler = transform.rotation.eulerAngles;
         actualEuler = transform.rotation.eulerAngles;
-        lastMousePos = Input.mousePosition;
     }
 	
 	// Update is called once per frame
@@ -72,12 +71,18 @@ public class FreeCam : MonoBehaviour
 
         if (Input.GetMouseButton(1))
         {
+            Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            Vector3 diff = lastMousePos - Input.mousePosition;
+            float xInput = -Input.GetAxis("Mouse X");
+            float yInput = -Input.GetAxis("Mouse Y");
 
-            rotateHori = diff.y * rotateMouseSpeed;
-            rotateVert = diff.x * rotateMouseSpeed;
+            rotateHori = yInput * rotateMouseSpeed;
+            rotateVert = xInput * rotateMouseSpeed;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
         }
 
         targetEuler.x += rotateHori * Time.deltaTime;
@@ -85,7 +90,5 @@ public class FreeCam : MonoBehaviour
 
         actualEuler = Vector3.Lerp(actualEuler, targetEuler, Time.deltaTime * lerpSmooth);
         transform.rotation = Quaternion.Euler(actualEuler);
-
-        lastMousePos = Input.mousePosition;
     }
 }

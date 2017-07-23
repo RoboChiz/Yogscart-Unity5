@@ -132,6 +132,7 @@
     <Compile Include="Assets\Scripts\Kart V2\ParticleKill.cs" />
     <Compile Include="Assets\Scripts\Level Scripts\PigMovement.cs" />
     <Compile Include="Assets\Scripts\Managers\BSPTree.cs" />
+    <Compile Include="Assets\Scripts\Managers\InputV2.cs" />
     <Compile Include="Assets\Scripts\Managers\InterestManager.cs" />
     <Compile Include="Assets\Scripts\Menus\CancelChanges.cs" />
     <Compile Include="Assets\Scripts\Menus\ChangeName.cs" />

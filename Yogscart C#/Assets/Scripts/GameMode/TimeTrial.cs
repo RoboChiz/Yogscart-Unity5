@@ -291,6 +291,10 @@ public class TimeTrial : Race
             sw.Flush();
 
             popUp = gameObject.AddComponent<InfoPopUp>();
+
+            if (gd.streamMode)
+                saveLocation = "Disk!";
+
             popUp.Setup("Ghost saved to " + saveLocation);
             ghostSaved = true;
         }
@@ -309,8 +313,6 @@ public class TimeTrial : Race
 
         while (popUp.guiAlpha != 0f)
             yield return null;
-
-        Destroy(popUp);
 
         lockInputs = false;
     }

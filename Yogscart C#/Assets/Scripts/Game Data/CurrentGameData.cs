@@ -46,6 +46,8 @@ public class CurrentGameData : MonoBehaviour {
 
     public GameModeInfo[] onlineGameModes;
 
+    public bool streamMode;
+
     // Use this for initialization
     void Awake ()
     {
@@ -151,6 +153,10 @@ public class CurrentGameData : MonoBehaviour {
 
         //8 - Player Name
         gameData += playerName;
+        gameData += ";";
+
+        //9 - Stream Mode
+        gameData += streamMode.ToString();
 
         PlayerPrefs.SetString("YogscartData", gameData);
     }
@@ -245,6 +251,8 @@ public class CurrentGameData : MonoBehaviour {
             overallLapisCount = int.Parse(splitData[7]);
             //8 - Player Name
             playerName = splitData[8];
+            //9 - Stream Mode
+            streamMode = bool.Parse(splitData[9]);
         }
         catch
         {
@@ -283,6 +291,11 @@ public class CurrentGameData : MonoBehaviour {
         }
         //7 - Lapis
         overallLapisCount = 0;
+
+        //8 - PlayerName
+
+        //9 - Stream Mode
+        streamMode = false;
 
         SaveGame();
     }

@@ -2,6 +2,18 @@
 
 ## Changelog : Started 04/08/2016
 
+# 23/07/2017
+* Added Kart Body smoothing on Kart Replayer
+* Fixed Leaderboard text being cut off
+* Fixed position of "You Lose" text
+* Made Free Cam faster
+* Fixed Free Cam / Orbit Cam rotating
+* Made Level Select say "N/A" when no time trial data for a track
+* Fixed Confirm Changes showing when no changes made
+* Added Stream Mode to Options
+* Made Race avoid using characters already selected by Players (If possible)
+* Adjusted naming of target in Replay
+
 # 18/07/2017
 * Added Kart Collisions (Again)
 * Added twist animation to Kart Collisions

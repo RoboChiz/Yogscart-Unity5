@@ -6,7 +6,7 @@ using UnityEngine;
 public class OrbitCam : MonoBehaviour
 {
     public Vector2 xyValues = Vector2.zero, actualXYValues;
-    public float xSpeed = 10f, ySpeed = 15f, lerpSpeed = 3f, zoomSpeed = 1f;
+    public float xSpeed = 150f, ySpeed = 150f, lerpSpeed = 3f, zoomSpeed = 1f;
     private Vector2 lastMousePos;
     private float actualRadius;
 
@@ -29,11 +29,19 @@ public class OrbitCam : MonoBehaviour
         {
             if (Input.GetMouseButton(1))
             {
-                Vector2 diff = new Vector2(Input.mousePosition.x, Input.mousePosition.y) - lastMousePos;
+                float xInput = Input.GetAxis("Mouse X");
+                float yInput = Input.GetAxis("Mouse Y");
 
                 //Inputs
-                xyValues.x += diff.x * xSpeed * Time.deltaTime;
-                xyValues.y += diff.y * ySpeed * Time.deltaTime;
+                xyValues.x += xInput * xSpeed * Time.deltaTime;
+                xyValues.y += yInput * ySpeed * Time.deltaTime;
+
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
             }
 
             if (InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)

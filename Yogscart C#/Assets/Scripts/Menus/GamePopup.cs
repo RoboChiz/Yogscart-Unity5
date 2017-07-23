@@ -118,7 +118,7 @@ public class GamePopup : MonoBehaviour
         StartCoroutine(ActualShow());
     }
 
-    public void HidePopUp()
+    public virtual void HidePopUp()
     {
         StartCoroutine(ActualHide());
     }

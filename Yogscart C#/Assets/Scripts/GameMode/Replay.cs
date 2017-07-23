@@ -209,7 +209,8 @@ public class Replay : MonoBehaviour
             GUI.Label(new Rect(10, 10, 1900, 50), "Camera Mode: " + cameraMode.ToString(), label);
 
             if(cameraMode != CameraMode.FreeCam)
-                GUI.Label(new Rect(10, 60, 1900, 50), "Tracking: " + gd.characters[racers[target].Character].name, label);
+                GUI.Label(new Rect(10, 60, 1900, 50), "Tracking: " + gd.characters[racers[target].Character].name + ((racers[target].Human == -1) ? " (AI)" 
+                    : " (Player #" + (racers[target].Human + 1).ToString() + ")"), label);
 
             //Controls
             if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
@@ -226,7 +227,7 @@ public class Replay : MonoBehaviour
                         GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A", label);
                         break;
                     case CameraMode.FreeCam:
-                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A       Move Camera : LS LT/RT        Rotate Camera: RS", label);
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Camera Mode: A       Move Camera : LS LT/RT        Rotate Camera: RS", label);
                         break;
                 }
                 
@@ -245,7 +246,7 @@ public class Replay : MonoBehaviour
                         GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return", label);
                         break;
                     case CameraMode.FreeCam:
-                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return       Move Camera : WASDQE         Rotate Camera: RMB", label);
+                        GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Camera Mode: Return       Move Camera : WASDQE         Rotate Camera: RMB", label);
                         break;
                 }
 
@@ -404,7 +405,7 @@ public class Replay : MonoBehaviour
             replayKartCamera.target = racers[target].ingameObj.GetComponent<KartMovement>().kartBody;
             replayKartCamera.rotTarget = racers[target].ingameObj;
 
-            orbitCam.target = racers[target].ingameObj;
+            orbitCam.target = racers[target].ingameObj.GetComponent<KartMovement>().kartBody;
 
             //Camera Controls
             switch (cameraMode)

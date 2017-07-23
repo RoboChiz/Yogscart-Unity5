@@ -22,4 +22,16 @@ public class InfoPopUp : GamePopup
         ShowPopUp();
     }
 
+    public override void HidePopUp()
+    {
+        StartCoroutine(ActualHide());
+        StartCoroutine(KillSelf());
+    }
+
+    private IEnumerator KillSelf()
+    {
+        yield return new WaitForSeconds(0.6f);
+        Destroy(this);
+    }
+
 }
