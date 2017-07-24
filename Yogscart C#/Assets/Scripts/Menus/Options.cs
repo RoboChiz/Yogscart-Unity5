@@ -7,9 +7,9 @@ public class Options : MonoBehaviour
     private float guiAlpha = 0;
     private const float fadeTime = 0.5f;
 
-    private Texture2D blueTab, greenTab, orangeTab, gameTitle, graphicsTitle, inputTitle, line, lbTexture, rbTexture, qTexture, eTexture, xTexture, yTexture, aTexture, rsTexture;
+    private Texture2D blueTab, greenTab, orangeTab, purpleTab, gameTitle, graphicsTitle, inputTitle, bindingTitle, line, lbTexture, rbTexture, qTexture, eTexture, xTexture, yTexture, aTexture, rsTexture;
 
-    enum OptionsTab { Game, Graphics, Input };
+    enum OptionsTab { Game, Graphics, Input, Binding};
     private OptionsTab currentTab = OptionsTab.Game;
 
     private DropDown resDropDown, qualityDropDown;
@@ -50,10 +50,12 @@ public class Options : MonoBehaviour
         blueTab = Resources.Load<Texture2D>("UI/Options/BlueTab");
         greenTab = Resources.Load<Texture2D>("UI/Options/GreenTab");
         orangeTab = Resources.Load<Texture2D>("UI/Options/OrangeTab");
+        purpleTab = Resources.Load<Texture2D>("UI/Options/PurpleTab");
 
         gameTitle = Resources.Load<Texture2D>("UI/Options/Game");
         graphicsTitle = Resources.Load<Texture2D>("UI/Options/Graphics");
         inputTitle = Resources.Load<Texture2D>("UI/Options/Input");
+        bindingTitle = Resources.Load<Texture2D>("UI/Options/Binding");
 
         resDropDown = new DropDown();
         qualityDropDown = new DropDown();
@@ -154,7 +156,7 @@ public class Options : MonoBehaviour
                 vertical = InputManager.controllers[0].GetRawMenuInput("MenuVertical");
                 horizontal = 0;
 
-                if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Input && changingSlider))
+                if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Binding && changingSlider))
                 {
                     horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal");
                 }
@@ -171,7 +173,7 @@ public class Options : MonoBehaviour
             if (tabChange != 0)
             {
                 currentTab += tabChange;
-                currentTab = (OptionsTab)MathHelper.NumClamp((int)currentTab, 0, 3);
+                currentTab = (OptionsTab)MathHelper.NumClamp((int)currentTab, 0, 4);
                 ResetControllerOptions();
             }
 
@@ -323,6 +325,42 @@ public class Options : MonoBehaviour
                         }
                         break;
                     case OptionsTab.Input:
+                        if (submitBool)
+                        {
+                            if (currentSelection < 2)
+                                changingSlider = !changingSlider;
+                        }
+
+                        if (!changingSlider)
+                        {
+                            int maxVal = 2;
+
+                            if (vertical != 0)
+                                currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, maxVal);
+
+                            if (cancelBool)
+                            {
+                                Quit();
+                            }
+                        }
+                        else
+                        {
+                            if (horizontal != 0)
+                            {
+                                float toChange = horizontal * Time.unscaledDeltaTime * sliderChangeRate * 1.5f;
+                                CurrentGameData gd = FindObjectOfType<CurrentGameData>();
+
+                                if (currentSelection == 0)
+                                    gd.mouseScale = Mathf.Clamp(gd.mouseScale + toChange, 0.1f, 10f);
+                                else if (currentSelection == 1)
+                                    gd.controllerScale = Mathf.Clamp(gd.controllerScale + toChange, 0.1f, 10f);
+                            }
+
+                            if (cancelBool)
+                                changingSlider = false;
+                        }
+                        break;
+                    case OptionsTab.Binding:
 
                         int configCount = InputManager.AllConfigs.Count;
 
@@ -410,6 +448,9 @@ public class Options : MonoBehaviour
 
     public void Quit()
     {
+        //Save Mouse and Controller Scales
+        FindObjectOfType<CurrentGameData>().SaveGame();
+
         if (somethingChanged)
         {
             //Find the PopUp Window and Show it
@@ -429,7 +470,7 @@ public class Options : MonoBehaviour
     private void ResetControllerOptions()
     {
         //Reset Controller Values
-        if (currentTab == OptionsTab.Input)
+        if (currentTab == OptionsTab.Binding)
             currentSelection = currentLayoutSelection;
         else
             currentSelection = 0;
@@ -519,6 +560,15 @@ public class Options : MonoBehaviour
 
                 if (!locked && GUI.Button(inputRect, ""))
                     currentTab = OptionsTab.Input;
+            }
+
+            if (currentTab != OptionsTab.Binding)
+            {
+                Rect bindingRect = new Rect(1170, 95, 330, 70);
+                GUI.DrawTexture(bindingRect, bindingTitle);
+
+                if (!locked && GUI.Button(bindingRect, ""))
+                    currentTab = OptionsTab.Binding;
             }
 
             //Draw Q/E or LB/RB
@@ -697,6 +747,31 @@ public class Options : MonoBehaviour
                     break;
                 case OptionsTab.Input:
                     GUI.DrawTexture(tabRect, orangeTab);
+                    GUIShape.RoundedRectangle(new Rect(210, 200, 1485, 700), 25, new Color(0, 0, 0, 0.25f * guiAlpha));
+
+                    GUIHelper.BeginGroup(tabAreaRect);
+
+                    normalSlider = GUI.skin.horizontalSlider;
+                    normalSliderThumb = GUI.skin.horizontalSliderThumb;
+                    selectedSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb);
+                    selectedSliderThumb.normal.background = selectedSliderThumb.active.background;
+
+                    normalLabel.fontSize = (int)(normalLabel.fontSize * 0.75f);
+                    selectedLabel.fontSize = normalLabel.fontSize;
+
+                    CurrentGameData gd = FindObjectOfType<CurrentGameData>();
+
+                    GUI.Label(new Rect(20, 70, 300, 100), "Mouse Sensitivity\n(For Replay Mode):", (!locked && currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                    gd.mouseScale = GUI.HorizontalSlider(new Rect(330, 110, 1000, 100), gd.mouseScale, 0.1f, 10f, normalSlider, (currentSelection == 0 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
+                    GUI.Label(new Rect(1300, 70, 250, 100), gd.mouseScale.ToString("0.00"));
+
+                    GUI.Label(new Rect(20, 180, 300, 100), "Controller Sensitivity\n(For Replay Mode):", (!locked && currentSelection == 1 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                    gd.controllerScale = GUI.HorizontalSlider(new Rect(330, 220, 1000, 100), gd.controllerScale, 0.1f, 10f, normalSlider, (currentSelection == 1 && changingSlider && !Cursor.visible) ? selectedSliderThumb : normalSliderThumb);
+                    GUI.Label(new Rect(1300, 180, 250, 100), gd.controllerScale.ToString("0.00"));
+
+                    break;
+                case OptionsTab.Binding:
+                    GUI.DrawTexture(tabRect, purpleTab);
 
                     bool showXbox = InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360;
 
@@ -1042,10 +1117,8 @@ public class Options : MonoBehaviour
                             InputManager.lockEverything = false;
                         }
                     }
-
                     break;
             }
-
             GUIHelper.EndGroup();
         }
     }

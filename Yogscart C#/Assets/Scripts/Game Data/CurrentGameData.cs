@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System;
 
 public class CurrentGameData : MonoBehaviour {
 
@@ -46,7 +47,10 @@ public class CurrentGameData : MonoBehaviour {
 
     public GameModeInfo[] onlineGameModes;
 
+    //Options
     public bool streamMode;
+    public float mouseScale = 1f;
+    public float controllerScale = 1f;
 
     // Use this for initialization
     void Awake ()
@@ -99,6 +103,12 @@ public class CurrentGameData : MonoBehaviour {
 
         GUI.color = Color.white;
 
+    }
+
+    void Update()
+    {
+        mouseScale = Mathf.Clamp(mouseScale, 0.1f, 10f);
+        controllerScale = Mathf.Clamp(controllerScale, 0.1f, 10f);
     }
 
     public void SaveGame()
@@ -157,6 +167,14 @@ public class CurrentGameData : MonoBehaviour {
 
         //9 - Stream Mode
         gameData += streamMode.ToString();
+        gameData += ";";
+
+        //10 - Mouse Scale
+        gameData += mouseScale;
+        gameData += ";";
+
+        //11 - Controller Scale
+        gameData += controllerScale;
 
         PlayerPrefs.SetString("YogscartData", gameData);
     }
@@ -253,6 +271,10 @@ public class CurrentGameData : MonoBehaviour {
             playerName = splitData[8];
             //9 - Stream Mode
             streamMode = bool.Parse(splitData[9]);
+            //10 - Mouse Scale
+            mouseScale = float.Parse(splitData[10]);
+            //11 - Controller Scale
+            controllerScale = float.Parse(splitData[11]);
         }
         catch
         {
@@ -297,6 +319,12 @@ public class CurrentGameData : MonoBehaviour {
         //9 - Stream Mode
         streamMode = false;
 
+        //10 - Mouse Scale
+        mouseScale = 1f;
+
+        //11 - Controller Scale
+        controllerScale = 1f;
+
         SaveGame();
     }
 
@@ -314,24 +342,38 @@ public class CurrentGameData : MonoBehaviour {
             //Check every file in Ghost Data folder
             var info = new DirectoryInfo(Application.persistentDataPath + "/Ghost Data/");
             var fileInfo = info.GetFiles();
+            bool updateFile = false;
+
             foreach (FileInfo file in fileInfo)
             {
                 FileStream fileStream = null;
+                GhostData gd = null;
+
                 try
                 {
                     BinaryFormatter bf = new BinaryFormatter();
                     fileStream = file.Open(FileMode.Open);
 
-                    GhostData gd = (GhostData)bf.Deserialize(fileStream);
+                    gd = (GhostData)bf.Deserialize(fileStream);
+                    gd.fileLocation = file.FullName;
 
-                    if(CompatibleVersion(gd.version))
+                    if (CompatibleVersion(gd.version))
+                    {
                         tournaments[gd.cup].tracks[gd.track].ghosts++;
+
+                        if (gd.version != version)
+                            updateFile = true;
+                    }
                 }
                 finally
                 {
                     if (fileStream != null)
                         fileStream.Close();
                 }
+
+                //Update Save File if Appropriate
+                if (updateFile)
+                    UpdateFile(gd);
             }
         }
         catch { }
@@ -339,10 +381,42 @@ public class CurrentGameData : MonoBehaviour {
 
     public bool CompatibleVersion(string versionName)
     {
-        return versionName == version;
+        if (versionName == version)
+            return true;
+
+        if (versionName == "C# Version 0.7")
+            return true;
+
+        return false;
     }
 
+    public void UpdateFile(GhostData data)
+    {
+        //Update Ghost Data
+        data.version = version;
+
+        //Save File
+        FileStream sw = null;
+        try
+        {
+            if (!Directory.Exists(Application.persistentDataPath + "/Ghost Data/"))
+                Directory.CreateDirectory(Application.persistentDataPath + "/Ghost Data/");
+
+            BinaryFormatter bf = new BinaryFormatter();
+            sw = File.Create(data.fileLocation);
+            bf.Serialize(sw, data);
+            sw.Flush();
+
+            Debug.Log("Updated " + data.fileLocation + " to " + version);
+        }
+        finally
+        {
+            if (sw != null)
+                sw.Close();
+        }
+    }
 }
+
 
 //Other Classes
 public enum UnlockedState { FromStart, Unlocked, Locked};

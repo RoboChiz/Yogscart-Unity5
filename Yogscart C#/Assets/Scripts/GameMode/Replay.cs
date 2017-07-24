@@ -21,7 +21,7 @@ public class Replay : MonoBehaviour
     private List<String> nextMenuOptions;
     private float[] optionsSize;
 
-    enum InputState { Locked, Replay, Menu}
+    enum InputState { Locked, Replay, Menu, Options}
     private InputState inputState = InputState.Replay;
 
     private CurrentGameData gd;
@@ -262,7 +262,8 @@ public class Replay : MonoBehaviour
             bool submitBool = false, cancelBool = false, pauseBool = false, hideBool = false;
             int vert = 0, tabChange = 0;
 
-            pauseBool = InputManager.controllers[0].GetMenuInput("Pause") != 0;
+            if(inputState != InputState.Options)
+                pauseBool = InputManager.controllers[0].GetMenuInput("Pause") != 0;
 
             if (inputState == InputState.Menu && guiAlpha == 1f)
             {
@@ -297,6 +298,7 @@ public class Replay : MonoBehaviour
                         nextMenuOptions = currentRace.GetNextMenuOptions().ToList();
                         nextMenuOptions.Remove("Replay");
                         nextMenuOptions.Remove("Save Ghost");
+                        nextMenuOptions.Insert(nextMenuOptions.Count-1,"Options");
 
                         optionsSize = new float[nextMenuOptions.Count];
 
@@ -343,25 +345,40 @@ public class Replay : MonoBehaviour
                 case InputState.Menu:
                     if (submitBool)
                     {
+                        bool killSelf = false;
+
                         switch (nextMenuOptions[currentSelection])
                         {
                             case "Next Race":
                             case "Restart":
                                 currentRace.NextRace();
+                                killSelf = true;
                                 break;
                             case "Quit":
                                 currentRace.EndGamemode();
+                                killSelf = true;
                                 break;
                             case "Finish":
                                 TournamentRace tRace = currentRace as TournamentRace;
                                 tRace.StartCoroutine(tRace.DoEnd());
+                                killSelf = true;
+                                break;
+                            case "Options":
+                                inputState = InputState.Options;
+
+                                Debug.Log("Load the options menu");
+                                GetComponent<Options>().enabled = true;
+                                GetComponent<Options>().ShowOptions();
                                 break;
                         }
 
-                        if (!(currentRace is VSRace))
-                            StartCoroutine(KillSelf());
-                        else
-                            inputState = InputState.Locked;
+                        if (killSelf)
+                        {
+                            if (!(currentRace is VSRace))
+                                StartCoroutine(KillSelf());
+                            else
+                                inputState = InputState.Locked;
+                        }
                     }
 
                     if (vert != 0)
@@ -369,6 +386,10 @@ public class Replay : MonoBehaviour
 
                     if (pauseBool || cancelBool)
                         inputState = InputState.Replay;
+                    break;
+                case InputState.Options:
+                    if (GetComponent<Options>().enabled == false)
+                        inputState = InputState.Menu;
                     break;
             }
 

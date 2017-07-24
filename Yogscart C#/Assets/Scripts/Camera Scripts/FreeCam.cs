@@ -9,9 +9,12 @@ public class FreeCam : MonoBehaviour
 
     private bool sprintToggle = false;
 
+    private CurrentGameData gd;
+
 	// Use this for initialization
 	void Start ()
     {
+        gd = FindObjectOfType<CurrentGameData>();
         SetStartRotation();
     }
 
@@ -59,8 +62,8 @@ public class FreeCam : MonoBehaviour
             //Rotate Camera
             if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
             {
-                rotateHori = InputManager.controllers[0].GetInput("RightStickVert") * rotateControllerSpeed;
-                rotateVert = -InputManager.controllers[0].GetInput("RightStickHori") * rotateControllerSpeed;
+                rotateHori = InputManager.controllers[0].GetInput("RightStickVert") * rotateControllerSpeed * gd.controllerScale;
+                rotateVert = -InputManager.controllers[0].GetInput("RightStickHori") * rotateControllerSpeed * gd.controllerScale;
 
                 bool sprintBool = InputManager.controllers[0].GetMenuInput("SprintToggle") != 0;
 
@@ -77,8 +80,8 @@ public class FreeCam : MonoBehaviour
             float xInput = -Input.GetAxis("Mouse X");
             float yInput = -Input.GetAxis("Mouse Y");
 
-            rotateHori = yInput * rotateMouseSpeed;
-            rotateVert = xInput * rotateMouseSpeed;
+            rotateHori = yInput * rotateMouseSpeed * gd.mouseScale;
+            rotateVert = xInput * rotateMouseSpeed * gd.mouseScale;
         }
         else
         {

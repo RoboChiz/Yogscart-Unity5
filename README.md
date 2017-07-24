@@ -2,6 +2,15 @@
 
 ## Changelog : Started 04/08/2016
 
+# 24/07/2017
+* Increased kart collision push distance
+* Added Ghost Data updating
+* Added New Options Tab
+* Move Input tab to Binding
+* Added Mouse Sensitivity Options
+* Added Controller Sensitivity Options
+* Added options to replay pause menu
+
 # 23/07/2017
 * Added Kart Body smoothing on Kart Replayer
 * Fixed Leaderboard text being cut off

@@ -105,10 +105,10 @@ public class CollisionHandler : MonoBehaviour
         //Project onto Ground
         RaycastHit hit;
         if (Physics.Raycast(fastest.transform.position, -fastest.transform.up, out hit, 2f))
-            fastRight = Vector3.ProjectOnPlane(fastRight/2f, hit.normal);
+            fastRight = Vector3.ProjectOnPlane(fastRight, hit.normal);
 
         if (Physics.Raycast(slowest.transform.position, -slowest.transform.up, out hit, 2f))
-            slowRight = Vector3.ProjectOnPlane(slowRight/2f, hit.normal);
+            slowRight = Vector3.ProjectOnPlane(slowRight, hit.normal);
 
         //Store where kart was
         Vector3 fastestWorldPos = fastest.transform.position, slowestWorldPos = slowest.transform.position;

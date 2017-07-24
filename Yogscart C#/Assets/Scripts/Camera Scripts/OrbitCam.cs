@@ -13,11 +13,14 @@ public class OrbitCam : MonoBehaviour
     public float radius = 6f;
     public Transform target;
 
+    private CurrentGameData gd;
+
     public float rotateControllerSpeed = 2f, zoomControllerSpeed = 0.2f;
 
     // Use this for initialization
     void Start ()
     {
+        gd = FindObjectOfType<CurrentGameData>();
         lastMousePos = Input.mousePosition;
         xyValues = new Vector2(-90, 5f);
     }
@@ -29,8 +32,8 @@ public class OrbitCam : MonoBehaviour
         {
             if (Input.GetMouseButton(1))
             {
-                float xInput = Input.GetAxis("Mouse X");
-                float yInput = Input.GetAxis("Mouse Y");
+                float xInput = Input.GetAxis("Mouse X") * gd.mouseScale;
+                float yInput = Input.GetAxis("Mouse Y") * gd.mouseScale;
 
                 //Inputs
                 xyValues.x += xInput * xSpeed * Time.deltaTime;
@@ -46,8 +49,8 @@ public class OrbitCam : MonoBehaviour
 
             if (InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
             {
-                xyValues.y -= InputManager.controllers[0].GetInput("RightStickVert") * rotateControllerSpeed;
-                xyValues.x -= InputManager.controllers[0].GetInput("RightStickHori") * rotateControllerSpeed;
+                xyValues.y -= InputManager.controllers[0].GetInput("RightStickVert") * rotateControllerSpeed * gd.controllerScale;
+                xyValues.x -= InputManager.controllers[0].GetInput("RightStickHori") * rotateControllerSpeed * gd.controllerScale;
 
                 radius += InputManager.controllers[0].GetInput("MenuVertical") * zoomControllerSpeed;
             }
