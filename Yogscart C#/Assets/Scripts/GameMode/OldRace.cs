@@ -14,7 +14,7 @@ public enum RaceGUI { Blank, CutScene, RaceInfo, Countdown, RaceGUI, ScoreBoard,
     Created by Robert (Robo_Chiz)
     FOR THE LOVE OF ALL THAT IS HOLY, DO NOT EDIT ANYTHING IN THIS SCRIPT!
     Thanks
-*/
+
 
 public class OldRace : GameMode
 {
@@ -694,7 +694,7 @@ public class OldRace : GameMode
                 float previewRatio = idealWidth / previewTexture.width;
                 Rect previewRect = new Rect(Screen.width - idealWidth - 20, Screen.height - (previewTexture.height * previewRatio * 2f), idealWidth, previewTexture.height * previewRatio);
 
-                GUI.DrawTexture(previewRect, previewTexture);*/
+                GUI.DrawTexture(previewRect, previewTexture);
 
                 Matrix4x4 original = GUI.matrix;
                 GUI.matrix = GUIHelper.GetMatrix();
@@ -732,7 +732,7 @@ public class OldRace : GameMode
 
                 if (raceType != RaceType.Online)
                 {
-                    if (InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick())
+                    if (InputManager.controllers[0].GetButtonWithLock("Submit") || InputManager.GetClick())
                     {
                         if (lb.state != LBType.AddedPoints && lb.state != LBType.AddingPoints)
                         {
@@ -772,7 +772,7 @@ public class OldRace : GameMode
                 float IdealHeight = Screen.height / 8f;
                 float ratio = IdealHeight / 100f;
 
-                int vert = -InputManager.controllers[0].GetMenuInput("MenuVertical");
+                int vert = -InputManager.controllers[0].GetInputWithLock("MenuVertical");
 
                 if (changingState)
                     vert = 0;
@@ -1194,3 +1194,4 @@ public class OldRace : GameMode
         throw new NotImplementedException();
     }
 }
+*/

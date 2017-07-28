@@ -162,8 +162,8 @@ public class LevelSelect : MonoBehaviour
                 Rect leftRect = new Rect(1000, 905, 160, 80);
                 Rect rightRect = new Rect(1450, 905, 160, 80);
 
-                GUI.DrawTexture(leftRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/LB") : Resources.Load<Texture2D>("UI/Options/Q"));
-                GUI.DrawTexture(rightRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/RB") : Resources.Load<Texture2D>("UI/Options/E"));
+                GUI.DrawTexture(leftRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].inputType == InputType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/LB") : Resources.Load<Texture2D>("UI/Options/Q"));
+                GUI.DrawTexture(rightRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].inputType == InputType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/RB") : Resources.Load<Texture2D>("UI/Options/E"));
 
                 GUIStyle customButton = new GUIStyle();
 
@@ -192,11 +192,11 @@ public class LevelSelect : MonoBehaviour
 
         if (!sliding && (FindObjectOfType<MainMenu>() == null || !FindObjectOfType<MainMenu>().sliding))
         {
-            vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
-            hori = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
-            submit = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
-            cancel = (InputManager.controllers[0].GetMenuInput("Cancel") != 0);
-            tabChange = InputManager.controllers[0].GetMenuInput("TabChange");
+            vert = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
+            hori = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
+            submit = InputManager.controllers[0].GetButtonWithLock("Submit");
+            cancel = InputManager.controllers[0].GetButtonWithLock("Cancel");
+            tabChange = InputManager.controllers[0].GetIntInputWithLock("TabChange");
 
             if (canClick && Input.GetMouseButton(0))
                 submit = true;

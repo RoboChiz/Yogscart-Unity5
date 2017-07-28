@@ -6,7 +6,7 @@ public class KartSpawner : MonoBehaviour
 {
     public float modifer = 1f;
     public bool ai;
-    public bool spawnCamera = true;
+    public bool spawnCamera = true, spawnRecorder = false;
 
     public AI.AIStupidity stupidty;
 
@@ -57,6 +57,15 @@ public class KartSpawner : MonoBehaviour
             Destroy(kart.GetComponent<KartInput>());
             AI ai = kart.gameObject.AddComponent<AI>();
             ai.intelligence = stupidty;
+        }
+
+        if(spawnRecorder)
+        {
+            KartRecorder kr = kart.gameObject.AddComponent<KartRecorder>();
+            yield return null;
+            yield return null;
+            kr.Record();
+            yield return null;
         }
 
         kart.GetComponent<KartItem>().locked = false;

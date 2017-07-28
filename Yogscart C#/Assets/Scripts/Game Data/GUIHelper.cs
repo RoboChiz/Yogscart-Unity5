@@ -189,7 +189,7 @@ public class GUIHelper
         string toDraw = "UI/New Main Menu/nextKey";
         if (InputManager.controllers != null && InputManager.controllers.Count >= 1)
         {
-            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            if (InputManager.controllers[0].inputType == InputType.Xbox360)
                 toDraw = "UI/New Main Menu/nextXbox";
         }
 
@@ -218,7 +218,7 @@ public class GUIHelper
         string toDraw = "UI/New Main Menu/backKey";
         if(InputManager.controllers != null && InputManager.controllers.Count >= 1)
         {
-            if(InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            if(InputManager.controllers[0].inputType == InputType.Xbox360)
                 toDraw = "UI/New Main Menu/backXbox";
         }
 
@@ -280,7 +280,7 @@ public class GUIHelper
         rect.x += groupOffset.x;
         rect.y += groupOffset.y;
 
-        if(rect.Contains(mousePos))
+        if(Cursor.visible && rect.Contains(mousePos))
         {
             if (value < max)
                 value += Time.deltaTime * timeScale;

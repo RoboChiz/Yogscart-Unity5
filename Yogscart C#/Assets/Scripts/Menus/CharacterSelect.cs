@@ -43,19 +43,16 @@ public class CharacterSelect : MonoBehaviour
     private float menuAlpha = 0f, overallAlpha = 0f;
     private bool sliding = false;
 
-    private bool lastAllowed = false, mouseLast = false, canClick = false;
+    private bool mouseLast = false, canClick = false;
     private Vector2 lastMousePos;
 
-    //Controller Layouts
-    private float[] controlLayoutBoxHeights;
-    private int[] selectedLayout;
-    private Vector2[] layoutScrollPositions;
-    private const int layoutBoxStartHeight = 75;
+    private InputManager.InputState lastInputState;
 
     public IEnumerator ShowCharacterSelect(csState state)
     {
         loading = true;
-        lastAllowed = InputManager.allowedToChange;
+        lastInputState = InputManager.inputState;
+
         affectAllGUIwithAlpha = true;
 
         gd = FindObjectOfType<CurrentGameData>();
@@ -142,20 +139,15 @@ public class CharacterSelect : MonoBehaviour
         loadedChoice = new CharacterSelectLoadOut[4];
         kartSelected = new bool[4];
         showLayout = new bool[4];
-        selectedLayout = new int[4];
-        layoutScrollPositions = new Vector2[4];
 
         rotateRects = new Rect[4];
 
         for (int i = 0; i < rotateRects.Length; i++)
             rotateRects[i] = new Rect(1440, 500, 0, 0);
 
-        controlLayoutBoxHeights = new float[4];
-
         for (int i = 0; i < 4; i++)
         {
             loadedChoice[i] = new CharacterSelectLoadOut(-1, -1, -1, -1);
-            controlLayoutBoxHeights[i] = layoutBoxStartHeight;
         }
     }
 
@@ -187,7 +179,8 @@ public class CharacterSelect : MonoBehaviour
             switch (state)
             {
                 case csState.Character:
-                    InputManager.allowedToChange = lastAllowed;
+                    InputManager.SetInputState(lastInputState);
+                    InputManager.SetToggleState(InputManager.ToggleState.Any);
 
                     GUI.Label(new Rect(10, 10, 1920, 95), "Select A Character");
                     GUI.DrawTexture(iconArea, nameList);
@@ -228,8 +221,8 @@ public class CharacterSelect : MonoBehaviour
 
                     break;
                 case csState.Hat:
-
-                    InputManager.allowedToChange = false;
+                    InputManager.SetInputState(InputManager.InputState.LockedShowing);
+                    InputManager.SetToggleState(InputManager.ToggleState.Any);
 
                     GUI.Label(new Rect(10, 10, 1920, 95), "Select A Hat");
 
@@ -309,9 +302,9 @@ public class CharacterSelect : MonoBehaviour
                 float newHeight = rotateKey.height * ratio;
 
                 GUI.DrawTexture(new Rect(current.x, current.y + current.height - newHeight, current.width, newHeight),
-                    (InputManager.controllers[s].controlLayout.Type == ControllerType.Keyboard ? rotateKey : rotateXbox), ScaleMode.ScaleToFit);
+                    (InputManager.controllers[s].inputType == InputType.Keyboard ? rotateKey : rotateXbox), ScaleMode.ScaleToFit);
 
-                if(!affectAllGUIwithAlpha)
+                if (!affectAllGUIwithAlpha)
                     GUIHelper.SetGUIAlpha(menuAlpha);
 
                 float topHeight = 115;
@@ -414,7 +407,7 @@ public class CharacterSelect : MonoBehaviour
                                     kartSelected[s] = false;
                             }
                         }
-                        else if(s== 0)
+                        else if (s == 0)
                         {
                             if (loadedChoice[s].kartScales[kartI + 2] > 1f)
                                 loadedChoice[s].kartScales[kartI + 2] -= Time.deltaTime * 2f;
@@ -541,115 +534,8 @@ public class CharacterSelect : MonoBehaviour
             GUI.skin = Resources.Load<GUISkin>("GUISkins/Options");
             if (!affectAllGUIwithAlpha)
                 GUIHelper.ResetColor();
-
-            //Draw Input Layouts
-            if (InputManager.controllers != null)
-            {
-                float maxAlpha = overallAlpha * 0.5f;
-
-                for (int i = 0; i < InputManager.controllers.Count; i++)
-                {
-                    //Detect if Toggle is pressed
-                    if (InputManager.controllers[i].GetMenuInput("Toggle") != 0)
-                    {
-                        showLayout[i] = !showLayout[i];
-                    }
-
-                    //Draw closed box if closed
-                    if (showLayout[i])
-                    {
-                        if (controlLayoutBoxHeights[i] < 450f)
-                            controlLayoutBoxHeights[i] += Time.deltaTime * 350f;
-                        else
-                            controlLayoutBoxHeights[i] = 450f;
-                    }
-                    else
-                    {
-                        if (controlLayoutBoxHeights[i] > layoutBoxStartHeight)
-                            controlLayoutBoxHeights[i] -= Time.deltaTime * 350f;
-                        else
-                            controlLayoutBoxHeights[i] = layoutBoxStartHeight;
-                    }
-
-                    float startX = 300 + (i * 370);
-
-                    Color rectangleColour;
-
-                    if (i == 0)
-                        rectangleColour = new Color(0.53f, 0.64f, 0.80f, maxAlpha);
-                    else if (i == 1)
-                        rectangleColour = new Color(0.48f, 0.8f, 0.47f, maxAlpha);
-                    else if (i == 2)
-                        rectangleColour = new Color(0.83f, 0.63f, 0.31f, maxAlpha);
-                    else
-                        rectangleColour = new Color(0.95f, 0.37f, 0.37f, maxAlpha);
-
-                    float boxHeight = controlLayoutBoxHeights[i];
-
-                    Rect roundedRectangleRect = new Rect(startX, 1050 - boxHeight, 350, boxHeight);
-                    GUIShape.RoundedRectangle(roundedRectangleRect, 25, rectangleColour);
-
-                    //Open box if clicked
-                    if (i == 0 && !showLayout[i] && GUI.Button(roundedRectangleRect, ""))
-                        showLayout[i] = true;
-
-                    GUIStyle nstyle = new GUIStyle(GUI.skin.label);
-                    nstyle.alignment = TextAnchor.MiddleCenter;
-
-                    Rect otherLabelRect = new Rect(startX + 60, 1060 - boxHeight, 210, 50);
-                    GUI.Label(otherLabelRect, InputManager.controllers[i].controlLayout.Name, nstyle);
-
-                    GUI.DrawTexture(new Rect(startX + 270, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Controls/" + ((InputManager.controllers[i].controlLayout.Type == ControllerType.Keyboard) ? "Keyboard" : "Xbox_1")));
-                    GUI.DrawTexture(new Rect(startX + 10, 1060 - boxHeight, 50, 50), Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[i].controlLayout.Type == ControllerType.Keyboard) ? "Space" : "X")),ScaleMode.ScaleToFit);
-
-                    if (boxHeight != layoutBoxStartHeight)
-                    {
-                        GUI.DrawTexture(new Rect(startX + 20, 1110 - boxHeight, 310, 5), Resources.Load<Texture2D>("UI/Lobby/Line"));
-
-                        int controllerType = (int)InputManager.controllers[i].controlLayout.Type;
-
-                        Rect scrollViewRect = new Rect(startX + 10, 1125 - boxHeight, 330, boxHeight - 75);
-                        layoutScrollPositions[i] = GUIHelper.BeginScrollView(scrollViewRect, layoutScrollPositions[i], new Rect(0, 0, 310, (boxHeight == 450f) ? InputManager.splitConfigs[controllerType].Count * 70 : boxHeight - 85));
-
-                        //Scroll to Current Selection
-                        if (i != 0 || !mouseLast)
-                        {
-                            float diff = (selectedLayout[i] * 70f) - layoutScrollPositions[i].y;
-                            if(Mathf.Abs(diff) > 1f)
-                                layoutScrollPositions[i].y += Mathf.Sign(diff) * Time.deltaTime * 200f;
-                        }
-
-                        for (int j = 0; j < InputManager.splitConfigs[controllerType].Count; j++)
-                        {
-                            Rect labelRect = new Rect(0, j * 70, 250, 70);
-
-                            GUIHelper.CentreRectLabel(labelRect, 1f, InputManager.splitConfigs[controllerType][j].Name, (selectedLayout[i] == j) ? Color.yellow : Color.white);
-                            GUI.DrawTexture(new Rect(250, j * 70, 50, 50), Resources.Load<Texture2D>("UI/Controls/" + ((InputManager.splitConfigs[controllerType][j].Type == ControllerType.Keyboard) ? "Keyboard" : "Xbox_1")));
-
-                            if (i == 0 && mouseLast)
-                            {
-                                labelRect.width += 50;
-
-                                if (GUI.Button(labelRect, ""))
-                                {
-                                    InputManager.controllers[i].controlLayout = InputManager.splitConfigs[controllerType][selectedLayout[i]];
-                                    showLayout[i] = false;
-                                }
-
-                                if (Cursor.visible && labelRect.Contains(mousePos - GUIHelper.groupOffset))
-                                    selectedLayout[i] = j;
-                            }
-                        }
-
-                        GUIHelper.EndScrollView();
-                    }                 
-                }
-            }
-
         }
     }
-
-
 
     //Input
     void Update()
@@ -811,7 +697,7 @@ public class CharacterSelect : MonoBehaviour
                         rotateRects[0] = GUIHelper.Lerp(rotateRects[0], newOkayGUIArea, Time.deltaTime * 5f);
 
                         cam = platforms[1].Find("Camera").GetComponent<Camera>();
-                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y, okayArea.width, okayArea.height / 2f), Time.deltaTime * 5f);                     
+                        cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y, okayArea.width, okayArea.height / 2f), Time.deltaTime * 5f);
                         LeaveCamOn(cam);
 
                         newOkayGUIArea = new Rect(okayGUIArea.x, okayGUIArea.y + okayGUIArea.height / 2f, okayGUIArea.width, okayGUIArea.height / 2f);
@@ -833,7 +719,7 @@ public class CharacterSelect : MonoBehaviour
                             cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x, okayArea.y, okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
                             LeaveCamOn(cam);
 
-                            newOkayGUIArea = new Rect(okayGUIArea.x, okayGUIArea.y + (okayGUIArea.height/2f), okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                            newOkayGUIArea = new Rect(okayGUIArea.x, okayGUIArea.y + (okayGUIArea.height / 2f), okayGUIArea.width / 2f, okayGUIArea.height / 2f);
                             rotateRects[2] = GUIHelper.Lerp(rotateRects[2], newOkayGUIArea, Time.deltaTime * 5f);
 
                         }
@@ -843,7 +729,7 @@ public class CharacterSelect : MonoBehaviour
                             cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x - okayArea.width / 2f, okayArea.y + (okayArea.height / 2f), okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
                             LeaveCamOn(cam);
 
-                            newOkayGUIArea = new Rect(okayGUIArea.x - (okayGUIArea.width/2f), okayGUIArea.y, okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                            newOkayGUIArea = new Rect(okayGUIArea.x - (okayGUIArea.width / 2f), okayGUIArea.y, okayGUIArea.width / 2f, okayGUIArea.height / 2f);
                             rotateRects[0] = GUIHelper.Lerp(rotateRects[0], newOkayGUIArea, Time.deltaTime * 5f);
 
                             cam = platforms[2].Find("Camera").GetComponent<Camera>();
@@ -858,7 +744,7 @@ public class CharacterSelect : MonoBehaviour
                         cam.rect = GUIHelper.Lerp(cam.rect, new Rect(okayArea.x + okayArea.width / 2f, okayArea.y + (okayArea.height / 2f), okayArea.width / 2f, okayArea.height / 2f), Time.deltaTime * 5f);
                         LeaveCamOn(cam);
 
-                        newOkayGUIArea = new Rect(okayGUIArea.x + (okayGUIArea.width/2f), okayGUIArea.y, okayGUIArea.width / 2f, okayGUIArea.height / 2f);
+                        newOkayGUIArea = new Rect(okayGUIArea.x + (okayGUIArea.width / 2f), okayGUIArea.y, okayGUIArea.width / 2f, okayGUIArea.height / 2f);
                         rotateRects[1] = GUIHelper.Lerp(rotateRects[1], newOkayGUIArea, Time.deltaTime * 5f);
 
                     }
@@ -874,35 +760,33 @@ public class CharacterSelect : MonoBehaviour
                     }
                 }
 
-                if (loadedModels[s] != null)
+                if (!InputManager.controllers[s].toggle && loadedModels[s] != null)
                     loadedModels[s].Rotate(Vector3.up, -InputManager.controllers[s].GetInput("Rotate") * Time.deltaTime * rotateSpeed);
 
                 int hori = 0, vert = 0;
                 bool submit = false, cancel = false;
 
-                if (canInput && !sliding)
-                {
-                    if (!ready[s] || showLayout[s])
+                    if (canInput && !sliding)
                     {
-                        hori = InputManager.controllers[s].GetMenuInput("MenuHorizontal");
-                        vert = InputManager.controllers[s].GetMenuInput("MenuVertical");
+                        if (!ready[s] || showLayout[s])
+                        {
+                            hori = InputManager.controllers[s].GetIntInputWithLock("MenuHorizontal");
+                            vert = InputManager.controllers[s].GetIntInputWithLock("MenuVertical");
+                        }
+
+                        submit = (InputManager.controllers[s].GetButtonWithLock("Submit"));
+                        cancel = (InputManager.controllers[s].GetButtonWithLock("Cancel"));
+
+                        if (s == 0)
+                        {
+                            if (hori != 0 || vert != 0 || submit || cancel)
+                                mouseLast = false;
+
+                            if (canClick && (state == csState.Kart || Input.GetMouseButton(0)))
+                                submit = true;
+                        }
                     }
 
-                    submit = (InputManager.controllers[s].GetMenuInput("Submit") != 0);
-                    cancel = (InputManager.controllers[s].GetMenuInput("Cancel") != 0);
-
-                    if (s == 0)
-                    {
-                        if (hori != 0 || vert != 0 || submit || cancel)
-                            mouseLast = false;
-
-                        if (canClick && (state == csState.Kart || Input.GetMouseButton(0)))
-                            submit = true;
-                    }
-                }
-
-                if (!showLayout[s])
-                {
 
                     if (hori != 0)
                     {
@@ -1076,23 +960,6 @@ public class CharacterSelect : MonoBehaviour
                     if (!ready[s])
                         readyCheck = false;
                 }
-                else //Change Input Layout Controls
-                {
-
-                    readyCheck = false;
-
-                    int currentInputType = (int)InputManager.controllers[s].controlLayout.Type;
-                    if (vert != 0)
-                        selectedLayout[s] = MathHelper.NumClamp(selectedLayout[s] + vert, 0, InputManager.splitConfigs[currentInputType].Count);
-                    if (submit)
-                    {
-                        InputManager.controllers[s].controlLayout = InputManager.splitConfigs[currentInputType][selectedLayout[s]];
-                        showLayout[s] = false;
-                    }
-                    if (cancel)
-                        showLayout[s] = false;
-                }
-            }
 
             if (InputManager.controllers.Count == 0)
                 readyCheck = false;

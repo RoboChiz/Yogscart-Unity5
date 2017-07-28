@@ -157,8 +157,8 @@ public class KartNetworker : NetworkBehaviour
         base.OnStartLocalPlayer();
 
         //Tell Client which Kart they own
-        NetworkRaceClient.myKart = gameObject;
-        FindObjectOfType<NetworkRaceClient>().SetupCameras();
+        //NetworkRaceClient.myKart = gameObject;
+       // FindObjectOfType<NetworkRaceClient>().SetupCameras();
        
     }
 

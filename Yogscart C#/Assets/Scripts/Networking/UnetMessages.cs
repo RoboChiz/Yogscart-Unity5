@@ -196,14 +196,14 @@ public static class OnlineGameModeScripts
     public static GameMode AddHostScript(int gamemode)
     {
         GameObject gdObject = GameObject.FindObjectOfType<CurrentGameData>().gameObject;
-        switch (gamemode)
-        {
+       // switch (gamemode)
+      //  {
             //Online Race
-            case 0:
-                NetworkRaceHost host = gdObject.AddComponent<NetworkRaceHost>();
-                CurrentGameData.currentGamemode = host;
-                return host;
-        }
+           // case 0:
+                //NetworkRaceHost host = gdObject.AddComponent<NetworkRaceHost>();
+               // CurrentGameData.currentGamemode = host;
+                //return host;
+       // }
 
         return null;
     }
@@ -211,14 +211,14 @@ public static class OnlineGameModeScripts
     public static GameMode AddClientScript(int gamemode)
     {
         GameObject gdObject = GameObject.FindObjectOfType<CurrentGameData>().gameObject;
-        switch (gamemode)
-        {
+      //  switch (gamemode)
+      //  {
             //Online Race
-            case 0:
-                NetworkRaceClient client = gdObject.AddComponent<NetworkRaceClient>();
-                CurrentGameData.currentGamemode = client;
-                return client;
-        }
+           // case 0:
+                //NetworkRaceClient client = gdObject.AddComponent<NetworkRaceClient>();
+               // CurrentGameData.currentGamemode = client;
+               // return client;
+      //  }
 
         return null;
     }

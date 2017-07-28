@@ -117,7 +117,7 @@ public class TournamentRace : Race
 
     protected override void OnLeaderboardUpdate(Leaderboard lb)
     {
-        if(InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick())
+        if(InputManager.controllers[0].GetButtonWithLock("Submit") || InputManager.GetClick())
         {
             if (lb.state != LBType.AddedPoints && lb.state != LBType.AddingPoints)
                 lb.hidden = true;
@@ -165,7 +165,7 @@ public class TournamentRace : Race
 
         float timer = 0f;
 
-        while (InputManager.controllers[0].GetMenuInput("Submit") == 0 && !InputManager.GetClick() && timer < 10f)
+        while (!InputManager.controllers[0].GetButtonWithLock("Submit") && !InputManager.GetClick() && timer < 35f)
         {
             timer += Time.deltaTime;
             yield return null;
@@ -174,7 +174,7 @@ public class TournamentRace : Race
         yield return ChangeState(RaceState.Win);
 
         //Wait for Input
-        while (InputManager.controllers[0].GetMenuInput("Submit") == 0 && !InputManager.GetClick())
+        while (!InputManager.controllers[0].GetButtonWithLock("Submit") && !InputManager.GetClick())
         {
             yield return null;
         }

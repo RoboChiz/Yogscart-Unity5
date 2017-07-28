@@ -125,7 +125,7 @@ public class NetworkGUI : MonoBehaviour
     //Do the GUI
     void OnGUI()
     {
-
+        /*
         GUI.color = new Color(1, 1, 1, guiAlpha);
         GUI.skin = Resources.Load<GUISkin>("GUISkins/Online");
         GUI.matrix = GUIHelper.GetMatrix();
@@ -137,7 +137,7 @@ public class NetworkGUI : MonoBehaviour
 
         Rect nameListRect = new Rect(190, 95, 570, 795);
 
-        bool xboxController = InputManager.controllers[0].controllerName != "Key_";
+        bool xboxController = InputManager.controllers[0].inputType != InputType.Keyboard;
 
         switch (state)
         {
@@ -146,7 +146,7 @@ public class NetworkGUI : MonoBehaviour
 
                 if (!editServer)
                 {
-                    float vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
+                    float vert = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
 
                     if (vert > 0)
                     {
@@ -203,7 +203,7 @@ public class NetworkGUI : MonoBehaviour
                         if (i == currentSelection)
                             GUI.DrawTexture(new Rect(0, startHeight, nameListRect.width, fontSize * 1.25f), Resources.Load<Texture2D>("UI/Lobby/Selected"));
 
-                        if (Input.GetMouseButtonDown(0) && InputManager.MouseIntersects(new Rect(275, 190 + (fontSize * 2.2f) + startHeight, nameListRect.width, fontSize * 1.25f)))
+                        if (Input.GetMouseButtonDown(0) && (new Rect(275, 190 + (fontSize * 2.2f) + startHeight, nameListRect.width, fontSize * 1.25f)).Contains(GUIHelper.GetMousePosition()))
                             currentSelection = i;
 
                     }
@@ -285,7 +285,7 @@ public class NetworkGUI : MonoBehaviour
                             joinText = "Join   A";
                         }
 
-                        if ((GUI.Button(new Rect(795, 390, 190, 95), joinText) || (xboxController && InputManager.controllers[0].GetMenuInput("Submit") != 0)) && !inputLock)
+                        if ((GUI.Button(new Rect(795, 390, 190, 95), joinText) || (xboxController && InputManager.controllers[0].GetButtonWithLock("Submit"))) && !inputLock)
                         {
                             StartClient();
                         }
@@ -365,7 +365,7 @@ public class NetworkGUI : MonoBehaviour
                 if (xboxController)
                     GUI.DrawTexture(new Rect(1275, 765, fontSize * 1.5f, fontSize * 1.5f), Resources.Load<Texture2D>("UI/Main Menu/X"));
 
-                if (FindObjectOfType<MainMenu>().SideAmount == 0 && InputManager.controllers[0].GetMenuInput("Cancel") != 0)
+                if (FindObjectOfType<MainMenu>().SideAmount == 0 && InputManager.controllers[0].GetButtonWithLock("Cancel"))
                 {
                     PlayerPrefs.SetString("playerName", playerName);
                     FindObjectOfType<MainMenu>().BackMenu();
@@ -468,7 +468,7 @@ public class NetworkGUI : MonoBehaviour
                 if (xboxController)
                     quitText = "Quit   B";
 
-                if ((GUI.Button(new Rect(190, nameListRect.y + nameListRect.height + 20, 190, 95), quitText) || InputManager.controllers[0].GetMenuInput("Cancel") != 0) && !inputLock)
+                if ((GUI.Button(new Rect(190, nameListRect.y + nameListRect.height + 20, 190, 95), quitText) || InputManager.controllers[0].GetButtonWithLock("Cancel")) && !inputLock)
                 {
                     //Disconnect
                     if(NetworkServer.active)//Client is server
@@ -510,7 +510,7 @@ public class NetworkGUI : MonoBehaviour
                         if (xboxController)
                             startText = "Start   A";
 
-                        if ((GUI.Button(new Rect(400, nameListRect.y + nameListRect.height + 20, 190, 95), startText) || (InputManager.controllers[0].GetMenuInput("Submit") != 0)) && !inputLock)
+                        if ((GUI.Button(new Rect(400, nameListRect.y + nameListRect.height + 20, 190, 95), startText) || (InputManager.controllers[0].GetButtonWithLock("Submit"))) && !inputLock)
                         {
                             StartHostGame();
                         }
@@ -547,7 +547,7 @@ public class NetworkGUI : MonoBehaviour
                         if (i == currentSelection)
                             GUI.DrawTexture(new Rect(0, i * fontSize * 1.25f, nameListRect.width, fontSize * 1.25f), Resources.Load<Texture2D>("UI/Lobby/Selected"));
 
-                        if ((Input.GetMouseButtonDown(0) && InputManager.MouseIntersects(new Rect(hostInfoRect.x + 20, hostInfoRect.y + 10 + fontSize * 2.6f + (i * fontSize * 1.25f), nameListRect.width, fontSize * 1.25f))) && !inputLock)
+                        if ((Input.GetMouseButtonDown(0) && (new Rect(hostInfoRect.x + 20, hostInfoRect.y + 10 + fontSize * 2.6f + (i * fontSize * 1.25f), nameListRect.width, fontSize * 1.25f)).Contains(GUIHelper.GetMousePosition())) && !inputLock)
                             currentSelection = i;
                     }
                     
@@ -612,7 +612,7 @@ public class NetworkGUI : MonoBehaviour
                 break;
         }
 
-        GUI.color = Color.white;
+        GUI.color = Color.white;*/
     }
   
     public void ShowMenu()

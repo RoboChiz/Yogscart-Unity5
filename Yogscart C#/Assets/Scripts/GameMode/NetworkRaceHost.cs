@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System;
 
+/*
 public class NetworkRaceHost : OldRace
 {
     private List<Vote> votes;
@@ -461,3 +462,4 @@ public class NetworkRaceHost : OldRace
     }
 
 }
+*/

@@ -230,10 +230,8 @@ public class TimeTrial : Race
 
     protected override void OnLeaderboardUpdate(Leaderboard lb)
     {
-        if (InputManager.controllers[0].GetMenuInput("Submit") != 0 || InputManager.GetClick())
-        {
+        if (InputManager.controllers[0].GetButtonWithLock("Submit") || InputManager.GetClick())
                 lb.hidden = true;
-        }
     }
 
     protected void DetermineWinner()

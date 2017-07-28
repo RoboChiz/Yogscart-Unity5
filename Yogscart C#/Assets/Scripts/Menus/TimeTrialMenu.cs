@@ -203,7 +203,7 @@ public class TimeTrialMenu : MonoBehaviour
                         if(choosingGhost && menuState == TTMMenuState.ChoosingLocal)
                         {
                             GUI.DrawTexture(new Rect(1150, 510, 100, 100), 
-                                Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard) ? "Space" : "X")), ScaleMode.ScaleToFit);
+                                Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].inputType == InputType.Keyboard) ? "Space" : "X")), ScaleMode.ScaleToFit);
 
                             GUIHelper.LeftRectLabel(new Rect(1300, 510, 500, 100), deleteButtonScale, "Delete Record", deleteButtonScale == 1f ? Color.white : Color.yellow);
 
@@ -303,10 +303,10 @@ public class TimeTrialMenu : MonoBehaviour
     {
         if(guiAlpha == 1f)
         {
-            int vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
-            bool submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
-            bool cancelBool = (InputManager.controllers[0].GetMenuInput("Cancel") != 0);
-            bool ToggleBool = (InputManager.controllers[0].GetMenuInput("Toggle") != 0);
+            int vert = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
+            bool submitBool = (InputManager.controllers[0].GetButtonWithLock("Submit"));
+            bool cancelBool = (InputManager.controllers[0].GetButtonWithLock("Cancel"));
+            bool ToggleBool = (InputManager.controllers[0].GetButtonWithLock("Toggle"));
 
             if (vert != 0)
             {
@@ -342,7 +342,7 @@ public class TimeTrialMenu : MonoBehaviour
                 DeleteCurrentGhost();
             }
 
-            if (!choosingGhost && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            if (!choosingGhost && InputManager.controllers[0].inputType == InputType.Xbox360)
             {
                 sliderPosition.y += InputManager.controllers[0].GetRawInput("ViewScroll") * Time.deltaTime * 300f;
             }

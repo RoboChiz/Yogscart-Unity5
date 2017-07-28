@@ -2,6 +2,19 @@
 
 ## Changelog : Started 04/08/2016
 
+# 28/07/2017
+* New Input Manager
+* Fixed selecting other input in Binding Menu
+* Implemented Add/Change function in Control Layout
+* Added Layout Selection
+* Item Balancing
+* Added a basic win screen cutscene
+* Added using default controller inputs for menus
+* Added not being able to delete layouts during a race
+* Fixed changing binding during race
+* Added clear function to binding
+* Various bug fixes and improvements
+
 # 24/07/2017
 * Increased kart collision push distance
 * Added Ghost Data updating

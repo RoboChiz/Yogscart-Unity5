@@ -213,7 +213,7 @@ public class Replay : MonoBehaviour
                     : " (Player #" + (racers[target].Human + 1).ToString() + ")"), label);
 
             //Controls
-            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            if (InputManager.controllers[0].inputType == InputType.Xbox360)
             {
                 switch (cameraMode)
                 {
@@ -232,7 +232,7 @@ public class Replay : MonoBehaviour
                 }
                 
             }
-            else if (InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard)
+            else if (InputManager.controllers[0].inputType == InputType.Keyboard)
             {
                 switch (cameraMode)
                 {
@@ -263,24 +263,19 @@ public class Replay : MonoBehaviour
             int vert = 0, tabChange = 0;
 
             if(inputState != InputState.Options)
-                pauseBool = InputManager.controllers[0].GetMenuInput("Pause") != 0;
+                pauseBool = InputManager.controllers[0].GetButtonWithLock("Pause");
 
             if (inputState == InputState.Menu && guiAlpha == 1f)
             {
-                submitBool = InputManager.controllers[0].GetMenuInput("Submit") != 0;
-                cancelBool = InputManager.controllers[0].GetMenuInput("Cancel") != 0;
-                vert = InputManager.controllers[0].GetMenuInput("MenuVertical");            
+                submitBool = InputManager.controllers[0].GetButtonWithLock("Submit");
+                cancelBool = InputManager.controllers[0].GetButtonWithLock("Cancel");
+                vert = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");            
             }
             else if (inputState == InputState.Replay)
             {
-                submitBool = InputManager.controllers[0].GetMenuInput("Submit") != 0;
-
-                if (InputManager.controllers[0].controlLayout.Type != ControllerType.Keyboard)
-                    tabChange = InputManager.controllers[0].GetMenuInput("TabChange");
-                else
-                    tabChange = InputManager.controllers[0].GetMenuInput("AltTabChange");
-
-                hideBool = InputManager.controllers[0].GetMenuInput("HideUI") != 0;
+                submitBool = InputManager.controllers[0].GetButtonWithLock("Submit");
+                hideBool = InputManager.controllers[0].GetButtonWithLock("HideUI");
+                tabChange = InputManager.controllers[0].GetIntInputWithLock("ChangeTarget");              
             }
 
 

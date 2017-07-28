@@ -7,7 +7,6 @@ public class OrbitCam : MonoBehaviour
 {
     public Vector2 xyValues = Vector2.zero, actualXYValues;
     public float xSpeed = 150f, ySpeed = 150f, lerpSpeed = 3f, zoomSpeed = 1f;
-    private Vector2 lastMousePos;
     private float actualRadius;
 
     public float radius = 6f;
@@ -21,7 +20,6 @@ public class OrbitCam : MonoBehaviour
     void Start ()
     {
         gd = FindObjectOfType<CurrentGameData>();
-        lastMousePos = Input.mousePosition;
         xyValues = new Vector2(-90, 5f);
     }
 	
@@ -47,7 +45,7 @@ public class OrbitCam : MonoBehaviour
                 Cursor.lockState = CursorLockMode.None;
             }
 
-            if (InputManager.controllers.Count > 0 && InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            if (InputManager.controllers.Count > 0 && InputManager.controllers[0].inputType == InputType.Xbox360)
             {
                 xyValues.y -= InputManager.controllers[0].GetInput("RightStickVert") * rotateControllerSpeed * gd.controllerScale;
                 xyValues.x -= InputManager.controllers[0].GetInput("RightStickHori") * rotateControllerSpeed * gd.controllerScale;
@@ -72,7 +70,5 @@ public class OrbitCam : MonoBehaviour
             transform.position = position + Vector3.up;
 
         }
-
-        lastMousePos = Input.mousePosition;
     }
 }

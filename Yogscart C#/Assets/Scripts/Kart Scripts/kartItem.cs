@@ -336,7 +336,7 @@ public class KartItem : MonoBehaviour
                 {
                     inputDirection = 1;
 
-                    if (InputManager.controllers[kaI.myController].controllerName != "Key_")
+                    if (InputManager.controllers[kaI.myController].inputType != InputType.Keyboard)
                     {
                         inputDirection = -InputManager.controllers[kaI.myController].GetInput("MenuVertical");
                     }

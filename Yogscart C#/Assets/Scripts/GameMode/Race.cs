@@ -183,6 +183,9 @@ public abstract class Race : GameMode
             {
                 Debug.Log("Beaten the Level Select!");
                 Debug.Log("Cup:" + currentCup + " Track:" + currentTrack);
+
+                InputManager.SetInputState(InputManager.InputState.Locked);
+                InputManager.SetToggleState(InputManager.ToggleState.Locked);
             }
         }
     }
@@ -470,12 +473,12 @@ public abstract class Race : GameMode
 
         while (currentState == RaceState.NextMenu && !changingState)
         {
-            if (!lockInputs && InputManager.controllers[0].GetMenuInput("Submit") != 0)
+            if (!lockInputs && InputManager.controllers[0].GetButtonWithLock("Submit"))
                 NextMenuSelection();
 
             int vert = 0;
             if(!lockInputs)
-                vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
+                vert = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
 
             if (vert != 0)
                 nextMenuSelected = MathHelper.NumClamp(nextMenuSelected + vert, 0, nextMenuOptions.Length);

@@ -83,7 +83,7 @@ public class PauseMenu : MonoBehaviour
             {
                 for (int i = 0; i < InputManager.controllers.Count; i++)
                 {
-                    if (InputManager.controllers[i].GetRawMenuInput("Pause") != 0)
+                    if (InputManager.controllers[i].GetButtonWithLock("Pause"))
                     {
                         if (paused == -1)//Game is not currently paused so pause now
                         {                           
@@ -165,8 +165,8 @@ public class PauseMenu : MonoBehaviour
 
             if (paused != -1 && guiAlpha == 1f)
             {
-                int vertical = InputManager.controllers[paused].GetRawMenuInput("MenuVertical");
-                bool submitBool = (InputManager.controllers[paused].GetRawMenuInput("Submit") != 0);
+                int vertical = InputManager.controllers[paused].GetRawIntInputWithLock("MenuVertical");
+                bool submitBool = (InputManager.controllers[paused].GetButtonWithLock("Submit"));
         
                 if (vertical != 0)
                 {

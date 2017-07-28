@@ -73,7 +73,7 @@ public class CurrentGameData : MonoBehaviour {
 
     void OnGUI()
     {
-        GUI.depth = -5;
+        GUI.depth = -105;
 
         if(!blackOut && colourAlpha.a > 0)
         {

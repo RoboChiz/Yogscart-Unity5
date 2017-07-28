@@ -38,9 +38,7 @@ public class ChangeName : MonoBehaviour
         guiKeyboard = new GUIKeyboard(new Rect(210, 400, 1500, 540));
 
         if(FindObjectOfType<MainMenu>() == null)
-            InputManager.allowedToChange = true;
-
-        InputManager.keyboardAllowed = false;
+            InputManager.SetInputState(InputManager.InputState.AnyMinusKeyboard);
 
         StartCoroutine(FadeTo(1f));
     }
@@ -52,7 +50,8 @@ public class ChangeName : MonoBehaviour
         Options options = FindObjectOfType<Options>();
         options.locked = false;
 
-        InputManager.keyboardAllowed = true;
+        if (FindObjectOfType<MainMenu>() == null)
+            InputManager.SetInputState(InputManager.InputState.Locked);
     }
 
     private IEnumerator FadeTo(float finalVal)
@@ -115,7 +114,7 @@ public class ChangeName : MonoBehaviour
             //Draw Keyboard
             bool useController = true;
 
-            if (InputManager.controllers.Count == 0 || InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard)
+            if (InputManager.controllers.Count == 0 || InputManager.controllers[0].inputType == InputType.Keyboard)
                 useController = false;
 
             guiKeyboard.guiAlpha = guiAlpha;
@@ -141,10 +140,10 @@ public class ChangeName : MonoBehaviour
         {
             if (InputManager.controllers.Count > 0)
             {
-                submitBool = InputManager.controllers[0].GetMenuInput("Submit") != 0;
-                cancelBool = InputManager.controllers[0].GetMenuInput("Cancel") != 0;
-                vert = InputManager.controllers[0].GetMenuInput("MenuVertical");
-                hori = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
+                submitBool = InputManager.controllers[0].GetButtonWithLock("Submit");
+                cancelBool = InputManager.controllers[0].GetButtonWithLock("Cancel");
+                vert = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
+                hori = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
             }
         }
     }

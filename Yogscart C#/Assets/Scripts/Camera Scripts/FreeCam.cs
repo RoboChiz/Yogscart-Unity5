@@ -34,7 +34,7 @@ public class FreeCam : MonoBehaviour
             float actualMoveSpeed = moveSpeed;
 
             //Move Cam faster if shift is held down
-            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard)
+            if (InputManager.controllers[0].inputType == InputType.Keyboard)
             {
                 if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
                     sprintToggle = true;
@@ -50,24 +50,20 @@ public class FreeCam : MonoBehaviour
             float hori = InputManager.controllers[0].GetInput("MenuHorizontal");
             float height = 0f;
 
-            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Keyboard)
-                height = InputManager.controllers[0].GetInput("TabChange");
-            else
-                height = InputManager.controllers[0].GetInput("HeightChange");
+            height = InputManager.controllers[0].GetInput("HeightChange");
 
             transform.position -= transform.forward * vert * actualMoveSpeed * Time.deltaTime;
             transform.position += transform.right * hori * actualMoveSpeed * Time.deltaTime;
             transform.position += transform.up * height * actualMoveSpeed * Time.deltaTime;
 
             //Rotate Camera
-            if (InputManager.controllers[0].controlLayout.Type == ControllerType.Xbox360)
+            if (InputManager.controllers[0].inputType == InputType.Xbox360)
             {
                 rotateHori = InputManager.controllers[0].GetInput("RightStickVert") * rotateControllerSpeed * gd.controllerScale;
                 rotateVert = -InputManager.controllers[0].GetInput("RightStickHori") * rotateControllerSpeed * gd.controllerScale;
 
-                bool sprintBool = InputManager.controllers[0].GetMenuInput("SprintToggle") != 0;
-
-                if (sprintBool)
+                //Toggle Sprint On/Off
+                if (InputManager.controllers[0].GetButtonWithLock("SprintToggle"))
                     sprintToggle = !sprintToggle;
             }
         }

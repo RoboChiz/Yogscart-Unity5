@@ -84,11 +84,11 @@ public class GamePopup : MonoBehaviour
         {
             if (InputManager.controllers.Count > 0)
             {
-                bool submit = InputManager.controllers[0].GetRawMenuInput("Submit") != 0;
+                bool submit = InputManager.controllers[0].GetButtonWithLock("Submit");
                 bool horizontal = false;
 
                 if(showYesNo)
-                    horizontal = InputManager.controllers[0].GetRawMenuInput("MenuHorizontal") != 0;
+                    horizontal = InputManager.controllers[0].GetRawInputWithLock("MenuHorizontal") != 0;
 
                 if (submit)
                 {

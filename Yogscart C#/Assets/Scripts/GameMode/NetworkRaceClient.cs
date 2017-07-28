@@ -5,7 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System;
-
+/*
 public class NetworkRaceClient : OldRace
 {
     protected NetworkClient client;
@@ -340,3 +340,4 @@ public class NetworkRaceClient : OldRace
     }
 
 }
+*/

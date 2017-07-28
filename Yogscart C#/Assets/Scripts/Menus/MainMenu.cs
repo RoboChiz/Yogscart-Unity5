@@ -66,19 +66,16 @@ public class MainMenu : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         CurrentGameData.blackOut = false;
-        InputManager.allowedToChange = true;
+        InputManager.SetInputState(InputManager.InputState.Any);
+        InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
 
         if (menuMusic != null)
             sm.PlayMusic(menuMusic);
-
-        InputManager.lockEverything = false;
-
     }
 	
 	// Update is called once per GUI Frame
 	void OnGUI()
     {
-
         GUI.skin = skin;
         GUI.matrix = GUIHelper.GetMatrix();
 
@@ -218,28 +215,33 @@ public class MainMenu : MonoBehaviour
                     ChangeMenu(MenuState.Main);
                 }
 
-                GUI.Label(new Rect(210, 1010 - (sideAmount/4f), 1900, 60), gd.version);
+                GUI.Label(new Rect(210, 850, 1900, 60), gd.version);
 
                 break;
             case MenuState.Main:
                 options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Quit" };
-                InputManager.allowedToChange = true;              
-
+                InputManager.SetInputState(InputManager.InputState.Any);
+                InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
                 break;
             case MenuState.SinglePlayer:
                 options = new string[] { "Tournament", "VS Race", "Time Trial" };
-                InputManager.allowedToChange = false;
-            break;
+                InputManager.SetInputState(InputManager.InputState.LockedShowing);
+                InputManager.SetToggleState(InputManager.ToggleState.Locked);
+                break;
             case MenuState.Multiplayer:
                 options = new string[] { "Tournament", "VS Race" };
-                InputManager.allowedToChange = true;
-            break;
+                InputManager.SetInputState(InputManager.InputState.Any);
+                InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
+                break;
             case MenuState.Online:
-                InputManager.allowedToChange = false;
-            break;
+                InputManager.SetInputState(InputManager.InputState.LockedShowing);
+                InputManager.SetToggleState(InputManager.ToggleState.Locked);
+                break;
             case MenuState.Options:            
             break;
             case MenuState.Difficulty:
+                InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
+
                 //options = ["50cc - Only for little Babby!","100cc - You mother trucker!","150cc - Oh what big strong muscles!","Insane - Prepare your butts!","Back"];
                 if (CurrentGameData.unlockedInsane)
                     options = new string[] { "50cc", "100cc", "150cc", "Insane" };
@@ -309,15 +311,16 @@ public class MainMenu : MonoBehaviour
         //Handle Inputs
         if (!sliding && InputManager.controllers.Count > 0)
         {
-            int vertical = 0, horizontal = 0;
+            int vertical = 0;
             bool submitBool = false, cancelBool = false;
 
             if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs)
             {
-                vertical = InputManager.controllers[0].GetMenuInput("MenuVertical");
-                horizontal = InputManager.controllers[0].GetMenuInput("MenuHorizontal");
-                submitBool = (InputManager.controllers[0].GetMenuInput("Submit") != 0);
-                cancelBool = InputManager.controllers[0].GetMenuInput("Cancel") != 0;
+                vertical = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
+                //horizontal = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
+
+                submitBool = InputManager.controllers[0].GetButtonWithLock("Submit");
+                cancelBool = InputManager.controllers[0].GetButtonWithLock("Cancel");
 
                 if (nextButtonPressed)
                     submitBool = nextButtonPressed;
@@ -347,7 +350,7 @@ public class MainMenu : MonoBehaviour
                         {
                             case "Single Player":
                                 ChangeMenu(MenuState.SinglePlayer);
-                                gd.GetComponent<InputManager>().RemoveOtherControllers();
+                                InputManager.RemoveAllButOneController();
                                 break;
                             case "Multiplayer":
                                 ChangeMenu(MenuState.Multiplayer);

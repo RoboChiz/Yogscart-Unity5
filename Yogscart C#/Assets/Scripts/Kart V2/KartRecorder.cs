@@ -108,6 +108,14 @@ public class KartRecorder : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if(Input.GetKey(KeyCode.L))
+        {
+            Debug.Log(ToString());
+        }
+    }
+
     public override string ToString()
     {
         string finalString = "";
