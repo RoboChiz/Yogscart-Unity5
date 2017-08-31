@@ -35,7 +35,7 @@ public abstract class InputDevice
     public bool toggle, killing;
     public float boxHeight, alpha, lastXPos;
     public Vector2 layoutSelectionViewRect;
-    public int currentSelection;
+    public int currentSelection = 0;
 
     //Constructor
     public InputDevice(int _joystickID)
@@ -48,7 +48,7 @@ public abstract class InputDevice
         boxHeight = 0f;
     }
 
-    enum WantedInput { Either, PlusOnly, MinusOnly }
+    enum WantedInput { Either, PlusOnly, MinusOnly, Inverse }
 
     //Get Inputs
     public float GetInput(string _input) { return ActualGetInput(_input, false, currentLayout); }
@@ -187,15 +187,18 @@ public abstract class InputDevice
                     //Add Input
                     buttonName += control.inputName;
 
-                    //Check for + and - symbol - 
+                    //Check for + / - or * symbol 
                     //Side Note: Using +/- on an axis will only allow values which are positive or negative. 
                     //Using on a button will return either a positive or negative value
+                    //Using * will inverse an axis
                     WantedInput wantedInput = WantedInput.Either;
 
                     if (buttonName[buttonName.Length - 1] == '-')
                         wantedInput = WantedInput.MinusOnly;
                     else if (buttonName[buttonName.Length - 1] == '+')
                         wantedInput = WantedInput.PlusOnly;
+                    else if(buttonName[buttonName.Length - 1] == '*')
+                        wantedInput = WantedInput.Inverse;
 
                     //Remove the + or - from the input
                     if (wantedInput != WantedInput.Either)
@@ -219,6 +222,7 @@ public abstract class InputDevice
                                 case WantedInput.Either: returnVal = tempValue; break;
                                 case WantedInput.MinusOnly: if (tempValue <= 0f) returnVal = tempValue; break;
                                 case WantedInput.PlusOnly: if (tempValue >= 0f) returnVal = tempValue; break;
+                                case WantedInput.Inverse: returnVal = -tempValue; break;
                             }
                         }
                     }

@@ -860,7 +860,6 @@ public class GameModeInfo
 [System.Serializable]
 public class ServerInfo
 {
-
     public string serverName;
     public string description;
     public bool publicServer { get; private set; }
@@ -868,7 +867,7 @@ public class ServerInfo
     public int currentPlayers;
     public int currentGameMode { get; private set; }
 
-    public string ip;
+    public string ip, password;
     public int port;
 
     public ServerInfo()
@@ -880,6 +879,7 @@ public class ServerInfo
         currentGameMode = 0;
         ip = "127.0.0.1";
         port = 25000;
+        password = "";
     }
 
     public override string ToString()
@@ -889,7 +889,8 @@ public class ServerInfo
         returnString += serverName + ",";
         returnString += description + ",";
         returnString += ip + ",";
-        returnString += port + ";";
+        returnString += port + ",";
+        returnString += password + ";";
 
         return returnString;
 
@@ -906,6 +907,18 @@ public class ServerInfo
         port = portS;
     }
 
+    public ServerInfo(string ipS, int portS, string _password, string n, string d, int cp)
+    {
+        serverName = n;
+        description = d;
+        publicServer = true;
+        currentPlayers = cp;
+        currentGameMode = 0;
+        ip = ipS;
+        port = portS;
+        password = _password;
+    }
+
     public void LoadFromString(string val)
     {
         string[] parts = val.Split(","[0]);
@@ -918,6 +931,9 @@ public class ServerInfo
         int outPort = port;
         int.TryParse(parts[3], out outPort);
         port = outPort;
+
+        if(parts.Length >= 5)
+            password = parts[4];
 
     }
 

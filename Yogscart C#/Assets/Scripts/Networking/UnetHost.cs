@@ -26,7 +26,10 @@ public class UnetHost : UnetClient
     private GameMode hostGamemode;
     private int gamemodeInt;
 
-    public int choosingCount { get; private set; } //Used to tell Host how many people have no selected a character
+    public int choosingCount { get; private set; } //Used to tell Host how many people have not selected a character
+
+    public ServerSettings settings;
+    public NetworkSelection networkUI;
 
     public override void RegisterHandlers()
     {
@@ -72,7 +75,7 @@ public class UnetHost : UnetClient
         FindObjectOfType<NetworkGUI>().finalPlayers = displayNames;
 
         return output;
-    }
+    } 
 
     // Called when a Version Message is recieved by a client
     private void OnVersion(NetworkMessage netMsg)
@@ -92,7 +95,7 @@ public class UnetHost : UnetClient
         }
     }
 
-    //Used to give send time between messages to avoid flooding the client
+    //Used to give add time between messages to avoid flooding the client
     private IEnumerator AcceptPlayer(NetworkConnection conn)
     {
         AcceptedMessage ackMsg = new AcceptedMessage();
@@ -255,8 +258,7 @@ public class UnetHost : UnetClient
 
         foreach (NetworkRacer racer in finalPlayers)
         {
-            int ping = 9999;
-            displayNames.Add(new DisplayName(racer.name, racer.Character, ping, racer.team, racer.points));
+            displayNames.Add(new DisplayName(racer.name, racer.Character, racer.ping, racer.team, racer.points));
         }
     }
 
@@ -434,6 +436,7 @@ public class UnetHost : UnetClient
         StopHost();
         base.EndClient(message);
     }
+
 }
 
 [System.Serializable]
@@ -441,6 +444,7 @@ public class NetworkRacer : Racer
 {
     public NetworkConnection conn;
     public bool ready = false;
+    public int ping = 9999;
 
     //The name of the Player
     public string name = "";

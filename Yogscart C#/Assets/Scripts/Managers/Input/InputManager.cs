@@ -29,7 +29,7 @@ public class InputManager : MonoBehaviour
     public static bool mouseLock;
 
     // Use this for initialization
-    void Start()
+    void Awake()
     {
         //Create the list of controllers for the Game
         controllers = new List<InputDevice>();
@@ -37,9 +37,6 @@ public class InputManager : MonoBehaviour
         //Load all of the available configs
         LoadAllControllerLayouts();
 
-#if UNITY_EDITOR
-        inputState = InputState.Any;
-#endif
     }
 
 void Update()
@@ -389,10 +386,10 @@ void Update()
                 {
                     Debug.LogError(err.Message);
                 }*/
-            }
-
-            SetAllControllerLayouts(allAvailableConfigs);
+            }         
         }
+
+        SetAllControllerLayouts(allAvailableConfigs);
     }
 
     public static void SetAllControllerLayouts(List<ControlLayout> newList)

@@ -257,7 +257,7 @@ public class Leaderboard : MonoBehaviour
                     {
                         string text = "";
 
-                        if(playerTime < bestTime || bestTime == 0)
+                        if(playerTime <= bestTime || bestTime == 0)
                         {
                             if (playerTime < tt.ghost.time)
                                 text = "You beat the Ghost and set a new Best Time!!!";

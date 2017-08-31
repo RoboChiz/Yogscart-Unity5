@@ -124,16 +124,15 @@ public class MainMenu : MonoBehaviour
 
         //If Next Button Click
         bool nextButtonPressed = GUIHelper.DrawNext(nextAlpha);
-        NetworkGUI ng = FindObjectOfType<NetworkGUI>();
 
-        if (nextState == MenuState.Start || nextState == MenuState.Popup || ng.nextState != NetworkGUI.ServerState.ServerList)
+        if (nextState == MenuState.Start || nextState == MenuState.Popup)
         {
             if (backAlpha > 0f)
                 backAlpha -= Time.deltaTime * 2f;
             else
                 backAlpha = 0f;
         }
-        else if (state != MenuState.Start && state != MenuState.Popup && (ng.state == NetworkGUI.ServerState.ServerList || (ng.nextState == NetworkGUI.ServerState.ServerList && ng.state == NetworkGUI.ServerState.Connecting)))
+        else if (state != MenuState.Start && state != MenuState.Popup)
         {
             if (backAlpha < 1f)
                 backAlpha += Time.deltaTime * 2f;
@@ -142,9 +141,9 @@ public class MainMenu : MonoBehaviour
         }
 
         //If Back Button Click
-        if (state != MenuState.Options)
+        if (state != MenuState.Options && (state != MenuState.Online || FindObjectOfType<NetworkSelection>().state == NetworkSelection.MenuState.ServerList))
         {
-            if (GUIHelper.DrawBack(backAlpha))
+            if (GUIHelper.DrawBack(backAlpha) && (!FindObjectOfType<NetworkSelection>().isShowing || !FindObjectOfType<NetworkSelection>().locked))
             {
                 if (state == MenuState.CharacterSelect)
                     FindObjectOfType<CharacterSelect>().Back(0);
@@ -314,7 +313,7 @@ public class MainMenu : MonoBehaviour
             int vertical = 0;
             bool submitBool = false, cancelBool = false;
 
-            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs)
+            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && state != MenuState.Online && !lockInputs)
             {
                 vertical = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
                 //horizontal = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
@@ -356,9 +355,9 @@ public class MainMenu : MonoBehaviour
                                 ChangeMenu(MenuState.Multiplayer);
                                 break;
                             case "Online":
-                                //ChangeMenu(MenuState.Online);
-                                //gd.GetComponent<InputManager>().RemoveOtherControllers();
-                                //FindObjectOfType<NetworkGUI>().enabled = true;
+                                ChangeMenu(MenuState.Online);
+                                InputManager.RemoveAllButOneController();
+                                FindObjectOfType<NetworkSelection>().Show();
                                 //FindObjectOfType<NetworkGUI>().ShowMenu();
                                 break;
                             case "Options":
@@ -482,9 +481,9 @@ public class MainMenu : MonoBehaviour
                 GetComponent<Credits>().StartCoroutine("StopCredits");
             }
 
-            if(state == MenuState.Online && FindObjectOfType<NetworkGUI>().enabled)
+            if(state == MenuState.Online && FindObjectOfType<NetworkSelection>().isShowing)
             {
-                FindObjectOfType<NetworkGUI>().CloseMenu();
+                FindObjectOfType<NetworkSelection>().Hide();
             }
 
             if (state == MenuState.Options && FindObjectOfType<Options>().enabled)

@@ -34,6 +34,8 @@ public class KeyboardDevice : InputDevice
             {"Pause", new List<ControlName>() {new ControlName("escape", false) } },
             {"Rotate", new List<ControlName>() {new ControlName("q+", false), new ControlName("e-", false) } },
             {"HideUI", new List<ControlName>() {new ControlName("h", false) } },
+            {"Edit", new List<ControlName>() {new ControlName("q", false) } },
+            {"Delete", new List<ControlName>() {new ControlName("e", false) } },
             //Driving Controls
             {"Throttle", new List<ControlName>() {new ControlName("w", false) } },
             {"Brake", new List<ControlName>() {new ControlName("s", false) } },
@@ -61,7 +63,7 @@ public class XBox360Device : InputDevice
             //Menu Controls
             {"Leave", new List<ControlName>() {new ControlName(Back, false) } },
             {"MenuHorizontal", new List<ControlName>() {new ControlName(LeftStickHori,true), new ControlName(DPadHori, true) } },
-            {"MenuVertical", new List<ControlName>() {new ControlName(LeftStickVert,true), new ControlName(DPadVert, true) } },
+            {"MenuVertical", new List<ControlName>() {new ControlName(LeftStickVert,true), new ControlName(DPadVert + "*", true) } },
             {"Submit", new List<ControlName>() {new ControlName(Start, false), new ControlName(A, false) } },
             {"Cancel", new List<ControlName>() {new ControlName(B, false) } },
             {"HeightChange", new List<ControlName>() {new ControlName(LT + "-", true), new ControlName(RT + "+", true) } },
@@ -85,6 +87,7 @@ public class XBox360Device : InputDevice
             //Xbox Specific
             {"Minus", new List<ControlName>() {new ControlName(Y, false) } },
             {"Edit", new List<ControlName>() {new ControlName(X, false) } },
+            {"Delete", new List<ControlName>() {new ControlName(Y, false) } },
             {"ViewScroll", new List<ControlName>() {new ControlName(RightStickVert, true) } },
         }
     );

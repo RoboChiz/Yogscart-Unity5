@@ -260,7 +260,6 @@ public class UnetClient : NetworkManager
 
     private IEnumerator ReloadLobby()
     {
-
         yield return StartCoroutine(LoadMainMenu(NetworkGUI.ServerState.Lobby));
 
         //Delete it for good measure
@@ -324,10 +323,8 @@ public class UnetClient : NetworkManager
         PauseMenu.canPause = false;
         FindObjectOfType<PauseMenu>().HidePause();
 
-        FindObjectOfType<NetworkGUI>().PopUp(message);
-        yield return StartCoroutine(LoadMainMenu(NetworkGUI.ServerState.Popup));
-
-        
+        FindObjectOfType<NetworkSelection>().Popup(message);
+        yield return StartCoroutine(LoadMainMenu(NetworkGUI.ServerState.Popup));   
 
         //Kill itself
         DestroyImmediate(GetComponent<UnetClient>());

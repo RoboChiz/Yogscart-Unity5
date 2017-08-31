@@ -2,6 +2,9 @@
 
 ## Changelog : Started 04/08/2016
 
+# 30/07/2017
+* Inverted D-Pad Vertical on Menus
+
 # 28/07/2017
 * New Input Manager
 * Fixed selecting other input in Binding Menu
