@@ -2,6 +2,9 @@
 
 ## Changelog : Started 04/08/2016
 
+# 19/09/2017
+* Added Custom Sound Packs to characters depending on Hat
+
 # 30/07/2017
 * Inverted D-Pad Vertical on Menus
 

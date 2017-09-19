@@ -415,6 +415,25 @@ public class CurrentGameData : MonoBehaviour {
                 sw.Close();
         }
     }
+
+    public CharacterSoundPack GetCustomSoundPack(int character, int hat)
+    {
+        CharacterSoundPack playClip = characters[character].defaultSoundPack;
+
+        if (hat != 0)
+        {
+            foreach (CustomCharacterSoundPack checkSoundPack in characters[character].customSoundPacks)
+            {
+                if (checkSoundPack.effectedHat == hat)
+                {
+                    playClip = checkSoundPack;
+                    break;
+                }
+            }
+        }
+
+        return playClip;
+    }
 }
 
 
@@ -429,12 +448,23 @@ public class Character
     public Texture2D icon;
 
     public Transform model;
-    //Delete Later////
     public Transform CharacterModel_Standing;
-    //Delete Later////
 
+    public CharacterSoundPack defaultSoundPack;
+    public List<CustomCharacterSoundPack> customSoundPacks;
+}
+
+[System.Serializable]
+public class CharacterSoundPack
+{
     public AudioClip selectedSound;
     public AudioClip[] hitSounds, tauntSounds;
+}
+
+[System.Serializable]
+public class CustomCharacterSoundPack : CharacterSoundPack
+{
+    public int effectedHat;
 }
 
 [System.Serializable]

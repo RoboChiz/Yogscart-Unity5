@@ -1,41 +1,16 @@
 fileFormatVersion: 2
-guid: cd37dd542e46fc94d8e7ca1fc8466c87
-timeCreated: 1503242123
+guid: 30b4355d85ad17a4da02c45b7998d3ce
+timeCreated: 1504210455
 licenseType: Free
 ModelImporter:
   serializedVersion: 21
   fileIDToRecycleName:
-    100000: Bridge
-    100002: Bridge_Collider
-    100004: Cave
-    100006: CaveBottom
-    100008: //RootNode
-    100010: Road_Last
-    400000: Bridge
-    400002: Bridge_Collider
-    400004: Cave
-    400006: CaveBottom
-    400008: //RootNode
-    400010: Road_Last
-    2300000: Bridge
-    2300002: Bridge_Collider
-    2300004: Cave
-    2300006: CaveBottom
-    2300008: //RootNode
-    2300010: Road_Last
-    3300000: Bridge
-    3300002: Bridge_Collider
-    3300004: Cave
-    3300006: CaveBottom
-    3300008: //RootNode
-    3300010: Road_Last
-    4300000: Box001
-    4300002: Bridge
-    4300004: Bridge_Collider
-    4300006: Cave
-    4300008: CaveBottom
-    4300010: Road_Last
-    9500000: //RootNode
+    100000: //RootNode
+    400000: //RootNode
+    2300000: //RootNode
+    3300000: //RootNode
+    4300000: Cylinder
+    4300002: WitchHat
   materials:
     importMaterials: 1
     materialName: 0
@@ -63,7 +38,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 20
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
     importVisibility: 1
@@ -86,7 +61,7 @@ ModelImporter:
     normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
@@ -105,7 +80,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 2
+  animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

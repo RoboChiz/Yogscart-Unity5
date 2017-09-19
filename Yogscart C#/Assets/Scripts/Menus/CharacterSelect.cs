@@ -766,200 +766,202 @@ public class CharacterSelect : MonoBehaviour
                 int hori = 0, vert = 0;
                 bool submit = false, cancel = false;
 
-                    if (canInput && !sliding)
+                if (canInput && !sliding)
+                {
+                    if (!ready[s] || showLayout[s])
                     {
-                        if (!ready[s] || showLayout[s])
-                        {
-                            hori = InputManager.controllers[s].GetIntInputWithLock("MenuHorizontal");
-                            vert = InputManager.controllers[s].GetIntInputWithLock("MenuVertical");
-                        }
-
-                        submit = (InputManager.controllers[s].GetButtonWithLock("Submit"));
-                        cancel = (InputManager.controllers[s].GetButtonWithLock("Cancel"));
-
-                        if (s == 0)
-                        {
-                            if (hori != 0 || vert != 0 || submit || cancel)
-                                mouseLast = false;
-
-                            if (canClick && (state == csState.Kart || Input.GetMouseButton(0)))
-                                submit = true;
-                        }
+                        hori = InputManager.controllers[s].GetIntInputWithLock("MenuHorizontal");
+                        vert = InputManager.controllers[s].GetIntInputWithLock("MenuVertical");
                     }
 
+                    submit = (InputManager.controllers[s].GetButtonWithLock("Submit"));
+                    cancel = (InputManager.controllers[s].GetButtonWithLock("Cancel"));
 
-                    if (hori != 0)
+                    if (s == 0)
                     {
-                        if (state == csState.Character)
+                        if (hori != 0 || vert != 0 || submit || cancel)
+                            mouseLast = false;
+
+                        if (canClick && (state == csState.Kart || Input.GetMouseButton(0)))
+                            submit = true;
+                    }
+                }
+
+
+                if (hori != 0)
+                {
+                    if (state == csState.Character)
+                    {
+                        int itemOnRow = 5;
+                        int itemsLeft = gd.characters.Length % 5;
+
+                        if (itemsLeft != 0 && choice[s].character >= gd.characters.Length - itemsLeft)
+                            itemOnRow = itemsLeft;
+
+                        if ((choice[s].character % 5) + hori >= itemOnRow)
+                            choice[s].character -= itemOnRow - 1;
+                        else if ((choice[s].character % 5) + hori < 0)
+                            choice[s].character += itemOnRow - 1;
+                        else
+                            choice[s].character += hori;
+                    }
+                    if (state == csState.Hat)
+                    {
+                        int itemOnRow = 5;
+                        int itemsLeft = gd.hats.Length % 5;
+
+                        if (itemsLeft != 0 && choice[s].hat >= gd.hats.Length - itemsLeft)
+                            itemOnRow = itemsLeft;
+
+                        if ((choice[s].hat % 5) + hori >= itemOnRow)
+                            choice[s].hat -= itemOnRow - 1;
+                        else if ((choice[s].hat % 5) + hori < 0)
+                            choice[s].hat += itemOnRow - 1;
+                        else
+                            choice[s].hat += hori;
+                    }
+                }
+
+                if (vert != 0)
+                {
+                    if (state != csState.Kart)
+                        vert *= 5;
+
+                    if (state == csState.Character)
+                    {
+
+                        int itemsLeft = gd.characters.Length % 5;
+                        int rowNumber = gd.characters.Length / 5;
+
+                        if (itemsLeft != 0)
+                            rowNumber++;
+
+                        if (choice[s].character + vert >= gd.characters.Length)
                         {
-                            int itemOnRow = 5;
-                            int itemsLeft = gd.characters.Length % 5;
-
-                            if (itemsLeft != 0 && choice[s].character >= gd.characters.Length - itemsLeft)
-                                itemOnRow = itemsLeft;
-
-                            if ((choice[s].character % 5) + hori >= itemOnRow)
-                                choice[s].character -= itemOnRow - 1;
-                            else if ((choice[s].character % 5) + hori < 0)
-                                choice[s].character += itemOnRow - 1;
-                            else
-                                choice[s].character += hori;
+                            choice[s].character = (choice[s].character + vert) % 5;
                         }
-                        if (state == csState.Hat)
+                        else if (choice[s].character + vert < 0)
                         {
-                            int itemOnRow = 5;
-                            int itemsLeft = gd.hats.Length % 5;
+                            int toAdd = choice[s].character + ((rowNumber - 1) * 5);
 
-                            if (itemsLeft != 0 && choice[s].hat >= gd.hats.Length - itemsLeft)
-                                itemOnRow = itemsLeft;
-
-                            if ((choice[s].hat % 5) + hori >= itemOnRow)
-                                choice[s].hat -= itemOnRow - 1;
-                            else if ((choice[s].hat % 5) + hori < 0)
-                                choice[s].hat += itemOnRow - 1;
+                            if (toAdd >= gd.characters.Length)
+                                choice[s].character = toAdd - 5;
                             else
-                                choice[s].hat += hori;
+                                choice[s].character = toAdd;
                         }
+                        else
+                            choice[s].character += vert;
+
+                    }
+                    if (state == csState.Hat)
+                    {
+                        int itemsLeft = gd.hats.Length % 5;
+                        int rowNumber = gd.hats.Length / 5;
+
+                        if (itemsLeft != 0)
+                            rowNumber++;
+
+                        if (choice[s].hat + vert >= gd.hats.Length)
+                        {
+                            choice[s].hat = (choice[s].hat + vert) % 5;
+                        }
+                        else if (choice[s].hat + vert < 0)
+                        {
+                            int toAdd = choice[s].hat + ((rowNumber - 1) * 5);
+
+                            if (toAdd >= gd.hats.Length)
+                                choice[s].hat = toAdd - 5;
+                            else
+                                choice[s].hat = toAdd;
+                        }
+                        else
+                            choice[s].hat += vert;
                     }
 
-                    if (vert != 0)
+                    if (state == csState.Kart && !loadedChoice[s].scrolling)
                     {
-                        if (state != csState.Kart)
-                            vert *= 5;
-
-                        if (state == csState.Character)
+                        if (!kartSelected[s])
                         {
-
-                            int itemsLeft = gd.characters.Length % 5;
-                            int rowNumber = gd.characters.Length / 5;
-
-                            if (itemsLeft != 0)
-                                rowNumber++;
-
-                            if (choice[s].character + vert >= gd.characters.Length)
-                            {
-                                choice[s].character = (choice[s].character + vert) % 5;
-                            }
-                            else if (choice[s].character + vert < 0)
-                            {
-                                int toAdd = choice[s].character + ((rowNumber - 1) * 5);
-
-                                if (toAdd >= gd.characters.Length)
-                                    choice[s].character = toAdd - 5;
-                                else
-                                    choice[s].character = toAdd;
-                            }
+                            if (vert > 0)
+                                StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
                             else
-                                choice[s].character += vert;
-
-                        }
-                        if (state == csState.Hat)
-                        {
-                            int itemsLeft = gd.hats.Length % 5;
-                            int rowNumber = gd.hats.Length / 5;
-
-                            if (itemsLeft != 0)
-                                rowNumber++;
-
-                            if (choice[s].hat + vert >= gd.hats.Length)
-                            {
-                                choice[s].hat = (choice[s].hat + vert) % 5;
-                            }
-                            else if (choice[s].hat + vert < 0)
-                            {
-                                int toAdd = choice[s].hat + ((rowNumber - 1) * 5);
-
-                                if (toAdd >= gd.hats.Length)
-                                    choice[s].hat = toAdd - 5;
-                                else
-                                    choice[s].hat = toAdd;
-                            }
-                            else
-                                choice[s].hat += vert;
-                        }
-
-                        if (state == csState.Kart && !loadedChoice[s].scrolling)
-                        {
-                            if (!kartSelected[s])
-                            {
-                                if (vert > 0)
-                                    StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
-                                else
-                                    StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
-                            }
-                            else
-                            {
-                                if (vert > 0)
-
-                                    StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
-                                else
-                                    StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
-                            }
-                        }
-                    }
-
-                    if (submit)
-                    {
-                        if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked && !ready[s])
-                        {
-                            if (gd.characters[choice[s].character].selectedSound != null)
-                                sm.PlaySFX(gd.characters[choice[s].character].selectedSound);
-
-                            loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
-
-                            ready[s] = true;
-                        }
-
-                        if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked && !ready[s])
-                        {
-                            ready[s] = true;
-                        }
-
-                        if (state == csState.Kart && !ready[s])
-                        {
-                            if (kartSelected[s])
-                            {
-                                ready[s] = true;
-                            }
-                            else
-                            {
-                                kartSelected[s] = true;
-                            }
-                        }
-                    }
-
-                    if (cancel)
-                    {
-                        if (!ready[s])
-                        {
-                            Back(s);
+                                StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
                         }
                         else
                         {
-                            ready[s] = false;
+                            if (vert > 0)
+
+                                StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
+                            else
+                                StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
                         }
                     }
+                }
 
-                    if (!kartSelected[s])
+                if (submit)
+                {
+                    if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked && !ready[s])
                     {
-                        if (choice[s].kart >= gd.karts.Length)
-                            choice[s].kart = 0;
+                        AudioClip playClip = gd.GetCustomSoundPack(choice[s].character, choice[s].hat).selectedSound;
 
-                        if (choice[s].kart < 0)
-                            choice[s].kart = gd.karts.Length - 1;
+                        if (playClip != null)
+                            sm.PlaySFX(playClip);
 
+                        loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
+
+                        ready[s] = true;
+                    }
+
+                    if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked && !ready[s])
+                    {
+                        ready[s] = true;
+                    }
+
+                    if (state == csState.Kart && !ready[s])
+                    {
+                        if (kartSelected[s])
+                        {
+                            ready[s] = true;
+                        }
+                        else
+                        {
+                            kartSelected[s] = true;
+                        }
+                    }
+                }
+
+                if (cancel)
+                {
+                    if (!ready[s])
+                    {
+                        Back(s);
                     }
                     else
                     {
-                        if (choice[s].wheel >= gd.wheels.Length)
-                            choice[s].wheel = 0;
-
-                        if (choice[s].wheel < 0)
-                            choice[s].wheel = gd.wheels.Length - 1;
+                        ready[s] = false;
                     }
-                    if (!ready[s])
-                        readyCheck = false;
                 }
+
+                if (!kartSelected[s])
+                {
+                    if (choice[s].kart >= gd.karts.Length)
+                        choice[s].kart = 0;
+
+                    if (choice[s].kart < 0)
+                        choice[s].kart = gd.karts.Length - 1;
+
+                }
+                else
+                {
+                    if (choice[s].wheel >= gd.wheels.Length)
+                        choice[s].wheel = 0;
+
+                    if (choice[s].wheel < 0)
+                        choice[s].wheel = gd.wheels.Length - 1;
+                }
+                if (!ready[s])
+                    readyCheck = false;
+            }
 
             if (InputManager.controllers.Count == 0)
                 readyCheck = false;

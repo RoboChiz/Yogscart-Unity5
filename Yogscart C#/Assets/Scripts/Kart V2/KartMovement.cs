@@ -96,8 +96,11 @@ public class KartMovement : MonoBehaviour
     public AudioClip engineSound;
     public float quietTimer; //Used to make engine quiter after a couple of seconds
 
+    [System.NonSerialized]
+    private CharacterSoundPack soundPack;
+
     //Used for Character Specific Taunts
-    public int characterID;
+    public int characterID, hatID;
 
     private Coroutine kartBodySliding = null;
 
@@ -172,6 +175,10 @@ public class KartMovement : MonoBehaviour
         audioSourceInfo = GetComponent<AudioSourceInfo>();
         myAudioSource = GetComponent<AudioSource>();
         kartAudioSource = transform.Find("Kart Body").GetComponent<AudioSource>();
+
+        //Load Custom Audio Packs for Characters
+        Character myCharacter = FindObjectOfType<CurrentGameData>().characters[characterID];
+        soundPack = FindObjectOfType<CurrentGameData>().GetCustomSoundPack(characterID, hatID);
     }
 
     // Update is called once per frame
@@ -798,9 +805,8 @@ public class KartMovement : MonoBehaviour
 
             if (doNoise)
             {
-                Character myCharacter = FindObjectOfType<CurrentGameData>().characters[characterID];
-                if (myCharacter.hitSounds != null && myCharacter.hitSounds.Length > 0)
-                    kartAudioSource.PlayOneShot(myCharacter.hitSounds[Random.Range(0, myCharacter.hitSounds.Length)]);
+                if (soundPack.hitSounds != null && soundPack.hitSounds.Length > 0)
+                    kartAudioSource.PlayOneShot(soundPack.hitSounds[Random.Range(0, soundPack.hitSounds.Length)]);
             }
 
             spinningOut = true;
@@ -813,8 +819,8 @@ public class KartMovement : MonoBehaviour
         Character myCharacter = FindObjectOfType<CurrentGameData>().characters[characterID];
 
         //Play Sound
-        if (myCharacter.tauntSounds != null && myCharacter.tauntSounds.Length > 0)
-            kartAudioSource.PlayOneShot(myCharacter.tauntSounds[Random.Range(0, myCharacter.tauntSounds.Length)]);
+        if (soundPack.tauntSounds != null && soundPack.tauntSounds.Length > 0)
+            kartAudioSource.PlayOneShot(soundPack.tauntSounds[Random.Range(0, soundPack.tauntSounds.Length)]);
 
         //Do Animation
     }

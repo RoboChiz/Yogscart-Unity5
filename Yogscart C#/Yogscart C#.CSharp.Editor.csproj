@@ -147,6 +147,7 @@
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\Grass.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\Standard_TwoSided.shader" />
     <None Include="Assets\Shader\GrassShader.shader" />
+    <None Include="Assets\Shader\NewGrass.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

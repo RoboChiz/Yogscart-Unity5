@@ -136,6 +136,7 @@ public class KartMaker : MonoBehaviour
             KartMovement km = kb.AddComponent<KartMovement>();
 
             km.characterID = c;
+            km.hatID = h;
             km.engineSound = kartSkel.engineSound;
 
             //Spawn Particles
