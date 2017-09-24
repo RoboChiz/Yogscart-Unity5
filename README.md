@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+# 24/09/2017
+* Added Unity Post Processing Stack
+* Added FXAA and TAA to game
+* Added Chromatic Abbreation on Boost
+* Added Ambient Occulusion
+* Added new graphics options to options menu
+* Added Effects Manager which ensures all camera use the correct effects
+
 # 20/09/2017
 * Updated to the latest Unity
 * Added more SFX for Characters
