@@ -2,6 +2,11 @@
 
 ## Changelog : Started 04/08/2016
 
+# 20/09/2017
+* Updated to the latest Unity
+* Added more SFX for Characters
+* Blocked Track Cam option from replay (Temporarily)
+
 # 19/09/2017
 * Added Custom Sound Packs to characters depending on Hat
 

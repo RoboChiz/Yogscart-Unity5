@@ -13,8 +13,8 @@ public class Options : MonoBehaviour
     enum OptionsTab { Game, Graphics, Input, Binding};
     private OptionsTab currentTab = OptionsTab.Game;
 
-    private DropDown resDropDown, qualityDropDown;
-    private Toggle fullscreenToggle, streamModeToggle;
+    private DropDown resDropDown, qualityDropDown, aaDropDown;
+    private Toggle fullscreenToggle, streamModeToggle, ambientOcculusionToggle, chromaticAberrationToggle;
     
     private float cancelScale = 1f, applyScale = 1f, plusScale = 2f, minusScale = 2f, editScale;
     private bool editName = false;
@@ -42,7 +42,9 @@ public class Options : MonoBehaviour
     private int lastInput, currentY;
 
     //Save Graphics Lists for Effecientcy
-    private string[] possibleScreens, qualityNames;
+    private string[] possibleScreens, qualityNames, antiAliasingNames;
+    private bool chromaticAberration, ambientOcculusion;
+    private EffectsManager.AntiAliasing antiAliasing;
 
     //Binding Menu
     private List<ControlLayout> allLayouts;
@@ -63,9 +65,12 @@ public class Options : MonoBehaviour
 
         resDropDown = new DropDown();
         qualityDropDown = new DropDown();
+        aaDropDown = new DropDown();
 
         fullscreenToggle = new Toggle();
         streamModeToggle = new Toggle();
+        ambientOcculusionToggle = new Toggle();
+        chromaticAberrationToggle = new Toggle();
 
         //Load Textures
         line = Resources.Load<Texture2D>("UI/Lobby/Line");
@@ -85,6 +90,8 @@ public class Options : MonoBehaviour
         possibleScreens = new string[Screen.resolutions.Length];
         for (int i = 0; i < possibleScreens.Length; i++)
             possibleScreens[i] = Screen.resolutions[i].width + " x " + Screen.resolutions[i].height + " - " + Screen.resolutions[i].refreshRate + "hz";
+
+        antiAliasingNames = new string[] {"Off", "FXAA Low", "FXAA Medium", "FXAA High", "TAA" };
 
         qualityNames = QualitySettings.names;
 
@@ -267,7 +274,21 @@ public class Options : MonoBehaviour
                                 qualityDropDown.toggled = !qualityDropDown.toggled;
                                 changingSlider = !changingSlider;
                             }
-                            else if (currentSelection == 3) //Do Apply and Cancel Stuff
+                            else if(currentSelection == 3)
+                            {
+                                lastInput = (int)antiAliasing;
+                                aaDropDown.toggled = !aaDropDown.toggled;
+                                changingSlider = !changingSlider;
+                            }
+                            else if (currentSelection == 4)
+                            {
+                                ambientOcculusion = !ambientOcculusion;
+                            }
+                            else if (currentSelection == 5)
+                            {
+                                chromaticAberration = !chromaticAberration;
+                            }
+                            else if (currentSelection == 6) //Do Apply and Cancel Stuff
                             {
                                 if (changingSlider)
                                 {
@@ -281,15 +302,15 @@ public class Options : MonoBehaviour
                             }
                         }
 
-                        if (currentSelection == 3 && horizontal != 0f)
+                        if (currentSelection == 6 && horizontal != 0f)
                             changingSlider = !changingSlider;
 
-                        if ((currentSelection == 3 || !changingSlider) && vertical != 0)
+                        if ((currentSelection == 6 || !changingSlider) && vertical != 0)
                         {
-                            if (currentSelection == 3)
+                            if (currentSelection == 6)
                                 changingSlider = false;
 
-                            currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 4);
+                            currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 7);
                         }
 
 
@@ -307,7 +328,7 @@ public class Options : MonoBehaviour
                         {
                             if (cancelBool)
                             {
-                                if (currentSelection == 3)
+                                if (currentSelection == 6)
                                 {
                                     Quit();
                                 }
@@ -319,6 +340,8 @@ public class Options : MonoBehaviour
                                         currentResolution = lastInput;
                                     else if (qualityDropDown.toggled)
                                         currentQuality = lastInput;
+                                    else if (aaDropDown.toggled)
+                                        antiAliasing = (EffectsManager.AntiAliasing)lastInput;
                                 }
                             }
 
@@ -326,6 +349,8 @@ public class Options : MonoBehaviour
                                 resDropDown.SetScroll(currentResolution);
                             else if (qualityDropDown.toggled)
                                 qualityDropDown.SetScroll(currentQuality);
+                            else if (aaDropDown.toggled)
+                                aaDropDown.SetScroll((int)antiAliasing);
 
                             if (vertical != 0)
                                 if (resDropDown.toggled)
@@ -724,6 +749,16 @@ public class Options : MonoBehaviour
 
                     GUIHelper.BeginGroup(tabAreaRect);
 
+                    //Change Resolution
+                    GUI.Label(new Rect(20, 70, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+
+                    int newRes = resDropDown.Draw(new Rect(330, 90, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentResolution, possibleScreens);
+                    if (!locked && currentResolution != -1 && newRes != currentResolution)
+                    {
+                        somethingChanged = true;
+                        currentResolution = newRes;
+                    }
+
                     //Fullscreen
                     GUI.Label(new Rect(20, 145, 300, 100), "Fullscreen:", (currentSelection == 1 && !Cursor.visible) ? selectedLabel : normalLabel);
                     bool newFSVal = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, fullScreen, "");
@@ -741,15 +776,29 @@ public class Options : MonoBehaviour
                         currentQuality = newQuality;
                     }
 
-                    //Change Resolution
-                    GUI.Label(new Rect(20, 70, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                    //Anti-Aliasing
+                    GUI.Label(new Rect(20, 330, 300, 100), "Anti-Aliasing:", (currentSelection == 3 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
 
-                    int newRes = resDropDown.Draw(new Rect(330, 90, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentResolution, possibleScreens);
-                    if (!locked && currentResolution != -1 && newRes != currentResolution)
+                    int newAA = aaDropDown.Draw(new Rect(330, 340, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, (int)antiAliasing, antiAliasingNames);
+                    if (!locked && newAA != (int)antiAliasing)
                     {
                         somethingChanged = true;
-                        currentResolution = newRes;
+                        antiAliasing = (EffectsManager.AntiAliasing)newAA;
                     }
+
+                    //Ambient Oculussion
+                    GUI.Label(new Rect(20, 420, 300, 100), "Ambient Occulusion:", (currentSelection == 4 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    bool newAOVal = ambientOcculusionToggle.Draw(new Rect(20, 450, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, ambientOcculusion, "");
+
+                    if (!locked)
+                        ambientOcculusion = newAOVal;
+
+                    //Chromatic Aberration
+                    GUI.Label(new Rect(20, 510, 300, 100), "Chromatic Aberration:", (currentSelection == 5 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    bool newCAVal = chromaticAberrationToggle.Draw(new Rect(20, 540, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, chromaticAberration, "");
+
+                    if (!locked)
+                        chromaticAberration = newCAVal;
 
                     //Apply and Cancel Buttons
                     Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(50, 650, 150, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 3 && !changingSlider)) ? Color.yellow : Color.white);
@@ -1179,6 +1228,11 @@ public class Options : MonoBehaviour
         fullScreen = lastFullscreen;
         currentQuality = lastQuality;
         streamMode = FindObjectOfType<CurrentGameData>().streamMode;
+
+        EffectsManager effectsMan = FindObjectOfType<EffectsManager>();
+        chromaticAberration = effectsMan.GetUseChromaticAberration();
+        ambientOcculusion = effectsMan.GetUseAmbientOcculusion();
+        antiAliasing = effectsMan.GetAntiAliasing();
     }
 
     public void SaveEverything()
@@ -1189,6 +1243,9 @@ public class Options : MonoBehaviour
         lastResolution = currentResolution;
         lastFullscreen = fullScreen;
         lastQuality = currentQuality;
+
+        //Update Effects Manager
+        FindObjectOfType<EffectsManager>().UpdateValues(chromaticAberration, ambientOcculusion, antiAliasing);
     }
 
     private void ChangeType(int i)

@@ -303,7 +303,7 @@ public class Replay : MonoBehaviour
                     if (submitBool)
                     {
                         //Change Camera Mode
-                        cameraMode = (CameraMode)(MathHelper.NumClamp((int)cameraMode + 1, 0, 4));
+                        cameraMode = (CameraMode)(MathHelper.NumClamp((int)cameraMode + 1, 0, 3));
 
                         //Turn on/off target cam
                         if (cameraMode == CameraMode.TargetCam)

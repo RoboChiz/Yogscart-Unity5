@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PostProcessing;
 
 [RequireComponent(typeof(Rigidbody))]
 public class KartMovement : MonoBehaviour
@@ -104,6 +105,9 @@ public class KartMovement : MonoBehaviour
 
     private Coroutine kartBodySliding = null;
 
+    private kartInfo kartInfoComp;
+    private float chroming = 0f;
+
     void Awake()
     {
         //Get Kart Body
@@ -113,6 +117,7 @@ public class KartMovement : MonoBehaviour
     void Start()
     {
         kartRigidbody = GetComponent<Rigidbody>();
+        kartInfoComp = GetComponent<kartInfo>();
 
         SetupKart();
     }
@@ -177,7 +182,6 @@ public class KartMovement : MonoBehaviour
         kartAudioSource = transform.Find("Kart Body").GetComponent<AudioSource>();
 
         //Load Custom Audio Packs for Characters
-        Character myCharacter = FindObjectOfType<CurrentGameData>().characters[characterID];
         soundPack = FindObjectOfType<CurrentGameData>().GetCustomSoundPack(characterID, hatID);
     }
 
@@ -475,6 +479,35 @@ public class KartMovement : MonoBehaviour
                         ps.Stop();
                 }
             }
+
+            if (kartInfoComp != null)
+            {
+                if (isBoosting != BoostMode.Not)
+                {
+                    chroming = Mathf.Clamp(chroming + (Time.deltaTime * 2.5f), 0f, 1f);
+                }
+                else
+                {
+                    chroming = Mathf.Clamp(chroming - (Time.deltaTime * 2.5f), 0f, 1f);
+                }
+
+                //Do cool Chromatic Aberration Effect on boost
+                if (FindObjectOfType<EffectsManager>().GetUseChromaticAberration())
+                {
+                    foreach (Camera camera in GetComponent<kartInfo>().cameras)
+                    {
+                        PostProcessingBehaviour postProcess = camera.GetComponent<PostProcessingBehaviour>();
+
+                        if (postProcess != null)
+                        {
+                            ChromaticAberrationModel.Settings cab = postProcess.profile.chromaticAberration.settings;
+                            cab.intensity = chroming;
+                            postProcess.profile.chromaticAberration.settings = cab;
+                        }
+                    }
+                }
+            }
+
         }
         else //Make the Kart quiet
         {
@@ -816,8 +849,6 @@ public class KartMovement : MonoBehaviour
 
     public void DoTaunt()
     {
-        Character myCharacter = FindObjectOfType<CurrentGameData>().characters[characterID];
-
         //Play Sound
         if (soundPack.tauntSounds != null && soundPack.tauntSounds.Length > 0)
             kartAudioSource.PlayOneShot(soundPack.tauntSounds[Random.Range(0, soundPack.tauntSounds.Length)]);

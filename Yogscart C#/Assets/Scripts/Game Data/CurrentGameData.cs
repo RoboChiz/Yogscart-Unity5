@@ -457,6 +457,7 @@ public class Character
 [System.Serializable]
 public class CharacterSoundPack
 {
+    public string name;
     public AudioClip selectedSound;
     public AudioClip[] hitSounds, tauntSounds;
 }
