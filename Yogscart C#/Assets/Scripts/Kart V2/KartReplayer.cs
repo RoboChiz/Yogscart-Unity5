@@ -8,7 +8,7 @@ public class KartReplayer : MonoBehaviour
     public List<List<string>> replayData;
 
     public bool isPlaying { get; private set; }
-    private int frameCount, framesPerSecond;
+    private int frameCount;
 
     public const char throttle = 't', steer = 's', drift = 'd', driftSteer = 'z', expectedSpeed = 'e', position = 'p', rotation = 'r', velocity = 'v', angularVelocity = 'a', recieveItem = 'i', itemAction = 'c', dropShield = 'u', startBoostVal = 'k';
 

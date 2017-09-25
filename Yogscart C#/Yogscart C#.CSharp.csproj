@@ -160,7 +160,7 @@
     <Compile Include="Assets\Scripts\Kart Scripts\KartCamera.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\KartCollider.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.cs" />
-    <Compile Include="Assets\Scripts\Kart Scripts\kartItem.cs" />
+    <Compile Include="Assets\Scripts\Kart Scripts\KartItem.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\OldAI.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\PositionFinding.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\PositionFindingOld.cs" />

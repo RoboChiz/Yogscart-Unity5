@@ -51,11 +51,12 @@ public class LevelSelect : MonoBehaviour
         float cupNameHeight = GUIHelper.height / 2f;
         float individualHeight = cupNameHeight / Mathf.Clamp(gd.tournaments.Length, 4, 8);
         Texture2D rectangle = Resources.Load<Texture2D>("UI/Level Selection/Rectangle");
+        float startY = 200;
 
         //Draw Tournaments
         for (int i = 0; i < gd.tournaments.Length; i++)
         {
-            Rect rectRect = GUIHelper.CentreRect(new Rect(300, 270 + (i * individualHeight) + 10, 400, individualHeight - 20), cupScales[i]);
+            Rect rectRect = GUIHelper.CentreRect(new Rect(300, startY + (i * individualHeight) + 10, 400, individualHeight - 20), cupScales[i]);
             GUI.DrawTexture(rectRect, rectangle);
 
             //Scale the Cup Names
@@ -81,7 +82,7 @@ public class LevelSelect : MonoBehaviour
                     cupScales[i] = 1f;
             }
 
-            GUIHelper.CentreRectLabel(new Rect(300, 270 + (i * individualHeight) + 15, 400, individualHeight - 30), cupScales[i], gd.tournaments[i].name, (currentCup == i)?Color.yellow:Color.white);
+            GUIHelper.CentreRectLabel(new Rect(300, startY + (i * individualHeight) + 15, 400, individualHeight - 30), cupScales[i], gd.tournaments[i].name, (currentCup == i)?Color.yellow:Color.white);
         }
 
         Race gamemode = (Race)CurrentGameData.currentGamemode;
@@ -102,7 +103,7 @@ public class LevelSelect : MonoBehaviour
                 trackPreview = gd.tournaments[tempCurrentCup].tracks[i].logo;
             }
 
-            Rect previewRect = GUIHelper.CentreRect(new Rect(800 + (500 * (i % 2)), 150 + (390 * (i / 2)), 400, 365), trackScales[i]);
+            Rect previewRect = GUIHelper.CentreRect(new Rect(800 + (500 * (i % 2)), startY - 120 + (390 * (i / 2)), 400, 365), trackScales[i]);
 
             //Scale the Track Names
             bool contains = Cursor.visible && previewRect.Contains(mousePos);
@@ -130,8 +131,8 @@ public class LevelSelect : MonoBehaviour
             GUI.DrawTexture(previewRect, trackPreview, ScaleMode.ScaleToFit);
         }
 
-        Rect timeRect = new Rect(800, 900, 1000, 100);
-        Rect ghostRect = new Rect(800, 950, 1000, 100);
+        Rect timeRect = new Rect(810, startY + 640, 1000, 100);
+        Rect ghostRect = new Rect(810, startY + 690, 1000, 100);
 
         if (state && gamemode is TimeTrial && gd.tournaments[tempCurrentCup].tracks.Length > currentTrack && currentTrack != -1)
         {
@@ -159,8 +160,8 @@ public class LevelSelect : MonoBehaviour
             if (GetComponent<MainMenu>() != null)
             {
                 //Draw Inputs
-                Rect leftRect = new Rect(1000, 905, 160, 80);
-                Rect rightRect = new Rect(1450, 905, 160, 80);
+                Rect leftRect = new Rect(1000, startY + 650, 160, 80);
+                Rect rightRect = new Rect(1450, startY + 650, 160, 80);
 
                 GUI.DrawTexture(leftRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].inputType == InputType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/LB") : Resources.Load<Texture2D>("UI/Options/Q"));
                 GUI.DrawTexture(rightRect, InputManager.controllers.Count > 0 && InputManager.controllers[0].inputType == InputType.Xbox360 ? Resources.Load<Texture2D>("UI/Options/RB") : Resources.Load<Texture2D>("UI/Options/E"));

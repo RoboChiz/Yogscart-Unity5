@@ -173,7 +173,7 @@ public class Options : MonoBehaviour
                 vertical = InputManager.controllers[0].GetRawIntInputWithLock("MenuVertical");
                 horizontal = 0;
 
-                if ((currentTab == OptionsTab.Graphics && currentSelection == 3) || (currentTab == OptionsTab.Binding && changingSlider))
+                if ((currentTab == OptionsTab.Graphics && currentSelection == 6) || (currentTab == OptionsTab.Binding && changingSlider))
                 {
                     horizontal = InputManager.controllers[0].GetRawIntInputWithLock("MenuHorizontal");
                 }
@@ -357,6 +357,8 @@ public class Options : MonoBehaviour
                                     currentResolution += vertical;
                                 else if (qualityDropDown.toggled)
                                     currentQuality += vertical;
+                                else if (aaDropDown.toggled)
+                                    antiAliasing += vertical;
                         }
                         break;
                     case OptionsTab.Input:
@@ -723,7 +725,7 @@ public class Options : MonoBehaviour
                         }                        
                     }
 
-                    bool newStreamVal = streamModeToggle.Draw(new Rect(50, 600, 350, 100), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, streamMode, "Stream Mode:", (!locked && currentSelection == 5 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    bool newStreamVal = streamModeToggle.Draw(new Rect(50, 600, 350, 100), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, streamMode, "Stream Mode:", (!locked && ((currentSelection == 3 && FindObjectOfType<MainMenu>() == null) || currentSelection == 5) && !Cursor.visible) ? selectedLabel : normalLabel);
                     if (!locked)
                         streamMode = newStreamVal;
 
@@ -801,13 +803,13 @@ public class Options : MonoBehaviour
                         chromaticAberration = newCAVal;
 
                     //Apply and Cancel Buttons
-                    Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(50, 650, 150, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 3 && !changingSlider)) ? Color.yellow : Color.white);
+                    Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(50, 650, 150, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 6 && !changingSlider)) ? Color.yellow : Color.white);
                     cancelScale = GUIHelper.SizeHover(cancelRect, cancelScale, 1f, 1.3f, 3f);
 
                     if (GUI.Button(cancelRect, ""))
                         ResetEverything();
 
-                    Rect applyRect = GUIHelper.CentreRectLabel(new Rect(270, 650, 150, 100), applyScale, "Apply", (applyScale > 1.1f || (currentSelection == 3 && changingSlider)) ? Color.yellow : Color.white);
+                    Rect applyRect = GUIHelper.CentreRectLabel(new Rect(270, 650, 150, 100), applyScale, "Apply", (applyScale > 1.1f || (currentSelection == 6 && changingSlider)) ? Color.yellow : Color.white);
                     applyScale = GUIHelper.SizeHover(applyRect, applyScale, 1f, 1.3f, 3f);
 
                     if (GUI.Button(applyRect, ""))

@@ -2,6 +2,21 @@
 
 ## Changelog : Started 04/08/2016
 
+# 25/09/2017
+* Fixed position of VS Race Counter and Ghost Counter
+* Added turning off all cameras during a cutscene to improve performance
+* Fixed Cancel and Accept not being selectable in Graphics menu
+* Fixed selecting Cancel and Accept glitch
+* Fixed AA selecting not working
+* Made Replay recording more accurate, added float to recorder to make it even more accurate
+* Added resume button to Replay pause menu
+* Fixed replay cameras not pausing on pause
+* Fixed pause menu unpausing, instead of closing options menu
+* Renamed kartItem to KartItem
+* Fixed bug where unpausing would use item
+* Fixed stream button in options not highlighting during a race
+* Fixed kart camera can be changed when paused
+
 # 24/09/2017
 * Added Unity Post Processing Stack
 * Added FXAA and TAA to game

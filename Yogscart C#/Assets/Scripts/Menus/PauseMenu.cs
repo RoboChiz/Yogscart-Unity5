@@ -7,7 +7,6 @@ public class PauseMenu : MonoBehaviour
 
     public static bool canPause = false, onlineGame = false;
     public int paused = -1, pauseHold = -1;
-    private bool hide;
 
     private float guiAlpha;
     public float[] optionsSize;
@@ -42,9 +41,13 @@ public class PauseMenu : MonoBehaviour
         StartCoroutine(FadeGui(0f, 1f));
 
         if (!onlineGame) //Only freeze time if game is offline
-            Time.timeScale = 0f;
-        else
-            FindObjectOfType<KartInput>().enabled = false;
+        {
+            Time.timeScale = 0f;         
+        }
+
+        //Turn off everyone's KartInput
+        foreach (KartInput ki in FindObjectsOfType<KartInput>())
+            ki.enabled = false;
     }
 
 
@@ -57,8 +60,12 @@ public class PauseMenu : MonoBehaviour
         if (fixTime && Time.timeScale != 1)
             Time.timeScale = 1f;
 
-        if(onlineGame)
-            FindObjectOfType<KartInput>().enabled = true;
+        //Turn on everyone's KartInput
+        foreach (KartInput ki in FindObjectsOfType<KartInput>())
+            ki.enabled = true;
+
+        foreach (KartItem ki in FindObjectsOfType<KartItem>())
+            ki.inputLock = true;
     }
 
     private IEnumerator FadeGui(float start, float end)
@@ -77,7 +84,7 @@ public class PauseMenu : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (canPause)
+        if (canPause && !FindObjectOfType<Options>().enabled)
         {
             if (InputManager.controllers != null)
             {

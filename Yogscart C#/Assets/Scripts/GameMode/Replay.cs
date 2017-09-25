@@ -290,12 +290,16 @@ public class Replay : MonoBehaviour
                     if (pauseBool)
                     {
                         inputState = InputState.Menu;
-                        nextMenuOptions = currentRace.GetNextMenuOptions().ToList();
+                        nextMenuOptions = new List<string>() { "Resume" };
+                        nextMenuOptions.AddRange(currentRace.GetNextMenuOptions());
                         nextMenuOptions.Remove("Replay");
                         nextMenuOptions.Remove("Save Ghost");
                         nextMenuOptions.Insert(nextMenuOptions.Count-1,"Options");
 
                         optionsSize = new float[nextMenuOptions.Count];
+
+                        orbitCam.enabled = false;
+                        freeCam.enabled = false;
 
                         currentSelection = 0;
                     }
@@ -304,25 +308,7 @@ public class Replay : MonoBehaviour
                     {
                         //Change Camera Mode
                         cameraMode = (CameraMode)(MathHelper.NumClamp((int)cameraMode + 1, 0, 3));
-
-                        //Turn on/off target cam
-                        if (cameraMode == CameraMode.TargetCam)
-                            orbitCam.enabled = true;
-                        else
-                            orbitCam.enabled = false;
-
-                        if (cameraMode == CameraMode.PlayerCam)
-                            replayKartCamera.enabled = true;
-                        else
-                            replayKartCamera.enabled = false;
-
-                        if (cameraMode == CameraMode.FreeCam)
-                        {
-                            freeCam.enabled = true;
-                            freeCam.SetStartRotation();
-                        }
-                        else
-                            freeCam.enabled = false;
+                        ActivateCameraMode();
                     }
 
                     if (tabChange != 0)
@@ -344,6 +330,10 @@ public class Replay : MonoBehaviour
 
                         switch (nextMenuOptions[currentSelection])
                         {
+                            case "Resume":
+                                inputState = InputState.Replay;
+                                ActivateCameraMode();
+                                break;
                             case "Next Race":
                             case "Restart":
                                 currentRace.NextRace();
@@ -380,7 +370,10 @@ public class Replay : MonoBehaviour
                         currentSelection = MathHelper.NumClamp(currentSelection + vert, 0, nextMenuOptions.Count);
 
                     if (pauseBool || cancelBool)
+                    {
                         inputState = InputState.Replay;
+                        ActivateCameraMode();
+                    }
                     break;
                 case InputState.Options:
                     if (GetComponent<Options>().enabled == false)
@@ -449,6 +442,28 @@ public class Replay : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
         Destroy(this);
+    }
+
+    private void ActivateCameraMode()
+    {
+        //Turn on/off target cam
+        if (cameraMode == CameraMode.TargetCam)
+            orbitCam.enabled = true;
+        else
+            orbitCam.enabled = false;
+
+        if (cameraMode == CameraMode.PlayerCam)
+            replayKartCamera.enabled = true;
+        else
+            replayKartCamera.enabled = false;
+
+        if (cameraMode == CameraMode.FreeCam)
+        {
+            freeCam.enabled = true;
+            freeCam.SetStartRotation();
+        }
+        else
+            freeCam.enabled = false;
     }
 }
 

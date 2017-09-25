@@ -9,6 +9,8 @@ public class KartInput : MonoBehaviour
     public bool camLocked = false;
     public Camera frontCamera, backCamera;
 
+    public static bool overrideCamera = false;
+
     void Start()
     {
         km = GetComponent<KartMovement>(); 
@@ -25,7 +27,7 @@ public class KartInput : MonoBehaviour
             km.steer = Mathf.Abs(InputManager.controllers[myController].GetInput("SteerRight")) - Mathf.Abs(InputManager.controllers[myController].GetInput("SteerLeft"));
             km.drift = (InputManager.controllers[myController].GetInput("Drift") != 0);
 
-            if (frontCamera != null && backCamera != null)
+            if (frontCamera != null && backCamera != null && !overrideCamera)
             {
                 bool lookBehind = (InputManager.controllers[myController].GetInput("RearView") != 0);
 

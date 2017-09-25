@@ -6,9 +6,11 @@ using UnityEngine;
 [RequireComponent(typeof(KartMovement), typeof(Rigidbody))]
 public class KartRecorder : MonoBehaviour
 {
+    public const int updateFramesPerSecond = 20;
+
     public bool isRecording { get; private set; }
 
-    private int frameCount, framesPerSecond;
+    private int frameCount;
     public float lastThrottle = -1;
     public float lastSteer = -1;
     public int lastDrift = -1, lastDriftSteer = -1;
@@ -31,8 +33,7 @@ public class KartRecorder : MonoBehaviour
         if (!isRecording)
         {
             isRecording = true;
-            framesPerSecond = (int)(1f / Time.fixedDeltaTime);
-            frameCount = framesPerSecond;
+            frameCount = updateFramesPerSecond;
         }
     }
 
@@ -76,8 +77,7 @@ public class KartRecorder : MonoBehaviour
             if (driftSteerChange)
                 currentFrame.Add(driftSteer + kartMovement.driftSteer);
 
-            frameCount++;
-            if(frameCount >= framesPerSecond)
+            if(frameCount >= updateFramesPerSecond)
             {
                 currentFrame.Add(expectedSpeed + kartMovement.expectedSpeed);
                 currentFrame.Add(position + transform.position.x + " " + transform.position.y + " " + transform.position.z);
@@ -105,6 +105,8 @@ public class KartRecorder : MonoBehaviour
             lastThrottle = kartMovement.throttle;
             lastSteer = kartMovement.steer;
             lastDrift = (kartMovement.drift ? 1 : 0);
+
+            frameCount++;
         }
     }
 

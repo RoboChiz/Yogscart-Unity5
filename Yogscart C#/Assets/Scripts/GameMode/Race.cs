@@ -614,6 +614,11 @@ public abstract class Race : GameMode
     {
         StartCoroutine(ChangeState(RaceState.CutScene));
 
+        //Turn off all camera
+        foreach (Camera camera in FindObjectsOfType<Camera>())
+            camera.enabled = false;
+        KartInput.overrideCamera = true;
+
         GameObject cutSceneCam = new GameObject();
         cutSceneCam.AddComponent<Camera>();
         cutSceneCam.tag = "MainCamera";
@@ -640,9 +645,17 @@ public abstract class Race : GameMode
         cutSceneCam.GetComponent<Camera>().depth = -5f;
 
         yield return new WaitForSeconds(0.5f);
+
+        //Turn on all cameras
+        foreach (Camera camera in FindObjectsOfType<Camera>())
+            camera.enabled = true;
+        KartInput.overrideCamera = false;
+
         CurrentGameData.blackOut = false;
 
         Destroy(cutSceneCam);
+
+
         sm.PlayMusic(td.backgroundMusic);
     }
 
