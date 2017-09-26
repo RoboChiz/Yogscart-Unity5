@@ -2,6 +2,11 @@
 
 ## Changelog : Started 04/08/2016
 
+# 26/09/2017
+* Added Ghost Replaying from Time Trial Menu
+* Fixed camera effects being affected by multiple karts in replay
+* Fixed camera effects showing up on Freecam
+
 # 25/09/2017
 * Fixed position of VS Race Counter and Ghost Counter
 * Added turning off all cameras during a cutscene to improve performance
@@ -16,6 +21,7 @@
 * Fixed bug where unpausing would use item
 * Fixed stream button in options not highlighting during a race
 * Fixed kart camera can be changed when paused
+* Added Chromatic Abberation on Replay when using Player Cam
 
 # 24/09/2017
 * Added Unity Post Processing Stack

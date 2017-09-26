@@ -31,7 +31,7 @@ public class TimeTrialMenu : MonoBehaviour
     private float[] timeTrialScales;
 
     private Vector2 sliderPosition;
-    private float deleteButtonScale;
+    private float deleteButtonScale, watchButtonScale;
 
     public void Show()
     {
@@ -182,7 +182,7 @@ public class TimeTrialMenu : MonoBehaviour
                     if (labelRect.Contains(GUIHelper.GetMousePosition()))
                         selectedOption = i;
 
-                    if (GUI.Button(labelRect, ""))
+                    if (GUI.Button(labelRect, "") && guiAlpha == 1f)
                     {
                         selectedOption = i;
                         DoSubmit();
@@ -199,16 +199,16 @@ public class TimeTrialMenu : MonoBehaviour
                     {
                         RenderList(validTimeTrials);
 
-                        //Talk about deletion
                         if(choosingGhost && menuState == TTMMenuState.ChoosingLocal)
                         {
+                            //Do Ghost Deleting
                             GUI.DrawTexture(new Rect(1150, 510, 100, 100), 
                                 Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].inputType == InputType.Keyboard) ? "Space" : "X")), ScaleMode.ScaleToFit);
 
                             GUIHelper.LeftRectLabel(new Rect(1300, 510, 500, 100), deleteButtonScale, "Delete Record", deleteButtonScale == 1f ? Color.white : Color.yellow);
 
                             Rect buttonRect = new Rect(1150, 510, 600, 100);
-                            if (GUI.Button(buttonRect, ""))
+                            if (GUI.Button(buttonRect, "") && guiAlpha == 1f)
                             {
                                 DeleteCurrentGhost();
                             }
@@ -217,6 +217,23 @@ public class TimeTrialMenu : MonoBehaviour
                                 deleteButtonScale = Mathf.Clamp(deleteButtonScale + (Time.deltaTime * 2f), 1f, 1.2f);
                             else
                                 deleteButtonScale = Mathf.Clamp(deleteButtonScale - (Time.deltaTime * 2f), 1f, 1.2f);
+
+                            //Do Ghost Replaying
+                            GUI.DrawTexture(new Rect(1150, 610, 100, 100),
+                              Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].inputType == InputType.Keyboard) ? "R" : "Y")), ScaleMode.ScaleToFit);
+
+                            GUIHelper.LeftRectLabel(new Rect(1300, 610, 500, 100), watchButtonScale, "Watch Ghost", watchButtonScale == 1f ? Color.white : Color.yellow);
+
+                            buttonRect = new Rect(1150, 610, 600, 100);
+                            if (GUI.Button(buttonRect, "") && guiAlpha == 1f)
+                            {
+                                ReplayGhost();
+                            }
+
+                            if (buttonRect.Contains(GUIHelper.GetMousePosition()))
+                                watchButtonScale = Mathf.Clamp(watchButtonScale + (Time.deltaTime * 2f), 1f, 1.2f);
+                            else
+                                watchButtonScale = Mathf.Clamp(watchButtonScale - (Time.deltaTime * 2f), 1f, 1.2f);
                         }
                     }
                     else
@@ -274,7 +291,7 @@ public class TimeTrialMenu : MonoBehaviour
                     if (actualRect.Contains(GUIHelper.GetMousePosition()))
                         selectedTT = i;
 
-                    if (GUI.Button(labelRect, ""))
+                    if (GUI.Button(labelRect, "") && guiAlpha == 1f)
                     {
                         selectedTT = i;
                         DoSubmit();
@@ -306,7 +323,8 @@ public class TimeTrialMenu : MonoBehaviour
             int vert = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
             bool submitBool = (InputManager.controllers[0].GetButtonWithLock("Submit"));
             bool cancelBool = (InputManager.controllers[0].GetButtonWithLock("Cancel"));
-            bool ToggleBool = (InputManager.controllers[0].GetButtonWithLock("Toggle"));
+            bool toggleBool = (InputManager.controllers[0].GetButtonWithLock("Toggle"));
+            bool replayBool = (InputManager.controllers[0].GetButtonWithLock("Replay"));
 
             if (vert != 0)
             {
@@ -336,10 +354,15 @@ public class TimeTrialMenu : MonoBehaviour
             if (cancelBool)
                 DoCancel();
 
-            if(ToggleBool)
+            if(toggleBool)
             {
                 //Delete the current Ghost
                 DeleteCurrentGhost();
+            }
+
+            if(replayBool)
+            {
+                ReplayGhost();
             }
 
             if (!choosingGhost && InputManager.controllers[0].inputType == InputType.Xbox360)
@@ -377,6 +400,8 @@ public class TimeTrialMenu : MonoBehaviour
     void DoSubmit()
     {
         bool didSomething = false;
+
+        timeTrial.isReplay = false;
 
         if (!choosingGhost)
         {
@@ -427,5 +452,22 @@ public class TimeTrialMenu : MonoBehaviour
         File.Delete(kill.fileLocation);
 
         validTimeTrials.Remove(kill);
+    }
+
+    void ReplayGhost()
+    {
+        //Launch Replay GameMode
+        Replay replay = gameObject.AddComponent<Replay>();
+
+        //Generate a list of Replay Racers
+        GhostData data = validTimeTrials[selectedTT];
+        ReplayRacer replayGhost = new ReplayRacer(new Racer(0, -1, data.character, data.hat, data.kart, data.wheel, 0));
+        replayGhost.ghostData = data.ToData();
+
+        timeTrial.isReplay = true;
+        timeTrial.SetLevel(data.cup, data.track);
+
+        replay.Setup(timeTrial, new List<ReplayRacer>() { replayGhost });
+        Hide();
     }
 }

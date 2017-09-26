@@ -108,10 +108,13 @@ public class KartMovement : MonoBehaviour
     private kartInfo kartInfoComp;
     private float chroming = 0f;
 
+    public List<Camera> toProcess;
+
     void Awake()
     {
         //Get Kart Body
         kartBody = transform.Find("Kart Body");
+        toProcess = new List<Camera>();
     }
 
     void Start()
@@ -480,7 +483,7 @@ public class KartMovement : MonoBehaviour
                 }
             }
 
-            if (kartInfoComp != null)
+            if (toProcess != null)
             {
                 if (isBoosting != BoostMode.Not)
                 {
@@ -494,7 +497,7 @@ public class KartMovement : MonoBehaviour
                 //Do cool Chromatic Aberration Effect on boost
                 if (FindObjectOfType<EffectsManager>().GetUseChromaticAberration())
                 {
-                    foreach (Camera camera in GetComponent<kartInfo>().cameras)
+                    foreach (Camera camera in toProcess)
                     {
                         PostProcessingBehaviour postProcess = camera.GetComponent<PostProcessingBehaviour>();
 

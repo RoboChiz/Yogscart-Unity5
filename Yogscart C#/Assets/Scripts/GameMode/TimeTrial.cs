@@ -8,6 +8,7 @@ using UnityEngine;
 public class TimeTrial : Race
 {
     protected override bool enableAI { get { return false; } }
+    public bool isReplay = false;
 
     private bool skipCS = false, ghostSaved = false;
 
@@ -220,7 +221,14 @@ public class TimeTrial : Race
 
     public override string[] GetNextMenuOptions()
     {
-        return new string[] { "Restart", "Replay", "Save Ghost", "Quit" };
+        if (!isReplay)
+        {
+            return new string[] { "Restart", "Replay", "Save Ghost", "Quit" };
+        }
+        else
+        {
+            return new string[] { "Quit" };
+        }
     }
 
     protected override string GetRaceName()
@@ -336,6 +344,12 @@ public class TimeTrial : Race
 
         StartRace();
     }
+
+    public void SetLevel(int _cup, int _track)
+    {
+        currentCup = _cup;
+        currentTrack = _track;
+    }
 }
 
 [System.Serializable]
@@ -370,5 +384,24 @@ public class GhostData
         playerName = "";
         fileLocation = "";
         version = "";
+    }
+
+    public List<List<String>> ToData()
+    {
+        List<List<string>> replayData = new List<List<string>>();
+
+        string[] frames = data.Split('>');
+
+        foreach (string frame in frames)
+        {
+            //Create a new list of strings
+            List<string> actionsList = new List<string>();
+            replayData.Add(actionsList);
+
+            string[] actions = frame.Split(';');
+            actionsList.AddRange(actions);
+        }
+
+        return replayData;
     }
 }

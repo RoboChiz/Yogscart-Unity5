@@ -13,7 +13,10 @@ public class KartInput : MonoBehaviour
 
     void Start()
     {
-        km = GetComponent<KartMovement>(); 
+        km = GetComponent<KartMovement>();
+
+        km.toProcess.Add(frontCamera);
+        km.toProcess.Add(backCamera);
     }
 
     // Update is called once per frame

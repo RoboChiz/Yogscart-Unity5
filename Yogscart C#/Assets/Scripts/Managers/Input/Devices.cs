@@ -36,6 +36,7 @@ public class KeyboardDevice : InputDevice
             {"HideUI", new List<ControlName>() {new ControlName("h", false) } },
             {"Edit", new List<ControlName>() {new ControlName("q", false) } },
             {"Delete", new List<ControlName>() {new ControlName("e", false) } },
+            {"Replay", new List<ControlName>() {new ControlName("r", false) } },
             //Driving Controls
             {"Throttle", new List<ControlName>() {new ControlName("w", false) } },
             {"Brake", new List<ControlName>() {new ControlName("s", false) } },
@@ -76,6 +77,7 @@ public class XBox360Device : InputDevice
             {"Pause", new List<ControlName>() {new ControlName(Start, false) } },
             {"Rotate", new List<ControlName>() {new ControlName(RightStickHori, true) } },
             {"HideUI", new List<ControlName>() {new ControlName(Y, false) } },
+            {"Replay", new List<ControlName>() {new ControlName(Y, false) } },
             //Driving Controls
             {"Throttle", new List<ControlName>() {new ControlName(A, false) } },
             {"Brake", new List<ControlName>() {new ControlName(B, false) } },

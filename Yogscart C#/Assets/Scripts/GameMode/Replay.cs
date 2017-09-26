@@ -102,7 +102,7 @@ public class Replay : MonoBehaviour
         }
 
         //Create Debug Kart Camera
-        GameObject camera = new GameObject();
+        GameObject camera = new GameObject("Camera");
 
         replayKartCamera = camera.AddComponent<KartCamera>();
         target = racers.Count - 1;
@@ -117,6 +117,9 @@ public class Replay : MonoBehaviour
         //Make a Free Cam
         freeCam = camera.AddComponent<FreeCam>();
         freeCam.enabled = false;
+
+        //Turn on effects
+        racers[target].ingameObj.GetComponent<KartMovement>().toProcess.Add(replayCamera);
 
         yield return null;
 
@@ -313,8 +316,14 @@ public class Replay : MonoBehaviour
 
                     if (tabChange != 0)
                     {
+                        //Remove Camera to new target
+                        racers[target].ingameObj.GetComponent<KartMovement>().toProcess.Remove(replayCamera);
+
                         //Swap Target
                         target = MathHelper.NumClamp(target + tabChange, 0, racers.Count);
+
+                        //Add Camera to new target
+                        racers[target].ingameObj.GetComponent<KartMovement>().toProcess.Add(replayCamera);
                     }
 
                     if (hideBool)
@@ -461,9 +470,20 @@ public class Replay : MonoBehaviour
         {
             freeCam.enabled = true;
             freeCam.SetStartRotation();
+
+            //Remove self from target
+            racers[target].ingameObj.GetComponent<KartMovement>().toProcess.Remove(replayCamera);
+
+            //Turn off effects
+            FindObjectOfType<EffectsManager>().ToggleReapply();
         }
-        else
+        else if(freeCam.enabled)
+        {
             freeCam.enabled = false;
+
+            //Add self from target
+            racers[target].ingameObj.GetComponent<KartMovement>().toProcess.Add(replayCamera);
+        }
     }
 }
 
