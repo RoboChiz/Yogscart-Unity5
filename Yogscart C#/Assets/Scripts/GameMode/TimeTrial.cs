@@ -113,7 +113,9 @@ public class TimeTrial : Race
                 material.EnableKeyword("_ALPHABLEND_ON");
                 material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                 material.renderQueue = 3000;
-                material.color = new Color(1f, 1f, 1f, 0.4f);              
+                material.color = new Color(1f, 1f, 1f, 0.4f);
+
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;          
             }
 
             foreach (SkinnedMeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>())
@@ -129,6 +131,8 @@ public class TimeTrial : Race
                 material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                 material.renderQueue = 3000;
                 material.color = new Color(1f, 1f, 1f, 0.4f);
+
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
         }
     }

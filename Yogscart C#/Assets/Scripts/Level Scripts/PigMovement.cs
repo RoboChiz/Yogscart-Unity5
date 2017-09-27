@@ -12,6 +12,9 @@ public class PigMovement : MonoBehaviour
 
     private Animator ani;
 
+    public List<AudioClip> hitNoises;
+    private float lastHit = 0f;
+
     void Start()
     {
         ani = GetComponent<Animator>();
@@ -20,8 +23,10 @@ public class PigMovement : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        //Ensure a second has passed before pigs make noise
+        lastHit = Mathf.Clamp(lastHit - Time.deltaTime, 0f, 1f);
 
-        for(int i = 0; i < points.Count; i++)
+        for (int i = 0; i < points.Count; i++)
         {
             Debug.DrawLine(points[i].position, points[MathHelper.NumClamp(i + 1, 0, points.Count)].position, Color.red);
         }
@@ -65,5 +70,15 @@ public class PigMovement : MonoBehaviour
         yield return new WaitForSeconds(10f);
 
         grazing = false;
+    }
+
+    void OnKartHit(KartMovement _kart)
+    {
+        if (lastHit <= 0f)
+        {
+            //Play a Pig Sound
+            GetComponent<AudioSource>().PlayOneShot(hitNoises[Random.Range(0, hitNoises.Count)], 2f);
+            lastHit = 1f;
+        }
     }
 }

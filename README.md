@@ -2,6 +2,12 @@
 
 ## Changelog : Started 04/08/2016
 
+# 27/09/2017
+* Fixed Kart/God Collisions
+* Added Pig Idle Noises
+* Added Pig Hit Noises
+* Added Hay Stacks that can be driven through
+
 # 26/09/2017
 * Added Ghost Replaying from Time Trial Menu
 * Fixed camera effects being affected by multiple karts in replay

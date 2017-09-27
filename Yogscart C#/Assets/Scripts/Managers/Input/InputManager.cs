@@ -37,6 +37,9 @@ public class InputManager : MonoBehaviour
         //Load all of the available configs
         LoadAllControllerLayouts();
 
+        //Debug
+        inputState = InputState.Any;
+
     }
 
 void Update()

@@ -170,6 +170,7 @@
     <Compile Include="Assets\Scripts\Kart V2\KartRecorder.cs" />
     <Compile Include="Assets\Scripts\Kart V2\KartReplayer.cs" />
     <Compile Include="Assets\Scripts\Kart V2\ParticleKill.cs" />
+    <Compile Include="Assets\Scripts\Level Scripts\HayComponent.cs" />
     <Compile Include="Assets\Scripts\Level Scripts\PigMovement.cs" />
     <Compile Include="Assets\Scripts\Managers\BSPTree.cs" />
     <Compile Include="Assets\Scripts\Managers\Input\Devices.cs" />

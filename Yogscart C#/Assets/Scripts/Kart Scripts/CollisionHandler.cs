@@ -166,8 +166,14 @@ public class CollisionHandler : MonoBehaviour
         if (Physics.Raycast(kart.transform.position, -kart.transform.up, out hit, 2f))
             kartRight = Vector3.ProjectOnPlane(kartRight, hit.normal);
 
+        //Store where kart was
+        Vector3 kartWorldPos = kart.transform.position;
+
         //Force Kart Move
         kart.transform.position += kartRight;
+
+        //Leave Kart Body where kart was
+        kart.kartBody.position = kartWorldPos;
 
         //Slide Kartbody back to actual kart position
         kart.SlideKartBody();
@@ -176,6 +182,9 @@ public class CollisionHandler : MonoBehaviour
         StartCoroutine(TwistKartBody(kart.kartBody, (relativePosition.x > 0f) ? -1f : 1f));
 
         kart.SpinOut();
+
+        //Tell God
+        god.SendMessage("OnKartHit", kart, SendMessageOptions.DontRequireReceiver);
 
         FindObjectOfType<InterestManager>().AddInterest(kart.transform, InterestType.Attack, Vector3.up);
         FindObjectOfType<InterestManager>().AddInterest(god.transform, InterestType.Attack, Vector3.zero);
