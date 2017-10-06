@@ -99,7 +99,7 @@ public class UnetHost : UnetClient
     private IEnumerator AcceptPlayer(NetworkConnection conn)
     {
         AcceptedMessage ackMsg = new AcceptedMessage();
-        ackMsg.currentState = currentState;
+        ackMsg.currentState = (YogscartNetwork.GameState)currentState;
 
         //Check to see if Client can join players
         if (currentState != GameState.Lobby || finalPlayers.Count >= 12)

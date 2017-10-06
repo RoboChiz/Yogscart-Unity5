@@ -1,17 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class NetworkSelection : MonoBehaviour
 {
     public enum MenuState { ServerList, Connecting, HostSetup, Lobby, CharacterSelect, PopUp};
     public MenuState state;
 
+    public enum NetworkState { Host, ConsoleHost, PlayableHost, Client};
+    public NetworkState networkState;
+
     private float guiAlpha = 0f;
     public GUISkin skin;
 
     //Menu Selection
-    private int currentSelection = 0;
+    private int currentSelection = 0, guiOptionsCount = 0;
     public List<ServerInfo> servers { get; private set; }
     private Vector2 scrollPosition;
 
@@ -27,8 +31,8 @@ public class NetworkSelection : MonoBehaviour
 
     //Server Settings
     private ServerSettings hostServerSettings;
-    public UnetHost host;
-    public UnetClient client;
+    public YogscartNetwork.Host host;
+    public YogscartNetwork.Client client;
 
     //Textures
     private Texture2D xButton, yButton, qButton, eButton, connectionCircle;
@@ -38,7 +42,7 @@ public class NetworkSelection : MonoBehaviour
     public void Hide() { StartCoroutine(FadeTo(0f)); }
     public bool isShowing { get { return guiAlpha > 0f; } }
 
-    public void ChangeState(MenuState newState) { StartCoroutine(ActualChangeState(newState)); }
+    public void ChangeState(MenuState newState) { StartCoroutine(ActualChangeState(newState)); currentSelection = 0; }
 
     private IEnumerator ActualChangeState(MenuState newState)
     {
@@ -60,6 +64,8 @@ public class NetworkSelection : MonoBehaviour
     {
         GUI.skin = skin;
         GUI.matrix = GUIHelper.GetMatrix();
+
+        guiOptionsCount = 0;
 
         if (guiAlpha > 0f)
         {
@@ -237,6 +243,59 @@ public class NetworkSelection : MonoBehaviour
                     break;
                 case MenuState.Lobby:
 
+                    GUIHelper.LeftRectLabel(new Rect(50, 50, 800, 50), 1f, "  Welcome to the Lobby!", Color.white);
+
+                    //Client Specific GUI
+                    if (networkState == NetworkState.Client)
+                    {
+                        //Leave Server
+                        Rect leaveServerRect = new Rect(50, 110, 800, 50);
+                        GUIShape.RoundedRectangle(leaveServerRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                        GUIHelper.LeftRectLabel(leaveServerRect, 1f, "  Leave the Server", (currentSelection == 0) ? Color.yellow : Color.white);
+
+                        if (Cursor.visible && leaveServerRect.Contains(GUIHelper.GetMousePosition()))
+                            currentSelection = 0;
+
+                        if (GUI.Button(leaveServerRect, "") && !locked && guiAlpha == 1f)
+                            LeaveServer();
+
+                        guiOptionsCount++;
+
+                        //Change Character
+                        Rect changeLayoutRect = new Rect(50, 170, 800, 50);
+                        GUIShape.RoundedRectangle(changeLayoutRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                        GUIHelper.LeftRectLabel(changeLayoutRect, 1f, "  Change Character/Kart", (currentSelection == 1) ? Color.yellow : Color.white);
+
+                        if (Cursor.visible && changeLayoutRect.Contains(GUIHelper.GetMousePosition()))
+                            currentSelection = 1;
+
+                        if (GUI.Button(changeLayoutRect, "") && !locked && guiAlpha == 1f)
+                            ChangeLayout();
+
+                        guiOptionsCount++;
+                    }
+                    else
+                    {
+                        //Host UI
+                        GUIHelper.LeftRectLabel(new Rect(50, 110, 800, 50), 1f, "  Players (Ready): " + host.finalPlayers.Count + " / " + host.serverSettings.maxPlayers, Color.white);
+                        GUIHelper.LeftRectLabel(new Rect(50, 170, 800, 50), 1f, "  Players (Not Ready): " + host.possiblePlayers.Count, Color.white);
+                        GUIHelper.LeftRectLabel(new Rect(50, 230, 800, 50), 1f, "  Spectators: " + (host.waitingPlayers.Count + host.rejectedPlayers.Count).ToString(), Color.white);
+
+                        //Leave Server
+                        Rect leaveServerRect = new Rect(50, 290, 800, 50);
+                        GUIShape.RoundedRectangle(leaveServerRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                        GUIHelper.LeftRectLabel(leaveServerRect, 1f, "  Leave the Server", (currentSelection == 0) ? Color.yellow : Color.white);
+
+                        if (Cursor.visible && leaveServerRect.Contains(GUIHelper.GetMousePosition()))
+                            currentSelection = 0;
+
+                        if (GUI.Button(leaveServerRect, "") && !locked && guiAlpha == 1f)
+                            LeaveServer();
+
+                        guiOptionsCount++;
+                    }
+
+
                     break;
                 case MenuState.CharacterSelect:
 
@@ -320,9 +379,9 @@ public class NetworkSelection : MonoBehaviour
                         else
                         {
                             //Otherwise check that option is visible. If it isn't skip it
-                            if((newVal == 3 && !hostServerSettings.automatic) || (newVal == 5 && hostServerSettings.consoleMode) || (newVal == 7 && !hostServerSettings.fillWithAI))
+                            if ((newVal == 3 && !hostServerSettings.automatic) || (newVal == 5 && hostServerSettings.consoleMode) || (newVal == 7 && !hostServerSettings.fillWithAI))
                             {
-                                if(newVal < currentSelection)
+                                if (newVal < currentSelection)
                                     currentSelection = MathHelper.NumClamp(newVal - 1, 0, 9);
                                 else
                                     currentSelection = MathHelper.NumClamp(newVal + 1, 0, 9);
@@ -362,6 +421,51 @@ public class NetworkSelection : MonoBehaviour
 
                     break;
                 case MenuState.Lobby:
+
+                    //Allow menus to be scrolled through
+                    if (vertical != 0)
+                    {
+                        currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, guiOptionsCount);
+                    }
+
+                    if (cancelBool)
+                    {
+                        if(networkState == NetworkState.Client)
+                        {
+                            LeaveServer();
+                        }
+                        else
+                        {
+                            CloseServer();
+                        }
+                    }
+
+                    if (submitBool)
+                    {
+                        switch (currentSelection)
+                        {
+                            case 0:
+                                if (networkState == NetworkState.Client)
+                                {
+                                    LeaveServer();
+                                }
+                                else
+                                {
+                                    CloseServer();
+                                }
+                                break;
+                            case 1:
+                                if (networkState == NetworkState.Client)
+                                {
+                                    ChangeLayout();
+                                }
+                                else
+                                {
+                                    
+                                }
+                                break;
+                        }
+                    }
 
                     break;
                 case MenuState.CharacterSelect:
@@ -420,35 +524,46 @@ public class NetworkSelection : MonoBehaviour
     public IEnumerator ActualHostGame()
     {
         MainMenu.lockInputs = true;
+        networkState = NetworkState.Host;
 
         //Wait for fade
         yield return ActualChangeState(MenuState.Connecting);
 
         Debug.Log("Started Server!");
         //Pick a character before game starts
-        CharacterSelect cs = FindObjectOfType<CharacterSelect>();
-        cs.enabled = true;
-
-        yield return cs.StartCoroutine("ShowCharacterSelect", CharacterSelect.csState.Character);
-
-        //Wait until all characters have been selected
-        while (cs.State != CharacterSelect.csState.Finished && cs.State != CharacterSelect.csState.Off)
+        if (hostServerSettings.hostAsPlayer)
         {
-            yield return null;
+            CharacterSelect cs = FindObjectOfType<CharacterSelect>();
+            cs.enabled = true;
+
+            yield return cs.StartCoroutine("ShowCharacterSelect", CharacterSelect.csState.Character);
+
+            //Wait until all characters have been selected
+            while (cs.State != CharacterSelect.csState.Finished && cs.State != CharacterSelect.csState.Off)
+            {
+                yield return null;
+            }
+
+            if (cs.State == CharacterSelect.csState.Off)
+            {
+                ChangeState(MenuState.ServerList);
+                Debug.Log("Didn't make it through the Character Select!");
+                yield break;
+            }
+
+            networkState = NetworkState.PlayableHost;
         }
 
-        if (cs.State == CharacterSelect.csState.Off)
+        if (hostServerSettings.consoleMode)
         {
-            ChangeState(NetworkSelection.MenuState.ServerList);
-            Debug.Log("Didn't make it through the Character Select!");
-            yield break;
+            networkState = NetworkState.ConsoleHost;
         }
 
         //Everything worked out perfect!
         Debug.Log("It worked");
-        host = gd.gameObject.AddComponent<UnetHost>();
+        host = gd.gameObject.AddComponent<YogscartNetwork.Host>();
         host.playerPrefab = Resources.Load<GameObject>("Prefabs/Kart Maker/Network Kart");
-        host.settings = hostServerSettings;
+        host.serverSettings = hostServerSettings;
         host.networkPort = serverPort;
         try
         {
@@ -467,11 +582,12 @@ public class NetworkSelection : MonoBehaviour
     {
         MainMenu.lockInputs = true;
         currentSelection = 0;
+        networkState = NetworkState.Client;
 
         //Wait for fade
         yield return ActualChangeState(MenuState.Connecting);
 
-        client = gd.gameObject.AddComponent<UnetClient>();
+        client = gd.gameObject.AddComponent<YogscartNetwork.Client>();
         client.playerPrefab = Resources.Load<GameObject>("Prefabs/Kart Maker/Network Kart");
 
         Debug.Log("Connecting to " + server.ip + ":" + server.port + " Pass:" + server.password);
@@ -557,10 +673,44 @@ public class NetworkSelection : MonoBehaviour
             Debug.Log("Servers List string not in the correct format.");
         }
     }
+
+    //Leave the Game
+    void LeaveServer()
+    {
+        client.EndClient(null);
+    }
+
+    //Close the Game
+    void CloseServer()
+    {
+        host.EndClient(null);
+    }
+
+    //Request a Character Change from the Server
+    void ChangeLayout()
+    {
+
+    }
 }
 
 public class ServerSettings
 {
+    public ServerSettings(string _gamemodeName, int _maxPlayers, int _minPlayers,
+        bool _automatic, bool _consoleMode, bool _hostAsPlayer, bool _fillWithAI,
+        int _aiDifficulty, string _password)
+    {
+        gamemodeName = _gamemodeName;
+        maxPlayers = _maxPlayers;
+        minPlayers = _minPlayers;
+        consoleMode = _consoleMode;
+        hostAsPlayer = _hostAsPlayer;
+        fillWithAI = _fillWithAI;
+        aiDifficulty = _aiDifficulty;
+        password = _password;
+    }
+
+    public ServerSettings() { }
+
     //Start Game Mode (Can be changed later)
     public string gamemodeName = "Race";
 
@@ -577,7 +727,7 @@ public class ServerSettings
     public bool consoleMode = false;
 
     //Spawn Host as Player
-    public bool hostAsPlayer = false;
+    public bool hostAsPlayer = true;
 
     //Fill spaces with AI
     public bool fillWithAI = false;

@@ -53,8 +53,10 @@ public class VersionMessage : MessageBase //1002
 //Sent by Server if Client passes Version Check. Contains game info
 public class AcceptedMessage : MessageBase //1003
 {
-    public UnetHost.GameState currentState;
-    public bool playerUp;
+    public bool playerUp; //Should the player select a character
+    public YogscartNetwork.GameState currentState; //What state are we in
+    //Gamemode
+    //Current Display Names
 }
 
 //Sent by Server if Client has caused an Error

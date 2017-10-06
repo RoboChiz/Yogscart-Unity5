@@ -119,7 +119,7 @@ public class UnetClient : NetworkManager
         {
             FindObjectOfType<NetworkGUI>().PlayerUp();
         }
-        else if (msg.currentState == UnetHost.GameState.Lobby)
+        else if ((int)msg.currentState == (int)UnetHost.GameState.Lobby)
         {
             FindObjectOfType<NetworkGUI>().ChangeState(NetworkGUI.ServerState.Lobby);
         }       
