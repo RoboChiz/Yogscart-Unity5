@@ -2,6 +2,12 @@
 
 ## Changelog : Started 04/08/2016
 
+# 06/10/2017
+* Fixed issues with Network Selection
+* Added basic Lobby
+* Added basic Host behaviour
+* Added basic Client behaviour
+
 # 27/09/2017
 * Fixed Kart/God Collisions
 * Added Pig Idle Noises
