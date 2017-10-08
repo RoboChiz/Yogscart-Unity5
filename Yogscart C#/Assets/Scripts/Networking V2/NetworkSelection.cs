@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 public class NetworkSelection : MonoBehaviour
 {
-    public enum MenuState { ServerList, Connecting, HostSetup, Lobby, CharacterSelect, PopUp};
+    public enum MenuState { ServerList, Connecting, HostSetup, Lobby, CharacterSelect, Gamemode, PopUp};
     public MenuState state;
 
     public enum NetworkState { Host, ConsoleHost, PlayableHost, Client};
@@ -34,6 +34,10 @@ public class NetworkSelection : MonoBehaviour
     public YogscartNetwork.Host host;
     public YogscartNetwork.Client client;
 
+    //Info to display
+    public List<PlayerInfo> playerList;
+    public int currentGamemode;
+
     //Textures
     private Texture2D xButton, yButton, qButton, eButton, connectionCircle;
     private float connectRot = 0f;
@@ -42,12 +46,15 @@ public class NetworkSelection : MonoBehaviour
     public void Hide() { StartCoroutine(FadeTo(0f)); }
     public bool isShowing { get { return guiAlpha > 0f; } }
 
-    public void ChangeState(MenuState newState) { StartCoroutine(ActualChangeState(newState)); currentSelection = 0; }
+    public void ChangeState(MenuState newState) { StartCoroutine(ActualChangeState(newState));}
 
     private IEnumerator ActualChangeState(MenuState newState)
     {
         yield return FadeTo(0f);
+
         state = newState;
+        currentSelection = 0;
+
         yield return FadeTo(1f);
     }
 
@@ -64,8 +71,6 @@ public class NetworkSelection : MonoBehaviour
     {
         GUI.skin = skin;
         GUI.matrix = GUIHelper.GetMatrix();
-
-        guiOptionsCount = 0;
 
         if (guiAlpha > 0f)
         {
@@ -198,7 +203,7 @@ public class NetworkSelection : MonoBehaviour
                 case 6: return fillWithAI.ToString();
                 case 7: return aiDifficulty.ToString();*/
 
-                    string[] options = new string[] { "   Gamemode: ", "   Maximum Players: ", "   Automatic: ", "   Minimum Players: ", "   Console Mode: ", "   Host is Playing: ", "   Fill empty spaces with AI: ", "   AI Difficulty: " };
+                    string[] options = new string[] { "   Gamemode: " + gd.onlineGameModes[hostServerSettings.gamemode].gamemodeName, "   Maximum Players: ", "   Automatic: ", "   Minimum Players: ", "   Console Mode: ", "   Host is Playing: ", "   Fill empty spaces with AI: ", "   AI Difficulty: " };
 
                     for (int i = 0; i < options.Length; i++)
                     {
@@ -213,14 +218,15 @@ public class NetworkSelection : MonoBehaviour
                                 currentSelection = i;
 
                             //Do Input
-                            if (i == 2 || i == 4 || i == 5 || i == 6)
+                            if (i == 0 || i == 2 || i == 4 || i == 5 || i == 6)
                             {
                                 if (GUI.Button(optionRect, "") && !locked && guiAlpha == 1f)
                                 {
                                     switch(i)
                                     {
+                                        case 0: hostServerSettings.gamemode = MathHelper.NumClamp(hostServerSettings.gamemode + 1, 0, gd.onlineGameModes.Length); break;
                                         case 2: hostServerSettings.automatic = !hostServerSettings.automatic; break;
-                                        case 4: hostServerSettings.consoleMode = !hostServerSettings.consoleMode; break;
+                                        case 4: hostServerSettings.consoleMode = !hostServerSettings.consoleMode; if (hostServerSettings.consoleMode) { hostServerSettings.hostAsPlayer = false; } break;
                                         case 5: hostServerSettings.hostAsPlayer = !hostServerSettings.hostAsPlayer; break;
                                         case 6: hostServerSettings.fillWithAI = !hostServerSettings.fillWithAI; break;
                                     }
@@ -244,6 +250,9 @@ public class NetworkSelection : MonoBehaviour
                 case MenuState.Lobby:
 
                     GUIHelper.LeftRectLabel(new Rect(50, 50, 800, 50), 1f, "  Welcome to the Lobby!", Color.white);
+
+                    float playerListStart = 400f;
+                    guiOptionsCount = 0;
 
                     //Client Specific GUI
                     if (networkState == NetworkState.Client)
@@ -284,24 +293,106 @@ public class NetworkSelection : MonoBehaviour
                         //Leave Server
                         Rect leaveServerRect = new Rect(50, 290, 800, 50);
                         GUIShape.RoundedRectangle(leaveServerRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
-                        GUIHelper.LeftRectLabel(leaveServerRect, 1f, "  Leave the Server", (currentSelection == 0) ? Color.yellow : Color.white);
+                        GUIHelper.LeftRectLabel(leaveServerRect, 1f, "  Close the Server", (currentSelection == guiOptionsCount) ? Color.yellow : Color.white);
 
                         if (Cursor.visible && leaveServerRect.Contains(GUIHelper.GetMousePosition()))
-                            currentSelection = 0;
+                            currentSelection = guiOptionsCount;
 
                         if (GUI.Button(leaveServerRect, "") && !locked && guiAlpha == 1f)
                             LeaveServer();
 
                         guiOptionsCount++;
+
+                        //Current Gamemode
+                        Rect gamemodeRect = new Rect(50, 350, 800, 50);
+                        GUIShape.RoundedRectangle(gamemodeRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                        GUIHelper.LeftRectLabel(gamemodeRect, 1f, "  Gamemode: " + gd.onlineGameModes[host.currentGamemode].gamemodeName, (currentSelection == guiOptionsCount) ? Color.yellow : Color.white);
+
+                        if (Cursor.visible && gamemodeRect.Contains(GUIHelper.GetMousePosition()))
+                            currentSelection = guiOptionsCount;
+
+                        if (GUI.Button(gamemodeRect, "") && !locked && guiAlpha == 1f)
+                        {
+                            host.ChangeGamemode(host.currentGamemode + 1);                            
+                        }
+
+                        guiOptionsCount++;
+
+                        //Current Gamemode
+                        Rect startGamemodeRect = new Rect(50, 410, 800, 50);
+                        GUIShape.RoundedRectangle(startGamemodeRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                        GUIHelper.LeftRectLabel(startGamemodeRect, 1f, "  Start Game", (currentSelection == guiOptionsCount) ? Color.yellow : Color.white);
+
+                        if (Cursor.visible && startGamemodeRect.Contains(GUIHelper.GetMousePosition()))
+                            currentSelection = guiOptionsCount;
+
+                        if (GUI.Button(startGamemodeRect, "") && !locked && guiAlpha == 1f)
+                        {
+                            host.StartGamemode();
+                        }
+
+                        guiOptionsCount++;
+                        playerListStart = 470;
+
+                        if (networkState == NetworkState.PlayableHost)
+                        {
+                            //Change Character
+                            Rect changeLayoutRect = new Rect(50, 470, 800, 50);
+                            GUIShape.RoundedRectangle(changeLayoutRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                            GUIHelper.LeftRectLabel(changeLayoutRect, 1f, "  Change Character/Kart", (currentSelection == guiOptionsCount) ? Color.yellow : Color.white);
+
+                            if (Cursor.visible && changeLayoutRect.Contains(GUIHelper.GetMousePosition()))
+                                currentSelection = guiOptionsCount;
+
+                            if (GUI.Button(changeLayoutRect, "") && !locked && guiAlpha == 1f)
+                                ChangeLayout();
+
+                            guiOptionsCount++;
+                            playerListStart = 530;
+                        }
                     }
 
+                    //Draw Player List
+                    for(int i = 0; i <playerList.Count; i++)
+                    {
+                        PlayerInfo info = playerList[i];
+                        float startHeight = playerListStart + (i * 60);
+
+                        //Name
+                        GUIHelper.LeftRectLabel(new Rect(50, startHeight, 600, 50), 1f, "  " + info.displayName, Color.white);
+
+                        //Icons
+                        GUI.DrawTexture(new Rect(660, startHeight, 50, 50), gd.characters[info.character].icon);
+                        GUI.DrawTexture(new Rect(720, startHeight, 50, 50), gd.hats[info.hat].icon);
+                        GUI.DrawTexture(new Rect(780, startHeight, 50, 50), gd.karts[info.kart].icon);
+                        GUI.DrawTexture(new Rect(840, startHeight, 50, 50), gd.wheels[info.wheel].icon);
+
+                        //Ping
+                        GUIHelper.LeftRectLabel(new Rect(1350, startHeight, 300, 50), 1f, "Ping: " + (info.ping > 0 ? info.ping + "ms" : "N/A"), Color.white);
+                    }
+
+                    //Draw Current Gamemode
+                    GameModeInfo gamemodeInfo = gd.onlineGameModes[currentGamemode];
+
+                    Rect gamemodeInfoRect = new Rect(1310, 50, 600, 300);
+                    GUIShape.RoundedRectangle(gamemodeInfoRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+
+                    GUIHelper.LeftRectLabel(new Rect(gamemodeInfoRect.x + 10, gamemodeInfoRect.y + 10, gamemodeInfoRect.width - 220, 100), 2.5f, gamemodeInfo.gamemodeName, Color.white);
+                    GUIHelper.LeftRectLabel(new Rect(gamemodeInfoRect.x + 10, gamemodeInfoRect.y + 110, gamemodeInfoRect.width - 220, gamemodeInfoRect.height - 120), 1f, gamemodeInfo.description, Color.white);
+
+                    GUI.DrawTexture(new Rect(gamemodeInfoRect.x + gamemodeInfoRect.width - 210, 60, 200, 280), gamemodeInfo.logo, ScaleMode.ScaleToFit);
 
                     break;
                 case MenuState.CharacterSelect:
+                case MenuState.Gamemode:
 
                     break;
                 case MenuState.PopUp:
-                    GUI.Label(new Rect(200, 200, 1580, 500), popupMessage);
+                    GUIStyle popupStyle = new GUIStyle(GUI.skin.label);
+                    popupStyle.alignment = TextAnchor.MiddleCenter;
+
+                    GUIShape.RoundedRectangle(new Rect(200, 200, 1580, 500), 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                    GUI.Label(new Rect(210, 210, 1560, 480), popupMessage, popupStyle);
                     break;
             }
 
@@ -316,7 +407,7 @@ public class NetworkSelection : MonoBehaviour
             int vertical = 0, horizontal = 0;
             bool submitBool = false, cancelBool = false, editBool = false, deleteBool = false;
 
-            if (state != MenuState.Connecting)
+            if (state != MenuState.Connecting && state != MenuState.CharacterSelect && state != MenuState.Gamemode)
             {
                 vertical = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
                 horizontal = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
@@ -401,8 +492,9 @@ public class NetworkSelection : MonoBehaviour
                     {
                         switch (currentSelection)
                         {
+                            case 0: hostServerSettings.gamemode = MathHelper.NumClamp(hostServerSettings.gamemode + 1, 0, gd.onlineGameModes.Length); break;
                             case 2: hostServerSettings.automatic = !hostServerSettings.automatic; break;
-                            case 4: hostServerSettings.consoleMode = !hostServerSettings.consoleMode; break;
+                            case 4: hostServerSettings.consoleMode = !hostServerSettings.consoleMode; if (hostServerSettings.consoleMode) { hostServerSettings.hostAsPlayer = false; } break;
                             case 5: hostServerSettings.hostAsPlayer = !hostServerSettings.hostAsPlayer; break;
                             case 6: hostServerSettings.fillWithAI = !hostServerSettings.fillWithAI; break;
                             case 8: HostGame(); break;
@@ -413,6 +505,7 @@ public class NetworkSelection : MonoBehaviour
                     {
                         switch (currentSelection)
                         {
+                            case 0: hostServerSettings.gamemode = MathHelper.NumClamp(hostServerSettings.gamemode + horizontal, 0, gd.onlineGameModes.Length); break;
                             case 1: hostServerSettings.maxPlayers = MathHelper.NumClamp(hostServerSettings.maxPlayers + horizontal, 2, 31); break;
                             case 3: hostServerSettings.minPlayers = MathHelper.NumClamp(hostServerSettings.minPlayers + horizontal, 1, 13); break;
                             case 7: hostServerSettings.aiDifficulty = MathHelper.NumClamp(hostServerSettings.aiDifficulty + horizontal, 0, 4); break;
@@ -426,6 +519,14 @@ public class NetworkSelection : MonoBehaviour
                     if (vertical != 0)
                     {
                         currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, guiOptionsCount);
+                    }
+
+                    if(horizontal != 0)
+                    {
+                        if (networkState != NetworkState.Client && currentSelection == 1)
+                        {
+                            host.ChangeGamemode(host.currentGamemode + horizontal);
+                        }
                     }
 
                     if (cancelBool)
@@ -458,10 +559,18 @@ public class NetworkSelection : MonoBehaviour
                                 if (networkState == NetworkState.Client)
                                 {
                                     ChangeLayout();
-                                }
-                                else
+                                }                              
+                                break;
+                            case 2:
+                                if (networkState != NetworkState.Client)
                                 {
-                                    
+                                    host.StartGamemode();
+                                }
+                                break;
+                            case 3:
+                                if (networkState != NetworkState.Client)
+                                {
+                                    ChangeLayout();
                                 }
                                 break;
                         }
@@ -469,7 +578,7 @@ public class NetworkSelection : MonoBehaviour
 
                     break;
                 case MenuState.CharacterSelect:
-
+                case MenuState.Gamemode:
                     break;
 
                 case MenuState.PopUp:
@@ -525,6 +634,7 @@ public class NetworkSelection : MonoBehaviour
     {
         MainMenu.lockInputs = true;
         networkState = NetworkState.Host;
+        playerList = new List<PlayerInfo>();
 
         //Wait for fade
         yield return ActualChangeState(MenuState.Connecting);
@@ -565,10 +675,17 @@ public class NetworkSelection : MonoBehaviour
         host.playerPrefab = Resources.Load<GameObject>("Prefabs/Kart Maker/Network Kart");
         host.serverSettings = hostServerSettings;
         host.networkPort = serverPort;
+
+        if(hostServerSettings.hostAsPlayer)
+        {
+            client = host;
+        }
+
         try
         {
             host.StartHost();
             host.RegisterHandlers();
+            host.ChangeGamemode(hostServerSettings.gamemode);
             ChangeState(MenuState.Lobby);
         }
         catch (System.Exception err)
@@ -583,6 +700,7 @@ public class NetworkSelection : MonoBehaviour
         MainMenu.lockInputs = true;
         currentSelection = 0;
         networkState = NetworkState.Client;
+        playerList = new List<PlayerInfo>();
 
         //Wait for fade
         yield return ActualChangeState(MenuState.Connecting);
@@ -689,17 +807,17 @@ public class NetworkSelection : MonoBehaviour
     //Request a Character Change from the Server
     void ChangeLayout()
     {
-
+        client.DoCharacterSelect();
     }
 }
 
 public class ServerSettings
 {
-    public ServerSettings(string _gamemodeName, int _maxPlayers, int _minPlayers,
+    public ServerSettings(int _gamemode, int _maxPlayers, int _minPlayers,
         bool _automatic, bool _consoleMode, bool _hostAsPlayer, bool _fillWithAI,
         int _aiDifficulty, string _password)
     {
-        gamemodeName = _gamemodeName;
+        gamemode = _gamemode;
         maxPlayers = _maxPlayers;
         minPlayers = _minPlayers;
         consoleMode = _consoleMode;
@@ -712,7 +830,7 @@ public class ServerSettings
     public ServerSettings() { }
 
     //Start Game Mode (Can be changed later)
-    public string gamemodeName = "Race";
+    public int gamemode = 0;
 
     //Max Players (12 Max in Race, remaining are spectators)
     public int maxPlayers = 12;
@@ -741,7 +859,7 @@ public class ServerSettings
     {
         switch (val)
         {
-            case 0: return gamemodeName;
+            case 0: return "";
             case 1: return maxPlayers.ToString();
             case 2: return automatic.ToString();
             case 3: return minPlayers.ToString();
@@ -757,4 +875,30 @@ public class ServerSettings
 
         return "";
     }
+}
+
+public class PlayerInfo
+{
+    public string displayName;
+    public int character, hat, kart, wheel;
+    public int ping;
+
+    public PlayerInfo (string _displayName, int _character, int _hat, int _kart, int _wheel)
+    {
+        displayName = _displayName;
+        character = _character;
+        hat = _hat;
+        kart = _kart;
+        wheel = _wheel;
+    }
+
+    public PlayerInfo(PlayerInfoMessage _message)
+    {
+        displayName = _message.displayName;
+        character = _message.character;
+        hat = _message.hat;
+        kart = _message.kart;
+        wheel = _message.wheel;
+    }
+
 }

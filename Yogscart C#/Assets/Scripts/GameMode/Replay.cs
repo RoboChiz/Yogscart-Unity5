@@ -97,7 +97,7 @@ public class Replay : MonoBehaviour
         //Spawn Karts
         foreach(ReplayRacer rr in racers)
         {
-            rr.ingameObj = FindObjectOfType<KartMaker>().SpawnKart(KartType.Replay, td.spawnPoint.position, td.spawnPoint.rotation, rr.Character, rr.Hat, rr.Kart, rr.Wheel);
+            rr.ingameObj = FindObjectOfType<KartMaker>().SpawnKart(KartType.Replay, td.spawnPoint.position, td.spawnPoint.rotation, rr.character, rr.hat, rr.kart, rr.wheel);
             rr.ingameObj.GetComponent<KartReplayer>().replayData = rr.ghostData;          
         }
 
@@ -212,7 +212,7 @@ public class Replay : MonoBehaviour
             GUI.Label(new Rect(10, 10, 1900, 50), "Camera Mode: " + cameraMode.ToString(), label);
 
             if(cameraMode != CameraMode.FreeCam)
-                GUI.Label(new Rect(10, 60, 1900, 50), "Tracking: " + gd.characters[racers[target].Character].name + ((racers[target].Human == -1) ? " (AI)" 
+                GUI.Label(new Rect(10, 60, 1900, 50), "Tracking: " + gd.characters[racers[target].character].name + ((racers[target].Human == -1) ? " (AI)" 
                     : " (Player #" + (racers[target].Human + 1).ToString() + ")"), label);
 
             //Controls

@@ -76,7 +76,7 @@ public class WinScreen : MonoBehaviour
         {
             Racer racer = winners[i];
             racer.ingameObj = km.SpawnKart(KartType.Replay, kartSpawns[i].position, kartSpawns[i].rotation,
-                racer.Character, racer.Hat, racer.Kart, racer.Wheel);
+                racer.character, racer.hat, racer.kart, racer.wheel);
             racer.ingameObj.GetComponent<KartMovement>().locked = false;
 
             //Find Replay 
@@ -94,7 +94,7 @@ public class WinScreen : MonoBehaviour
         //Spawn Audience
         for (int i = 0; i < audiemce.Count; i++)
         {
-            Transform character = Instantiate(gd.characters[audiemce[i].Character].CharacterModel_Standing, audienceSpawns[i].position, audienceSpawns[i].rotation);
+            Transform character = Instantiate(gd.characters[audiemce[i].character].CharacterModel_Standing, audienceSpawns[i].position, audienceSpawns[i].rotation);
             character.GetComponent<Animator>().SetBool("Clap", true);
         }
 
@@ -130,7 +130,7 @@ public class WinScreen : MonoBehaviour
                 {
                     Destroy(winner.ingameObj.gameObject);
 
-                    Transform character = Instantiate(gd.characters[winner.Character].CharacterModel_Standing, winnerSpawns[count].position, winnerSpawns[count].rotation);
+                    Transform character = Instantiate(gd.characters[winner.character].CharacterModel_Standing, winnerSpawns[count].position, winnerSpawns[count].rotation);
                     character.GetComponent<Animator>().SetBool("Clap", true);
 
                     count++;

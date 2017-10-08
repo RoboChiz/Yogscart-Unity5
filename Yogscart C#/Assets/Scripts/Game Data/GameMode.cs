@@ -167,7 +167,7 @@ abstract public class GameMode : MonoBehaviour
             Vector3 y2 = spawnRotation * (Vector3.right * (racePos + 1) * 3);
             startPos += x2 + y2;
 
-            racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
+            racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].character, racers[i].hat, racers[i].kart, racers[i].wheel);
 
             //Set speeds of Kart depending on Difficulty
             SetDifficulty(racers[i].ingameObj.GetComponent<KartMovement>());
@@ -219,7 +219,7 @@ abstract public class GameMode : MonoBehaviour
         Vector3 y2 = spawnRotation * (Vector3.right * 6);
         startPos += x2 + y2;
 
-        racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].Character, racers[i].Hat, racers[i].Kart, racers[i].Wheel);
+        racers[i].ingameObj = km.SpawnKart(KartType.Local, startPos, spawnRotation * Quaternion.Euler(0, -90, 0), racers[i].character, racers[i].hat, racers[i].kart, racers[i].wheel);
 
         //Set speeds of Kart depending on Difficulty
         SetDifficulty(racers[i].ingameObj.GetComponent<KartMovement>());
@@ -455,33 +455,10 @@ public class Racer
     }
 
     //Race Loading Infomation //////////////////////////////////
-    protected int character;
-    public int Character
-    {
-        get { return character; }
-        set { }
-    }
-
-    protected int hat;
-    public int Hat
-    {
-        get { return hat; }
-        set { }
-    }
-
-    protected int kart;
-    public int Kart
-    {
-        get { return kart; }
-        set { }
-    }
-
-    protected int wheel;
-    public int Wheel
-    {
-        get { return wheel; }
-        set { }
-    }
+    public int character;
+    public int hat;
+    public int kart;
+    public int wheel;
 
     //During Race Information //////////////////////////////////
     public bool finished;
@@ -543,10 +520,10 @@ public class ReplayRacer : Racer
     {
         human = otherRacer.Human;
         aiStupidity = otherRacer.AiStupidity;
-        character = otherRacer.Character;
-        hat = otherRacer.Hat;
-        kart = otherRacer.Kart;
-        wheel = otherRacer.Wheel;
+        character = otherRacer.character;
+        hat = otherRacer.hat;
+        kart = otherRacer.kart;
+        wheel = otherRacer.wheel;
         position = otherRacer.position;
         overallPosition = otherRacer.overallPosition;
     }

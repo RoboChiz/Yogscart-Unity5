@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
 public class LevelSelect : MonoBehaviour
 {
@@ -361,18 +362,21 @@ public class LevelSelect : MonoBehaviour
         }
 
         Race gameMode = CurrentGameData.currentGamemode as Race;
-        /*if (gamemode.raceType == RaceType.Online)
+        if (NetworkServer.active || NetworkClient.active)
         {
             //Send data to server
-            FindObjectOfType<NetworkRaceClient>().SendVote(currentCup, currentTrack);
+            FindObjectOfType<NetworkRace>().SendVote(currentCup, currentTrack);
 
-            if(FindObjectOfType<VotingScreen>() == null)
+            if (FindObjectOfType<VotingScreen>() == null)
                 gd.gameObject.AddComponent<VotingScreen>();
 
             FindObjectOfType<VotingScreen>().ShowScreen();
-        }*/
+        }
+        else
+        {
+            gameMode.FinishLevelSelect(currentCup, currentTrack);
+        }
 
-        gameMode.FinishLevelSelect(currentCup, currentTrack);
         StartCoroutine(HideLevelSelect());
     }
 

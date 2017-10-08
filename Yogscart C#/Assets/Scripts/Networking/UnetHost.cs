@@ -65,7 +65,7 @@ public class UnetHost : UnetClient
         choosingCount = 0;
 
         NetworkRacer newRacer = new NetworkRacer(-2, -1, CurrentGameData.currentChoices[0], 0);
-        newRacer.name = PlayerPrefs.GetString("playerName", "Player");
+        newRacer.playerName = PlayerPrefs.GetString("playerName", "Player");
         newRacer.conn = client.connection;
 
         finalPlayers.Add(newRacer);
@@ -164,7 +164,7 @@ public class UnetHost : UnetClient
 
         NetworkRacer newRacer = new NetworkRacer(-2, -1, msg.character, msg.hat, msg.kart, msg.wheel, finalPlayers.Count);
         newRacer.conn = netMsg.conn;
-        newRacer.name = msg.displayName;
+        newRacer.playerName = msg.displayName;
 
         finalPlayers.Add(newRacer);
 
@@ -258,7 +258,7 @@ public class UnetHost : UnetClient
 
         foreach (NetworkRacer racer in finalPlayers)
         {
-            displayNames.Add(new DisplayName(racer.name, racer.Character, racer.ping, racer.team, racer.points));
+            displayNames.Add(new DisplayName(racer.playerName, racer.character, racer.ping, racer.team, racer.points));
         }
     }
 
@@ -447,8 +447,18 @@ public class NetworkRacer : Racer
     public int ping = 9999;
 
     //The name of the Player
-    public string name = "";
+    public string playerName = "";
 
-    public NetworkRacer(int hum, int ais, LoadOut lo, int p) : base(hum, ais, lo, p){}
-    public NetworkRacer(int hum, int ais, int ch, int h, int k, int w, int p) : base(hum, ais, ch, h, k, w, p){}
+    public NetworkRacer(int hum, int ais, LoadOut lo, int p) : base(hum, ais, lo, p){} //Delete Later
+    public NetworkRacer(int hum, int ais, int ch, int h, int k, int w, int p) : base(hum, ais, ch, h, k, w, p){} //Delete Later
+
+    public NetworkRacer( string _playerName,
+        int _character, int _hat, int _kart, int _wheel, 
+        int _position, bool isHost, NetworkConnection _conn) 
+        : base(isHost ? 0 : -1, -1, _character, _hat, _kart, _wheel, _position)
+    {
+        playerName = _playerName;
+        conn = _conn;
+    }
+
 }

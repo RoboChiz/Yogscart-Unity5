@@ -306,7 +306,7 @@ public class UnetClient : NetworkManager
     //Called when a Server wants a client to load a level by ID
     private void OnLoadLevelID(NetworkMessage netMsg)
     {
-        stringMessage msg = netMsg.ReadMessage<stringMessage>();
+        StringMessage msg = netMsg.ReadMessage<StringMessage>();
         SceneManager.LoadSceneAsync(msg.value);
     }
 

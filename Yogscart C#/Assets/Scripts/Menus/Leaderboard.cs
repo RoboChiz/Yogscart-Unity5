@@ -415,7 +415,7 @@ public class DisplayRacer
     public DisplayRacer(Racer racer)
     {
         human = racer.Human;
-        character = racer.Character;
+        character = racer.character;
         points = racer.points;
         timer = racer.timer;
         position = racer.position;

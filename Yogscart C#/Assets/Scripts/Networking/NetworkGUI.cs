@@ -848,13 +848,6 @@ public class GameModeInfo
     public string gamemodeName;
     public Texture2D logo;
     public string description;
-
-    public bool teamGame;
-    public string[] teams;
-
-    public MonoBehaviour hostScript;
-    public MonoBehaviour baseScript;
-
 }
 
 [System.Serializable]

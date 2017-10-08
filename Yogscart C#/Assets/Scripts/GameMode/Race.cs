@@ -296,7 +296,7 @@ public abstract class Race : GameMode
         mapViewer.objects = new List<MapObject>();
 
         foreach (Racer racer in racers)
-            mapViewer.objects.Add(new MapObject(racer.ingameObj, gd.characters[racer.Character].icon, racer.position));
+            mapViewer.objects.Add(new MapObject(racer.ingameObj, gd.characters[racer.character].icon, racer.position));
 
         //Let Gamemode add Map Viewer Objects
         AddMapViewObjects();

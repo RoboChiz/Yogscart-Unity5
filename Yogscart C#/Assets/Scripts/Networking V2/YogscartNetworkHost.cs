@@ -12,6 +12,8 @@ namespace YogscartNetwork
     public class Host : Client
     {
         public GameState currentState = GameState.Lobby;
+        public int currentGamemode { get; private set; }
+        public GameMode gameMode;
 
         //Server Settings
         public ServerSettings serverSettings;
@@ -40,12 +42,21 @@ namespace YogscartNetwork
             {
                 base.RegisterHandlers();
                 ClientScene.Ready(client.connection);
-                finalPlayers.Add(new NetworkRacer(0, -1, 0, 0, 0, 0, 0)); // TODO: Fix this!
+
+                LoadOut loadOut = CurrentGameData.currentChoices[0];
+                finalPlayers.Add(new NetworkRacer(gd.playerName, loadOut.character, loadOut.hat, loadOut.kart, loadOut.wheel, 0, true, null));
+
+                //Update the Player Lists
+                UpdatePlayerInfoList();
+
+                isRacing = true;
             }
 
             //Register Host Specific Messages
             NetworkServer.RegisterHandler(UnetMessages.versionMsg, OnVersion);
             NetworkServer.RegisterHandler(UnetMessages.rejectPlayerUpMsg, OnRejection);
+            NetworkServer.RegisterHandler(UnetMessages.playerInfoMsg, OnPlayerUp);
+            NetworkServer.RegisterHandler(UnetMessages.playerInfoUpdateMsg, OnPlayerUpdate);
         }
 
         public override void EndClient(string message)
@@ -53,6 +64,83 @@ namespace YogscartNetwork
             StopHost();
             base.EndClient(message);
         }
+
+        //------------------------------------------------------------------------------
+        // Functionality
+        //------------------------------------------------------------------------------
+
+        public override void Update()
+        {
+            if (currentState == GameState.Lobby)
+            {
+                if(serverSettings.automatic && finalPlayers.Count >= serverSettings.minPlayers)
+                {
+                    StartGamemode();
+                }
+            }
+
+            base.Update();
+        }
+
+        public void StartGamemode()
+        {
+            if (finalPlayers.Count > 0)
+            {
+                currentState = GameState.Loading;
+                StartCoroutine(StartGame());
+            }
+        }
+
+        private IEnumerator StartGame()
+        {
+            //Tell clients they have ten seconds left
+            NetworkServer.SendToAll(UnetMessages.timerMsg, new FloatMessage(10f));
+            OnTimer(10);
+
+            yield return new WaitForSeconds(10.2f);
+
+            //Tell clients to close everything
+            NetworkServer.SendToAll(UnetMessages.clearMsg, new EmptyMessage());
+            OnClear();
+
+            //Wait for message to be sent
+            yield return new WaitForSeconds(1f);
+
+            //Clean up
+            waitingPlayers.AddRange(possiblePlayers);
+            waitingPlayers.AddRange(rejectedPlayers);
+
+            possiblePlayers = new List<NetworkConnection>();
+            rejectedPlayers = new List<NetworkConnection>();
+
+            //Create Gamemode Objects on client and host
+            switch(currentGamemode)
+            {
+                case 0:
+                    NetworkServer.SendToAll(UnetMessages.raceGamemodeMsg, new EmptyMessage());
+                    gameMode = OnGamemodeRace();
+                    break;
+            }
+
+            //Pass global values to client and host
+
+            //Wait for gamemode to finish
+            while (!gameMode.finished)
+            {
+                yield return null;
+            }
+
+            //Clean Up
+
+            //Return to lobby
+            NetworkServer.SendToAll(UnetMessages.returnLobbyMsg, new EmptyMessage());
+            OnReturnLobby();
+
+        }
+
+        //------------------------------------------------------------------------------
+        // Server Function
+        //------------------------------------------------------------------------------
 
         // Called when a client disconnects
         public override void OnServerDisconnect(NetworkConnection conn)
@@ -69,6 +157,10 @@ namespace YogscartNetwork
                     NetworkServer.DestroyPlayersForConnection(conn);
 
                     CheckForSpaces();
+
+                    //Update the Player Lists
+                    UpdatePlayerInfoList();
+
                     return;
                 }
             }
@@ -109,23 +201,26 @@ namespace YogscartNetwork
         //If there are waiting players, fill the spaces
         protected void CheckForSpaces()
         {
-            int currentPlayerCount = finalPlayers.Count + possiblePlayers.Count;
-            if (currentPlayerCount < serverSettings.maxPlayers)
+            if (waitingPlayers.Count > 0)
             {
-                for (int i = 0; i < serverSettings.maxPlayers - currentPlayerCount; i++)
+                int currentPlayerCount = finalPlayers.Count + possiblePlayers.Count;
+                if (currentPlayerCount < serverSettings.maxPlayers)
                 {
-                    AcceptedMessage ackMsg = new AcceptedMessage();
+                    for (int i = 0; i < Mathf.Min(serverSettings.maxPlayers - currentPlayerCount, waitingPlayers.Count); i++)
+                    {
+                        AcceptedMessage ackMsg = new AcceptedMessage();
 
-                    // Tell Player they can join
-                    ackMsg.playerUp = true;
-                    possiblePlayers.Add(waitingPlayers[0]);                 
+                        // Tell Player they can join
+                        ackMsg.playerUp = true;
+                        possiblePlayers.Add(waitingPlayers[0]);
 
-                    //Send the ACK
-                    NetworkServer.SendToClient(waitingPlayers[0].connectionId, UnetMessages.acceptedMsg, ackMsg);
+                        //Send the ACK
+                        NetworkServer.SendToClient(waitingPlayers[0].connectionId, UnetMessages.acceptedMsg, ackMsg);
 
-                    //Remove them from the waiting list
-                    waitingPlayers.RemoveAt(0);
+                        //Remove them from the waiting list
+                        waitingPlayers.RemoveAt(0);
 
+                    }
                 }
             }
         }
@@ -146,12 +241,12 @@ namespace YogscartNetwork
                 string errorMessage = "Your version does not match the servers! Please update to " + gd.version;
                 ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
                 NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
-                Debug.Log("Client Passed Version Check! " + netMsg.conn.address);
+                Debug.Log("Client Failed Version Check! " + netMsg.conn.address);
             }
             else//If they do match add client to game
             {
                 StartCoroutine(AcceptPlayer(netMsg.conn));
-                Debug.Log("Client Failed Version Check! " + netMsg.conn.address);
+                Debug.Log("Client Passed Version Check! " + netMsg.conn.address);
             }
         }
 
@@ -185,11 +280,122 @@ namespace YogscartNetwork
 
         }
 
+        //------------------------------------------------------------------------------
         // Called when a client rejects selecting a character
         private void OnRejection(NetworkMessage netMsg)
         {
+            if (!possiblePlayers.Contains(netMsg.conn))
+            {
+                Debug.Log(netMsg.conn.address + " is a big cheater");
+                string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
+                ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
+                NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+            }
+
             //Add Player to Waiting List
+            possiblePlayers.Remove(netMsg.conn);
             rejectedPlayers.Add(netMsg.conn);
+        }
+
+        //------------------------------------------------------------------------------
+        // Called when a client finishes selecting a character
+        private void OnPlayerUp(NetworkMessage netMsg)
+        {
+            Debug.Log(netMsg.conn.address + " has sent their Loadout!");
+
+            if (!possiblePlayers.Contains(netMsg.conn))
+            {
+                Debug.Log(netMsg.conn.address + " is a big cheater");
+                string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
+                ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
+                NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+            }
+            possiblePlayers.Remove(netMsg.conn);
+
+            PlayerInfoMessage msg = netMsg.ReadMessage<PlayerInfoMessage>();
+            finalPlayers.Add(new NetworkRacer(msg.displayName, msg.character, msg.hat, msg.kart, msg.wheel, finalPlayers.Count, false, netMsg.conn));
+
+            //Tell Client's to add Player
+            UpdatePlayerInfoList();
+        }
+
+        //------------------------------------------------------------------------------
+        // Called when a client updates their loadout
+        private void OnPlayerUpdate(NetworkMessage netMsg)
+        {
+            Debug.Log(netMsg.conn.address + " has sent their Loadout!");
+
+            int racerID = -1;
+
+            //Check that Racer exists
+            for(int i = 0; i < finalPlayers.Count; i++)
+            {
+                if(finalPlayers[i].conn == netMsg.conn)
+                {
+                    racerID = i;
+                    break;
+                }
+            }
+
+            if (racerID == -1)
+            {
+                Debug.Log(netMsg.conn.address + " is a big cheater");
+                string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
+                ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
+                NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+            }
+
+            PlayerInfoMessage msg = netMsg.ReadMessage<PlayerInfoMessage>();
+            UpdatePlayerInfo(finalPlayers[racerID], new LoadOut(msg.character, msg.hat, msg.kart, msg.wheel));
+
+            //Tell Client's to add Player
+            UpdatePlayerInfoList();
+        }
+
+        //------------------------------------------------------------------------------
+        // Useful Functions
+        //------------------------------------------------------------------------------
+
+        public void UpdatePlayerInfo(NetworkRacer _racer, LoadOut _loadout)
+        {
+            _racer.character = _loadout.character;
+            _racer.hat = _loadout.hat;
+            _racer.kart = _loadout.kart;
+            _racer.wheel = _loadout.wheel;
+        }
+
+        public void UpdatePlayerInfoList()
+        {
+            networkSelection.playerList = new List<PlayerInfo>();
+            foreach (NetworkRacer networkRacer in finalPlayers)
+            {
+                networkSelection.playerList.Add(new PlayerInfo(networkRacer.playerName, networkRacer.character, networkRacer.hat,
+                    networkRacer.kart, networkRacer.wheel));
+            }
+
+            StartCoroutine(ActualUpdateAllClientPlayerLists());
+        }
+
+        private IEnumerator ActualUpdateAllClientPlayerLists()
+        {
+            NetworkServer.SendToAll(UnetMessages.clearPlayerInfo, new EmptyMessage());
+
+            //Wait for message to send
+            yield return new WaitForSeconds(0.2f);
+
+            foreach(PlayerInfo playerInfo in networkSelection.playerList)
+            {
+                NetworkServer.SendToAll(UnetMessages.addPlayerInfo, new PlayerInfoMessage(playerInfo));
+                yield return null;
+            }
+        }
+
+        public void ChangeGamemode(int _newGamemode)
+        {
+            currentGamemode = MathHelper.NumClamp(_newGamemode, 0, gd.onlineGameModes.Length); ;
+            networkSelection.currentGamemode = currentGamemode;
+
+            NetworkServer.SendToAll(UnetMessages.changeGamemode, new IntMessage(currentGamemode));
         }
     }
 }

@@ -2,6 +2,15 @@
 
 ## Changelog : Started 04/08/2016
 
+# 08/10/2017
+* Added Character Select for Client
+* Allowed Client and Host to change Loadout in Lobby
+* Added list of current players to lobby
+* Added gamemode selection to lobby
+* Added gamemode selection to server selection
+* Added timer functionality to online
+* Started added Level Selecting and Voting
+
 # 06/10/2017
 * Fixed issues with Network Selection
 * Added basic Lobby

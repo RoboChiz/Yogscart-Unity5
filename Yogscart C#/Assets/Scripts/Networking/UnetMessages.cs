@@ -6,42 +6,55 @@ using System.Collections.Generic;
 public static class UnetMessages
 {
     //Default Network Messages
-    public const short versionMsg = 1002;
-    public const short acceptedMsg = 1003;
-    public const short clientErrorMsg = 1004;
-    public const short playerUpMsg = 1005;
-    public const short playerInfoMsg = 1006;
-    public const short displayNameUpdateMsg = 1007;
-    public const short rejectPlayerUpMsg = 1008;
-    public const short forceCharacterSelectMsg = 1009;
-    public const short loadGamemodeMsg = 1010;
-    public const short timerMsg = 1011;
-    public const short readyMsg = 1012;
-    public const short countdownMsg = 1013;
-    public const short unlockKartMsg = 1014;
-    public const short returnLobbyMsg = 1016;
-    public const short loadLevelID = 1017;
+    public const short versionMsg               = 1002;
+    public const short acceptedMsg              = 1003;
+    public const short clientErrorMsg           = 1004;
+    public const short playerUpMsg              = 1005;
+    public const short playerInfoMsg            = 1006;
+    public const short playerInfoUpdateMsg      = 1007;
+    public const short rejectPlayerUpMsg        = 1008;
+    public const short addPlayerInfo            = 1009;
+    public const short clearPlayerInfo          = 1010;
+    public const short changeGamemode           = 1011;
+    public const short timerMsg                 = 1012;
+    public const short clearMsg                 = 1013;
+    public const short returnLobbyMsg           = 1014;
 
-    //Power Up Messages
-    public const short recieveItemMsg = 1018;
-    public const short useItemMsg = 1019;
-    public const short useShieldMsg = 1020;
-    public const short dropShieldMsg = 1021;
+    //Gamemode Spawning Network Messages
+    public const short raceGamemodeMsg          = 1050;
 
     //Network Race Messages
     public const short showLvlSelectMsg = 1102;
     public const short trackVoteMsg = 1103;
-    public const short voteListUpdateMsg = 1104;
-    public const short startRollMsg = 1105;
-    public const short forceLevelSelectMsg = 1106;
-    public const short allVoteListMsg = 1107;
-    public const short loadLevelMsg = 1108;
-    public const short spawnKartMsg = 1109;
-    public const short positionMsg = 1110;
-    public const short finishRaceMsg = 1111;
-    public const short playerFinishedMsg = 1112;
-    public const short allPlayerFinishedMsg = 1113;
-    public const short leaderboardPosMsg = 1114;
+
+    public const short readyMsg                 = 1015;
+    public const short countdownMsg             = 1016;
+    public const short unlockKartMsg            = 1017;
+    public const short loadLevelID              = 1018;
+
+    //Power Up Messages
+    public const short recieveItemMsg           = 1202;
+    public const short useItemMsg               = 1203;
+    public const short useShieldMsg             = 1204;
+    public const short dropShieldMsg            = 1205;
+
+    //Old Network Race Messages
+    public const short voteListUpdateMsg        = 1104;
+    public const short startRollMsg             = 1105;
+    public const short forceLevelSelectMsg      = 1106;
+    public const short allVoteListMsg           = 1107;
+    public const short loadLevelMsg             = 1108;
+    public const short spawnKartMsg             = 1109;
+    public const short positionMsg              = 1110;
+    public const short finishRaceMsg            = 1111;
+    public const short playerFinishedMsg        = 1112;
+    public const short allPlayerFinishedMsg     = 1113;
+    public const short leaderboardPosMsg        = 1114;
+
+    //Legacy - Delete Later
+    public const short displayNameUpdateMsg     = 6002;
+    public const short forceCharacterSelectMsg  = 6003;
+    public const short loadGamemodeMsg          = 6004;
 }
 
 //Sent by Client to Server to check if both are running the same version
@@ -85,6 +98,26 @@ public class PlayerInfoMessage : MessageBase //1006
 {
     public string displayName;
     public int character, hat, kart, wheel;
+
+    public PlayerInfoMessage() { }
+
+    public PlayerInfoMessage(PlayerInfo _playerInfo)
+    {
+        displayName = _playerInfo.displayName;
+        character = _playerInfo.character;
+        hat = _playerInfo.hat;
+        kart = _playerInfo.kart;
+        wheel = _playerInfo.wheel;       
+    }
+
+    public PlayerInfoMessage(PlayerInfoMessage _msg)
+    {
+        displayName = _msg.displayName;
+        character = _msg.character;
+        hat = _msg.hat;
+        kart = _msg.kart;
+        wheel = _msg.wheel;
+    }
 }
 
 //Sent by Server, contains all racing Players
@@ -143,48 +176,48 @@ public class AllVoteMessage : MessageBase //1107
 }
 
 //Sent by Server to Client when an int needs sending
-public class intMessage : MessageBase //1105, 1109, 1110, 1114
+public class IntMessage : MessageBase //1105, 1109, 1110, 1114
 {
     public int value;
 
-    public intMessage()
+    public IntMessage()
     {
         value = 0;
     }
 
-    public intMessage(int nValue)
+    public IntMessage(int nValue)
     {
         value = nValue;
     }
 }
 
 //Sent by Server to Client when a float needs sending
-public class floatMessage : MessageBase //1021
+public class FloatMessage : MessageBase //1021
 {
     public float value;
 
-    public floatMessage()
+    public FloatMessage()
     {
         value = 0;
     }
 
-    public floatMessage(float _Value)
+    public FloatMessage(float _Value)
     {
         value = _Value;
     }
 }
 
 //Sent by Server to Client when an string needs sending
-public class stringMessage : MessageBase //1112, 1017
+public class StringMessage : MessageBase //1112, 1017
 {
     public string value;
 
-    public stringMessage()
+    public StringMessage()
     {
         value = "";
     }
 
-    public stringMessage(string v)
+    public StringMessage(string v)
     {
         value = v;
     }

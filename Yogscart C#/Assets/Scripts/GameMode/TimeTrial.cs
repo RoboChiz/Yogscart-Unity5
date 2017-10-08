@@ -368,10 +368,10 @@ public class GhostData
 
     public GhostData(Racer racer, string _data, int _cup, int _track, string _playerName, string _version)
     {
-        character = racer.Character;
-        hat = racer.Hat;
-        kart = racer.Kart;
-        wheel = racer.Wheel;
+        character = racer.character;
+        hat = racer.hat;
+        kart = racer.kart;
+        wheel = racer.wheel;
 
         time = racer.timer;
         data = _data;

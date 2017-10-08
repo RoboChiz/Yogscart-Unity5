@@ -243,7 +243,7 @@ public class KartItem : MonoBehaviour
         //If Online tell Server about the item
         if (onlineGame && itemOwner == ItemOwner.Mine)
         {
-            FindObjectOfType<UnetClient>().client.Send(UnetMessages.recieveItemMsg, new intMessage(nItem));
+            FindObjectOfType<UnetClient>().client.Send(UnetMessages.recieveItemMsg, new IntMessage(nItem));
         }
     }
 
@@ -385,7 +385,7 @@ public class KartItem : MonoBehaviour
                                 DropShield(inputDirection);
                                 //If Online tell Server about the shield drop
                                 if (onlineGame && itemOwner == ItemOwner.Mine)
-                                    FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new floatMessage(inputDirection));
+                                    FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new FloatMessage(inputDirection));
                             }
                         }
                     }
