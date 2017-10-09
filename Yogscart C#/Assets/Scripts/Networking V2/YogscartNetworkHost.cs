@@ -94,8 +94,10 @@ namespace YogscartNetwork
         private IEnumerator StartGame()
         {
             //Tell clients they have ten seconds left
-            NetworkServer.SendToAll(UnetMessages.timerMsg, new FloatMessage(10f));
+            NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(10));
             OnTimer(10);
+
+            networkSelection.ChangeState(NetworkSelection.MenuState.Gamemode);
 
             yield return new WaitForSeconds(10.2f);
 

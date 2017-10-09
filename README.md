@@ -2,6 +2,10 @@
 
 ## Changelog : Started 04/08/2016
 
+# 09/10/2017
+* Finished Voting Screen and Level Select
+* Started implementing Race functionality
+
 # 08/10/2017
 * Added Character Select for Client
 * Allowed Client and Host to change Loadout in Lobby

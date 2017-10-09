@@ -323,7 +323,7 @@ public class LevelSelect : MonoBehaviour
         currentTrack = 0;
         trackNum = 4;
 
-        if (FindObjectOfType<MainMenu>() != null && FindObjectOfType<MainMenu>().state != MainMenu.MenuState.LevelSelect)
+        if (FindObjectOfType<MainMenu>() != null && FindObjectOfType<MainMenu>().state != MainMenu.MenuState.LevelSelect && !NetworkServer.active && !NetworkClient.active)
             FindObjectOfType<MainMenu>().ChangeMenu(MainMenu.MenuState.LevelSelect);
 
         StartCoroutine(ActualShowLevelSelect());

@@ -41,7 +41,7 @@ public abstract class Race : GameMode
     //GUI Stuff
     private GUISkin skin;
     protected float guiAlpha = 0f;
-    private string raceName;
+    protected string raceName;
     protected Texture2D boardTexture;
 
     protected int nextMenuSelected = 0;

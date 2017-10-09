@@ -23,7 +23,18 @@ public class VotingScreen : MonoBehaviour {
     public void ShowScreen()
     {      
         StartCoroutine(ChangeGUIAlpha(0, 1));
-    }	
+    }
+
+    public void HideScreen()
+    {
+        StartCoroutine(Kill());
+    }
+
+    private IEnumerator Kill()
+    {
+        yield return ChangeGUIAlpha(1, 0);
+        Destroy(this);
+    }
 
     public void AddVote(int cup, int track)
     {
@@ -70,9 +81,6 @@ public class VotingScreen : MonoBehaviour {
 
     private IEnumerator ActualStartRoll(int finalNumber)
     {
-        if (FindObjectOfType<LevelSelect>().enabled)
-            FindObjectOfType<LevelSelect>().ForceFinishLevelSelect();
-
         float t = 0;
 
         while (t < 3 || selected != finalNumber)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class NetworkRace : Race
 {
@@ -47,7 +48,10 @@ public class NetworkRace : Race
         //Stop Host from registering Client messages it should never use
         if (!NetworkServer.active)
         {
-            client.client.RegisterHandler(UnetMessages.showLvlSelectMsg, OnTrackVote);
+            client.client.RegisterHandler(UnetMessages.showLvlSelectMsg, OnShowLevelSelect);
+            client.client.RegisterHandler(UnetMessages.startRollMsg, OnRoll);
+            client.client.RegisterHandler(UnetMessages.voteListUpdateMsg, OnAddToVoteList);
+            client.client.RegisterHandler(UnetMessages.loadLevelMsg, OnLoadLevel);
         }
         else
         {
@@ -67,11 +71,13 @@ public class NetworkRace : Race
 
             Debug.Log("Done the Track Select!");
 
-            //Tell Client to fade to black
-            CurrentGameData.blackOut = true;
-            yield return new WaitForSeconds(0.5f);
+            yield return null;
 
-            //Tell Client to load level
+            Debug.Log("Sending Level Load");
+
+            //Tell Client to load level           
+            OnLoadLevel(cup, track);
+            NetworkServer.SendToAll(UnetMessages.loadLevelMsg, new TrackVoteMessage(cup, track));
 
             //Tell Client to setup kart
 
@@ -89,8 +95,8 @@ public class NetworkRace : Race
 
             if (racer.conn != null)
                 NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.showLvlSelectMsg, new EmptyMessage());
-             else           
-                OnTrackVote(); //This is the host
+             else
+                OnShowLevelSelect(); //This is the host
         }
         Debug.Log("Sent Track vote msg!");
 
@@ -110,34 +116,53 @@ public class NetworkRace : Race
 
         //Cancel Clock if it is still there
         if (Time.time - startTime < 10)
+        {
             NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(-1));
+            client.OnTimer(-1);
+        }
 
         //Close all Level Selects
         foreach (NetworkRacer racer in racers)
         {
-            NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.clearMsg, new EmptyMessage());
+            if (racer.conn != null)
+            {
+                NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.clearMsg, new EmptyMessage());
+            }
+            else
+            {
+                client.OnClear();
+            }
         }
 
         yield return new WaitForSeconds(1f);
 
         //Decide on Track and send it out
+        int chosenVote = 0;
         if (votes.Count > 0)
         {
-            int chosenVote = Random.Range(0, votes.Count);
-            NetworkServer.SendToAll(UnetMessages.startRollMsg, new IntMessage(chosenVote));
+            chosenVote = Random.Range(0, votes.Count);         
 
             cup = votes[chosenVote].cup;
-            track = votes[chosenVote].track;
-
-            //Wait for Roll to finish and give players enough time to see Race
-            yield return new WaitForSeconds(5f);
+            track = votes[chosenVote].track;       
         }
         else
         {
             //Select a track at Random
             cup = Random.Range(0, gd.tournaments.Length);
             track = Random.Range(0, gd.tournaments[cup].tracks.Length);
+
+            NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, new TrackVoteMessage(cup, track));
+            OnAddToVoteList(cup, track);
+
+            //Wait for message to send
+            yield return new WaitForSeconds(0.2f);
         }
+
+        NetworkServer.SendToAll(UnetMessages.startRollMsg, new IntMessage(chosenVote));
+        OnRoll(chosenVote);
+
+        //Wait for Roll to finish and give players enough time to see Race
+        yield return new WaitForSeconds(8f);
     }
 
     //Provides Update functionaliy for server
@@ -180,19 +205,36 @@ public class NetworkRace : Race
     public override string[] GetNextMenuOptions() { return null; }
 
     //------------------------------------------------------------------------------
+    //Sends client vote to server
+    public void SendVote(int cup, int track)
+    {
+        Destroy(FindObjectOfType<LevelSelect>());
+
+        if (!NetworkServer.active)
+        {
+            TrackVoteMessage msg = new TrackVoteMessage(cup, track);
+            client.client.Send(UnetMessages.trackVoteMsg, msg);
+        }
+        else
+        {
+            OnRecieveTrackVote(cup, track);
+        }
+    }
+
+    //------------------------------------------------------------------------------
     // Message Delegates
     //------------------------------------------------------------------------------
 
     // Called when a Version Message is recieved by a client
-    private void OnTrackVote(NetworkMessage netMsg) { OnTrackVote(); }
-    private void OnTrackVote()
+    private void OnShowLevelSelect(NetworkMessage netMsg) { OnShowLevelSelect(); }
+    private void OnShowLevelSelect()
     {
         FindObjectOfType<LevelSelect>().enabled = true;
         FindObjectOfType<LevelSelect>().ShowLevelSelect();
     }
 
     //------------------------------------------------------------------------------
-    // Called when a Version Message is recieved by a client
+    // Called when a track is sent to the server by client
     private void OnRecieveTrackVote(NetworkMessage netMsg)
     {
         TrackVoteMessage msg = netMsg.ReadMessage<TrackVoteMessage>();
@@ -216,22 +258,23 @@ public class NetworkRace : Race
             NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
         }
 
-        //Actually process data
-        NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, msg);
         OnRecieveTrackVote(msg.cup, msg.track);
     }
 
-    private void OnRecieveTrackVote(int cup, int track)
+    private void OnRecieveTrackVote(int _cup, int _track)
     {
-        votes.Add(new Vote(cup, track));
+        votes.Add(new Vote(_cup, track));
+
+        //Actually process data
+        NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, new TrackVoteMessage(_cup, _track));
+        OnAddToVoteList(_cup, _track);
     }
 
     //------------------------------------------------------------------------------
     //Sent by Server to update votes list
-    private void OnVoteListUpdate(NetworkMessage netMsg)
+    private void OnAddToVoteList(NetworkMessage netMsg) { TrackVoteMessage msg = netMsg.ReadMessage<TrackVoteMessage>(); OnAddToVoteList(msg.cup, msg.track); }
+    private void OnAddToVoteList(int _cup, int _track)
     {
-        TrackVoteMessage msg = netMsg.ReadMessage<TrackVoteMessage>();
-
         //Check that Vote is in the Scene
         if (FindObjectOfType<VotingScreen>() == null)
         {
@@ -243,23 +286,126 @@ public class NetworkRace : Race
             }
         }
 
-        FindObjectOfType<VotingScreen>().AddVote(msg.cup, msg.track);
-        Debug.Log("Recieved Vote From Server! Cup: " + msg.cup + " Track: " + msg.track);
+        FindObjectOfType<VotingScreen>().AddVote(_cup, _track);
+        Debug.Log("Recieved Vote From Server! Cup: " + _cup + " Track: " + _track);
     }
 
     //------------------------------------------------------------------------------
-    public void SendVote(int cup, int track)
+    public void OnRoll(NetworkMessage netMsg) { IntMessage msg = netMsg.ReadMessage<IntMessage>(); OnRoll(msg.value); }
+    public void OnRoll(int _rollValue)
     {
-        Destroy(FindObjectOfType<LevelSelect>());
+        FindObjectOfType<VotingScreen>().StartRoll(_rollValue);
+    }
 
-        if (!NetworkServer.active)
+    //------------------------------------------------------------------------------
+    public void OnLoadLevel(NetworkMessage netMsg) { TrackVoteMessage msg = netMsg.ReadMessage<TrackVoteMessage>(); OnLoadLevel(msg.cup, msg.track); }
+    public void OnLoadLevel(int _cup, int _track) { StartCoroutine(ActualOnLoadLevel(_cup, _track)); }
+
+    public IEnumerator ActualOnLoadLevel(int _cup, int _track)
+    {
+        Debug.Log("DO LEVEL LOAD!");
+
+        currentCup = _cup;
+        currentTrack = _track;
+
+        //Fade to black
+        CurrentGameData.blackOut = true;
+
+        //Delete Vote Screen
+        if (FindObjectOfType<VotingScreen>() != null)
+            FindObjectOfType<VotingScreen>().HideScreen();
+
+        yield return new WaitForSeconds(1f);
+
+        //Clear away handlers that we don't need anymore
+        client.client.UnregisterHandler(UnetMessages.showLvlSelectMsg);
+        client.client.UnregisterHandler(UnetMessages.startRollMsg);
+        client.client.UnregisterHandler(UnetMessages.voteListUpdateMsg);
+        client.client.UnregisterHandler(UnetMessages.loadLevelMsg);
+        client.client.UnregisterHandler(UnetMessages.allVoteListMsg);
+
+         //Set static values for Karts
+        KartMovement.raceStarted = false;
+        KartMovement.beQuiet = true;
+
+        //Change Pitch Back
+        FindObjectOfType<SoundManager>().SetMusicPitch(1f);
+
+        //Load the Level
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[cup].tracks[track].sceneID);
+
+        while (!sync.isDone)
+            yield return null;
+
+        //Let each gamemode do it's thing
+        OnLevelLoad();
+
+        //Load the Track Manager
+        td = FindObjectOfType<TrackData>();
+
+        //Wait for Spawn Messages to be recieved
+        yield return new WaitForSeconds(1f);
+
+        //Create Map Viewer
+        mapViewer = gameObject.AddComponent<MapViewer>();
+        mapViewer.HideMapViewer();
+
+        //Update Local Version of Racers
+        if(!NetworkServer.active)
         {
-            TrackVoteMessage msg = new TrackVoteMessage(cup, track);
-            client.client.Send(UnetMessages.trackVoteMsg, msg);
+            //TODO
+            racers = new List<Racer>();
         }
-        else
+
+        //Update Map Viewer
+        mapViewer.objects = new List<MapObject>();  
+        foreach (Racer racer in racers)
+            mapViewer.objects.Add(new MapObject(racer.ingameObj, gd.characters[racer.character].icon, racer.position));
+
+        //Let Gamemode add Map Viewer Objects
+        AddMapViewObjects();
+
+        yield return new WaitForSeconds(0.5f);
+
+        //Do the intro to the Map
+        yield return StartCoroutine(DoIntro());
+
+        //Show what race we're on
+        KartMovement.beQuiet = false;
+        raceName = GetRaceName();
+        yield return ChangeState(RaceState.RaceInfo);
+
+        //Get Local Kart Components for Race
+        KartMovement[] kses = FindObjectsOfType<KartMovement>();
+        KartInput[] kines = FindObjectsOfType<KartInput>();
+        kartInfo[] kies = FindObjectsOfType<kartInfo>();
+        KartItem[] kitemes = FindObjectsOfType<KartItem>();
+
+        //Set Kart Components for Race
+        foreach (KartInput ki in kines)
+            ki.camLocked = false;
+
+        //Let Gamemode make changes to karts
+        OnPreKartStarting();
+
+        yield return new WaitForSeconds(3f);
+
+        foreach (kartInfo ki in kies)
+            ki.hidden = false;
+
+        foreach (KartItem ki in kitemes)
+            ki.hidden = false;
+
+        //Let Gamemode make changes to karts
+        OnPostKartStarting();
+
+        //Show Map
+        mapViewer.ShowMapViewer();
+        
+        //Send Ready Message if racing
+        if(client.isRacing)
         {
-            OnRecieveTrackVote(cup, track);
+            //TODO
         }
     }
 }

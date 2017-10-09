@@ -13,7 +13,7 @@ namespace YogscartNetwork
         protected NetworkSelection networkSelection;
 
         //If we're one of the people currentely racing
-        protected bool isRacing;
+        public bool isRacing { get; protected set; }
         protected Coroutine characterSelectCoroutine;
 
         //Used by Timer
@@ -76,7 +76,7 @@ namespace YogscartNetwork
                 client.RegisterHandler(UnetMessages.clearPlayerInfo, OnClearPlayerInfo);
                 client.RegisterHandler(UnetMessages.changeGamemode, OnChangeGamemode);
                 client.RegisterHandler(UnetMessages.timerMsg, OnTimer);
-                client.RegisterHandler(UnetMessages.timerMsg, OnClear);
+                client.RegisterHandler(UnetMessages.clearMsg, OnClear);
                 client.RegisterHandler(UnetMessages.returnLobbyMsg, OnReturnLobby);
                 client.RegisterHandler(UnetMessages.raceGamemodeMsg, OnGamemodeRace);
             }
@@ -148,6 +148,12 @@ namespace YogscartNetwork
             if(cs.enabled)
             {
                 cs.HideCharacterSelect(CharacterSelect.csState.Off);
+            }
+
+            VotingScreen vs = FindObjectOfType<VotingScreen>();
+            if(vs != null)
+            {
+                vs.HideScreen();
             }
 
             //Lock the Pause Menu
@@ -288,14 +294,14 @@ namespace YogscartNetwork
                 StopCoroutine(characterSelectCoroutine);
 
             CharacterSelect cs = FindObjectOfType<CharacterSelect>();
-            if (cs.enabled)
+            if (cs != null && cs.enabled)
             {
                 cs.HideCharacterSelect(CharacterSelect.csState.Off);
             }
 
             //Stop Level Select if it's open
             LevelSelect ls = FindObjectOfType<LevelSelect>();
-            if(ls.enabled)
+            if(ls != null && ls.enabled)
             {
                 ls.CancelLevelSelect();
                 ls.enabled = false;

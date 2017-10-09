@@ -24,13 +24,14 @@ public static class UnetMessages
     public const short raceGamemodeMsg          = 1050;
 
     //Network Race Messages
-    public const short showLvlSelectMsg = 1102;
-    public const short trackVoteMsg = 1103;
-
-    public const short readyMsg                 = 1015;
-    public const short countdownMsg             = 1016;
-    public const short unlockKartMsg            = 1017;
-    public const short loadLevelID              = 1018;
+    public const short showLvlSelectMsg         = 1102;
+    public const short trackVoteMsg             = 1103;
+    public const short loadLevelMsg             = 1104;
+    public const short allVoteListMsg           = 1105;
+    public const short readyMsg                 = 1106;
+    public const short countdownMsg             = 1107;
+    public const short unlockKartMsg            = 1108;
+    public const short loadLevelID              = 1109;
 
     //Power Up Messages
     public const short recieveItemMsg           = 1202;
@@ -39,17 +40,15 @@ public static class UnetMessages
     public const short dropShieldMsg            = 1205;
 
     //Old Network Race Messages
-    public const short voteListUpdateMsg        = 1104;
-    public const short startRollMsg             = 1105;
-    public const short forceLevelSelectMsg      = 1106;
-    public const short allVoteListMsg           = 1107;
-    public const short loadLevelMsg             = 1108;
-    public const short spawnKartMsg             = 1109;
-    public const short positionMsg              = 1110;
-    public const short finishRaceMsg            = 1111;
-    public const short playerFinishedMsg        = 1112;
-    public const short allPlayerFinishedMsg     = 1113;
-    public const short leaderboardPosMsg        = 1114;
+    public const short voteListUpdateMsg        = 1302;
+    public const short startRollMsg             = 1303;
+    public const short forceLevelSelectMsg      = 1304;
+    public const short spawnKartMsg             = 1305;
+    public const short positionMsg              = 1306;
+    public const short finishRaceMsg            = 1307;
+    public const short playerFinishedMsg        = 1308;
+    public const short allPlayerFinishedMsg     = 1309;
+    public const short leaderboardPosMsg        = 1310;
 
     //Legacy - Delete Later
     public const short displayNameUpdateMsg     = 6002;
