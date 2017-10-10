@@ -156,7 +156,7 @@
     <Compile Include="Assets\Scripts\Kart Scripts\CanvasCam.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\CollisionHandler.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\DeathCatch.cs" />
-    <Compile Include="Assets\Scripts\Kart Scripts\kartAnimator.cs" />
+    <Compile Include="Assets\Scripts\Kart Scripts\KartAnimator.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\KartCamera.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\KartCollider.cs" />
     <Compile Include="Assets\Scripts\Kart Scripts\kartInfo.cs" />

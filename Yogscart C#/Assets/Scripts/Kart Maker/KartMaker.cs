@@ -178,8 +178,8 @@ public class KartMaker : MonoBehaviour
             //Sort out Character Noises
 
             //Add Animator Script
-            kb.AddComponent<kartAnimator>();
-            kb.GetComponent<kartAnimator>().ani = characterMesh.GetComponent<Animator>();
+            kb.AddComponent<KartAnimator>();
+            kb.GetComponent<KartAnimator>().ani = characterMesh.GetComponent<Animator>();
 
             if (type != KartType.Spectator && type != KartType.Replay && type != KartType.Ghost)
             {

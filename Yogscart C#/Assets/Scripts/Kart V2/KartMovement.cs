@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.PostProcessing;
 
@@ -74,7 +75,7 @@ public class KartMovement : MonoBehaviour
     private KartWheel[] wheels;
 
     private bool offRoad;
-    private Rigidbody kartRigidbody;
+    public Rigidbody kartRigidbody;
 
     //Store Systems as arrays for convinence
     public Transform kartBody { get; private set; }
@@ -106,8 +107,10 @@ public class KartMovement : MonoBehaviour
     private Coroutine kartBodySliding = null;
 
     private kartInfo kartInfoComp;
+    [HideInInspector]
     private float chroming = 0f;
 
+    [HideInInspector]
     public List<Camera> toProcess;
 
     void Awake()
@@ -186,6 +189,13 @@ public class KartMovement : MonoBehaviour
 
         //Load Custom Audio Packs for Characters
         soundPack = FindObjectOfType<CurrentGameData>().GetCustomSoundPack(characterID, hatID);
+    }
+
+    public void SetupOnlineKart()
+    {
+        //Setup Audio Stuff
+        audioSourceInfo = GetComponent<AudioSourceInfo>();
+        myAudioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -933,4 +943,88 @@ public class KartMovement : MonoBehaviour
         }
     }
 
+    public void CopyFrom(KartMovement _copy)
+    {
+        throttle = _copy.throttle;
+        steer = _copy.steer;
+        drift = _copy.drift;
+
+        locked = _copy.locked;
+        isFalling = _copy.isFalling;
+
+        speedModifier = _copy.speedModifier;
+
+        expectedSpeed = _copy.expectedSpeed;
+        actualSpeed = _copy.actualSpeed;
+        lapisAmount = _copy.lapisAmount;
+
+        speedAffectCurve = _copy.speedAffectCurve;
+
+        isDrifting = _copy.isDrifting;
+        driftSteer = _copy.driftSteer;
+        driftTime = _copy.driftTime;
+
+        lastBoost = _copy.lastBoost;
+
+        currentLineRenderer = _copy.currentLineRenderer;
+        skidTimer = _copy.skidTimer;
+
+        spinning = _copy.spinning;
+        spunOut = _copy.spunOut;
+        spinningOut = _copy.spinningOut;
+
+        tricking = _copy.tricking;
+        trickPotential = _copy.trickPotential;
+        trickLock = _copy.trickLock;
+
+        onlineMode = _copy.onlineMode;
+
+        isBoosting = _copy.isBoosting;
+
+
+        maxSpeed = _copy.maxSpeed;
+        maxGrassSpeed = _copy.maxGrassSpeed;
+        maxBoostSpeed = _copy.maxBoostSpeed;
+        acceleration = _copy.acceleration;
+        brakeTime = _copy.brakeTime;
+
+        wheels = _copy.wheels;
+
+        offRoad = _copy.offRoad;
+
+        kartBody = _copy.kartBody;
+
+        startCloudParticles = _copy.startCloudParticles;
+        flameParticles = _copy.flameParticles;
+        driftParticles = _copy.driftParticles;
+        driftCloudParticles = _copy.driftCloudParticles;
+        trickParticles = _copy.trickParticles;
+
+        startBoostAmount = _copy.startBoostAmount;
+        wheelSpinExtra = _copy.wheelSpinExtra;
+        wheelSpinPercent = _copy.wheelSpinPercent;
+
+        lastStartBoostVal = _copy.lastStartBoostVal;
+
+        spinOut = _copy.spinOut;
+        allowedStartBoost = _copy.allowedStartBoost;
+
+        particleSystems = _copy.particleSystems;
+
+        audioSourceInfo = _copy.audioSourceInfo;
+        kartAudioSource = _copy.kartAudioSource;
+        myAudioSource = _copy.myAudioSource;
+        engineSound = _copy.engineSound;
+        quietTimer = _copy.quietTimer;
+
+        soundPack = _copy.soundPack;
+
+        characterID = _copy.characterID;
+        hatID = _copy.hatID;
+
+        kartBodySliding = _copy.kartBodySliding;
+        kartInfoComp = _copy.kartInfoComp;
+        chroming = _copy.chroming;
+        toProcess = _copy.toProcess;
+    }
 }

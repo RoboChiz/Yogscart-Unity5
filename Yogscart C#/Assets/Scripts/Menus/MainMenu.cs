@@ -162,6 +162,9 @@ public class MainMenu : MonoBehaviour
 
         GUIHelper.SetGUIAlpha(guiAlpha);
 
+        if(guiAlpha > 0)
+        { 
+
         //Draw Stuff
         Rect box = new Rect(sideAmount, 0, GUIHelper.width / 2f, GUIHelper.height);
 
@@ -219,28 +222,18 @@ public class MainMenu : MonoBehaviour
                 break;
             case MenuState.Main:
                 options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Quit" };
-                InputManager.SetInputState(InputManager.InputState.Any);
-                InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
                 break;
             case MenuState.SinglePlayer:
                 options = new string[] { "Tournament", "VS Race", "Time Trial" };
-                InputManager.SetInputState(InputManager.InputState.LockedShowing);
-                InputManager.SetToggleState(InputManager.ToggleState.Locked);
                 break;
             case MenuState.Multiplayer:
                 options = new string[] { "Tournament", "VS Race" };
-                InputManager.SetInputState(InputManager.InputState.Any);
-                InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
                 break;
             case MenuState.Online:
-                InputManager.SetInputState(InputManager.InputState.LockedShowing);
-                InputManager.SetToggleState(InputManager.ToggleState.Locked);
                 break;
             case MenuState.Options:            
             break;
             case MenuState.Difficulty:
-                InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
-
                 //options = ["50cc - Only for little Babby!","100cc - You mother trucker!","150cc - Oh what big strong muscles!","Insane - Prepare your butts!","Back"];
                 if (CurrentGameData.unlockedInsane)
                     options = new string[] { "50cc", "100cc", "150cc", "Insane" };
@@ -307,157 +300,158 @@ public class MainMenu : MonoBehaviour
             }
         GUI.EndGroup();
 
-        //Handle Inputs
-        if (!sliding && InputManager.controllers.Count > 0)
-        {
-            int vertical = 0;
-            bool submitBool = false, cancelBool = false;
-
-            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && state != MenuState.Online && !lockInputs)
+            //Handle Inputs
+            if (!sliding && InputManager.controllers.Count > 0)
             {
-                vertical = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
-                //horizontal = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
+                int vertical = 0;
+                bool submitBool = false, cancelBool = false;
 
-                submitBool = InputManager.controllers[0].GetButtonWithLock("Submit");
-                cancelBool = InputManager.controllers[0].GetButtonWithLock("Cancel");
-
-                if (nextButtonPressed)
-                    submitBool = nextButtonPressed;
-            }
-
-            //Menu Navigation
-            if (options != null && options.Length > 0)
-            {
-                currentSelection += vertical;
-                if(currentSelection < 0 || currentSelection>= options.Length)
-                    currentSelection = MathHelper.NumClamp(currentSelection, 0, options.Length);
-            }
-
-            if(state == MenuState.Start && !lockInputs && InputManager.controllers[0].GetInput("Submit") != 0)
-                        ChangeMenu(MenuState.Main);
-
-            if (submitBool || mouseClick)
-            {
-
-                if (lastloadedPicture < 0 ||(state == MenuState.Main && possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture]))
-                    StartCoroutine(ActualChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
-
-                switch (state)
+                if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && state != MenuState.Online && !lockInputs)
                 {
-                    case MenuState.Main:
-                        switch (options[currentSelection])
-                        {
-                            case "Single Player":
-                                ChangeMenu(MenuState.SinglePlayer);
-                                InputManager.RemoveAllButOneController();
-                                break;
-                            case "Multiplayer":
-                                ChangeMenu(MenuState.Multiplayer);
-                                break;
-                            case "Online":
-                                ChangeMenu(MenuState.Online);
-                                InputManager.RemoveAllButOneController();
-                                FindObjectOfType<NetworkSelection>().Show();
-                                //FindObjectOfType<NetworkGUI>().ShowMenu();
-                                break;
-                            case "Options":
-                                ChangeMenu(MenuState.Options);
-                                FindObjectOfType<Options>().enabled = true;
-                                FindObjectOfType<Options>().ShowOptions();
-                                break;
-                            case "Credits":
-                                moveTitle = true;
-                                ChangeMenu(MenuState.Credits);
-                                GetComponent<Credits>().enabled = true;
-                                GetComponent<Credits>().StartCredits();
-                                break;
-                            case "Quit":
-                                Application.Quit();
-                                break;
-                        }
-                    break;
-                    case MenuState.SinglePlayer:
-                        switch (options[currentSelection])
-                        {
-                            case "Tournament":
-                                if (CurrentGameData.currentGamemode != null)
-                                    DestroyImmediate(CurrentGameData.currentGamemode);
-                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TournamentRace>();
+                    vertical = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
+                    //horizontal = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
 
-                                ChangeMenu(MenuState.Difficulty);
-                                break;
-                            case "VS Race":
-                                if (CurrentGameData.currentGamemode != null)
-                                    DestroyImmediate(CurrentGameData.currentGamemode);
-                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<VSRace>();
+                    submitBool = InputManager.controllers[0].GetButtonWithLock("Submit");
+                    cancelBool = InputManager.controllers[0].GetButtonWithLock("Cancel");
 
-                                ChangeMenu(MenuState.Difficulty);
-                                break;
-                            case "Time Trial":
-                                if (CurrentGameData.currentGamemode != null)
-                                    DestroyImmediate(CurrentGameData.currentGamemode);
-                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TimeTrial>();
-
-                                CurrentGameData.difficulty = 1;
-                                moveTitle = true;
-                                StartGameMode();
-                                break;
-                        }
-                    break;
-                    case MenuState.Multiplayer:                      
-                       switch (options[currentSelection])
-                       {
-                            case "Tournament":
-                                if (CurrentGameData.currentGamemode != null)
-                                    DestroyImmediate(CurrentGameData.currentGamemode);
-                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TournamentRace>();
-
-                                ChangeMenu(MenuState.Difficulty);
-                               break;
-                           case "VS Race":
-                                if (CurrentGameData.currentGamemode != null)
-                                    DestroyImmediate(CurrentGameData.currentGamemode);
-                                CurrentGameData.currentGamemode = gd.gameObject.AddComponent<VSRace>();
-
-                                ChangeMenu(MenuState.Difficulty);
-                               break;
-                       }
-                        break;
-                    case MenuState.Difficulty:
-                        switch (options[currentSelection])
-                        {
-                            case "50cc":
-                                CurrentGameData.difficulty = 0;
-                                moveTitle = true;
-                                StartGameMode();
-                                break;
-                            case "100cc":
-                                CurrentGameData.difficulty = 1;
-                                moveTitle = true;
-                                StartGameMode();
-                                break;
-                            case "150cc":
-                                CurrentGameData.difficulty = 2;
-                                moveTitle = true;
-                                StartGameMode();
-                                break;
-                            case "Insane":
-                                CurrentGameData.difficulty = 3;
-                                moveTitle = true;                                
-                                StartGameMode();
-                                break;
-                        }
-                    break;
-                    case MenuState.Popup:
-                        if (submitBool)
-                            BackMenu();
-                    break;
+                    if (nextButtonPressed)
+                        submitBool = nextButtonPressed;
                 }
-            }
-            if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs && cancelBool)
-            {
-                BackMenu();
-                cancelBool = false;
+
+                //Menu Navigation
+                if (options != null && options.Length > 0)
+                {
+                    currentSelection += vertical;
+                    if (currentSelection < 0 || currentSelection >= options.Length)
+                        currentSelection = MathHelper.NumClamp(currentSelection, 0, options.Length);
+                }
+
+                if (state == MenuState.Start && !lockInputs && InputManager.controllers[0].GetInput("Submit") != 0)
+                    ChangeMenu(MenuState.Main);
+
+                if (submitBool || mouseClick)
+                {
+
+                    if (lastloadedPicture < 0 || (state == MenuState.Main && possibleSideImages[currentSelection] != possibleSideImages[lastloadedPicture]))
+                        StartCoroutine(ActualChangePicture(Resources.Load<Texture2D>(possibleSideImages[currentSelection])));
+
+                    switch (state)
+                    {
+                        case MenuState.Main:
+                            switch (options[currentSelection])
+                            {
+                                case "Single Player":
+                                    ChangeMenu(MenuState.SinglePlayer);
+                                    InputManager.RemoveAllButOneController();
+                                    break;
+                                case "Multiplayer":
+                                    ChangeMenu(MenuState.Multiplayer);
+                                    break;
+                                case "Online":
+                                    ChangeMenu(MenuState.Online);
+                                    InputManager.RemoveAllButOneController();
+                                    FindObjectOfType<NetworkSelection>().Show();
+                                    //FindObjectOfType<NetworkGUI>().ShowMenu();
+                                    break;
+                                case "Options":
+                                    ChangeMenu(MenuState.Options);
+                                    FindObjectOfType<Options>().enabled = true;
+                                    FindObjectOfType<Options>().ShowOptions();
+                                    break;
+                                case "Credits":
+                                    moveTitle = true;
+                                    ChangeMenu(MenuState.Credits);
+                                    GetComponent<Credits>().enabled = true;
+                                    GetComponent<Credits>().StartCredits();
+                                    break;
+                                case "Quit":
+                                    Application.Quit();
+                                    break;
+                            }
+                            break;
+                        case MenuState.SinglePlayer:
+                            switch (options[currentSelection])
+                            {
+                                case "Tournament":
+                                    if (CurrentGameData.currentGamemode != null)
+                                        DestroyImmediate(CurrentGameData.currentGamemode);
+                                    CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TournamentRace>();
+
+                                    ChangeMenu(MenuState.Difficulty);
+                                    break;
+                                case "VS Race":
+                                    if (CurrentGameData.currentGamemode != null)
+                                        DestroyImmediate(CurrentGameData.currentGamemode);
+                                    CurrentGameData.currentGamemode = gd.gameObject.AddComponent<VSRace>();
+
+                                    ChangeMenu(MenuState.Difficulty);
+                                    break;
+                                case "Time Trial":
+                                    if (CurrentGameData.currentGamemode != null)
+                                        DestroyImmediate(CurrentGameData.currentGamemode);
+                                    CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TimeTrial>();
+
+                                    CurrentGameData.difficulty = 1;
+                                    moveTitle = true;
+                                    StartGameMode();
+                                    break;
+                            }
+                            break;
+                        case MenuState.Multiplayer:
+                            switch (options[currentSelection])
+                            {
+                                case "Tournament":
+                                    if (CurrentGameData.currentGamemode != null)
+                                        DestroyImmediate(CurrentGameData.currentGamemode);
+                                    CurrentGameData.currentGamemode = gd.gameObject.AddComponent<TournamentRace>();
+
+                                    ChangeMenu(MenuState.Difficulty);
+                                    break;
+                                case "VS Race":
+                                    if (CurrentGameData.currentGamemode != null)
+                                        DestroyImmediate(CurrentGameData.currentGamemode);
+                                    CurrentGameData.currentGamemode = gd.gameObject.AddComponent<VSRace>();
+
+                                    ChangeMenu(MenuState.Difficulty);
+                                    break;
+                            }
+                            break;
+                        case MenuState.Difficulty:
+                            switch (options[currentSelection])
+                            {
+                                case "50cc":
+                                    CurrentGameData.difficulty = 0;
+                                    moveTitle = true;
+                                    StartGameMode();
+                                    break;
+                                case "100cc":
+                                    CurrentGameData.difficulty = 1;
+                                    moveTitle = true;
+                                    StartGameMode();
+                                    break;
+                                case "150cc":
+                                    CurrentGameData.difficulty = 2;
+                                    moveTitle = true;
+                                    StartGameMode();
+                                    break;
+                                case "Insane":
+                                    CurrentGameData.difficulty = 3;
+                                    moveTitle = true;
+                                    StartGameMode();
+                                    break;
+                            }
+                            break;
+                        case MenuState.Popup:
+                            if (submitBool)
+                                BackMenu();
+                            break;
+                    }
+                }
+                if (state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Options && !lockInputs && cancelBool)
+                {
+                    BackMenu();
+                    cancelBool = false;
+                }
             }
         }
         GUI.color = Color.white;
@@ -557,8 +551,36 @@ public class MainMenu : MonoBehaviour
 
             state = changeState;
 
-            //Show Title of Hidden
-            if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && changeState != MenuState.LevelSelect && titleAlpha != 1)
+            //Set Input Manager
+            switch (state)
+            {
+                case MenuState.Start:
+                    break;
+                case MenuState.Main:
+                    InputManager.SetInputState(InputManager.InputState.Any);
+                    InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
+                    break;
+                case MenuState.SinglePlayer:
+                    InputManager.SetInputState(InputManager.InputState.LockedShowing);
+                    InputManager.SetToggleState(InputManager.ToggleState.Locked);
+                    break;
+                case MenuState.Multiplayer:
+                    InputManager.SetInputState(InputManager.InputState.Any);
+                    InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
+                    break;
+                case MenuState.Online:
+                    InputManager.SetInputState(InputManager.InputState.LockedShowing);
+                    InputManager.SetToggleState(InputManager.ToggleState.Locked);
+                    break;
+                case MenuState.Options:
+                    break;
+                case MenuState.Difficulty:
+                    InputManager.SetToggleState(InputManager.ToggleState.AnyButOne);
+                    break;
+            }
+
+                    //Show Title of Hidden
+                    if (state != MenuState.Credits && state != MenuState.CharacterSelect && changeState != MenuState.Online && changeState != MenuState.Options && changeState != MenuState.LevelSelect && titleAlpha != 1)
             {
                 ShowTitle();
                 ShowPicture();

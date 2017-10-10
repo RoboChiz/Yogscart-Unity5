@@ -31,12 +31,13 @@ public class KartNetworker : NetworkBehaviour
     [SyncVar]
     public string kartPlayerName = "Player";
 
-    private KartMovement ks;
+    private KartMovement kartMovement;
     private KartItem ki;
+    private bool kartLoaded = false;
 
     void Start()
     {
-        ks = GetComponent<KartMovement>();
+        kartMovement = GetComponent<KartMovement>();
         ki = GetComponent<KartItem>();
     }
 
@@ -47,6 +48,7 @@ public class KartNetworker : NetworkBehaviour
         if(currentChar != loadedChar || currentHat != loadedHat || currentKart != loadedKart || loadedWheel != currentWheel)
         {
             LoadKartModel();
+            kartLoaded = true;
         }
 
         if (isLocalPlayer)
@@ -62,16 +64,16 @@ public class KartNetworker : NetworkBehaviour
         else
         {
             //Update the Kart Scripts Values 
-            ks.throttle = throttle;
-            ks.steer = steer;
-            ks.drift = drift;
-            ks.expectedSpeed = expectedSpeed;
-            ks.onlineMode = true;
-            ks.lapisAmount = lapisAmount;
+            kartMovement.throttle = throttle;
+            kartMovement.steer = steer;
+            kartMovement.drift = drift;
+            kartMovement.expectedSpeed = expectedSpeed;
+            kartMovement.onlineMode = true;
+            kartMovement.lapisAmount = lapisAmount;
 
             if (boostTime > 0)
             {
-                ks.Boost(boostTime, (KartMovement.BoostMode)boostType);
+                kartMovement.Boost(boostTime, (KartMovement.BoostMode)boostType);
                 boostTime = 0;
                 boostType = 0;
             }
@@ -79,7 +81,7 @@ public class KartNetworker : NetworkBehaviour
             //Do Spinout
             if(spinOut != lastSpinOut)
             {
-                ks.localSpinOut();
+                kartMovement.localSpinOut();
                 lastSpinOut = spinOut;
             }
 
@@ -120,7 +122,7 @@ public class KartNetworker : NetworkBehaviour
     [ClientCallback]
     private void SendKartInfo()
     {
-        CmdRecieveKartInfo(ks.throttle, ks.steer, ks.drift, ks.expectedSpeed, FindObjectOfType<NetworkGUI>().playerName, ks.lapisAmount, spinOut);
+        CmdRecieveKartInfo(kartMovement.throttle, kartMovement.steer, kartMovement.drift, kartMovement.expectedSpeed, FindObjectOfType<CurrentGameData>().playerName, kartMovement.lapisAmount, spinOut);
     }
 
     [Command]
@@ -154,25 +156,28 @@ public class KartNetworker : NetworkBehaviour
     //Called on client when Player is created
     public override void OnStartLocalPlayer()
     {
-        base.OnStartLocalPlayer();
-
         //Tell Client which Kart they own
-        //NetworkRaceClient.myKart = gameObject;
-       // FindObjectOfType<NetworkRaceClient>().SetupCameras();
-       
+        FindObjectOfType<NetworkRace>().localRacer.ingameObj = transform;
+
+        StartCoroutine(ConnectCameras());
+    }
+
+    private IEnumerator ConnectCameras()
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        FindObjectOfType<NetworkRace>().SetupCameras();
     }
 
     void LoadKartModel()
     {
         //Spawn a new version of the Kart
         Transform newKart = FindObjectOfType<KartMaker>().SpawnKart(KartType.Local, transform.position, transform.rotation, currentChar, currentHat, currentKart, currentWheel);
+        newKart.GetComponent<KartMovement>().SetupKart();
 
         //Replace the values in the Original Kart Object to point to the new parts
-        GetComponent<KartMovement>().particleSystems = newKart.GetComponent<KartMovement>().particleSystems;
-        GetComponent<KartMovement>().SetupKart();
-
         GetComponent<DeathCatch>().deathParticles = newKart.GetComponent<DeathCatch>().deathParticles;
-        GetComponent<kartAnimator>().ani = newKart.GetComponent<kartAnimator>().ani;
+        GetComponent<KartAnimator>().ani = newKart.GetComponent<KartAnimator>().ani;
 
         //Replace the existing model, colliders and canvas (Move into place of existing, then delete original)
         for (int i = 0; i < transform.childCount; i++)
@@ -190,7 +195,7 @@ public class KartNetworker : NetworkBehaviour
             {
                 newKart.GetChild(0).GetComponent<RectTransform>().SetParent(transform);
             }
-        }
+        }   
 
         Destroy(newKart.gameObject);      
 
@@ -198,5 +203,8 @@ public class KartNetworker : NetworkBehaviour
         loadedHat = currentHat;
         loadedKart = currentKart;
         loadedWheel = currentWheel;
+
+        GetComponent<KartMovement>().CopyFrom(newKart.GetComponent<KartMovement>());
+        GetComponent<KartMovement>().SetupOnlineKart();
     }
 }

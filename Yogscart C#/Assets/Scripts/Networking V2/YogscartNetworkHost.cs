@@ -228,6 +228,29 @@ namespace YogscartNetwork
         }
 
         //------------------------------------------------------------------------------
+        public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)
+        {
+
+            //Check for Client
+            for (int i = 0; i < finalPlayers.Count; i++)
+            {
+                NetworkRacer nr = finalPlayers[i] as NetworkRacer;
+                if ((nr.conn != null && nr.conn.connectionId == conn.connectionId) || (conn.hostId == -1 && nr.conn == null))
+                {
+                    GameObject player = gameMode.OnServerAddPlayer(nr, playerPrefab);
+                    NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
+                    return;
+                }
+            }
+
+            //If we've got here then player is a cheater
+            Debug.Log(conn.address + " is a big cheater");
+            string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
+            ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
+            NetworkServer.SendToClient(conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+        }
+
+        //------------------------------------------------------------------------------
         // Message Delegates
         //------------------------------------------------------------------------------
 
@@ -270,9 +293,6 @@ namespace YogscartNetwork
                 ackMsg.playerUp = true;
                 possiblePlayers.Add(conn);
             }
-
-            //Pass current server state info to Player
-
 
             //Send the ACK
             NetworkServer.SendToClient(conn.connectionId, UnetMessages.acceptedMsg, ackMsg);

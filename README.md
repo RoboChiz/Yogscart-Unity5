@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+# 10/10/2017
+* Added an audio listener to Intro Camera
+* Added Kart Spawning
+* Centred Online PopUp
+* Input Manager hides on start of Gamemode
+* Added up to Countdown
+* Turned off all Audio Listeners during intro
+
 # 09/10/2017
 * Finished Voting Screen and Level Select
 * Started implementing Race functionality

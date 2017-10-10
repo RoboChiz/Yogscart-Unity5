@@ -20,6 +20,9 @@ public class NetworkRace : Race
     private List<Vote> votes;
     int cup, track;
 
+    //Local Racer
+    public Racer localRacer;
+
     //Used to setup the gamemodes
     public override void StartGameMode()
     {
@@ -46,12 +49,13 @@ public class NetworkRace : Race
     public void RegisterHandlers()
     {
         //Stop Host from registering Client messages it should never use
-        if (!NetworkServer.active)
+        if (!isHost)
         {
             client.client.RegisterHandler(UnetMessages.showLvlSelectMsg, OnShowLevelSelect);
             client.client.RegisterHandler(UnetMessages.startRollMsg, OnRoll);
             client.client.RegisterHandler(UnetMessages.voteListUpdateMsg, OnAddToVoteList);
             client.client.RegisterHandler(UnetMessages.loadLevelMsg, OnLoadLevel);
+            client.client.RegisterHandler(UnetMessages.spawnKartMsg, OnRecieveSpawnKart);
         }
         else
         {
@@ -176,11 +180,6 @@ public class NetworkRace : Race
         base.HostUpdate();
     }
 
-    protected override void OnSpawnKart()
-    {
-        throw new System.NotImplementedException();
-    }
-
     public override void NextRace()
     {
         throw new System.NotImplementedException();
@@ -210,7 +209,7 @@ public class NetworkRace : Race
     {
         Destroy(FindObjectOfType<LevelSelect>());
 
-        if (!NetworkServer.active)
+        if (!isHost)
         {
             TrackVoteMessage msg = new TrackVoteMessage(cup, track);
             client.client.Send(UnetMessages.trackVoteMsg, msg);
@@ -343,6 +342,22 @@ public class NetworkRace : Race
         //Load the Track Manager
         td = FindObjectOfType<TrackData>();
 
+        //Tell client to load kart
+        if (isHost)
+        {          
+            foreach (NetworkRacer racer in racers)
+            {
+                if (racer.conn != null)
+                {
+                    NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.spawnKartMsg, new IntMessage(racer.position));
+                }
+                else
+                {
+                    OnRecieveSpawnKart(racer.position);
+                }
+            }
+        }
+
         //Wait for Spawn Messages to be recieved
         yield return new WaitForSeconds(1f);
 
@@ -351,7 +366,7 @@ public class NetworkRace : Race
         mapViewer.HideMapViewer();
 
         //Update Local Version of Racers
-        if(!NetworkServer.active)
+        if(!isHost)
         {
             //TODO
             racers = new List<Racer>();
@@ -407,5 +422,61 @@ public class NetworkRace : Race
         {
             //TODO
         }
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnRecieveSpawnKart(NetworkMessage netMsg) { IntMessage msg = netMsg.ReadMessage<IntMessage>(); OnRecieveSpawnKart(msg.value); }
+    public void OnRecieveSpawnKart(int _position)
+    {
+        localRacer = new Racer(0, -1, CurrentGameData.currentChoices[0], _position);
+        OnSpawnKart();
+    }
+
+    protected override void OnSpawnKart()
+    {
+        ClientScene.AddPlayer(0);
+    }
+
+    public override GameObject OnServerAddPlayer(NetworkRacer nPlayer, GameObject playerPrefab)
+    {
+        Vector3 spawnPosition = td.spawnPoint.position;
+        Quaternion spawnRotation = td.spawnPoint.rotation;
+
+        Vector3 startPos = spawnPosition + (spawnRotation * Vector3.forward * (3f * 1.5f) * -1.5f);
+        Vector3 x2 = spawnRotation * (Vector3.forward * (nPlayer.position % 3) * (3 * 1.5f) + (Vector3.forward * .75f * 3));
+        Vector3 y2 = spawnRotation * (Vector3.right * (nPlayer.position + 1) * 3);
+        startPos += x2 + y2;
+
+        GameObject gameObject = Instantiate(playerPrefab, startPos, spawnRotation * Quaternion.Euler(0, -90, 0));
+        nPlayer.ingameObj = gameObject.transform;
+
+        gameObject.GetComponent<KartNetworker>().currentChar    = nPlayer.character;
+        gameObject.GetComponent<KartNetworker>().currentHat     = nPlayer.hat;
+        gameObject.GetComponent<KartNetworker>().currentKart    = nPlayer.kart;
+        gameObject.GetComponent<KartNetworker>().currentWheel   = nPlayer.wheel;
+
+        return gameObject;
+    }
+
+    //------------------------------------------------------------------------------
+    public void SetupCameras()
+    {
+        Transform inGameCam = Instantiate(Resources.Load<Transform>("Prefabs/Cameras"), localRacer.ingameObj.transform.position, Quaternion.identity);
+        inGameCam.name = "InGame Cams";
+
+        KartInput ki = localRacer.ingameObj.gameObject.AddComponent<KartInput>();
+        ki.myController = 0;
+        ki.camLocked = true;
+        ki.frontCamera = inGameCam.GetChild(1).GetComponent<Camera>();
+        ki.backCamera = inGameCam.GetChild(0).GetComponent<Camera>();
+
+        inGameCam.GetChild(1).tag = "MainCamera";
+
+        inGameCam.GetChild(0).transform.GetComponent<KartCamera>().target = localRacer.ingameObj.GetComponent<KartMovement>().kartBody;
+        inGameCam.GetChild(1).transform.GetComponent<KartCamera>().target = localRacer.ingameObj.GetComponent<KartMovement>().kartBody;
+
+        inGameCam.GetChild(0).transform.GetComponent<KartCamera>().rotTarget = localRacer.ingameObj;
+        inGameCam.GetChild(1).transform.GetComponent<KartCamera>().rotTarget = localRacer.ingameObj;
+        localRacer.cameras = inGameCam;
     }
 }

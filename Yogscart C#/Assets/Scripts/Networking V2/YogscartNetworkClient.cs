@@ -307,6 +307,9 @@ namespace YogscartNetwork
                 ls.enabled = false;
             }
 
+            //Hide Input Manager
+            InputManager.SetInputState(InputManager.InputState.Locked);
+
             networkSelection.ChangeState(NetworkSelection.MenuState.Gamemode);
         }
 
@@ -317,6 +320,9 @@ namespace YogscartNetwork
             //Clear up Current Gamemode
 
             //Load the lobby level
+
+            //Show Input Manager
+            InputManager.SetInputState(InputManager.InputState.LockedShowing);
 
             //Go to the lobby
             networkSelection.ChangeState(NetworkSelection.MenuState.Lobby);

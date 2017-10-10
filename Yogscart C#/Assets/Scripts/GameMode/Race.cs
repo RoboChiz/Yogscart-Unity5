@@ -617,10 +617,13 @@ public abstract class Race : GameMode
         //Turn off all camera
         foreach (Camera camera in FindObjectsOfType<Camera>())
             camera.enabled = false;
+        foreach (AudioListener listener in FindObjectsOfType<AudioListener>())
+            listener.enabled = false;
         KartInput.overrideCamera = true;
 
         GameObject cutSceneCam = new GameObject();
         cutSceneCam.AddComponent<Camera>();
+        cutSceneCam.AddComponent < AudioListener>();
         cutSceneCam.tag = "MainCamera";
 
         sm.PlayMusic(Resources.Load<AudioClip>("Music & Sounds/RaceStart"));
@@ -649,6 +652,9 @@ public abstract class Race : GameMode
         //Turn on all cameras
         foreach (Camera camera in FindObjectsOfType<Camera>())
             camera.enabled = true;
+        foreach (AudioListener listener in FindObjectsOfType<AudioListener>())
+            listener.enabled = true;
+
         KartInput.overrideCamera = false;
 
         CurrentGameData.blackOut = false;

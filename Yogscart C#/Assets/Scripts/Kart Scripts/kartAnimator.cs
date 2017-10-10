@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class kartAnimator : MonoBehaviour {
+public class KartAnimator : MonoBehaviour {
 
     KartMovement ks;
     public Animator ani;
