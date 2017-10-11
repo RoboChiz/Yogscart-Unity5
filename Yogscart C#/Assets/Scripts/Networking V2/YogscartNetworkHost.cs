@@ -147,7 +147,8 @@ namespace YogscartNetwork
         // Called when a client disconnects
         public override void OnServerDisconnect(NetworkConnection conn)
         {
-            Debug.Log("Client disconnected! " + conn.address);
+            Debug.Log("Client disconnected! " + conn.address);    
+
             //Remove players for Final Players
             for (int i = 0; i < finalPlayers.Count; i++)
             {
@@ -162,6 +163,9 @@ namespace YogscartNetwork
 
                     //Update the Player Lists
                     UpdatePlayerInfoList();
+
+                    //Tell the gamemode
+                    gameMode.OnServerDisconnect(conn);
 
                     return;
                 }
@@ -244,10 +248,7 @@ namespace YogscartNetwork
             }
 
             //If we've got here then player is a cheater
-            Debug.Log(conn.address + " is a big cheater");
-            string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
-            ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
-            NetworkServer.SendToClient(conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+            KickPlayer(conn);
         }
 
         //------------------------------------------------------------------------------
@@ -308,10 +309,7 @@ namespace YogscartNetwork
         {
             if (!possiblePlayers.Contains(netMsg.conn))
             {
-                Debug.Log(netMsg.conn.address + " is a big cheater");
-                string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
-                ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
-                NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+                KickPlayer(netMsg.conn);
             }
 
             //Add Player to Waiting List
@@ -327,10 +325,7 @@ namespace YogscartNetwork
 
             if (!possiblePlayers.Contains(netMsg.conn))
             {
-                Debug.Log(netMsg.conn.address + " is a big cheater");
-                string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
-                ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
-                NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+                KickPlayer(netMsg.conn);
             }
             possiblePlayers.Remove(netMsg.conn);
 
@@ -361,10 +356,7 @@ namespace YogscartNetwork
 
             if (racerID == -1)
             {
-                Debug.Log(netMsg.conn.address + " is a big cheater");
-                string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
-                ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
-                NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+                KickPlayer(netMsg.conn);
             }
 
             PlayerInfoMessage msg = netMsg.ReadMessage<PlayerInfoMessage>();
@@ -418,6 +410,27 @@ namespace YogscartNetwork
             networkSelection.currentGamemode = currentGamemode;
 
             NetworkServer.SendToAll(UnetMessages.changeGamemode, new IntMessage(currentGamemode));
+        }
+
+        public void KickPlayer(NetworkConnection _conn)
+        {
+            StartCoroutine(ActualKickPlayer(_conn));
+        }
+
+        private IEnumerator ActualKickPlayer(NetworkConnection _conn)
+        {
+            Debug.Log(_conn.address + " is a big cheater");
+            string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
+            ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
+            NetworkServer.SendToClient(_conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+
+            yield return new WaitForSeconds(0.25f);
+
+            //If they're still here kick them
+            if(_conn.isConnected)
+            {
+                _conn.Disconnect();
+            }
         }
     }
 }

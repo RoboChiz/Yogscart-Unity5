@@ -113,9 +113,9 @@ public class JR : Egg
                         mainTarget = ks;
 
                         //Tell Target we're attacking it
-                        kartInfo kartInfo = mainTarget.GetComponent<kartInfo>();
-                        if (kartInfo != null)
-                            kartInfo.NewAttack(Resources.Load<Texture2D>("UI/Power Ups/Clucky_1JR"), gameObject);
+                        KartInfo KartInfo = mainTarget.GetComponent<KartInfo>();
+                        if (KartInfo != null)
+                            KartInfo.NewAttack(Resources.Load<Texture2D>("UI/Power Ups/Clucky_1JR"), gameObject);
                         break;
                     }
                 }

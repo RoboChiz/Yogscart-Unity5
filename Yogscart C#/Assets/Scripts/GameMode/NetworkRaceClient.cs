@@ -180,8 +180,8 @@ public class NetworkRaceClient : OldRace
 
         yield return new WaitForSeconds(3f);
 
-        kartInfo[] kies = GameObject.FindObjectsOfType<kartInfo>();
-        foreach (kartInfo ki in kies)
+        KartInfo[] kies = GameObject.FindObjectsOfType<KartInfo>();
+        foreach (KartInfo ki in kies)
             ki.hidden = false;
 
         KartItem[] kitemes = FindObjectsOfType<KartItem>();
@@ -249,7 +249,7 @@ public class NetworkRaceClient : OldRace
 
             myRacer.cameras = inGameCam;
 
-            kartInfo kain = myKart.AddComponent<kartInfo>();
+            KartInfo kain = myKart.AddComponent<KartInfo>();
             kain.hidden = true;
 
             Camera[] cameras = new Camera[2];

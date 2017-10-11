@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+# 11/10/2017
+* Fixed Pause Menu pausing time in Online
+* Added Readying up Method to Online Race
+* Added Countdown to Online Race
+* Added Kart Unlocking to Online Race
+* Added RaceInfo to Karts in Online Race
+* Made the wreck it ralph hacker message it's own function
+
 # 10/10/2017
 * Added an audio listener to Intro Camera
 * Added Kart Spawning

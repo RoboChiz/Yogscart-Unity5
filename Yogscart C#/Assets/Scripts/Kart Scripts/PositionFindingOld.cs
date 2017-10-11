@@ -142,8 +142,8 @@ public class PositionFindingOld : MonoBehaviour
         {
             lap += 1;
 
-            //if(transform.GetComponent(kartInfo) != null && Lap < tm.Laps && Lap > 0)
-            //transform.GetComponent(kartInfo).NewLap();
+            //if(transform.GetComponent(KartInfo) != null && Lap < tm.Laps && Lap > 0)
+            //transform.GetComponent(KartInfo).NewLap();
         }
 
         int CalculateAmount(int lapVal)

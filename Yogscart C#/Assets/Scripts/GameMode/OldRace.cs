@@ -132,7 +132,7 @@ public class OldRace : GameMode
         {
             if (racers[i].Human != -1)
             {
-                kartInfo ki = racers[i].ingameObj.gameObject.AddComponent<kartInfo>();
+                KartInfo ki = racers[i].ingameObj.gameObject.AddComponent<KartInfo>();
                 ki.hidden = true;
 
                 Camera[] cameras = new Camera[2];
@@ -156,19 +156,19 @@ public class OldRace : GameMode
 
         if (InputManager.controllers.Count == 2)
         {
-            racers[racers.Count - 1].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.Top;
-            racers[racers.Count - 2].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.Bottom;
+            racers[racers.Count - 1].ingameObj.GetComponent<KartInfo>().screenPos = ScreenType.Top;
+            racers[racers.Count - 2].ingameObj.GetComponent<KartInfo>().screenPos = ScreenType.Bottom;
         }
 
         if (InputManager.controllers.Count >= 3)
         {
-            racers[racers.Count - 1].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.TopLeft;
-            racers[racers.Count - 2].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.TopRight;
-            racers[racers.Count - 3].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.BottomLeft;
+            racers[racers.Count - 1].ingameObj.GetComponent<KartInfo>().screenPos = ScreenType.TopLeft;
+            racers[racers.Count - 2].ingameObj.GetComponent<KartInfo>().screenPos = ScreenType.TopRight;
+            racers[racers.Count - 3].ingameObj.GetComponent<KartInfo>().screenPos = ScreenType.BottomLeft;
         }
 
         if (InputManager.controllers.Count == 4)
-            racers[racers.Count - 4].ingameObj.GetComponent<kartInfo>().screenPos = ScreenType.BottomRight;
+            racers[racers.Count - 4].ingameObj.GetComponent<KartInfo>().screenPos = ScreenType.BottomRight;
 
         yield return new WaitForSeconds(1f);
 
@@ -196,8 +196,8 @@ public class OldRace : GameMode
 
         yield return new WaitForSeconds(3f);
 
-        kartInfo[] kies = FindObjectsOfType<kartInfo>();
-        foreach (kartInfo ki in kies)
+        KartInfo[] kies = FindObjectsOfType<KartInfo>();
+        foreach (KartInfo ki in kies)
             ki.hidden = false;
 
         KartItem[] kitemes = FindObjectsOfType<KartItem>();
@@ -1045,8 +1045,8 @@ public class OldRace : GameMode
             racer.ingameObj.GetComponent<KartItem>().hidden = true;
         }
 
-        if(racer.ingameObj.GetComponent<kartInfo>() != null)
-            racer.ingameObj.GetComponent<kartInfo>().StartCoroutine("Finish");
+        if(racer.ingameObj.GetComponent<KartInfo>() != null)
+            racer.ingameObj.GetComponent<KartInfo>().StartCoroutine("Finish");
 
         if (racer.cameras != null)
         {
@@ -1055,8 +1055,8 @@ public class OldRace : GameMode
 
             yield return new WaitForSeconds(2f);
 
-            if (racer.ingameObj.GetComponent<kartInfo>() != null)
-                racer.ingameObj.GetComponent<kartInfo>().hidden = true;
+            if (racer.ingameObj.GetComponent<KartInfo>() != null)
+                racer.ingameObj.GetComponent<KartInfo>().hidden = true;
 
             float startTime = Time.time;
             const float travelTime = 3f;

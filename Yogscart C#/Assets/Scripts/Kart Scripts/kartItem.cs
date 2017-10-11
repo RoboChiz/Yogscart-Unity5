@@ -6,7 +6,7 @@ public enum ItemOwner { Mine, Ai, Online };
 public class KartItem : MonoBehaviour
 {
     private CurrentGameData gd;
-    private kartInfo ki;
+    private KartInfo ki;
     private KartInput kaI;
     private PositionFinding pf;
     private SoundManager sm;
@@ -48,7 +48,7 @@ public class KartItem : MonoBehaviour
 
     void Start()
     {
-        ki = GetComponent<kartInfo>();
+        ki = GetComponent<KartInfo>();
         kaI = GetComponent<KartInput>();
         pf = GetComponent<PositionFinding>();
     }

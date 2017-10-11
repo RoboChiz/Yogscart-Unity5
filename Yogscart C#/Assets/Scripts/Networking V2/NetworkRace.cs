@@ -56,6 +56,9 @@ public class NetworkRace : Race
             client.client.RegisterHandler(UnetMessages.voteListUpdateMsg, OnAddToVoteList);
             client.client.RegisterHandler(UnetMessages.loadLevelMsg, OnLoadLevel);
             client.client.RegisterHandler(UnetMessages.spawnKartMsg, OnRecieveSpawnKart);
+            client.client.RegisterHandler(UnetMessages.countdownMsg, OnCountdown);
+            client.client.RegisterHandler(UnetMessages.countdownStateMsg, OnCountdownState); 
+            client.client.RegisterHandler(UnetMessages.unlockKartMsg, OnUnlockKart);
         }
         else
         {
@@ -83,10 +86,58 @@ public class NetworkRace : Race
             OnLoadLevel(cup, track);
             NetworkServer.SendToAll(UnetMessages.loadLevelMsg, new TrackVoteMessage(cup, track));
 
-            //Tell Client to setup kart
+            yield return WaitForAllReady();
 
-            //Setup AI
+            //Do Countdown State Change  
+            NetworkServer.SendToAll(UnetMessages.countdownStateMsg, new EmptyMessage());
+            OnCountdownState(null);
+
+            yield return WaitForAllReady();
+
+            NetworkServer.SendToAll(UnetMessages.countdownMsg, new EmptyMessage());
+            yield return new WaitForSeconds(0.05f);
+            OnCountdown(null);
+
+            yield return new WaitForSeconds(3.4f);
+
+            NetworkServer.SendToAll(UnetMessages.unlockKartMsg, new EmptyMessage());
+            yield return new WaitForSeconds(0.05f);
+            OnUnlockKart(null);     
+
+            //Wait for the gamemode to be over
+            while (!raceFinished && timer < 1800f)
+            {
+                HostUpdate();
+                yield return new WaitForSeconds(0.25f);
+            }
         }
+    }
+
+    private IEnumerator WaitForAllReady()
+    {
+        //Wait for all Players to be Ready
+        while (true)
+        {
+            bool allReady = true;
+
+            foreach (NetworkRacer racer in racers)
+            {
+                if (!racer.ready)
+                    allReady = false;
+            }
+
+            if (allReady)
+            {
+                break;
+            }
+
+            //Try again in half a second
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        //Reset Ready
+        foreach (NetworkRacer racer in racers)
+            racer.ready = false;
     }
 
     //Do Track Vote & Selection
@@ -251,10 +302,7 @@ public class NetworkRace : Race
 
         if (racerID == -1)
         {
-            Debug.Log(netMsg.conn.address + " is a big cheater");
-            string errorMessage = "'And if I ever see you here again, Wreck-It Ralph, I'll lock you in my Fungeon!'." + System.Environment.NewLine + "Error: Somethings gone wrong! You've sent a message to the server that you weren't suppose to. Either it's a bug or you're a dirty cheater. Eitherway you've been kicked.";
-            ClientErrorMessage ackMsg = new ClientErrorMessage(errorMessage);
-            NetworkServer.SendToClient(netMsg.conn.connectionId, UnetMessages.clientErrorMsg, ackMsg);
+            host.KickPlayer(netMsg.conn);
         }
 
         OnRecieveTrackVote(msg.cup, msg.track);
@@ -368,14 +416,13 @@ public class NetworkRace : Race
         //Update Local Version of Racers
         if(!isHost)
         {
-            //TODO
-            racers = new List<Racer>();
+            racers = null;
         }
 
         //Update Map Viewer
         mapViewer.objects = new List<MapObject>();  
-        foreach (Racer racer in racers)
-            mapViewer.objects.Add(new MapObject(racer.ingameObj, gd.characters[racer.character].icon, racer.position));
+        foreach (KartMovement racer in FindObjectsOfType<KartMovement>())
+            mapViewer.objects.Add(new MapObject(racer.transform, gd.characters[racer.characterID].icon, racer.hatID));
 
         //Let Gamemode add Map Viewer Objects
         AddMapViewObjects();
@@ -393,7 +440,7 @@ public class NetworkRace : Race
         //Get Local Kart Components for Race
         KartMovement[] kses = FindObjectsOfType<KartMovement>();
         KartInput[] kines = FindObjectsOfType<KartInput>();
-        kartInfo[] kies = FindObjectsOfType<kartInfo>();
+        KartInfo[] kies = FindObjectsOfType<KartInfo>();
         KartItem[] kitemes = FindObjectsOfType<KartItem>();
 
         //Set Kart Components for Race
@@ -405,7 +452,7 @@ public class NetworkRace : Race
 
         yield return new WaitForSeconds(3f);
 
-        foreach (kartInfo ki in kies)
+        foreach (KartInfo ki in kies)
             ki.hidden = false;
 
         foreach (KartItem ki in kitemes)
@@ -420,7 +467,14 @@ public class NetworkRace : Race
         //Send Ready Message if racing
         if(client.isRacing)
         {
-            //TODO
+            if (!isHost)
+            {
+                client.client.Send(UnetMessages.readyMsg, new EmptyMessage());
+            }
+            else
+            {
+                OnHostReady();
+            }
         }
     }
 
@@ -478,5 +532,110 @@ public class NetworkRace : Race
         inGameCam.GetChild(0).transform.GetComponent<KartCamera>().rotTarget = localRacer.ingameObj;
         inGameCam.GetChild(1).transform.GetComponent<KartCamera>().rotTarget = localRacer.ingameObj;
         localRacer.cameras = inGameCam;
+
+        KartInfo kartInfo = localRacer.ingameObj.gameObject.AddComponent<KartInfo>();
+        localRacer.ingameObj.gameObject.GetComponent<PositionFinding>().racePosition = localRacer.position;
     }
+
+    //------------------------------------------------------------------------------
+    public void OnPlayerReady(NetworkMessage netMsg)
+    {
+        int racerID = -1;
+        //Check that Racer exists
+        for (int i = 0; i < host.finalPlayers.Count; i++)
+        {
+            if (host.finalPlayers[i].conn == netMsg.conn)
+            {
+                racerID = i;
+                break;
+            }
+        }
+
+        if (racerID == -1)
+        {
+            host.KickPlayer(netMsg.conn);
+        }
+
+        host.finalPlayers[racerID].ready = true;
+    }
+
+    public void OnHostReady()
+    {
+        for (int i = 0; i < host.finalPlayers.Count; i++)
+        {
+            if (host.finalPlayers[i].conn == null)
+            {
+                host.finalPlayers[i].ready = true;
+                return;
+            }
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    public override void OnServerDisconnect(NetworkConnection _conn)
+    {
+        base.OnServerDisconnect(_conn);
+
+        foreach(NetworkRacer racer in racers.ToArray())
+        {
+            //Remove Racer if they are not longer racing
+            if(racer.conn == _conn)
+            {
+                racers.Remove(racer);
+            }
+
+            //Clean up anything they've touched
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnCountdown(NetworkMessage netMsg)
+    {
+        StartCountdown();
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnCountdownState(NetworkMessage netMsg)
+    {
+        StartCoroutine(ActualOnCountdownState());
+    }
+    private IEnumerator ActualOnCountdownState()
+    {
+        //Do the Countdown
+        yield return ChangeState(RaceState.Countdown);
+
+        //Send Ready Message if racing
+        if (client.isRacing)
+        {
+            if (!isHost)
+            {
+                client.client.Send(UnetMessages.readyMsg, new EmptyMessage());
+            }
+            else
+            {
+                OnHostReady();
+            }
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnUnlockKart(NetworkMessage netMsg)
+    {
+        //Start the timer
+        StartTimer();
+
+        //Unlock the karts      
+        foreach (KartMovement ks in FindObjectsOfType<KartMovement>())
+            ks.locked = false;
+
+        foreach (KartItem ki in FindObjectsOfType<KartItem>())
+            ki.locked = false;
+
+        StartCoroutine(ChangeState(RaceState.RaceGUI));
+
+        //Unlock the Pause Menu
+        PauseMenu.canPause = true;
+    }
+
+
 }

@@ -184,7 +184,7 @@ public class KartMaker : MonoBehaviour
             if (type != KartType.Spectator && type != KartType.Replay && type != KartType.Ghost)
             {
                 kb.AddComponent<KartInput>();
-                //kb.AddComponent<kartInfo>();
+                //kb.AddComponent<KartInfo>();
             }
 
             if (type == KartType.Replay || type == KartType.Ghost)

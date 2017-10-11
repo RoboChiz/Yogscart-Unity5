@@ -4,7 +4,7 @@ using Boo.Lang;
 
 public enum ScreenType { Full, TopLeft, TopRight, BottomLeft, BottomRight, Top, Bottom };
 
-public class kartInfo : MonoBehaviour
+public class KartInfo : MonoBehaviour
 {
 
     public ScreenType screenPos = ScreenType.Full;

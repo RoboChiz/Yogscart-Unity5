@@ -246,7 +246,6 @@ public class UnetClient : NetworkManager
 
         //Unlock the Pause Menu
         PauseMenu.canPause = true;
-        PauseMenu.onlineGame = true;
     }
 
     //Called when the gamemode has finished

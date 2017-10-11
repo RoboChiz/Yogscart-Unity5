@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 
 public class PauseMenu : MonoBehaviour
 {
 
-    public static bool canPause = false, onlineGame = false;
+    public static bool canPause = false;
     public int paused = -1, pauseHold = -1;
 
     private float guiAlpha;
@@ -40,7 +41,7 @@ public class PauseMenu : MonoBehaviour
 
         StartCoroutine(FadeGui(0f, 1f));
 
-        if (!onlineGame) //Only freeze time if game is offline
+        if (!NetworkServer.active && !NetworkClient.active) //Only freeze time if game is offline
         {
             Time.timeScale = 0f;         
         }
@@ -234,7 +235,15 @@ public class PauseMenu : MonoBehaviour
 
                 //Change Pitch Back
                 FindObjectOfType<SoundManager>().SetMusicPitch(1f);
-                FindObjectOfType<GameMode>().EndGamemode();
+
+                if(!NetworkServer.active && !NetworkClient.active)
+                {
+                    FindObjectOfType<GameMode>().EndGamemode();
+                }
+                else
+                {
+                    FindObjectOfType<YogscartNetwork.Client>().EndClient(null);
+                }
                 break;
         }
     }

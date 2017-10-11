@@ -251,7 +251,7 @@ abstract public class GameMode : MonoBehaviour
         else
         {
             Destroy(racers[i].ingameObj.GetComponent<KartInput>());
-            //Destroy(racers[i].ingameObj.GetComponent<kartInfo>());
+            //Destroy(racers[i].ingameObj.GetComponent<KartInfo>());
             //racers[i].ingameObj.gameObject.AddComponent<AIRacer>();
             //racers[i].ingameObj.GetComponent<AIRacer>().stupidity = racers[i].aiStupidity;
         }

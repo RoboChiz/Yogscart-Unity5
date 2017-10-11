@@ -106,7 +106,7 @@ public class KartMovement : MonoBehaviour
 
     private Coroutine kartBodySliding = null;
 
-    private kartInfo kartInfoComp;
+    private KartInfo KartInfoComp;
     [HideInInspector]
     private float chroming = 0f;
 
@@ -123,7 +123,7 @@ public class KartMovement : MonoBehaviour
     void Start()
     {
         kartRigidbody = GetComponent<Rigidbody>();
-        kartInfoComp = GetComponent<kartInfo>();
+        KartInfoComp = GetComponent<KartInfo>();
 
         SetupKart();
     }
@@ -1023,7 +1023,7 @@ public class KartMovement : MonoBehaviour
         hatID = _copy.hatID;
 
         kartBodySliding = _copy.kartBodySliding;
-        kartInfoComp = _copy.kartInfoComp;
+        KartInfoComp = _copy.KartInfoComp;
         chroming = _copy.chroming;
         toProcess = _copy.toProcess;
     }
