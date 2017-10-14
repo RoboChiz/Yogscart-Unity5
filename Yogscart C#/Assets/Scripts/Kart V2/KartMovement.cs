@@ -66,7 +66,8 @@ public class KartMovement : MonoBehaviour
 
     //What state of boost we are in
     public enum BoostMode { Not, Boost, DriftBoost, Trick };
-    private BoostMode isBoosting = BoostMode.Not;
+    public BoostMode isBoosting = BoostMode.Not;
+    public float boostTime;
 
     //Values after modifing
     private float maxSpeed, maxGrassSpeed, maxBoostSpeed, acceleration, brakeTime;
@@ -782,15 +783,12 @@ public class KartMovement : MonoBehaviour
             playAudio = false;
 
         isBoosting = type;
+        boostTime = t;
 
         if (lastBoost != null)
             StopCoroutine(lastBoost);
 
         lastBoost = StartCoroutine(StartBoost(t, playAudio));
-
-        //If Kart is networked send this information to server and clients
-        if (GetComponent<KartNetworker>() != null && !onlineMode)
-            GetComponent<KartNetworker>().SendBoost(t, (KartMovement.BoostMode)type);
     }
 
     IEnumerator StartBoost(float t, bool playAudio)
@@ -804,6 +802,7 @@ public class KartMovement : MonoBehaviour
         yield return new WaitForSeconds(t);
 
         isBoosting = BoostMode.Not;
+        boostTime = 0;
     }
 
     void CancelBoost()
@@ -844,10 +843,6 @@ public class KartMovement : MonoBehaviour
         if (!onlineMode)
         {
             StartCoroutine("StartSpinOut");
-
-            //If Kart is networked send this information to server and clients
-            if (GetComponent<KartNetworker>() != null)
-                GetComponent<KartNetworker>().spinOut++;
 
             if (doNoise)
             {

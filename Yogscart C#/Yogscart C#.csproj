@@ -191,6 +191,7 @@
     <Compile Include="Assets\Scripts\Menus\Options.cs" />
     <Compile Include="Assets\Scripts\Menus\PauseMenu.cs" />
     <Compile Include="Assets\Scripts\Menus\TimeTrialMenu.cs" />
+    <Compile Include="Assets\Scripts\Networking V2\KartPositionPass.cs" />
     <Compile Include="Assets\Scripts\Networking V2\NetworkRace.cs" />
     <Compile Include="Assets\Scripts\Networking V2\NetworkSelection.cs" />
     <Compile Include="Assets\Scripts\Networking V2\YogscartNetworkClient.cs" />

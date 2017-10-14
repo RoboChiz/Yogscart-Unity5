@@ -2,6 +2,18 @@
 
 ## Changelog : Started 04/08/2016
 
+# 14/10/2017
+* Fixed Host not recognising Client Ready Message
+* Made Music go faster on last lap of Race in Online
+* Added Racing Behaviour to Host in Online
+* Added 60 Second timer when first player crosses Finish Line
+* Fixed Local Kart Lag Issues on Client
+* Fixed Kart Syncing Issues across Network (Now use new Kart Body Lerp Stuff)
+* Fixed Kart Input Syncing Issues across Network
+* Fixed moving mouse allowing player to change character after selection
+* Made whichever player is using the keyboard have their loadout effected by the mouse
+* Fixed Hats despawning when you go back on character select
+
 # 11/10/2017
 * Fixed Pause Menu pausing time in Online
 * Added Readying up Method to Online Race

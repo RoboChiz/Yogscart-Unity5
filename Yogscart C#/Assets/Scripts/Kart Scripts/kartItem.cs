@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum ItemOwner { Mine, Ai, Online };
+public enum ItemOwner {None, Mine, Ai, Online };
 
 public class KartItem : MonoBehaviour
 {
@@ -22,7 +22,7 @@ public class KartItem : MonoBehaviour
     public int renderHeight;
     public float guiAlpha;
 
-    public ItemOwner itemOwner = ItemOwner.Mine;
+    public ItemOwner itemOwner = ItemOwner.None;
     public bool onlineGame;
 
     private bool spinning = false;
@@ -44,6 +44,10 @@ public class KartItem : MonoBehaviour
 
         if (GetComponent<AI>() || GetComponent<KartReplayer>())//If AI detected must be AI
             itemOwner = ItemOwner.Ai;
+        if (GetComponent<KartInput>())//If Input is detected, is mine
+            itemOwner = ItemOwner.Mine;
+        if (!GetComponent<KartInput>() && GetComponent<KartNetworker>())//If Online Component is detected, is Online
+            itemOwner = ItemOwner.Online;
     }
 
     void Start()

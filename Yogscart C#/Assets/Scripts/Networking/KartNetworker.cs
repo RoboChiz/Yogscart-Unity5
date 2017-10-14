@@ -16,24 +16,22 @@ public class KartNetworker : NetworkBehaviour
     [SyncVar]
     private float throttle, steer, expectedSpeed, boostTime;
     [SyncVar]
-    private bool drift;
+    private bool drift, spinningOut;
     [SyncVar]
     private int boostType, lapisAmount;
 
     //Used to call local Item Functions
-    [SyncVar]
-    public int recieveItem, useItem, useShield, dropShield, currentItem, spinOut;
-    [SyncVar]
+    public int recieveItem, useItem, useShield, dropShield, currentItem;
     public float currentItemDir;
 
-    private int lastRecieveItem, lastUseItem, lastUseShield, lastDropShield, lastSpinOut;
+    private int lastRecieveItem, lastUseItem, lastUseShield, lastDropShield;
 
-    [SyncVar]
     public string kartPlayerName = "Player";
 
     private KartMovement kartMovement;
     private KartItem ki;
     private bool kartLoaded = false;
+    private bool isMine = false;
 
     void Start()
     {
@@ -51,15 +49,9 @@ public class KartNetworker : NetworkBehaviour
             kartLoaded = true;
         }
 
-        if (isLocalPlayer)
+        if (isMine)
         {
             SendKartInfo();
-
-            if (ki != null)
-            {
-                ki.itemOwner = ItemOwner.Mine;
-            }
-
         }
         else
         {
@@ -79,10 +71,10 @@ public class KartNetworker : NetworkBehaviour
             }
 
             //Do Spinout
-            if(spinOut != lastSpinOut)
+            if(spinningOut)
             {
                 kartMovement.localSpinOut();
-                lastSpinOut = spinOut;
+                spinningOut = false;
             }
 
             //Add Player Name
@@ -119,47 +111,47 @@ public class KartNetworker : NetworkBehaviour
         }         
     }
 
-    [ClientCallback]
     private void SendKartInfo()
     {
-        CmdRecieveKartInfo(kartMovement.throttle, kartMovement.steer, kartMovement.drift, kartMovement.expectedSpeed, FindObjectOfType<CurrentGameData>().playerName, kartMovement.lapisAmount, spinOut);
+        if(throttle != kartMovement.throttle)
+            throttle = kartMovement.throttle;
+
+        if (steer != kartMovement.steer)
+            steer = kartMovement.steer;
+
+        if (drift != kartMovement.drift)
+            drift = kartMovement.drift;
+
+        if (expectedSpeed != kartMovement.expectedSpeed)
+            expectedSpeed = kartMovement.expectedSpeed;
+
+        if (lapisAmount != kartMovement.lapisAmount)
+            lapisAmount = kartMovement.lapisAmount;
+
+        if(spinningOut != kartMovement.spinningOut)
+            spinningOut = kartMovement.spinningOut;
+
+        if(boostType != (int)kartMovement.isBoosting)
+            boostType = (int)kartMovement.isBoosting;
+
+        if (boostTime != kartMovement.boostTime)
+            boostTime = kartMovement.boostTime;
     }
 
-    [Command]
-    private void CmdRecieveKartInfo(float _throttle, float _steer, bool _drift, float _expectedSpeed, string _playerName, int _lapisAmount, int _spinOut)
-    {
-        throttle = _throttle;
-        steer = _steer;
-        drift = _drift;
-        expectedSpeed = _expectedSpeed;
-        kartPlayerName = _playerName;
-        lapisAmount = _lapisAmount;
-        spinOut = _spinOut;
-    }
-
-    [ClientCallback]
-    public void SendBoost(float time, KartMovement.BoostMode type)
-    {
-        if(isLocalPlayer)
-        {
-            CmdRecieveBoost(time, (int)type);
-        }
-    }
-
-    [Command]
-    private void CmdRecieveBoost(float time, int type)
-    {
-        boostTime = time;
-        boostType = type;            
-    }
 
     //Called on client when Player is created
     public override void OnStartLocalPlayer()
     {
+        isMine = true;
+
         //Tell Client which Kart they own
         FindObjectOfType<NetworkRace>().localRacer.ingameObj = transform;
-
         StartCoroutine(ConnectCameras());
+    }
+
+    public void OnStartHost()
+    {
+        isMine = true;
     }
 
     private IEnumerator ConnectCameras()

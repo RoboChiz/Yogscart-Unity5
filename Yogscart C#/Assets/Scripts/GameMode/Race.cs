@@ -29,7 +29,7 @@ public abstract class Race : GameMode
 
     protected bool raceFinished = false;
     protected int racersFinished = 0;
-    private bool lastLap = false;
+    protected bool lastLap = false;
 
     protected MapViewer mapViewer;
     protected TrackData td;
@@ -820,11 +820,10 @@ public abstract class Race : GameMode
 
     public override void OnServerConnect(NetworkConnection conn)
     {
-        throw new NotImplementedException();
     }
 
     public override void OnServerDisconnect(NetworkConnection conn)
     {
-        throw new NotImplementedException();
+
     }
 }

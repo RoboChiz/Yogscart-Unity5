@@ -22,6 +22,10 @@ public class NetworkRace : Race
 
     //Local Racer
     public Racer localRacer;
+    public bool doneFinish;
+
+    public bool lastSixtySecondsSent = false;
+    public float lastSixtySecondStartTime;
 
     //Used to setup the gamemodes
     public override void StartGameMode()
@@ -59,10 +63,13 @@ public class NetworkRace : Race
             client.client.RegisterHandler(UnetMessages.countdownMsg, OnCountdown);
             client.client.RegisterHandler(UnetMessages.countdownStateMsg, OnCountdownState); 
             client.client.RegisterHandler(UnetMessages.unlockKartMsg, OnUnlockKart);
+            client.client.RegisterHandler(UnetMessages.positionMsg, OnRecievePosition);
+            client.client.RegisterHandler(UnetMessages.finishRaceMsg, OnFinishRace);
         }
         else
         {
             NetworkServer.RegisterHandler(UnetMessages.trackVoteMsg, OnRecieveTrackVote);
+            NetworkServer.RegisterHandler(UnetMessages.readyMsg, OnPlayerReady);
         }
     }
 
@@ -105,11 +112,27 @@ public class NetworkRace : Race
             OnUnlockKart(null);     
 
             //Wait for the gamemode to be over
-            while (!raceFinished && timer < 1800f)
+            while ((!raceFinished && timer < 1800f))
             {
                 HostUpdate();
-                yield return new WaitForSeconds(0.25f);
+
+                //Finish Game Early
+                if (lastSixtySecondsSent && Time.realtimeSinceStartup - lastSixtySecondStartTime >= 60f)
+                {
+                    raceFinished = true;
+                }
+                else
+                {
+                    yield return new WaitForSeconds(0.2f);
+                }
             }
+
+            //End of Race
+            NetworkServer.SendToAll(UnetMessages.finishRaceMsg, new EmptyMessage());
+
+            //Hide 60 Second Timer
+            NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(-1));
+            client.OnTimer(-1);
         }
     }
 
@@ -223,12 +246,77 @@ public class NetworkRace : Race
     //Provides Update functionaliy for server
     public override void HostUpdate()
     {
-        base.HostUpdate();
+        bool allFinished = true;
+        bool anyPlayerFinished = false;
+
+        foreach (NetworkRacer racer in racers)
+        {
+            //Update Position Finding
+            PositionFinding pf = racer.ingameObj.GetComponent<PositionFinding>();
+            racer.currentPercent = pf.currentPercent;
+            racer.lap = pf.lap;
+            pf.racePosition = racer.position;
+
+            //Finish Player
+            if (pf.lap >= td.Laps && !racer.finished)
+            {
+                racer.finished = true;
+                racer.timer = timer;
+
+                if (racer.conn != null)
+                {
+                    NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.finishRaceMsg, new EmptyMessage());
+                }
+                else
+                {
+                    OnFinishRace();
+                }
+
+                racer.position = racersFinished;
+                racersFinished++;
+            }
+
+            if(racer.finished)
+            {
+                anyPlayerFinished = true;
+            }
+
+            //Finish Race
+            if (racer.Human != -1 && !racer.finished)
+                allFinished = false;
+        }
+
+        SortingScript.CalculatePositions(racers);
+
+        if (allFinished)
+        {
+            raceFinished = true;
+
+            //Change Pitch Back
+            FindObjectOfType<SoundManager>().SetMusicPitch(1f);
+
+            NetworkServer.SendToAll(UnetMessages.finishRaceMsg, new EmptyMessage());
+        }
+        else if (anyPlayerFinished && !lastSixtySecondsSent)
+        {
+            //When a player has finished, everyone else gets 60 seconds
+            lastSixtySecondsSent = true;
+            lastSixtySecondStartTime = Time.realtimeSinceStartup;
+
+            NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(60));
+            client.OnTimer(60);
+        }
     }
+
     //Provides Update functionaliy for both client
     public override void ClientUpdate()
     {
-        base.HostUpdate();
+        //Change pitch of music for last lap
+        if (localRacer != null && localRacer.ingameObj.GetComponent<PositionFinding>().lap >= td.Laps - 1 && !lastLap)
+        {
+            lastLap = true;
+            FindObjectOfType<SoundManager>().SetMusicPitch(td.lastLapPitch);
+        }
     }
 
     public override void NextRace()
@@ -535,6 +623,14 @@ public class NetworkRace : Race
 
         KartInfo kartInfo = localRacer.ingameObj.gameObject.AddComponent<KartInfo>();
         localRacer.ingameObj.gameObject.GetComponent<PositionFinding>().racePosition = localRacer.position;
+
+        if(isHost)
+        {
+            localRacer.ingameObj.GetComponent<KartNetworker>().OnStartHost();
+            localRacer.ingameObj.GetComponent<KartPositionPass>().OnStartHost();
+        }
+
+        localRacer.ingameObj.GetComponent<KartNetworker>().kartPlayerName = FindObjectOfType<CurrentGameData>().playerName;
     }
 
     //------------------------------------------------------------------------------
@@ -635,7 +731,99 @@ public class NetworkRace : Race
 
         //Unlock the Pause Menu
         PauseMenu.canPause = true;
+
+        //If is client, do Client Update
+        if(NetworkClient.active)
+        {
+            StartCoroutine(DoClientUpdate());
+        }
     }
 
+    public IEnumerator DoClientUpdate()
+    {
+        //Wait for the gamemode to be over
+        while (!raceFinished && timer < 1800f)
+        {
+            ClientUpdate();
+            yield return new WaitForSeconds(0.25f);
+        }
 
+        //Change Pitch Back
+        FindObjectOfType<SoundManager>().SetMusicPitch(1f);
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnRecievePosition(NetworkMessage netMsg) { IntMessage msg = netMsg.ReadMessage<IntMessage>(); OnRecievePosition(msg.value); }
+    public void OnRecievePosition(int position)
+    {
+        localRacer.position = position;
+        localRacer.ingameObj.GetComponent<PositionFinding>().racePosition = position;
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnFinishRace(NetworkMessage netMsg) { if (!isHost) { raceFinished = true; } OnFinishRace(); }
+    public void OnFinishRace()
+    {
+        if (!doneFinish)
+        {
+            doneFinish = true;
+
+            //Tidy Up Local Racer
+            if (localRacer != null)
+            {
+                StartCoroutine(TidyRacer());
+            }
+
+            FindObjectOfType<MapViewer>().HideMapViewer();
+
+        }
+    }
+
+    private IEnumerator TidyRacer()
+    {
+        localRacer.ingameObj.gameObject.AddComponent<AI>();
+        Destroy(localRacer.ingameObj.GetComponent<KartInput>());
+
+        //Hide Kart Item
+        if (localRacer.ingameObj.GetComponent<KartItem>() != null)
+        {
+            localRacer.ingameObj.GetComponent<KartItem>().locked = true;
+            localRacer.ingameObj.GetComponent<KartItem>().hidden = true;
+        }
+
+        if (localRacer.ingameObj.GetComponent<KartInfo>() != null)
+            localRacer.ingameObj.GetComponent<KartInfo>().StartCoroutine("Finish");
+
+        if (localRacer.cameras != null)
+        {
+            localRacer.cameras.GetChild(0).GetComponent<Camera>().enabled = false;
+            localRacer.cameras.GetChild(1).GetComponent<Camera>().enabled = true;
+
+            yield return new WaitForSeconds(2f);
+
+            if (localRacer.ingameObj.GetComponent<KartInfo>() != null)
+                localRacer.ingameObj.GetComponent<KartInfo>().hidden = true;
+
+            float startTime = Time.time;
+            const float travelTime = 3f;
+            KartCamera kc = localRacer.cameras.GetChild(1).GetComponent<KartCamera>();
+
+            while (Time.time - startTime < travelTime)
+            {
+                float percent = (Time.time - startTime) / travelTime;
+
+                kc.angle = Mathf.Lerp(0f, 180f, percent);
+                kc.height = Mathf.Lerp(2f, 1f, percent);
+                kc.playerHeight = Mathf.Lerp(2f, 1f, percent);
+                kc.sideAmount = Mathf.Lerp(0, -1.9f, percent * 4f);
+
+                yield return null;
+            }
+
+            kc.angle = 180f;
+            kc.height = 1f;
+            kc.playerHeight = 1f;
+            kc.sideAmount = -1.9f;
+        }
+    }
 }

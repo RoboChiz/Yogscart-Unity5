@@ -43,9 +43,6 @@ public class CharacterSelect : MonoBehaviour
     private float menuAlpha = 0f, overallAlpha = 0f;
     private bool sliding = false;
 
-    private bool mouseLast = false, canClick = false;
-    private Vector2 lastMousePos;
-
     private InputManager.InputState lastInputState;
 
     public IEnumerator ShowCharacterSelect(csState state)
@@ -168,13 +165,8 @@ public class CharacterSelect : MonoBehaviour
             float chunkSize = iconArea.height / 4.5f;
 
             Vector2 mousePos = GUIHelper.GetMousePosition();
-            canClick = false;
 
-            if (mousePos != lastMousePos)
-            {
-                mouseLast = true;
-                lastMousePos = mousePos;
-            }
+            bool canInput = ((mm == null || !mm.sliding) && menuAlpha == 1f && Cursor.visible);              
 
             switch (state)
             {
@@ -207,12 +199,25 @@ public class CharacterSelect : MonoBehaviour
                                 GUI.DrawTexture(iconRect, icon);
 
                                 //Mouse Controls
-                                if (Cursor.visible && !showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                int id = 0;
+                                foreach (InputDevice controller in InputManager.controllers)
                                 {
-                                    choice[0].character = characterInt;
-                                    canClick = true;
-                                }
+                                    if (controller.inputType == InputType.Keyboard)
+                                    {
+                                        if (canInput && !showLayout[id] && choice != null && choice.Length > 0 && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                        {
+                                            choice[id].character = characterInt;
+                                        }
 
+                                        if (GUI.Button(iconRect, ""))
+                                        {
+                                            SelectCharacter(id);
+                                        }
+                                    }
+                                    id++;
+
+                                    break;
+                                }
                             }
                         }
                     }
@@ -250,10 +255,24 @@ public class CharacterSelect : MonoBehaviour
                                 GUI.DrawTexture(iconRect, icon);
 
                                 //Mouse Controls
-                                if (Cursor.visible && !showLayout[0] && choice != null && choice.Length > 0 && mouseLast && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                int id = 0;
+                                foreach (InputDevice controller in InputManager.controllers)
                                 {
-                                    choice[0].hat = hatInt;
-                                    canClick = true;
+                                    if (controller.inputType == InputType.Keyboard)
+                                    {
+                                        if (canInput && !showLayout[id] && choice != null && choice.Length > 0 && new Rect(iconArea.x + iconRect.x, iconArea.y + iconRect.y, iconRect.width, iconRect.height).Contains(mousePos))
+                                        {
+                                            choice[id].hat = hatInt;
+                                        }
+
+                                        if (GUI.Button(iconRect, ""))
+                                        {
+                                            ready[id] = true;
+                                        }
+
+                                        break;
+                                    }
+                                    id++;
                                 }
                             }
                         }
@@ -376,14 +395,14 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(kartRect, kartIcon, ScaleMode.ScaleToFit);
 
                         //KartScaling
-                        if (s == 0 && !showLayout[s] && mouseLast)
+                        if (InputManager.controllers[s].inputType == InputType.Keyboard && !showLayout[s])
                         {
                             //Only scale if icon is onscreen and is yours
                             if (kartI != -2 && kartI != 2)
                                 loadedChoice[s].kartScales[kartI + 2] = GUIHelper.SizeHover(kartRect, loadedChoice[s].kartScales[kartI + 2], 1f, 1.25f, 2f);
 
                             //Kart Clicks
-                            if (kartI == -1 && GUI.Button(kartRect, ""))
+                            if (canInput && kartI == -1 && GUI.Button(kartRect, ""))
                             {
                                 if (!kartSelected[s])
                                     StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
@@ -391,7 +410,7 @@ public class CharacterSelect : MonoBehaviour
                                     kartSelected[s] = false;
                             }
 
-                            if (kartI == 1 && GUI.Button(kartRect, ""))
+                            if (canInput && kartI == 1 && GUI.Button(kartRect, ""))
                             {
                                 if (!kartSelected[s])
                                     StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
@@ -399,20 +418,17 @@ public class CharacterSelect : MonoBehaviour
                                     kartSelected[s] = false;
                             }
 
-                            if (kartI == 0 && GUI.Button(kartRect, ""))
+                            if (canInput && kartI == 0 && GUI.Button(kartRect, ""))
                             {
                                 if (!kartSelected[s])
-                                    canClick = true;
+                                    kartSelected[s] = true;
                                 else
                                     kartSelected[s] = false;
                             }
                         }
-                        else if (s == 0)
+                        else
                         {
-                            if (loadedChoice[s].kartScales[kartI + 2] > 1f)
-                                loadedChoice[s].kartScales[kartI + 2] -= Time.deltaTime * 2f;
-                            else
-                                loadedChoice[s].kartScales[kartI + 2] = 1f;
+                            loadedChoice[s].kartScales[kartI + 2] = Mathf.Clamp(loadedChoice[s].kartScales[kartI + 2] - Time.deltaTime * 2f, 1f, 2f);
                         }
 
 
@@ -435,14 +451,14 @@ public class CharacterSelect : MonoBehaviour
                         GUI.DrawTexture(wheelRect, wheelIcon, ScaleMode.ScaleToFit);
 
                         //WheelScaling
-                        if (!showLayout[s] && s == 0 && mouseLast)
+                        if (InputManager.controllers[s].inputType == InputType.Keyboard && !showLayout[s])
                         {
                             //Only scale if icon is onscreen and is yours
                             if (kartI != -2 && kartI != 2)
                                 loadedChoice[s].wheelScales[kartI + 2] = GUIHelper.SizeHover(wheelRect, loadedChoice[s].wheelScales[kartI + 2], 1f, 1.25f, 2f);
 
                             //Wheel Clicks
-                            if (kartI == -1 && GUI.Button(wheelRect, ""))
+                            if (canInput && kartI == -1 && GUI.Button(wheelRect, ""))
                             {
                                 if (kartSelected[s])
                                     StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
@@ -451,7 +467,7 @@ public class CharacterSelect : MonoBehaviour
                             }
 
 
-                            if (kartI == 1 && GUI.Button(wheelRect, ""))
+                            if (canInput && kartI == 1 && GUI.Button(wheelRect, ""))
                             {
                                 if (kartSelected[s])
                                     StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
@@ -459,23 +475,18 @@ public class CharacterSelect : MonoBehaviour
                                     kartSelected[s] = true;
                             }
 
-                            if (kartI == 0 && GUI.Button(wheelRect, ""))
+                            if (canInput && kartI == 0 && GUI.Button(wheelRect, ""))
                             {
                                 if (kartSelected[s])
-                                    canClick = true;
+                                    ready[s] = true;
                                 else
                                     kartSelected[s] = true;
                             }
                         }
                         else if (s == 0)
                         {
-                            if (loadedChoice[s].wheelScales[kartI + 2] > 1f)
-                                loadedChoice[s].wheelScales[kartI + 2] -= Time.deltaTime * 2f;
-                            else
-                                loadedChoice[s].wheelScales[kartI + 2] = 1f;
+                            loadedChoice[s].wheelScales[kartI + 2] = Mathf.Clamp(loadedChoice[s].wheelScales[kartI + 2] - Time.deltaTime * 2f, 1f, 2f);
                         }
-
-
                     }
 
                     GUIHelper.EndGroup();
@@ -496,11 +507,11 @@ public class CharacterSelect : MonoBehaviour
 
                         if (s == 0 && !showLayout[0])
                         {
-                            if (GUI.Button(upArrowRect, ""))
+                            if (canInput && GUI.Button(upArrowRect, ""))
                             {
                                 StartCoroutine(ScrollKart(loadedChoice[s], -kartHeight, choice[s]));
                             }
-                            if (GUI.Button(downArrowRect, ""))
+                            if (canInput && GUI.Button(downArrowRect, ""))
                             {
                                 StartCoroutine(ScrollKart(loadedChoice[s], kartHeight, choice[s]));
                             }
@@ -513,11 +524,11 @@ public class CharacterSelect : MonoBehaviour
 
                         if (s == 0 && !showLayout[0])
                         {
-                            if (GUI.Button(upArrowRect, ""))
+                            if (canInput && GUI.Button(upArrowRect, ""))
                             {
                                 StartCoroutine(ScrollWheel(loadedChoice[s], -kartHeight, choice[s]));
                             }
-                            if (GUI.Button(downArrowRect, ""))
+                            if (canInput && GUI.Button(downArrowRect, ""))
                             {
                                 StartCoroutine(ScrollWheel(loadedChoice[s], kartHeight, choice[s]));
                             }
@@ -569,12 +580,13 @@ public class CharacterSelect : MonoBehaviour
 
                         if (gd.characters[choice[s].character].unlocked != UnlockedState.Locked)
                         {
-                            loadedModels[s] = (Transform)Instantiate(gd.characters[choice[s].character].CharacterModel_Standing, platforms[s].Find("Spawn").position, oldRot);
+                            loadedModels[s] = Instantiate(gd.characters[choice[s].character].CharacterModel_Standing, platforms[s].Find("Spawn").position, oldRot);
                             loadedModels[s].GetComponent<Rigidbody>().isKinematic = true;
                             loadedModels[s].GetComponentInChildren<FaceToCamera>().forceCamera = platforms[s].Find("Camera");
                         }
 
                         loadedChoice[s].character = choice[s].character;
+                        loadedChoice[s].hat = -1;
                     }
 
                     loadedChoice[s].kart = -1;
@@ -594,7 +606,7 @@ public class CharacterSelect : MonoBehaviour
 
                         if (gd.hats[choice[s].hat].model != null && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked)
                         {
-                            Transform HatObject = (Transform)Instantiate(gd.hats[choice[s].hat].model, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.position, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.rotation);
+                            Transform HatObject = Instantiate(gd.hats[choice[s].hat].model, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.position, loadedModels[s].GetComponent<StandingCharacter>().hatHolder.rotation);
                             HatObject.parent = loadedModels[s].GetComponent<StandingCharacter>().hatHolder;
                         }
 
@@ -776,15 +788,6 @@ public class CharacterSelect : MonoBehaviour
 
                     submit = (InputManager.controllers[s].GetButtonWithLock("Submit"));
                     cancel = (InputManager.controllers[s].GetButtonWithLock("Cancel"));
-
-                    if (s == 0)
-                    {
-                        if (hori != 0 || vert != 0 || submit || cancel)
-                            mouseLast = false;
-
-                        if (canClick && (state == csState.Kart || Input.GetMouseButton(0)))
-                            submit = true;
-                    }
                 }
 
 
@@ -902,14 +905,7 @@ public class CharacterSelect : MonoBehaviour
                 {
                     if (state == csState.Character && gd.characters[choice[s].character].unlocked != UnlockedState.Locked && !ready[s])
                     {
-                        AudioClip playClip = gd.GetCustomSoundPack(choice[s].character, choice[s].hat).selectedSound;
-
-                        if (playClip != null)
-                            sm.PlaySFX(playClip);
-
-                        loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
-
-                        ready[s] = true;
+                        SelectCharacter(s);
                     }
 
                     if (state == csState.Hat && gd.hats[choice[s].hat].unlocked != UnlockedState.Locked && !ready[s])
@@ -985,6 +981,18 @@ public class CharacterSelect : MonoBehaviour
                 ResetReady();
             }
         }
+    }
+
+    public void SelectCharacter(int s)
+    {
+        AudioClip playClip = gd.GetCustomSoundPack(CurrentGameData.currentChoices[s].character, CurrentGameData.currentChoices[s].hat).selectedSound;
+
+        if (playClip != null)
+            sm.PlaySFX(playClip);
+
+        loadedModels[s].GetComponent<Animator>().CrossFade("Selected", 0.01f);
+
+        ready[s] = true;
     }
 
     public void LeaveCamOn(Camera cam)
