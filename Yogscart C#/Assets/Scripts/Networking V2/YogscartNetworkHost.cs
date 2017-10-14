@@ -13,7 +13,6 @@ namespace YogscartNetwork
     {
         public GameState currentState = GameState.Lobby;
         public int currentGamemode { get; private set; }
-        public GameMode gameMode;
 
         //Server Settings
         public ServerSettings serverSettings;
@@ -133,11 +132,16 @@ namespace YogscartNetwork
             }
 
             //Clean Up
+            NetworkServer.SendToAll(UnetMessages.cleanUpMsg, new EmptyMessage());
+            OnGamemodeCleanup();
+
+            yield return new WaitForSeconds(0.5f);
 
             //Return to lobby
             NetworkServer.SendToAll(UnetMessages.returnLobbyMsg, new EmptyMessage());
-            OnReturnLobby();
+            yield return OnReturnLobby();
 
+            OnHostReturnToLobby();
         }
 
         //------------------------------------------------------------------------------
@@ -234,6 +238,7 @@ namespace YogscartNetwork
         //------------------------------------------------------------------------------
         public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)
         {
+            Debug.Log("OnServerAddPlayer " + conn.address);
 
             //Check for Client
             for (int i = 0; i < finalPlayers.Count; i++)
@@ -280,6 +285,7 @@ namespace YogscartNetwork
         //Used to give add time between messages to avoid flooding the client
         private IEnumerator AcceptPlayer(NetworkConnection conn)
         {
+            Debug.Log("AcceptPlayer " + conn.address);
             AcceptedMessage ackMsg = new AcceptedMessage();
 
             //Check to see if Client can join players
@@ -307,6 +313,7 @@ namespace YogscartNetwork
         // Called when a client rejects selecting a character
         private void OnRejection(NetworkMessage netMsg)
         {
+            Debug.Log("OnRejection " + netMsg.conn.address);
             if (!possiblePlayers.Contains(netMsg.conn))
             {
                 KickPlayer(netMsg.conn);
@@ -431,6 +438,20 @@ namespace YogscartNetwork
             {
                 _conn.Disconnect();
             }
+        }
+
+        private void OnHostReturnToLobby()
+        {
+            CheckForSpaces();
+
+            //Update the Player Lists
+            UpdatePlayerInfoList();
+        }
+
+        public override void OnServerConnect(NetworkConnection conn)
+        {
+            base.OnServerConnect(conn);
+            Debug.Log("OnServerConnect " + conn.address);
         }
     }
 }

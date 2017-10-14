@@ -65,12 +65,52 @@ public class NetworkRace : Race
             client.client.RegisterHandler(UnetMessages.unlockKartMsg, OnUnlockKart);
             client.client.RegisterHandler(UnetMessages.positionMsg, OnRecievePosition);
             client.client.RegisterHandler(UnetMessages.finishRaceMsg, OnFinishRace);
+            client.client.RegisterHandler(UnetMessages.leaderboardPosMsg, OnLeaderboardPos);
         }
         else
         {
             NetworkServer.RegisterHandler(UnetMessages.trackVoteMsg, OnRecieveTrackVote);
             NetworkServer.RegisterHandler(UnetMessages.readyMsg, OnPlayerReady);
         }
+    }
+
+    public override void CleanUp()
+    {
+        //Cleanup Listeners
+        if (!isHost)
+        {
+            client.client.UnregisterHandler(UnetMessages.showLvlSelectMsg);
+            client.client.UnregisterHandler(UnetMessages.startRollMsg);
+            client.client.UnregisterHandler(UnetMessages.voteListUpdateMsg);
+            client.client.UnregisterHandler(UnetMessages.loadLevelMsg);
+            client.client.UnregisterHandler(UnetMessages.spawnKartMsg);
+            client.client.UnregisterHandler(UnetMessages.countdownMsg);
+            client.client.UnregisterHandler(UnetMessages.countdownStateMsg);
+            client.client.UnregisterHandler(UnetMessages.unlockKartMsg);
+            client.client.UnregisterHandler(UnetMessages.positionMsg);
+            client.client.UnregisterHandler(UnetMessages.finishRaceMsg);
+            client.client.UnregisterHandler(UnetMessages.leaderboardPosMsg);
+        }
+        else
+        {
+            NetworkServer.UnregisterHandler(UnetMessages.trackVoteMsg);
+            NetworkServer.UnregisterHandler(UnetMessages.readyMsg);
+        }
+
+        if (isHost)
+        {
+            foreach (NetworkRacer racer in racers)
+            {
+                racer.finished = false;
+                racer.timer = 0f;
+            }
+        }
+    }
+
+    public override void OnReturnLobby()
+    {
+        Destroy(FindObjectOfType<Leaderboard>());
+        Destroy(FindObjectOfType<LevelSelect>());
     }
 
     protected override IEnumerator ActualStartGameMode()
@@ -133,6 +173,47 @@ public class NetworkRace : Race
             //Hide 60 Second Timer
             NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(-1));
             client.OnTimer(-1);
+
+            yield return new WaitForSeconds(0.5f);
+
+            //Tell Clients to Show Leaderboard
+            List<NetworkRacer> toSend = new List<NetworkRacer>();
+            foreach (NetworkRacer racer in racers)
+                toSend.Add(racer);
+
+            while (toSend.Count > 0)
+            {
+                NetworkRacer next = toSend[0];
+                for(int i = 1; i < toSend.Count; i++)
+                {
+                    if(toSend[i].position < next.position)
+                    {
+                        next = toSend[i];
+                    }
+                }
+
+                //Add Points
+                next.points += 15 - next.position;
+
+                DisplayRacerMessage msg = new DisplayRacerMessage(new DisplayRacer(next));
+
+                NetworkServer.SendToAll(UnetMessages.leaderboardPosMsg, msg);
+                OnLeaderboardPos(msg);
+
+                toSend.Remove(next);
+
+                yield return new WaitForSeconds(0.1f);
+
+            }
+
+            //Show Timer
+            NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(15));
+            client.OnTimer(15);
+
+            yield return new WaitForSeconds(15f);
+
+            //End Gamemode
+            finished = true;
         }
     }
 
@@ -257,6 +338,15 @@ public class NetworkRace : Race
             racer.lap = pf.lap;
             pf.racePosition = racer.position;
 
+            if (racer.conn != null)
+            {
+                NetworkServer.SendToClient(racer.conn.connectionId, UnetMessages.positionMsg, new IntMessage(racer.position));
+            }
+            else
+            {
+                OnRecievePosition(racer.position);
+            }
+
             //Finish Player
             if (pf.lap >= td.Laps && !racer.finished)
             {
@@ -282,7 +372,7 @@ public class NetworkRace : Race
             }
 
             //Finish Race
-            if (racer.Human != -1 && !racer.finished)
+            if (!racer.finished)
                 allFinished = false;
         }
 
@@ -318,29 +408,12 @@ public class NetworkRace : Race
             FindObjectOfType<SoundManager>().SetMusicPitch(td.lastLapPitch);
         }
     }
-
-    public override void NextRace()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    protected override void OnLeaderboardUpdate(Leaderboard lb)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    protected override void OnRaceFinished()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    protected override void OnStartLeaderBoard(Leaderboard lb)
-    {
-        throw new System.NotImplementedException();
-    }
-
     //Unused
     public override string[] GetNextMenuOptions() { return null; }
+    public override void NextRace() { throw new System.NotImplementedException(); }
+    protected override void OnLeaderboardUpdate(Leaderboard lb) { throw new System.NotImplementedException(); }
+    protected override void OnRaceFinished() { throw new System.NotImplementedException(); }
+    protected override void OnStartLeaderBoard(Leaderboard lb) { throw new System.NotImplementedException(); }
 
     //------------------------------------------------------------------------------
     //Sends client vote to server
@@ -367,8 +440,15 @@ public class NetworkRace : Race
     private void OnShowLevelSelect(NetworkMessage netMsg) { OnShowLevelSelect(); }
     private void OnShowLevelSelect()
     {
-        FindObjectOfType<LevelSelect>().enabled = true;
-        FindObjectOfType<LevelSelect>().ShowLevelSelect();
+        LevelSelect ls = FindObjectOfType<LevelSelect>();
+
+        if(ls == null)
+        {
+            ls = gameObject.AddComponent<LevelSelect>();
+        }
+
+        ls.enabled = true;
+        ls.ShowLevelSelect();
     }
 
     //------------------------------------------------------------------------------
@@ -495,7 +575,7 @@ public class NetworkRace : Race
         }
 
         //Wait for Spawn Messages to be recieved
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
 
         //Create Map Viewer
         mapViewer = gameObject.AddComponent<MapViewer>();
@@ -514,6 +594,15 @@ public class NetworkRace : Race
 
         //Let Gamemode add Map Viewer Objects
         AddMapViewObjects();
+
+        if (isHost)
+        {
+            //Set Racer Names
+            foreach (NetworkRacer racer in racers)
+            {
+                racer.ingameObj.GetComponent<KartNetworker>().kartPlayerName = racer.playerName;
+            }
+        }
 
         yield return new WaitForSeconds(0.5f);
 
@@ -781,6 +870,9 @@ public class NetworkRace : Race
 
     private IEnumerator TidyRacer()
     {
+        gd.overallLapisCount += localRacer.ingameObj.GetComponent<KartMovement>().lapisAmount;
+        gd.SaveGame();
+
         localRacer.ingameObj.gameObject.AddComponent<AI>();
         Destroy(localRacer.ingameObj.GetComponent<KartInput>());
 
@@ -825,5 +917,25 @@ public class NetworkRace : Race
             kc.playerHeight = 1f;
             kc.sideAmount = -1.9f;
         }
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnLeaderboardPos(NetworkMessage netMsg)
+    {
+        DisplayRacerMessage msg = netMsg.ReadMessage<DisplayRacerMessage>();
+        OnLeaderboardPos(msg);
+    }
+    public void OnLeaderboardPos(DisplayRacerMessage _displayRacer)
+    {
+        Leaderboard lb = FindObjectOfType<Leaderboard>();
+        if (lb == null)
+        {
+            lb = gameObject.AddComponent<Leaderboard>();
+            lb.racers = new List<DisplayRacer>();
+            lb.StartLeaderBoard(this);
+        }
+
+        DisplayRacer displayRacer = new DisplayRacer(lb.racers.Count, _displayRacer.displayName, _displayRacer.character, _displayRacer.points, _displayRacer.timer);
+        lb.racers.Add(displayRacer);
     }
 }

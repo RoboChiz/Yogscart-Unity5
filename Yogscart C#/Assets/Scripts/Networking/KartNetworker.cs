@@ -26,11 +26,11 @@ public class KartNetworker : NetworkBehaviour
 
     private int lastRecieveItem, lastUseItem, lastUseShield, lastDropShield;
 
+    [SyncVar]
     public string kartPlayerName = "Player";
 
     private KartMovement kartMovement;
     private KartItem ki;
-    private bool kartLoaded = false;
     private bool isMine = false;
 
     void Start()
@@ -46,12 +46,14 @@ public class KartNetworker : NetworkBehaviour
         if(currentChar != loadedChar || currentHat != loadedHat || currentKart != loadedKart || loadedWheel != currentWheel)
         {
             LoadKartModel();
-            kartLoaded = true;
         }
 
         if (isMine)
         {
-            SendKartInfo();
+            CmdSendKartInfo(kartMovement.throttle, kartMovement.steer, kartMovement.drift, 
+                kartMovement.expectedSpeed, kartMovement.lapisAmount, 
+                kartMovement.spinningOut, (int)kartMovement.isBoosting, 
+                kartMovement.boostTime);
         }
         else
         {
@@ -111,31 +113,32 @@ public class KartNetworker : NetworkBehaviour
         }         
     }
 
-    private void SendKartInfo()
+    [Command]
+    private void CmdSendKartInfo(float _throttle, float _steer, bool _drift, float _expectedSpeed, int _lapisAmount, bool _spinningOut, int _boostType, float _boostTime )
     {
-        if(throttle != kartMovement.throttle)
-            throttle = kartMovement.throttle;
+        if(throttle != _throttle)
+            throttle = _throttle;
 
-        if (steer != kartMovement.steer)
-            steer = kartMovement.steer;
+        if (steer != _steer)
+            steer = _steer;
 
-        if (drift != kartMovement.drift)
-            drift = kartMovement.drift;
+        if (drift != _drift)
+            drift = _drift;
 
-        if (expectedSpeed != kartMovement.expectedSpeed)
-            expectedSpeed = kartMovement.expectedSpeed;
+        if (expectedSpeed != _expectedSpeed)
+            expectedSpeed = _expectedSpeed;
 
-        if (lapisAmount != kartMovement.lapisAmount)
-            lapisAmount = kartMovement.lapisAmount;
+        if (lapisAmount != _lapisAmount)
+            lapisAmount = _lapisAmount;
 
-        if(spinningOut != kartMovement.spinningOut)
-            spinningOut = kartMovement.spinningOut;
+        if(spinningOut != _spinningOut)
+            spinningOut = _spinningOut;
 
-        if(boostType != (int)kartMovement.isBoosting)
-            boostType = (int)kartMovement.isBoosting;
+        if(boostType != _boostType)
+            boostType = _boostType;
 
-        if (boostTime != kartMovement.boostTime)
-            boostTime = kartMovement.boostTime;
+        if (boostTime != _boostTime)
+            boostTime = _boostTime;
     }
 
 
@@ -147,6 +150,8 @@ public class KartNetworker : NetworkBehaviour
         //Tell Client which Kart they own
         FindObjectOfType<NetworkRace>().localRacer.ingameObj = transform;
         StartCoroutine(ConnectCameras());
+
+        FindObjectOfType<NetworkRace>().localRacer.ingameObj.GetComponent<KartItem>().itemOwner = ItemOwner.Mine;
     }
 
     public void OnStartHost()
@@ -174,7 +179,7 @@ public class KartNetworker : NetworkBehaviour
         //Replace the existing model, colliders and canvas (Move into place of existing, then delete original)
         for (int i = 0; i < transform.childCount; i++)
         {
-            Destroy(transform.GetChild(i).gameObject);
+                Destroy(transform.GetChild(i).gameObject);
         }
 
         while (newKart.childCount > 0)
@@ -197,6 +202,6 @@ public class KartNetworker : NetworkBehaviour
         loadedWheel = currentWheel;
 
         GetComponent<KartMovement>().CopyFrom(newKart.GetComponent<KartMovement>());
-        GetComponent<KartMovement>().SetupOnlineKart();
+        GetComponent<KartMovement>().SetupOnlineKart();   
     }
 }

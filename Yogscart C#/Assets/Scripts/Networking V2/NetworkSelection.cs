@@ -26,7 +26,7 @@ public class NetworkSelection : MonoBehaviour
     private CurrentGameData gd;
 
     //Host Settings
-    int serverPort = 25000;
+    int serverPort = 7777;
     string serverPassword = "";
 
     //Server Settings

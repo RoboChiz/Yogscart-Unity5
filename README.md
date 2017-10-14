@@ -13,6 +13,9 @@
 * Fixed moving mouse allowing player to change character after selection
 * Made whichever player is using the keyboard have their loadout effected by the mouse
 * Fixed Hats despawning when you go back on character select
+* Added Leaderboard at end of Race
+* Added new Lobby Scene
+* Added Gamemode Ending
 
 # 11/10/2017
 * Fixed Pause Menu pausing time in Online

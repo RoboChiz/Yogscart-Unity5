@@ -42,7 +42,7 @@ public class KartPositionPass : NetworkBehaviour
     {
         if (isMine)
         {
-            TransmitPosition();
+            CmdTransmitPosition(transform.position, transform.rotation);
         }
         else
         {
@@ -65,9 +65,10 @@ public class KartPositionPass : NetworkBehaviour
         }
     }
 
-    void TransmitPosition()
+    [Command]
+    void CmdTransmitPosition(Vector3 _pos, Quaternion _rot)
     {
-        syncPos = transform.position;
-        syncRot = transform.rotation;
+        syncPos = _pos;
+        syncRot = _rot;
     }
 }

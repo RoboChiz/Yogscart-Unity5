@@ -20,7 +20,7 @@ abstract public class GameMode : MonoBehaviour
 
     //Player Information
     protected float maxPlayers = 12f;
-    protected List<Racer> racers;
+    public List<Racer> racers { get; protected set; }
 
     //Match Information
     private float startTimer;
@@ -337,7 +337,6 @@ abstract public class GameMode : MonoBehaviour
     }
 
     public abstract void HostUpdate();
-
     public abstract void ClientUpdate();
 
     protected void ForceStop()
@@ -371,6 +370,8 @@ abstract public class GameMode : MonoBehaviour
     }
 
     public virtual void Restart() { }
+    public virtual void CleanUp() { }
+    public virtual void OnReturnLobby() { }
 
     protected IEnumerator QuitGame()
     {

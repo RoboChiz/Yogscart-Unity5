@@ -16,6 +16,8 @@ namespace YogscartNetwork
         public bool isRacing { get; protected set; }
         protected Coroutine characterSelectCoroutine;
 
+        public GameMode gameMode;
+
         //Used by Timer
         public float timeLeft = -1f;
         private float rotation = 0f, timerSize = 0f;
@@ -77,6 +79,7 @@ namespace YogscartNetwork
                 client.RegisterHandler(UnetMessages.changeGamemode, OnChangeGamemode);
                 client.RegisterHandler(UnetMessages.timerMsg, OnTimer);
                 client.RegisterHandler(UnetMessages.clearMsg, OnClear);
+                client.RegisterHandler(UnetMessages.cleanUpMsg, OnGamemodeCleanup);
                 client.RegisterHandler(UnetMessages.returnLobbyMsg, OnReturnLobby);
                 client.RegisterHandler(UnetMessages.raceGamemodeMsg, OnGamemodeRace);
             }
@@ -314,19 +317,37 @@ namespace YogscartNetwork
         }
 
         //------------------------------------------------------------------------------
-        public void OnReturnLobby(NetworkMessage netMsg) { OnReturnLobby(); }
-        public void OnReturnLobby()
+        public void OnReturnLobby(NetworkMessage netMsg) { StartCoroutine(OnReturnLobby()); }
+        public IEnumerator OnReturnLobby()
         {
-            //Clear up Current Gamemode
+            CurrentGameData.blackOut = true;
+            yield return new WaitForSeconds(0.5f);
 
-            //Load the lobby level
+            gameMode.OnReturnLobby();
+
+            //Load the Level
+            AsyncOperation sync = SceneManager.LoadSceneAsync("Lobby");
+            while (!sync.isDone)
+                yield return null;
 
             //Show Input Manager
             InputManager.SetInputState(InputManager.InputState.LockedShowing);
 
+            CurrentGameData.blackOut = false;
+            yield return new WaitForSeconds(0.5f);
+
             //Go to the lobby
             networkSelection.ChangeState(NetworkSelection.MenuState.Lobby);
+        }
 
+        public void OnGamemodeCleanup(NetworkMessage netMsg) { OnGamemodeCleanup(); }
+        public void OnGamemodeCleanup()
+        {
+            //Clear up Current Gamemode
+            gameMode.CleanUp();
+
+            //Destroy Component
+            Destroy(gameMode);
         }
 
         //------------------------------------------------------------------------------
@@ -335,10 +356,10 @@ namespace YogscartNetwork
         public void OnGamemodeRace(NetworkMessage netMsg) { OnGamemodeRace(); }
         public GameMode OnGamemodeRace()
         {
-            NetworkRace comp = gameObject.AddComponent<NetworkRace>();
-            comp.StartGameMode();
+            gameMode = gameObject.AddComponent<NetworkRace>();
+            gameMode.StartGameMode();
 
-            return comp;
+            return gameMode;
         }
 
         public void OnGamemodeBattle(NetworkMessage netMsg) { OnGamemodeBattle(); }

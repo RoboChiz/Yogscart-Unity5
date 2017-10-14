@@ -19,6 +19,7 @@ public static class UnetMessages
     public const short timerMsg                 = 1012;
     public const short clearMsg                 = 1013;
     public const short returnLobbyMsg           = 1014;
+    public const short cleanUpMsg               = 1015;
 
     //Gamemode Spawning Network Messages
     public const short raceGamemodeMsg          = 1050;
@@ -117,6 +118,25 @@ public class PlayerInfoMessage : MessageBase //1006
         hat = _msg.hat;
         kart = _msg.kart;
         wheel = _msg.wheel;
+    }
+}
+
+//Sent to Client, contains all info on a Racing Player
+public class DisplayRacerMessage : MessageBase
+{
+    public string displayName;
+    public int character, points;
+    public float timer;
+
+
+    public DisplayRacerMessage() { }
+
+    public DisplayRacerMessage(DisplayRacer _playerInfo)
+    {
+        displayName = _playerInfo.name;
+        character = _playerInfo.character;
+        points = _playerInfo.points;
+        timer = _playerInfo.timer;
     }
 }
 

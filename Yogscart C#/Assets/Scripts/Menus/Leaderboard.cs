@@ -346,8 +346,11 @@ public class Leaderboard : MonoBehaviour
         }
 
         //Render Continue Icon in Corner
-        GUIHelper.OutLineLabel(new Rect(BoardRect.width - 175, BoardRect.height - 90, 150, 50), "Next", 2);
-        GUI.DrawTexture(new Rect(BoardRect.width - 225, BoardRect.height - 90, 50, 50), Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].inputType == InputType.Keyboard) ? "Return" : "A")), ScaleMode.ScaleToFit);
+        if (!(race is NetworkRace))
+        {
+            GUIHelper.OutLineLabel(new Rect(BoardRect.width - 175, BoardRect.height - 90, 150, 50), "Next", 2);
+            GUI.DrawTexture(new Rect(BoardRect.width - 225, BoardRect.height - 90, 50, 50), Resources.Load<Texture2D>("UI/Options/" + ((InputManager.controllers[0].inputType == InputType.Keyboard) ? "Return" : "A")), ScaleMode.ScaleToFit);
+        }
 
         GUI.EndGroup();
 
@@ -378,25 +381,37 @@ public class DisplayRacer
     const float slideTime = 0.5f;
 
     //All Human Players should have a name
-    public DisplayRacer(int po, string n, int c, int p, float t, bool f)
+    public DisplayRacer(int _position, string _name, int _character, int _points, float _timer, bool _finished)
     {
-        name = n;
-        character = c;
-        points = p;
-        timer = t;
+        name = _name;
+        character = _character;
+        points = _points;
+        timer = _timer;
         human = 0;
-        position = po;
-        finished = f;
+        position = _position;
+        finished = _finished;
     }
 
     //All Human Players should have without name
-    public DisplayRacer(int po, int h, int c, int p, float t)
+    public DisplayRacer(int _position, int _human, int _character, int _points, float _timer)
     {
-        human = h;
-        character = c;
-        points = p;
-        timer = t;
-        position = po;
+        human = _human;
+        character = _character;
+        points = _points;
+        timer = _timer;
+        position = _position;
+        finished = true;
+    }
+
+    //All Online Players should have a name
+    public DisplayRacer(int _position, string _name, int _character, int _points, float _timer)
+    {
+        name = _name;
+        character = _character;
+        points = _points;
+        timer = 0;
+        human = -1;
+        position = _position;
         finished = true;
     }
 
