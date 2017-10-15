@@ -36,7 +36,6 @@ public class UnetHost : UnetClient
         if (runClient)
         {
             base.RegisterHandlers();
-            ClientScene.Ready(client.connection);
         }
             
         NetworkServer.RegisterHandler(UnetMessages.versionMsg, OnVersion);
@@ -403,6 +402,8 @@ public class UnetHost : UnetClient
 
         choosingCount = 0;
         currentState = GameState.Lobby;
+
+        //Unready Everyone
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)

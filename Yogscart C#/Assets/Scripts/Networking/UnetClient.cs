@@ -74,7 +74,7 @@ public class UnetClient : NetworkManager
         client.RegisterHandler(UnetMessages.countdownMsg, OnCountdown);
         client.RegisterHandler(UnetMessages.unlockKartMsg, OnUnlockKart);
         client.RegisterHandler(UnetMessages.returnLobbyMsg, OnReturnLobby);
-        client.RegisterHandler(UnetMessages.loadLevelID, OnLoadLevelID);
+        client.RegisterHandler(UnetMessages.loadLevelIDMsg , OnLoadLevelID);
 
         //Register all Power Ups as Spawn Items
         foreach (PowerUp powerUp in gd.powerUps)
@@ -110,9 +110,7 @@ public class UnetClient : NetworkManager
 
     // Called when a host accepts the client (Correct Version .etc)
     public void OnClientAccepted(NetworkMessage netMsg)
-    {
-        ClientScene.Ready(netMsg.conn);
-
+    {    
         AcceptedMessage msg = netMsg.ReadMessage<AcceptedMessage>();
 
         if (msg.playerUp)

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -20,12 +21,29 @@ public class NetworkRace : Race
     private List<Vote> votes;
     int cup, track;
 
+    const int voteTimer = 15;
+
     //Local Racer
     public Racer localRacer;
     public bool doneFinish;
 
     public bool lastSixtySecondsSent = false;
     public float lastSixtySecondStartTime;
+
+    //Used by Spectators
+    private bool isSpectator;
+    private Camera replayCamera;
+    private KartCamera replayKartCamera;
+    private OrbitCam orbitCam;
+    private FreeCam freeCam;
+    private List<KartMovement> spectatorTargets;
+
+    private int target;
+    private float controlAlpha = 0f;
+    private bool showUI;
+
+    public enum CameraMode { PlayerCam, TargetCam, FreeCam, TrackCam }
+    public CameraMode cameraMode = CameraMode.PlayerCam;
 
     //Used to setup the gamemodes
     public override void StartGameMode()
@@ -66,6 +84,7 @@ public class NetworkRace : Race
             client.client.RegisterHandler(UnetMessages.positionMsg, OnRecievePosition);
             client.client.RegisterHandler(UnetMessages.finishRaceMsg, OnFinishRace);
             client.client.RegisterHandler(UnetMessages.leaderboardPosMsg, OnLeaderboardPos);
+            client.client.RegisterHandler(UnetMessages.spectateMsg, OnSpectator);
         }
         else
         {
@@ -90,6 +109,7 @@ public class NetworkRace : Race
             client.client.UnregisterHandler(UnetMessages.positionMsg);
             client.client.UnregisterHandler(UnetMessages.finishRaceMsg);
             client.client.UnregisterHandler(UnetMessages.leaderboardPosMsg);
+            client.client.UnregisterHandler(UnetMessages.spectateMsg);
         }
         else
         {
@@ -263,18 +283,18 @@ public class NetworkRace : Race
         yield return new WaitForSeconds(0.2f);
 
         //Send Timer
-        NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(15));
-        client.OnTimer(15);
+        NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(voteTimer));
+        client.OnTimer(voteTimer);
 
         //Wait 10 seconds or until a votes have been collected
         float startTime = Time.time;
-        while (votes.Count < racers.Count && Time.time - startTime < 15)
+        while (votes.Count < racers.Count && Time.time - startTime < voteTimer)
         {
             yield return null;
         }
 
         //Cancel Clock if it is still there
-        if (Time.time - startTime < 10)
+        if (Time.time - startTime < voteTimer)
         {
             NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(-1));
             client.OnTimer(-1);
@@ -478,7 +498,7 @@ public class NetworkRace : Race
 
     private void OnRecieveTrackVote(int _cup, int _track)
     {
-        votes.Add(new Vote(_cup, track));
+        votes.Add(new Vote(_cup, _track));
 
         //Actually process data
         NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, new TrackVoteMessage(_cup, _track));
@@ -495,7 +515,7 @@ public class NetworkRace : Race
         {
             gameObject.AddComponent<VotingScreen>();
             //Only show voting screen if not deciding on a track
-            if (!FindObjectOfType<LevelSelect>().enabled)
+            if (FindObjectOfType<LevelSelect>() == null || !FindObjectOfType<LevelSelect>().enabled)
             {
                 FindObjectOfType<VotingScreen>().ShowScreen();
             }
@@ -547,10 +567,16 @@ public class NetworkRace : Race
         FindObjectOfType<SoundManager>().SetMusicPitch(1f);
 
         //Load the Level
-        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[cup].tracks[track].sceneID);
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
 
         while (!sync.isDone)
             yield return null;
+
+        //Tell Server we're ready for spawned objects and stuff
+        if (!isHost)
+            client.client.Send(UnetMessages.networkClientReadyMsg, new EmptyMessage());
+        else
+            host.OnNetworkClientReady(client.client.connection);
 
         //Let each gamemode do it's thing
         OnLevelLoad();
@@ -608,6 +634,12 @@ public class NetworkRace : Race
 
         //Do the intro to the Map
         yield return StartCoroutine(DoIntro());
+
+        //If we Spectators
+        if(localRacer == null)
+        {
+            StartCoroutine(ActualOnSpectator());
+        }
 
         //Show what race we're on
         KartMovement.beQuiet = false;
@@ -927,6 +959,9 @@ public class NetworkRace : Race
     }
     public void OnLeaderboardPos(DisplayRacerMessage _displayRacer)
     {
+        //Lock the Pause Menu
+        PauseMenu.canPause = false;
+
         Leaderboard lb = FindObjectOfType<Leaderboard>();
         if (lb == null)
         {
@@ -938,4 +973,230 @@ public class NetworkRace : Race
         DisplayRacer displayRacer = new DisplayRacer(lb.racers.Count, _displayRacer.displayName, _displayRacer.character, _displayRacer.points, _displayRacer.timer);
         lb.racers.Add(displayRacer);
     }
+
+    //------------------------------------------------------------------------------
+    //If a client joins during this gamemode
+    public override void OnServerConnect(NetworkConnection conn)
+    {
+        //Tell Client to Load Spectator System
+        NetworkServer.SendToClient(conn.connectionId, UnetMessages.spectateMsg, new EmptyMessage());
+    }
+
+    //------------------------------------------------------------------------------
+    public void OnSpectator(NetworkMessage netMsg)
+    {
+        if (localRacer == null)
+        {
+            OnUnlockKart(null);
+            StartCoroutine(ActualOnSpectator());
+        }
+    }
+
+    private IEnumerator ActualOnSpectator()
+    {
+        //Set IsSpectator
+        isSpectator = true;
+
+        //Wait for level to load
+        while (!FindObjectOfType<YogscartNetwork.Client>().levelSync.isDone)
+            yield return null;
+
+        //Get all Targets
+        spectatorTargets = FindObjectsOfType<KartMovement>().ToList();
+
+        //Create Debug Kart Camera
+        GameObject camera = new GameObject("Camera");
+
+        camera.AddComponent<AudioListener>();
+        replayCamera = camera.GetComponent<Camera>();
+
+        replayKartCamera = camera.AddComponent<KartCamera>();
+        target = 0;
+
+        //Make a Kart Camera Rotater and turn it off
+        orbitCam = camera.AddComponent<OrbitCam>();
+        orbitCam.enabled = false;
+
+        //Make a Free Cam
+        freeCam = camera.AddComponent<FreeCam>();
+        freeCam.enabled = false;
+
+        //Turn on effects
+        spectatorTargets[target].toProcess.Add(replayCamera);
+
+        CurrentGameData.blackOut = false;
+        yield return new WaitForSeconds(0.5f);
+
+        PauseMenu.canPause = true;
+        showUI = true;
+
+        while (!finished)
+        {
+            SpectatorUpdate();
+            yield return null;
+        }
+
+        showUI = false;
+    }
+
+    //------------------------------------------------------------------------------
+    public void SpectatorUpdate()
+    {
+        bool submitBool = false, hideBool = false;
+        int tabChange = 0;
+
+        submitBool = InputManager.controllers[0].GetButtonWithLock("Submit");
+        hideBool = InputManager.controllers[0].GetButtonWithLock("HideUI");
+        tabChange = InputManager.controllers[0].GetIntInputWithLock("ChangeTarget");
+
+        if (submitBool)
+        {
+            //Change Camera Mode
+            cameraMode = (CameraMode)(MathHelper.NumClamp((int)cameraMode + 1, 0, 3));
+            ActivateCameraMode();
+        }
+
+        if (tabChange != 0)
+        {
+            //Remove Camera to new target
+            spectatorTargets[target].toProcess.Remove(replayCamera);
+
+            //Swap Target
+            target = MathHelper.NumClamp(target + tabChange, 0, spectatorTargets.Count);
+
+            //Add Camera to new target
+            spectatorTargets[target].toProcess.Add(replayCamera);
+        }
+
+        if (hideBool)
+        {
+            //Hide UI
+            showUI = !showUI;
+        }
+
+        //Show Controls UI
+        if (showUI)
+            controlAlpha = Mathf.Clamp(controlAlpha + (Time.deltaTime * 3f), 0f, 1f);
+        else
+            controlAlpha = Mathf.Clamp(controlAlpha - (Time.deltaTime * 3f), 0f, 1f);
+
+        //Control Camera Targets
+        replayKartCamera.target = spectatorTargets[target].kartBody;
+        replayKartCamera.rotTarget = spectatorTargets[target].transform;
+
+        orbitCam.target = spectatorTargets[target].kartBody;
+
+        //Camera Controls
+        switch (cameraMode)
+        {
+            case CameraMode.PlayerCam:
+                replayKartCamera.distance = 6;
+                replayKartCamera.height = 2;
+                replayKartCamera.playerHeight = 2;
+                replayKartCamera.angle = 0;
+                replayKartCamera.sideAmount = 0;
+                break;
+        }
+    }
+
+    private void ActivateCameraMode()
+    {
+        //Turn on/off target cam
+        if (cameraMode == CameraMode.TargetCam)
+            orbitCam.enabled = true;
+        else
+            orbitCam.enabled = false;
+
+        if (cameraMode == CameraMode.PlayerCam)
+            replayKartCamera.enabled = true;
+        else
+            replayKartCamera.enabled = false;
+
+        if (cameraMode == CameraMode.FreeCam)
+        {
+            freeCam.enabled = true;
+            freeCam.SetStartRotation();
+
+            //Remove self from target
+            spectatorTargets[target].toProcess.Remove(replayCamera);
+
+            //Turn off effects
+            FindObjectOfType<EffectsManager>().ToggleReapply();
+        }
+        else if (freeCam.enabled)
+        {
+            freeCam.enabled = false;
+
+            //Add self from target
+            spectatorTargets[target].toProcess.Add(replayCamera);
+        }
+    }
+
+    public override void OnGUI()
+    {
+        base.OnGUI();
+
+        if (isSpectator)
+        {
+            GUI.matrix = GUIHelper.GetMatrix();
+            GUI.skin = Resources.Load<GUISkin>("GUISkins/Leaderboard");
+
+            //Show Controls
+            if (controlAlpha > 0f)
+            {
+                GUIHelper.SetGUIAlpha(controlAlpha);
+
+                GUIStyle label = new GUIStyle(GUI.skin.label);
+                label.fontSize = (int)(label.fontSize * 0.7f);
+
+                //Cam Mode
+                GUI.Label(new Rect(10, 10, 1900, 50), "Camera Mode: " + cameraMode.ToString(), label);
+
+                if (cameraMode != CameraMode.FreeCam)
+                    GUI.Label(new Rect(10, 60, 1900, 50), "Tracking: " + gd.characters[racers[target].character].name + ((racers[target].Human == -1) ? " (AI)"
+                        : " (Player #" + (racers[target].Human + 1).ToString() + ")"), label);
+
+                //Controls
+                if (InputManager.controllers[0].inputType == InputType.Xbox360)
+                {
+                    switch (cameraMode)
+                    {
+                        case CameraMode.PlayerCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A", label);
+                            break;
+                        case CameraMode.TargetCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A       Rotate Camera: RS      Zoom: LS", label);
+                            break;
+                        case CameraMode.TrackCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Target: LB/RB     Change Camera Mode: A", label);
+                            break;
+                        case CameraMode.FreeCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: Y     Change Camera Mode: A       Move Camera : LS LT/RT        Rotate Camera: RS", label);
+                            break;
+                    }
+
+                }
+                else if (InputManager.controllers[0].inputType == InputType.Keyboard)
+                {
+                    switch (cameraMode)
+                    {
+                        case CameraMode.PlayerCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return", label);
+                            break;
+                        case CameraMode.TargetCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return       Rotate Camera: RMB      Zoom: Mouse Wheel", label);
+                            break;
+                        case CameraMode.TrackCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Target: Z/X     Change Camera Mode: Return", label);
+                            break;
+                        case CameraMode.FreeCam:
+                            GUI.Label(new Rect(10, 1000, 1900, 50), "Hide UI: H     Change Camera Mode: Return       Move Camera : WASDQE         Rotate Camera: RMB", label);
+                            break;
+                    }
+
+                }
+            }
+        }
+    }
+
 }

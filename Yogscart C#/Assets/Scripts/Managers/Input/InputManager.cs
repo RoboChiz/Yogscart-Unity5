@@ -37,12 +37,16 @@ public class InputManager : MonoBehaviour
         //Load all of the available configs
         LoadAllControllerLayouts();
 
-        //Debug
-        inputState = InputState.Any;
+#if UNITY_EDITOR
+        inputState = localInput;
+        toggleState = localToggle;
+#else
+        inputState = InputState.Locked;
+#endif
 
     }
 
-void Update()
+    void Update()
     {
         //Update Local Vals for Inspector
         localInput = inputState;

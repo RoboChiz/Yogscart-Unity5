@@ -2,6 +2,17 @@
 
 ## Changelog : Started 04/08/2016
 
+# 15/10/2017
+* Fixed voting timer not hiding when all votes recieved
+* Fixed selected track from vote not being loaded
+* Fixed Change Character not working in new Lobby
+* Fixed Gamemodes persisting when not needed in main menu
+* Fixed MapViewer persisting when not needed
+* Updated to Unity 2017.2 (Which fixed wierd Controller Bug)
+* Made sure Inputs are locked inside of online (Except for character changing)
+* Fixed Pasue Menu not locking at end of game
+* Online Stuff now takes place in a seperate "Lobby" Scene
+
 # 14/10/2017
 * Fixed Host not recognising Client Ready Message
 * Made Music go faster on last lap of Race in Online

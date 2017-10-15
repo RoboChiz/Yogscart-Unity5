@@ -3,38 +3,70 @@ guid: a49525bba4e2e2948acb250a2b0fc85a
 timeCreated: 1507845033
 licenseType: Free
 ModelImporter:
-  serializedVersion: 21
+  serializedVersion: 22
   fileIDToRecycleName:
     100000: //RootNode
     100002: CliffSide
     100004: Road
     100006: UpperSection
     100008: Shortcut
+    100010: Fence_1
+    100012: LandSection_1
+    100014: LandSection_2
+    100016: LowerSection
+    100018: ToDelete
     400000: //RootNode
     400002: CliffSide
     400004: Road
     400006: UpperSection
     400008: Shortcut
+    400010: Fence_1
+    400012: LandSection_1
+    400014: LandSection_2
+    400016: LowerSection
+    400018: ToDelete
     2300000: //RootNode
     2300002: CliffSide
     2300004: Road
     2300006: UpperSection
     2300008: Shortcut
+    2300010: Fence_1
+    2300012: LandSection_1
+    2300014: LandSection_2
+    2300016: LowerSection
+    2300018: ToDelete
     3300000: //RootNode
     3300002: CliffSide
     3300004: Road
     3300006: UpperSection
     3300008: Shortcut
+    3300010: Fence_1
+    3300012: LandSection_1
+    3300014: LandSection_2
+    3300016: LowerSection
+    3300018: ToDelete
     4300000: CarnivalDelBanjo
     4300002: Road
     4300004: CliffSide
     4300006: UpperSection
     4300008: Shortcut
+    4300010: LowerSection
+    4300012: Fence_1
+    4300014: LandSection_2
+    4300016: LandSection_1
+    4300018: ToDelete
     9500000: //RootNode
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: No Name
+    second: {fileID: 2100000, guid: 848c000fd237dba47ba754b91dfcd394, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
     materialSearch: 1
+    materialLocation: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
@@ -47,6 +79,7 @@ ModelImporter:
     animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
     animationCompression: 1
     animationRotationError: 0.5
     animationPositionError: 0.5

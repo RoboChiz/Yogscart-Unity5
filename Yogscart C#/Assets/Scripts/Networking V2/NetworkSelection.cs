@@ -26,7 +26,7 @@ public class NetworkSelection : MonoBehaviour
     private CurrentGameData gd;
 
     //Host Settings
-    int serverPort = 7777;
+    int serverPort = 25000;
     string serverPassword = "";
 
     //Server Settings
@@ -271,17 +271,20 @@ public class NetworkSelection : MonoBehaviour
                         guiOptionsCount++;
 
                         //Change Character
-                        Rect changeLayoutRect = new Rect(50, 170, 800, 50);
-                        GUIShape.RoundedRectangle(changeLayoutRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
-                        GUIHelper.LeftRectLabel(changeLayoutRect, 1f, "  Change Character/Kart", (currentSelection == 1) ? Color.yellow : Color.white);
+                        if (client.isRacing)
+                        {
+                            Rect changeLayoutRect = new Rect(50, 170, 800, 50);
+                            GUIShape.RoundedRectangle(changeLayoutRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+                            GUIHelper.LeftRectLabel(changeLayoutRect, 1f, "  Change Character/Kart", (currentSelection == 1) ? Color.yellow : Color.white);
 
-                        if (Cursor.visible && changeLayoutRect.Contains(GUIHelper.GetMousePosition()))
-                            currentSelection = 1;
+                            if (Cursor.visible && changeLayoutRect.Contains(GUIHelper.GetMousePosition()))
+                                currentSelection = 1;
 
-                        if (GUI.Button(changeLayoutRect, "") && !locked && guiAlpha == 1f)
-                            ChangeLayout();
+                            if (GUI.Button(changeLayoutRect, "") && !locked && guiAlpha == 1f)
+                                ChangeLayout();
 
-                        guiOptionsCount++;
+                            guiOptionsCount++;
+                        }
                     }
                     else
                     {
@@ -402,7 +405,7 @@ public class NetworkSelection : MonoBehaviour
 
     void Update()
     {
-        if (!Cursor.visible && guiAlpha == 1f && !locked)
+        if (!Cursor.visible && guiAlpha == 1f && !locked && !CurrentGameData.blackOut)
         {
             int vertical = 0, horizontal = 0;
             bool submitBool = false, cancelBool = false, editBool = false, deleteBool = false;

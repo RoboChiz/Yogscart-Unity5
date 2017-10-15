@@ -26,10 +26,10 @@ public class CharacterSelect : MonoBehaviour
     private const float cursorSpeed = 5f, rotateSpeed = 60f;
 
     public Transform[] platforms;
-    public bool[] ready, kartSelected, showLayout;
+    private bool[] ready, kartSelected, showLayout;
 
-    public CharacterSelectLoadOut[] loadedChoice;
-    public Transform[] loadedModels;
+    private CharacterSelectLoadOut[] loadedChoice;
+    private Transform[] loadedModels;
 
     //Content
     private Texture2D nameList, rotateKey, rotateXbox;
@@ -44,11 +44,13 @@ public class CharacterSelect : MonoBehaviour
     private bool sliding = false;
 
     private InputManager.InputState lastInputState;
+    private InputManager.ToggleState lastToggleState;
 
     public IEnumerator ShowCharacterSelect(csState state)
     {
         loading = true;
         lastInputState = InputManager.inputState;
+        lastToggleState = InputManager.toggleState;
 
         affectAllGUIwithAlpha = true;
 
@@ -109,6 +111,9 @@ public class CharacterSelect : MonoBehaviour
         }
 
         sliding = false;
+
+        InputManager.SetInputState(lastInputState);
+        InputManager.SetToggleState(lastToggleState);
 
         state = nState;
 
@@ -171,7 +176,6 @@ public class CharacterSelect : MonoBehaviour
             switch (state)
             {
                 case csState.Character:
-                    InputManager.SetInputState(lastInputState);
                     InputManager.SetToggleState(InputManager.ToggleState.Any);
 
                     GUI.Label(new Rect(10, 10, 1920, 95), "Select A Character");

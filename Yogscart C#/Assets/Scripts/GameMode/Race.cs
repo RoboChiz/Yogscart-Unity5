@@ -58,8 +58,11 @@ public abstract class Race : GameMode
         sm = FindObjectOfType<SoundManager>();
 
         //Create a Map Viewer
-        mapViewer = gameObject.AddComponent<MapViewer>();
-        mapViewer.HideMapViewer();
+        if (GetComponent<MapViewer>() == null)
+        {
+            mapViewer = gameObject.AddComponent<MapViewer>();
+            mapViewer.HideMapViewer();
+        }
 
         //Setup AI
         aiEnabled = enableAI;
@@ -149,6 +152,9 @@ public abstract class Race : GameMode
                 }
 
                 Debug.Log("It didn't worked");
+
+                //Clean Up
+                Destroy(mapViewer);
 
                 //Stop all Gamemode Coroutines
                 ForceStop();

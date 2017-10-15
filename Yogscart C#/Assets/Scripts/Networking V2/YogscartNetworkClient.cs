@@ -14,6 +14,8 @@ namespace YogscartNetwork
 
         //If we're one of the people currentely racing
         public bool isRacing { get; protected set; }
+        private bool isGoingToCharacterSelect;
+
         protected Coroutine characterSelectCoroutine;
 
         public GameMode gameMode;
@@ -22,6 +24,9 @@ namespace YogscartNetwork
         public float timeLeft = -1f;
         private float rotation = 0f, timerSize = 0f;
         Texture2D timerIcon;
+
+        //Used by Level Loading
+        public AsyncOperation levelSync { get; private set; }
 
         //------------------------------------------------------------------------------
         //Timer Code
@@ -82,6 +87,7 @@ namespace YogscartNetwork
                 client.RegisterHandler(UnetMessages.cleanUpMsg, OnGamemodeCleanup);
                 client.RegisterHandler(UnetMessages.returnLobbyMsg, OnReturnLobby);
                 client.RegisterHandler(UnetMessages.raceGamemodeMsg, OnGamemodeRace);
+                client.RegisterHandler(UnetMessages.loadLevelIDMsg, OnLoadLevelID);
             }
 
             //Messages for all Clients and Host
@@ -92,6 +98,10 @@ namespace YogscartNetwork
                 if (powerUp.onlineModel != null)
                     ClientScene.RegisterPrefab(powerUp.onlineModel.gameObject);
             }
+
+            //Hide Input Manager
+            InputManager.SetInputState(InputManager.InputState.Locked);
+            InputManager.SetToggleState(InputManager.ToggleState.Locked);
         }
 
         //------------------------------------------------------------------------------
@@ -135,7 +145,24 @@ namespace YogscartNetwork
         private void OnLoadLevelID(NetworkMessage netMsg)
         {
             StringMessage msg = netMsg.ReadMessage<StringMessage>();
-            SceneManager.LoadSceneAsync(msg.value);
+            StartCoroutine(ActualOnLoadLevelID(msg.value));
+        }
+
+        private IEnumerator ActualOnLoadLevelID(string _id)
+        {
+            //Cancel Previous Level Loading
+            while (levelSync != null && !levelSync.isDone)
+            {
+                yield return null;
+            }
+            
+            levelSync = SceneManager.LoadSceneAsync(_id);
+
+            //Wait for Level Loading
+            while (levelSync != null && !levelSync.isDone)
+            {
+                yield return null;
+            }
         }
 
         //------------------------------------------------------------------------------
@@ -163,6 +190,31 @@ namespace YogscartNetwork
             PauseMenu.canPause = false;
             FindObjectOfType<PauseMenu>().HidePause();
 
+            StartCoroutine(ActualEndClient(message));
+        }
+
+        private IEnumerator ActualEndClient(string message)
+        {
+            CurrentGameData.blackOut = true;
+            yield return new WaitForSeconds(0.5f);
+
+            //Cancel Previous Level Loading
+            while (levelSync != null && !levelSync.isDone)
+            {
+                yield return null;
+            }
+
+            //Reload Main Menu
+            levelSync = SceneManager.LoadSceneAsync("Main_Menu");
+
+            while (levelSync != null && !levelSync.isDone)
+            {
+                yield return null;
+            }
+
+            //Set Main Menu to Current State
+            FindObjectOfType<MainMenu>().ReturnFromOnline();
+
             if (message != null && message != "")
             {
                 networkSelection.Popup(message);
@@ -173,25 +225,24 @@ namespace YogscartNetwork
             }
 
             //Kill itself
-            DestroyImmediate(GetComponent<YogscartNetwork.Client>());
+            DestroyImmediate(GetComponent<Client>());
+
+            yield return new WaitForSeconds(1f);
+            CurrentGameData.blackOut = false;
         }
 
         //------------------------------------------------------------------------------
         // Called when a host accepts the client (Correct Version .etc)
         public void OnClientAccepted(NetworkMessage netMsg)
-        {
-            ClientScene.Ready(netMsg.conn);
-
+        {          
             AcceptedMessage msg = netMsg.ReadMessage<AcceptedMessage>();
 
             if (msg.playerUp)
             {
+                isGoingToCharacterSelect = true;
+
                 //Select a character if we've been asked to
                 StartCoroutine(ActualDoCharacterSelect());
-            }
-            else if (msg.currentState == GameState.Lobby)
-            {
-                networkSelection.ChangeState(NetworkSelection.MenuState.Lobby);
             }
         }
 
@@ -203,11 +254,19 @@ namespace YogscartNetwork
 
         private IEnumerator ActualDoCharacterSelect()
         {
+            //Cancel Previous Level Loading
+            while (SceneManager.GetActiveScene().name != "Lobby")
+            {
+                yield return null;
+            }
+
             CharacterSelect cs = FindObjectOfType<CharacterSelect>();
             cs.enabled = true;
 
             networkSelection.ChangeState(NetworkSelection.MenuState.CharacterSelect);
             yield return cs.StartCoroutine("ShowCharacterSelect", CharacterSelect.csState.Character);
+
+            InputManager.SetInputState(InputManager.InputState.LockedShowing);
 
             //Wait until all characters have been selected
             while (cs.State != CharacterSelect.csState.Finished && cs.State != CharacterSelect.csState.Off)
@@ -223,7 +282,6 @@ namespace YogscartNetwork
                 if (!isRacing) //Don't send the rejection message if we've correctely set our character select before
                 {                    
                     client.Send(UnetMessages.rejectPlayerUpMsg, new EmptyMessage());
-                    yield break;
                 }
             }
             else
@@ -312,6 +370,7 @@ namespace YogscartNetwork
 
             //Hide Input Manager
             InputManager.SetInputState(InputManager.InputState.Locked);
+            InputManager.SetToggleState(InputManager.ToggleState.Locked);
 
             networkSelection.ChangeState(NetworkSelection.MenuState.Gamemode);
         }
@@ -323,21 +382,34 @@ namespace YogscartNetwork
             CurrentGameData.blackOut = true;
             yield return new WaitForSeconds(0.5f);
 
-            gameMode.OnReturnLobby();
+            if (gameMode != null)
+            {
+                gameMode.OnReturnLobby();
+            }
+
+            //Cancel Previous Level Loading
+            while(levelSync != null && !levelSync.isDone)
+            {
+                yield return null;
+            }
 
             //Load the Level
-            AsyncOperation sync = SceneManager.LoadSceneAsync("Lobby");
-            while (!sync.isDone)
+            levelSync = SceneManager.LoadSceneAsync("Lobby");
+            while (levelSync != null && !levelSync.isDone)
                 yield return null;
 
-            //Show Input Manager
-            InputManager.SetInputState(InputManager.InputState.LockedShowing);
+            //Go to the lobby
+            if (!isGoingToCharacterSelect)
+            {
+                networkSelection.ChangeState(NetworkSelection.MenuState.Lobby);
+            }
+            else
+            {
+                isGoingToCharacterSelect = false;
+            }
 
             CurrentGameData.blackOut = false;
             yield return new WaitForSeconds(0.5f);
-
-            //Go to the lobby
-            networkSelection.ChangeState(NetworkSelection.MenuState.Lobby);
         }
 
         public void OnGamemodeCleanup(NetworkMessage netMsg) { OnGamemodeCleanup(); }

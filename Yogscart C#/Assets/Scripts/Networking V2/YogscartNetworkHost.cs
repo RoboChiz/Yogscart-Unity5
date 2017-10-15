@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using System.Collections.Generic;
 using System;
+using UnityEngine.SceneManagement;
 
 namespace YogscartNetwork
 {
@@ -56,6 +57,13 @@ namespace YogscartNetwork
             NetworkServer.RegisterHandler(UnetMessages.rejectPlayerUpMsg, OnRejection);
             NetworkServer.RegisterHandler(UnetMessages.playerInfoMsg, OnPlayerUp);
             NetworkServer.RegisterHandler(UnetMessages.playerInfoUpdateMsg, OnPlayerUpdate);
+
+            //Hide Input Manager
+            InputManager.SetInputState(InputManager.InputState.Locked);
+            InputManager.SetToggleState(InputManager.ToggleState.Locked);
+
+            //Load the Lobby
+            StartCoroutine(OnReturnLobby());
         }
 
         public override void EndClient(string message)
@@ -254,7 +262,7 @@ namespace YogscartNetwork
 
             //If we've got here then player is a cheater
             KickPlayer(conn);
-        }
+        }      
 
         //------------------------------------------------------------------------------
         // Message Delegates
@@ -286,13 +294,17 @@ namespace YogscartNetwork
         private IEnumerator AcceptPlayer(NetworkConnection conn)
         {
             Debug.Log("AcceptPlayer " + conn.address);
-            AcceptedMessage ackMsg = new AcceptedMessage();
+            ClientScene.Ready(conn);
 
+            AcceptedMessage ackMsg = new AcceptedMessage();
+       
             //Check to see if Client can join players
             if (currentState != GameState.Lobby || finalPlayers.Count >= 12)
             {
                 //Add Player to Waiting List
                 waitingPlayers.Add(conn);
+
+                StartCoroutine(ActualUpdateAllClientPlayerListsOnConn(conn));
             }
             else
             {
@@ -301,12 +313,32 @@ namespace YogscartNetwork
                 possiblePlayers.Add(conn);
             }
 
+            //Wait for lobby message to be recieved
+            yield return new WaitForSeconds(0.2f);
+
             //Send the ACK
             NetworkServer.SendToClient(conn.connectionId, UnetMessages.acceptedMsg, ackMsg);
 
             //Wait for message to be recieved
             yield return new WaitForSeconds(0.2f);
 
+            //Handle Client's that Join
+            switch (currentState)
+            {
+                case GameState.Lobby:
+                    NetworkServer.SendToClient(conn.connectionId, UnetMessages.returnLobbyMsg, new EmptyMessage());
+                    break;
+                case GameState.Loading:
+                    NetworkServer.SendToClient(conn.connectionId, UnetMessages.returnLobbyMsg, new EmptyMessage());
+                    break;
+                case GameState.Game:
+                    //Load whatever level we're on now
+                    NetworkServer.SendToClient(conn.connectionId, UnetMessages.loadLevelIDMsg, new StringMessage(SceneManager.GetActiveScene().name));
+
+                    //Handle Spectator for this gamemode
+                    gameMode.OnServerConnect(conn);
+                    break;
+            }
         }
 
         //------------------------------------------------------------------------------
@@ -318,6 +350,8 @@ namespace YogscartNetwork
             {
                 KickPlayer(netMsg.conn);
             }
+
+            StartCoroutine(ActualUpdateAllClientPlayerListsOnConn(netMsg.conn));
 
             //Add Player to Waiting List
             possiblePlayers.Remove(netMsg.conn);
@@ -407,6 +441,20 @@ namespace YogscartNetwork
             foreach(PlayerInfo playerInfo in networkSelection.playerList)
             {
                 NetworkServer.SendToAll(UnetMessages.addPlayerInfo, new PlayerInfoMessage(playerInfo));
+                yield return null;
+            }
+        }
+
+        private IEnumerator ActualUpdateAllClientPlayerListsOnConn(NetworkConnection conn)
+        {
+            NetworkServer.SendToClient(conn.connectionId, UnetMessages.clearPlayerInfo, new EmptyMessage());
+
+            //Wait for message to send
+            yield return new WaitForSeconds(0.2f);
+
+            foreach (PlayerInfo playerInfo in networkSelection.playerList)
+            {
+                NetworkServer.SendToClient(conn.connectionId, UnetMessages.addPlayerInfo, new PlayerInfoMessage(playerInfo));
                 yield return null;
             }
         }

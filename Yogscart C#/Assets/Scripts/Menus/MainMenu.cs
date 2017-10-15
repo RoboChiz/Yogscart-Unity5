@@ -489,6 +489,14 @@ public class MainMenu : MonoBehaviour
 
             backStates.RemoveAt(backStates.Count - 1);
            
+            if(state != MenuState.CharacterSelect && state != MenuState.LevelSelect && state != MenuState.Difficulty)
+            {
+                if(FindObjectOfType<GameMode>())
+                {
+                    Destroy(FindObjectOfType<GameMode>());
+                }
+            }
+
         }
     }
 
@@ -684,6 +692,15 @@ public class MainMenu : MonoBehaviour
     {
         state = MenuState.Main;
         backStates.Add(MenuState.Start);
+    }
+
+    public void ReturnFromOnline()
+    {
+        backStates.Add(MenuState.Start);
+        backStates.Add(MenuState.Main);
+
+        StartCoroutine(ChangeMenuPhysical(MenuState.Online, false));
+        lockInputs = false;
     }
 }
 

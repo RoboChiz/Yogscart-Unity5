@@ -32,8 +32,9 @@ public static class UnetMessages
     public const short readyMsg                 = 1106;
     public const short countdownMsg             = 1107;
     public const short unlockKartMsg            = 1108;
-    public const short loadLevelID              = 1109;
+    public const short loadLevelIDMsg           = 1109;
     public const short countdownStateMsg        = 1110;
+    public const short spectateMsg              = 1111;
 
     //Power Up Messages
     public const short recieveItemMsg           = 1202;
