@@ -386,6 +386,11 @@ namespace YogscartNetwork
             {
                 gameMode.OnReturnLobby();
             }
+            else
+            {
+                if(FindObjectOfType<Leaderboard>() != null)
+                    Destroy(FindObjectOfType<Leaderboard>());
+            }
 
             //Cancel Previous Level Loading
             while(levelSync != null && !levelSync.isDone)

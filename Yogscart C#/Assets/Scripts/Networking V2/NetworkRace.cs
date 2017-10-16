@@ -572,12 +572,6 @@ public class NetworkRace : Race
         while (!sync.isDone)
             yield return null;
 
-        //Tell Server we're ready for spawned objects and stuff
-        if (!isHost)
-            client.client.Send(UnetMessages.networkClientReadyMsg, new EmptyMessage());
-        else
-            host.OnNetworkClientReady(client.client.connection);
-
         //Let each gamemode do it's thing
         OnLevelLoad();
 
@@ -1006,6 +1000,7 @@ public class NetworkRace : Race
 
         //Create Debug Kart Camera
         GameObject camera = new GameObject("Camera");
+        camera.tag = "MainCamera";
 
         camera.AddComponent<AudioListener>();
         replayCamera = camera.GetComponent<Camera>();
@@ -1151,10 +1146,6 @@ public class NetworkRace : Race
 
                 //Cam Mode
                 GUI.Label(new Rect(10, 10, 1900, 50), "Camera Mode: " + cameraMode.ToString(), label);
-
-                if (cameraMode != CameraMode.FreeCam)
-                    GUI.Label(new Rect(10, 60, 1900, 50), "Tracking: " + gd.characters[racers[target].character].name + ((racers[target].Human == -1) ? " (AI)"
-                        : " (Player #" + (racers[target].Human + 1).ToString() + ")"), label);
 
                 //Controls
                 if (InputManager.controllers[0].inputType == InputType.Xbox360)

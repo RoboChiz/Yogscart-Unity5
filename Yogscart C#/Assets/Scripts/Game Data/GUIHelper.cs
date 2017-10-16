@@ -332,6 +332,11 @@ public class GUIHelper
         return new Rect(parentNow.x + xRelative, parentNow.y + yRelative, widthRelative, heightRelative);
     }
 
+    public static Rect MoveRect(Rect original, Vector4 offset)
+    { 
+        return new Rect(original.x + offset.x, original.y + offset.y, original.width + offset.z, original.height + offset.w);
+    }
+
 }
 
 [System.Serializable]

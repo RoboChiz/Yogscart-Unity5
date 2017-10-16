@@ -2,6 +2,13 @@
 
 ## Changelog : Started 04/08/2016
 
+# 16/10/2017
+* Cleaned up Network Selection (Now uses a nice sting array)
+* Fixed Spectator UI not showing
+* Fixed Racer Names not facing Cutscene and Spectator Cam
+* Fixed Pig Syncing over Network (Sorta)
+* Fixed Leaderboard not being deleted on Spectator
+
 # 15/10/2017
 * Fixed voting timer not hiding when all votes recieved
 * Fixed selected track from vote not being loaded

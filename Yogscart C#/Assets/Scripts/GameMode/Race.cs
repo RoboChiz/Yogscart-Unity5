@@ -628,6 +628,8 @@ public abstract class Race : GameMode
         KartInput.overrideCamera = true;
 
         GameObject cutSceneCam = new GameObject();
+        cutSceneCam.tag = "MainCamera";
+
         cutSceneCam.AddComponent<Camera>();
         cutSceneCam.AddComponent < AudioListener>();
         cutSceneCam.tag = "MainCamera";

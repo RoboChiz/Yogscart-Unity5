@@ -18,6 +18,7 @@ public class PigMovement : MonoBehaviour
     void Start()
     {
         ani = GetComponent<Animator>();
+        Random.InitState(35473573);
     }
 
 	// Update is called once per frame
