@@ -50,8 +50,13 @@ public abstract class Race : GameMode
 
     protected Coroutine currentGame;
     protected bool lockInputs = false;
+    protected bool skipCS = false;
 
     public override void StartGameMode()
+    {
+        StartGameMode(false);
+    }
+    public void StartGameMode(bool _skipCS)
     {
         //Get important stuff
         gd = FindObjectOfType<CurrentGameData>();
@@ -75,13 +80,15 @@ public abstract class Race : GameMode
         skin = Resources.Load<GUISkin>("GUISkins/Race");
         boardTexture = Resources.Load<Texture2D>("UI/GrandPrix Positions/Backing");
 
+        skipCS = _skipCS;
+
         StartCoroutine(ActualStartGameMode());
     }
 
     protected virtual IEnumerator ActualStartGameMode()
     {
         //Do Character Select
-        yield return DoCharacterAndTrackSelect();
+        yield return DoCharacterAndTrackSelect(skipCS);
 
         CurrentGameData.blackOut = true;
         yield return new WaitForSeconds(0.5f);
@@ -762,7 +769,7 @@ public abstract class Race : GameMode
                     else
                         nextMenuSizes[i] = Mathf.Clamp(nextMenuSizes[i] - (Time.deltaTime * 5f), 0.7f, 0.9f);
 
-                    float labelSize = 200f;
+                    float labelSize = 800f / (nextMenuOptions.Length + 2);
                     Rect labelRect = new Rect(1000, 550 - (halfSize * labelSize) + (i * labelSize), 880, labelSize - 20);
                     GUIHelper.CentreRectLabel(labelRect, nextMenuSizes[i], nextMenuOptions[i], textColor);
 
@@ -811,11 +818,55 @@ public abstract class Race : GameMode
                 replay.Setup(this, preRaceState);
                 StartCoroutine(ChangeState(RaceState.Blank));
                 break;
+            case "Change Character":
+                ChangeCharacter();
+                break;
+            case "Change Track":
+                ChangeTrack();
+                break;
             case "Quit":
                 StartCoroutine(ChangeState(RaceState.Blank));
                 EndGamemode();
                 break;
         }
+    }
+
+    public void ChangeCharacter()
+    {
+        StartCoroutine(ChangeState(RaceState.Blank));     
+        StartCoroutine(ActualChange(false));
+    }
+
+    public void ChangeTrack()
+    {
+        StartCoroutine(ChangeState(RaceState.Blank));      
+        StartCoroutine(ActualChange(true));
+    }
+
+    private IEnumerator ActualChange(bool skipCharacterSelect)
+    {
+        CurrentGameData.blackOut = true;
+        yield return new WaitForSeconds(0.5f);
+
+        //Change Pitch Back
+        FindObjectOfType<SoundManager>().SetMusicPitch(1f);
+
+        //Load the Level
+        AsyncOperation sync = SceneManager.LoadSceneAsync("Main_Menu");
+
+        while (!sync.isDone)
+            yield return null;
+
+        if (!skipCharacterSelect)
+            FindObjectOfType<MainMenu>().ReturnToCharacterSelect();
+        else
+            FindObjectOfType<MainMenu>().ReturnToLevelSelect();
+
+        yield return new WaitForSeconds(0.5f);
+        StartGameMode(skipCharacterSelect);
+
+        yield return new WaitForSeconds(0.3f);
+        CurrentGameData.blackOut = false;
     }
 
     //Not Called

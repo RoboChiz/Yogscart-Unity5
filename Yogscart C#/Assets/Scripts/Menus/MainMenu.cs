@@ -702,5 +702,26 @@ public class MainMenu : MonoBehaviour
         StartCoroutine(ChangeMenuPhysical(MenuState.Online, false));
         lockInputs = false;
     }
+
+    public void ReturnToCharacterSelect()
+    {
+        backStates.Add(MenuState.Start);
+        backStates.Add(MenuState.Main);
+        backStates.Add(MenuState.SinglePlayer);
+
+        StartCoroutine(ChangeMenuPhysical(MenuState.CharacterSelect, false));
+        lockInputs = false;
+    }
+
+    public void ReturnToLevelSelect()
+    {
+        backStates.Add(MenuState.Start);
+        backStates.Add(MenuState.Main);
+        backStates.Add(MenuState.SinglePlayer);
+        backStates.Add(MenuState.CharacterSelect);
+
+        StartCoroutine(ChangeMenuPhysical(MenuState.LevelSelect, false));
+        lockInputs = false;
+    }
 }
 

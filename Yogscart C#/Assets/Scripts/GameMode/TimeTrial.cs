@@ -10,7 +10,7 @@ public class TimeTrial : Race
     protected override bool enableAI { get { return false; } }
     public bool isReplay = false;
 
-    private bool skipCS = false, ghostSaved = false;
+    private bool ghostSaved = false;
 
     //Save Ghost Data
     [System.NonSerialized, HideInInspector]
@@ -227,11 +227,11 @@ public class TimeTrial : Race
     {
         if (!isReplay)
         {
-            return new string[] { "Restart", "Replay", "Save Ghost", "Quit" };
+            return new string[] { "Restart", "Replay", "Save Ghost", "Change Character", "Change Track", "Quit" };
         }
         else
         {
-            return new string[] { "Quit" };
+            return new string[] { "Change Character", "Change Track", "Quit" };
         }
     }
 

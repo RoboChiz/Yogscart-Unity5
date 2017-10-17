@@ -364,6 +364,14 @@ public class Replay : MonoBehaviour
                                 GetComponent<Options>().enabled = true;
                                 GetComponent<Options>().ShowOptions();
                                 break;
+                            case "Change Track":
+                                currentRace.ChangeTrack();
+                                StartCoroutine(KillSelf());
+                                break;
+                            case "Change Character":
+                                currentRace.ChangeCharacter();
+                                StartCoroutine(KillSelf());
+                                break;
                         }
 
                         if (killSelf)
