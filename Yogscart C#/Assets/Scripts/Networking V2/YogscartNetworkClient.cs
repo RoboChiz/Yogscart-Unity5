@@ -19,6 +19,7 @@ namespace YogscartNetwork
         protected Coroutine characterSelectCoroutine;
 
         public GameMode gameMode;
+        private bool hasReadyed;
 
         //Used by Timer
         public float timeLeft = -1f;
@@ -122,6 +123,12 @@ namespace YogscartNetwork
         // called when disconnected from a server
         public override void OnClientDisconnect(NetworkConnection conn)
         {
+            Debug.Log("Kick from the Server");
+            EndClient("Disconnected from Server");
+        }
+
+        public override void OnDropConnection(bool success, string extendedInfo)
+        {
             EndClient("Disconnected from Server");
         }
 
@@ -129,6 +136,7 @@ namespace YogscartNetwork
         // Called when a network error occurs
         public override void OnClientError(NetworkConnection conn, int errorCode)
         {
+            Debug.Log("Kick from the Server");
             EndClient("ERROR\n" + ((NetworkConnectionError)errorCode).ToString());
         }
 
@@ -136,6 +144,7 @@ namespace YogscartNetwork
         // Called when a custom network error occurs
         public virtual void OnCustomError(NetworkMessage netMsg)
         {
+            Debug.Log("Kick from the Server");
             ClientErrorMessage msg = netMsg.ReadMessage<ClientErrorMessage>();
             EndClient(msg.message);
         }
@@ -143,19 +152,30 @@ namespace YogscartNetwork
         //------------------------------------------------------------------------------
         //Called when a Server wants a client to load a level by ID
         private void OnLoadLevelID(NetworkMessage netMsg)
-        {
+        {         
             StringMessage msg = netMsg.ReadMessage<StringMessage>();
+            Debug.Log("Time to load " + msg.value);
+
+            toHost = netMsg.conn;
             StartCoroutine(ActualOnLoadLevelID(msg.value));
         }
 
         private IEnumerator ActualOnLoadLevelID(string _id)
         {
+            networkSelection.ChangeState(NetworkSelection.MenuState.Gamemode);
+
+            CurrentGameData.blackOut = true;
+            yield return new WaitForSeconds(0.5f);
+
+            Debug.Log("LevelSync:" + (levelSync != null));
             //Cancel Previous Level Loading
             while (levelSync != null && !levelSync.isDone)
             {
                 yield return null;
             }
-            
+
+            Debug.Log("Time to load " + _id + " for real");
+
             levelSync = SceneManager.LoadSceneAsync(_id);
 
             //Wait for Level Loading
@@ -163,6 +183,18 @@ namespace YogscartNetwork
             {
                 yield return null;
             }
+
+            if (!hasReadyed && toHost != null)
+            {
+                ClientScene.Ready(toHost);
+                hasReadyed = true;
+                toHost = null;
+            }
+
+            yield return new WaitForSeconds(0.5f);
+
+            //Tell Host we're Ready
+            ClientScene.AddPlayer(0);
         }
 
         //------------------------------------------------------------------------------
@@ -376,7 +408,8 @@ namespace YogscartNetwork
         }
 
         //------------------------------------------------------------------------------
-        public void OnReturnLobby(NetworkMessage netMsg) { StartCoroutine(OnReturnLobby()); }
+        private NetworkConnection toHost;
+        public void OnReturnLobby(NetworkMessage netMsg) { toHost = netMsg.conn; StartCoroutine(OnReturnLobby()); }
         public IEnumerator OnReturnLobby()
         {
             CurrentGameData.blackOut = true;
@@ -415,6 +448,13 @@ namespace YogscartNetwork
 
             CurrentGameData.blackOut = false;
             yield return new WaitForSeconds(0.5f);
+
+            if (!hasReadyed && toHost != null)
+            {
+                ClientScene.Ready(toHost);
+                hasReadyed = true;
+                toHost = null;
+            }
         }
 
         public void OnGamemodeCleanup(NetworkMessage netMsg) { OnGamemodeCleanup(); }

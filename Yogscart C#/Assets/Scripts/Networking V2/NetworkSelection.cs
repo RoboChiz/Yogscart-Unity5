@@ -39,6 +39,8 @@ public class NetworkSelection : MonoBehaviour
     public List<PlayerInfo> playerList;
     public int currentGamemode;
 
+    private bool willHost = false;
+
     //Textures
     private Texture2D xButton, yButton, qButton, eButton, connectionCircle;
     private float connectRot = 0f;
@@ -314,7 +316,7 @@ public class NetworkSelection : MonoBehaviour
 
                         if (GUI.Button(deleteRect, "") && !locked && guiAlpha == 1f)
                         {
-                            servers.RemoveAt(i);
+                            DeleteServer(i);
                         }
                     }
                 }
@@ -333,7 +335,7 @@ public class NetworkSelection : MonoBehaviour
             int vertical = 0, horizontal = 0;
             bool submitBool = false, cancelBool = false, editBool = false, deleteBool = false;
 
-            if (state != MenuState.Connecting && state != MenuState.CharacterSelect && state != MenuState.Gamemode)
+            if ((state != MenuState.Connecting || !willHost) && state != MenuState.CharacterSelect && state != MenuState.Gamemode)
             {
                 vertical = InputManager.controllers[0].GetIntInputWithLock("MenuVertical");
                 horizontal = InputManager.controllers[0].GetIntInputWithLock("MenuHorizontal");
@@ -408,12 +410,17 @@ public class NetworkSelection : MonoBehaviour
 
                     if (deleteBool && currentSelection >= 2)
                     {
-                        servers.RemoveAt(currentSelection - 2);
+                        DeleteServer(currentSelection - 2);
                         currentSelection = 0;
                     }
 
                     break;
-                case MenuState.Connecting: break;
+                case MenuState.Connecting:
+                    if (cancelBool)
+                    {
+                        client.EndClient("");
+                    }
+                    break;
                 case MenuState.HostSetup:
                     if (cancelBool)
                     {
@@ -496,6 +503,12 @@ public class NetworkSelection : MonoBehaviour
         StartCoroutine(ActualStartClient(server));
     }
 
+    public void DeleteServer(int _server)
+    {
+        servers.RemoveAt(_server);
+        SaveServers();
+    }
+
     //Makes a popup appear
     public void Popup(string message)
     {
@@ -517,6 +530,7 @@ public class NetworkSelection : MonoBehaviour
         MainMenu.lockInputs = true;
         networkState = NetworkState.Host;
         playerList = new List<PlayerInfo>();
+        willHost = true;
 
         //Wait for fade
         yield return ActualChangeState(MenuState.Connecting);
@@ -580,6 +594,7 @@ public class NetworkSelection : MonoBehaviour
     private IEnumerator ActualStartClient(ServerInfo server)
     {
         MainMenu.lockInputs = true;
+        willHost = false;
         currentSelection = 0;
         networkState = NetworkState.Client;
         playerList = new List<PlayerInfo>();

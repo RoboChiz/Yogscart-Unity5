@@ -64,6 +64,7 @@ public class KartNetworker : NetworkBehaviour
             kartMovement.expectedSpeed = expectedSpeed;
             kartMovement.onlineMode = true;
             kartMovement.lapisAmount = lapisAmount;
+            kartMovement.onlineMode = true;
 
             if (boostTime > 0)
             {

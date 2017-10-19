@@ -2,6 +2,13 @@
 
 ## Changelog : Started 04/08/2016
 
+# 19/10/2017
+* Fixed deleting servers from list not saving
+* Fixed Karts not spawning in Online
+* Added disconnecting early on connectin wheel
+* Fixed brief broken screen for spectators between intro and countdown
+* Started Spooky Sjin's Farm
+
 # 16/10/2017
 * Cleaned up Network Selection (Now uses a nice sting array)
 * Fixed Spectator UI not showing

@@ -41,6 +41,7 @@ namespace YogscartNetwork
             if (serverSettings.hostAsPlayer)
             {
                 base.RegisterHandlers();
+
                 ClientScene.Ready(client.connection);
 
                 LoadOut loadOut = CurrentGameData.currentChoices[0];
@@ -123,7 +124,9 @@ namespace YogscartNetwork
             rejectedPlayers = new List<NetworkConnection>();
 
             //Create Gamemode Objects on client and host
-            switch(currentGamemode)
+            currentState = GameState.Game;
+
+            switch (currentGamemode)
             {
                 case 0:
                     NetworkServer.SendToAll(UnetMessages.raceGamemodeMsg, new EmptyMessage());
@@ -138,6 +141,8 @@ namespace YogscartNetwork
             {
                 yield return null;
             }
+
+            currentState = GameState.Lobby;
 
             //Clean Up
             NetworkServer.SendToAll(UnetMessages.cleanUpMsg, new EmptyMessage());
@@ -252,16 +257,18 @@ namespace YogscartNetwork
             for (int i = 0; i < finalPlayers.Count; i++)
             {
                 NetworkRacer nr = finalPlayers[i] as NetworkRacer;
-                if ((nr.conn != null && nr.conn.connectionId == conn.connectionId) || (conn.hostId == -1 && nr.conn == null))
+                if ((nr.conn != null && nr.conn.connectionId == conn.connectionId) || (conn.hostId == client.connection.hostId))
                 {
                     GameObject player = gameMode.OnServerAddPlayer(nr, playerPrefab);
+
+                    //Set Transform and Player Name
+                    nr.ingameObj = player.transform;
+                    nr.ingameObj.GetComponent<KartNetworker>().kartPlayerName = nr.playerName;
+
                     NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
                     return;
                 }
             }
-
-            //If we've got here then player is a cheater
-            KickPlayer(conn);
         }      
 
         //------------------------------------------------------------------------------
@@ -294,7 +301,6 @@ namespace YogscartNetwork
         private IEnumerator AcceptPlayer(NetworkConnection conn)
         {
             Debug.Log("AcceptPlayer " + conn.address);
-            ClientScene.Ready(conn);
 
             AcceptedMessage ackMsg = new AcceptedMessage();
        
@@ -332,8 +338,20 @@ namespace YogscartNetwork
                     NetworkServer.SendToClient(conn.connectionId, UnetMessages.returnLobbyMsg, new EmptyMessage());
                     break;
                 case GameState.Game:
+                   
+                    //Load whatever Gamemode we're on
+                    switch (currentGamemode)
+                    {
+                        case 0:
+                            NetworkServer.SendToClient(conn.connectionId, UnetMessages.raceGamemodeMsg, new EmptyMessage());
+                            break;
+                    }
+
+                    yield return new WaitForSeconds(0.5f);
+
                     //Load whatever level we're on now
-                    NetworkServer.SendToClient(conn.connectionId, UnetMessages.loadLevelIDMsg, new StringMessage(SceneManager.GetActiveScene().name));
+                    NetworkServer.SendToClient(conn.connectionId, UnetMessages.loadLevelIDMsg, new StringMessage(SceneManager.GetActiveScene().name));             
+                    yield return new WaitForSeconds(0.5f);
 
                     //Handle Spectator for this gamemode
                     gameMode.OnServerConnect(conn);

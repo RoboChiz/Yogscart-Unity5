@@ -40,7 +40,7 @@ public class NetworkRace : Race
 
     private int target;
     private float controlAlpha = 0f;
-    private bool showUI;
+    private bool showUI, createdSpectator;
 
     public enum CameraMode { PlayerCam, TargetCam, FreeCam, TrackCam }
     public CameraMode cameraMode = CameraMode.PlayerCam;
@@ -594,6 +594,9 @@ public class NetworkRace : Race
             }
         }
 
+        //Tell Host we're Ready
+        ClientScene.AddPlayer(0);
+
         //Wait for Spawn Messages to be recieved
         yield return new WaitForSeconds(2f);
 
@@ -615,22 +618,19 @@ public class NetworkRace : Race
         //Let Gamemode add Map Viewer Objects
         AddMapViewObjects();
 
-        if (isHost)
-        {
-            //Set Racer Names
-            foreach (NetworkRacer racer in racers)
-            {
-                racer.ingameObj.GetComponent<KartNetworker>().kartPlayerName = racer.playerName;
-            }
-        }
-
         yield return new WaitForSeconds(0.5f);
+
+        //If we Spectators
+        if (localRacer == null)
+        {
+            CreateSpectator();
+        }
 
         //Do the intro to the Map
         yield return StartCoroutine(DoIntro());
 
         //If we Spectators
-        if(localRacer == null)
+        if (localRacer == null)
         {
             StartCoroutine(ActualOnSpectator());
         }
@@ -685,13 +685,7 @@ public class NetworkRace : Race
     public void OnRecieveSpawnKart(NetworkMessage netMsg) { IntMessage msg = netMsg.ReadMessage<IntMessage>(); OnRecieveSpawnKart(msg.value); }
     public void OnRecieveSpawnKart(int _position)
     {
-        localRacer = new Racer(0, -1, CurrentGameData.currentChoices[0], _position);
-        OnSpawnKart();
-    }
-
-    protected override void OnSpawnKart()
-    {
-        ClientScene.AddPlayer(0);
+        localRacer = new Racer(0, -1, CurrentGameData.currentChoices[0], _position);   
     }
 
     public override GameObject OnServerAddPlayer(NetworkRacer nPlayer, GameObject playerPrefab)
@@ -972,6 +966,14 @@ public class NetworkRace : Race
     //If a client joins during this gamemode
     public override void OnServerConnect(NetworkConnection conn)
     {
+        StartCoroutine(ActualOnServerConnect(conn));
+    }
+
+    private IEnumerator ActualOnServerConnect(NetworkConnection conn)
+    {
+
+        yield return new WaitForSeconds(0.5f);
+
         //Tell Client to Load Spectator System
         NetworkServer.SendToClient(conn.connectionId, UnetMessages.spectateMsg, new EmptyMessage());
     }
@@ -986,26 +988,18 @@ public class NetworkRace : Race
         }
     }
 
-    private IEnumerator ActualOnSpectator()
+    public void CreateSpectator()
     {
-        //Set IsSpectator
-        isSpectator = true;
-
-        //Wait for level to load
-        while (!FindObjectOfType<YogscartNetwork.Client>().levelSync.isDone)
-            yield return null;
-
-        //Get all Targets
-        spectatorTargets = FindObjectsOfType<KartMovement>().ToList();
+        createdSpectator = true;
 
         //Create Debug Kart Camera
         GameObject camera = new GameObject("Camera");
         camera.tag = "MainCamera";
 
         camera.AddComponent<AudioListener>();
-        replayCamera = camera.GetComponent<Camera>();
-
         replayKartCamera = camera.AddComponent<KartCamera>();
+
+        replayCamera = camera.GetComponent<Camera>();
         target = 0;
 
         //Make a Kart Camera Rotater and turn it off
@@ -1015,23 +1009,54 @@ public class NetworkRace : Race
         //Make a Free Cam
         freeCam = camera.AddComponent<FreeCam>();
         freeCam.enabled = false;
+    }
+
+    private IEnumerator ActualOnSpectator()
+    {
+        //Set IsSpectator
+        isSpectator = true;
+
+        //Wait for level to load
+        while (!FindObjectOfType<YogscartNetwork.Client>().levelSync.isDone)
+            yield return null;
+
+        if(!createdSpectator)
+        {
+            CreateSpectator();
+        }
+
+        //Get all Targets
+        while (spectatorTargets == null || spectatorTargets.Count == 0)
+        {
+            spectatorTargets = FindObjectsOfType<KartMovement>().ToList();
+            yield return new WaitForSeconds(0.25f);
+        }
 
         //Turn on effects
         spectatorTargets[target].toProcess.Add(replayCamera);
+        showUI = false;
 
-        CurrentGameData.blackOut = false;
         yield return new WaitForSeconds(0.5f);
 
         PauseMenu.canPause = true;
         showUI = true;
+        StartCoroutine(LoopSpectator());
 
+        yield return new WaitForSeconds(0.5f);
+
+        CurrentGameData.blackOut = false;
+        yield return new WaitForSeconds(0.5f);
+
+        showUI = true;
+    }
+
+    private IEnumerator LoopSpectator()
+    {
         while (!finished)
         {
             SpectatorUpdate();
             yield return null;
         }
-
-        showUI = false;
     }
 
     //------------------------------------------------------------------------------
@@ -1190,4 +1215,8 @@ public class NetworkRace : Race
         }
     }
 
+    protected override void OnSpawnKart()
+    {
+       
+    }
 }

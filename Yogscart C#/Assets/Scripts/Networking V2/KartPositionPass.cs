@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.Networking;
 
-[NetworkSettings(channel = 1, sendInterval = 0.25f)]
+[NetworkSettings(channel = 0, sendInterval = 0.25f)]
 public class KartPositionPass : NetworkBehaviour
 {
     [SyncVar]

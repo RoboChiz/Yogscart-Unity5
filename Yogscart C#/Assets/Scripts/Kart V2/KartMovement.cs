@@ -508,9 +508,9 @@ public class KartMovement : MonoBehaviour
                 //Do cool Chromatic Aberration Effect on boost
                 if (FindObjectOfType<EffectsManager>().GetUseChromaticAberration())
                 {
-                    foreach (Camera camera in toProcess)
+                    foreach (Camera processCamera in toProcess)
                     {
-                        PostProcessingBehaviour postProcess = camera.GetComponent<PostProcessingBehaviour>();
+                        PostProcessingBehaviour postProcess = processCamera.GetComponent<PostProcessingBehaviour>();
 
                         if (postProcess != null)
                         {
