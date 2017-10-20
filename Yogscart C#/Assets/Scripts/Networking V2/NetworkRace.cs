@@ -632,7 +632,7 @@ public class NetworkRace : Race
         //If we Spectators
         if (localRacer == null)
         {
-            StartCoroutine(ActualOnSpectator());
+            yield return StartCoroutine(ActualOnSpectator());
         }
 
         //Show what race we're on
@@ -1013,6 +1013,8 @@ public class NetworkRace : Race
 
     private IEnumerator ActualOnSpectator()
     {
+        CurrentGameData.blackOut = true;
+
         //Set IsSpectator
         isSpectator = true;
 
@@ -1035,8 +1037,6 @@ public class NetworkRace : Race
         //Turn on effects
         spectatorTargets[target].toProcess.Add(replayCamera);
         showUI = false;
-
-        yield return new WaitForSeconds(0.5f);
 
         PauseMenu.canPause = true;
         showUI = true;

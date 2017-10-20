@@ -207,7 +207,7 @@ namespace YogscartNetwork
                 StopCoroutine(characterSelectCoroutine);
 
             CharacterSelect cs = FindObjectOfType<CharacterSelect>();
-            if(cs.enabled)
+            if(cs != null && cs.enabled)
             {
                 cs.HideCharacterSelect(CharacterSelect.csState.Off);
             }
@@ -423,6 +423,12 @@ namespace YogscartNetwork
             {
                 if(FindObjectOfType<Leaderboard>() != null)
                     Destroy(FindObjectOfType<Leaderboard>());
+            }
+
+            //Clean up Karts which live forever
+            foreach(KartMovement kartMovement in FindObjectsOfType<KartMovement>())
+            {
+                Destroy(kartMovement.gameObject);
             }
 
             //Cancel Previous Level Loading

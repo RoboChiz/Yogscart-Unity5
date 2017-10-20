@@ -33,6 +33,12 @@ public class KartNetworker : NetworkBehaviour
     private KartItem ki;
     private bool isMine = false;
 
+    private void Awake()
+    {
+        //Stop Karts being destroyed between level transitions
+        DontDestroyOnLoad(gameObject);
+    }
+
     void Start()
     {
         kartMovement = GetComponent<KartMovement>();
