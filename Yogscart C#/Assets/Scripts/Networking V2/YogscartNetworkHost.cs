@@ -9,11 +9,12 @@ using UnityEngine.SceneManagement;
 namespace YogscartNetwork
 {
     public enum GameState { Lobby, Loading, Game };
-   
+    public enum GamemodeEnum { Race, Battle, Yogball};
+
     public class Host : Client
     {
         public GameState currentState = GameState.Lobby;
-        public int currentGamemode { get; private set; }
+        public GamemodeEnum currentGamemode { get; private set; }
 
         //Server Settings
         public ServerSettings serverSettings;
@@ -105,9 +106,11 @@ namespace YogscartNetwork
             NetworkServer.SendToAll(UnetMessages.timerMsg, new IntMessage(10));
             OnTimer(10);
 
-            networkSelection.ChangeState(NetworkSelection.MenuState.Gamemode);
+            networkSelection.ChangeState(NetworkSelection.MenuState.Loading);
 
             yield return new WaitForSeconds(10.2f);
+
+            networkSelection.ChangeState(NetworkSelection.MenuState.Gamemode);
 
             //Tell clients to close everything
             NetworkServer.SendToAll(UnetMessages.clearMsg, new EmptyMessage());
@@ -128,7 +131,7 @@ namespace YogscartNetwork
 
             switch (currentGamemode)
             {
-                case 0:
+                case GamemodeEnum.Race:
                     NetworkServer.SendToAll(UnetMessages.raceGamemodeMsg, new EmptyMessage());
                     gameMode = OnGamemodeRace();
                     break;
@@ -342,7 +345,7 @@ namespace YogscartNetwork
                     //Load whatever Gamemode we're on
                     switch (currentGamemode)
                     {
-                        case 0:
+                        case GamemodeEnum.Race:
                             NetworkServer.SendToClient(conn.connectionId, UnetMessages.raceGamemodeMsg, new EmptyMessage());
                             break;
                     }
@@ -479,10 +482,10 @@ namespace YogscartNetwork
 
         public void ChangeGamemode(int _newGamemode)
         {
-            currentGamemode = MathHelper.NumClamp(_newGamemode, 0, gd.onlineGameModes.Length); ;
-            networkSelection.currentGamemode = currentGamemode;
+            currentGamemode = (GamemodeEnum)MathHelper.NumClamp(_newGamemode, 0, gd.onlineGameModes.Length); ;
+            networkSelection.currentGamemode = (int)currentGamemode;
 
-            NetworkServer.SendToAll(UnetMessages.changeGamemode, new IntMessage(currentGamemode));
+            NetworkServer.SendToAll(UnetMessages.changeGamemode, new IntMessage((int)currentGamemode));
         }
 
         public void KickPlayer(NetworkConnection _conn)

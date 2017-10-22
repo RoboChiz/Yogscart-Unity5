@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+# 22/10/2017
+* Added button to Popup
+* Swapped input on Freecam height changing
+* Made Host Lobby continue to show useful info on gamemode start
+* Added Back button to client conenction and host server settings
+* Fixed submit key not working for server selection
+* Fixed using magic numbers for gamemode selecting .etc
+
 # 19/10/2017
 * Fixed deleting servers from list not saving
 * Fixed Karts not spawning in Online

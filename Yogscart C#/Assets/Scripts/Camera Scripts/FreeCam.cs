@@ -50,7 +50,7 @@ public class FreeCam : MonoBehaviour
             float hori = InputManager.controllers[0].GetInput("MenuHorizontal");
             float height = 0f;
 
-            height = InputManager.controllers[0].GetInput("HeightChange");
+            height = -InputManager.controllers[0].GetInput("HeightChange");
 
             transform.position -= transform.forward * vert * actualMoveSpeed * Time.deltaTime;
             transform.position += transform.right * hori * actualMoveSpeed * Time.deltaTime;

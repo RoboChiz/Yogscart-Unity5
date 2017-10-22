@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 public class NetworkSelection : MonoBehaviour
 {
-    public enum MenuState { ServerList, Connecting, HostSetup, Lobby, CharacterSelect, Gamemode, PopUp};
+    public enum MenuState { ServerList, Connecting, HostSetup, Lobby, CharacterSelect, Gamemode, PopUp, Loading };
     public MenuState state;
 
     public enum NetworkState { Host, ConsoleHost, PlayableHost, Client};
@@ -44,6 +44,8 @@ public class NetworkSelection : MonoBehaviour
     //Textures
     private Texture2D xButton, yButton, qButton, eButton, connectionCircle;
     private float connectRot = 0f;
+
+    private float okayButtonSize;
 
     public void Show() { StartCoroutine(FadeTo(1f)); currentSelection = 0; LoadServers(); gd = FindObjectOfType<CurrentGameData>(); }
     public void Hide() { StartCoroutine(FadeTo(0f)); }
@@ -104,6 +106,18 @@ public class NetworkSelection : MonoBehaviour
 
                     break;
                 case MenuState.Connecting:
+
+                    //Draw Back Button
+                    if(networkState == NetworkState.Client)
+                    {
+                        if(GUIHelper.DrawBack(1f))
+                        {
+                            client.EndClient("");
+                        }
+                    }
+
+                    GUIHelper.SetGUIAlpha(guiAlpha);
+
                     GUI.matrix = Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, new Vector3(1, 1, 1));
 
                     float chunkSize = Mathf.Min(Screen.width, Screen.height) / 5f;
@@ -112,6 +126,14 @@ public class NetworkSelection : MonoBehaviour
                     connectRot += Time.deltaTime * -50f;
                     break;
                 case MenuState.HostSetup:
+                    
+                    //Draw Back Button
+                    if (GUIHelper.DrawBack(1f))
+                    {
+                        ChangeState(MenuState.ServerList);
+                    }
+
+                    GUIHelper.SetGUIAlpha(guiAlpha);
 
                     optionsList.Add(new MenuOption("Port", "Port: " + serverPort));
                     optionsList.Add(new MenuOption("Gamemode", "Gamemode: " + gd.onlineGameModes[hostServerSettings.gamemode].gamemodeName));
@@ -140,6 +162,7 @@ public class NetworkSelection : MonoBehaviour
                     optionsList.Add(new MenuOption("ConfirmStartServer", "Start Server"));
 
                     break;
+                case MenuState.Loading:
                 case MenuState.Lobby:
 
                     optionsList.Add(new MenuOption("", "Welcome to the Lobby!", false));
@@ -159,13 +182,16 @@ public class NetworkSelection : MonoBehaviour
                         optionsList.Add(new MenuOption("", "Players(Not Ready): " + host.possiblePlayers.Count, false));
                         optionsList.Add(new MenuOption("", "Spectators: " + (host.waitingPlayers.Count + host.rejectedPlayers.Count).ToString(), false));
 
-                        optionsList.Add(new MenuOption("LeaveServer", "Close Server"));
-                        optionsList.Add(new MenuOption("HostGamemode", "Gamemode: " + gd.onlineGameModes[host.currentGamemode].gamemodeName));
-                        optionsList.Add(new MenuOption("StartGamemode", "Start Game"));
-
-                        if (networkState == NetworkState.PlayableHost)
+                        if (state != MenuState.Loading)
                         {
-                            optionsList.Add(new MenuOption("ChangeCharacter", "Change Character/Kart"));
+                            optionsList.Add(new MenuOption("LeaveServer", "Close Server"));
+                            optionsList.Add(new MenuOption("HostGamemode", "Gamemode: " + gd.onlineGameModes[(int)host.currentGamemode].gamemodeName));
+                            optionsList.Add(new MenuOption("StartGamemode", "Start Game"));
+
+                            if (networkState == NetworkState.PlayableHost)
+                            {
+                                optionsList.Add(new MenuOption("ChangeCharacter", "Change Character/Kart"));
+                            }
                         }
                     }
 
@@ -218,6 +244,31 @@ public class NetworkSelection : MonoBehaviour
 
                     GUIShape.RoundedRectangle(new Rect(200, 200, 1580, 500), 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
                     GUI.Label(new Rect(210, 210, 1560, 480), popupMessage, popupStyle);
+
+                    //Button
+                    Rect optionRect = new Rect(890, 750, 200, 100);
+
+                    bool selected = !Cursor.visible ? true : false;
+
+                    if (optionRect.Contains(GUIHelper.GetMousePosition()))
+                    {
+                        okayButtonSize = Mathf.Clamp(okayButtonSize + (Time.deltaTime * 2f), 0.75f, 1f);
+                        if(Cursor.visible)
+                            selected = true;
+                    }
+                    else
+                        okayButtonSize = Mathf.Clamp(okayButtonSize - (Time.deltaTime * 2f), 0.75f, 1f);
+    
+                    GUIShape.RoundedRectangle(GUIHelper.CentreRect(optionRect, okayButtonSize), 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
+
+                    GUIHelper.CentreRectLabel(optionRect, okayButtonSize + 0.25f, "Okay", selected ? Color.yellow : Color.white);
+
+                    if (GUI.Button(optionRect, "") && !locked && guiAlpha == 1f)
+                    {
+                        popupMessage = "";
+                        ChangeState(MenuState.ServerList);
+                    }
+
                     break;
             }
 
@@ -363,15 +414,20 @@ public class NetworkSelection : MonoBehaviour
                         }
                     }
                 }
+
+                if(currentSelection >= 2 && currentSelection < servers.Count + 2)
+                {
+                    ServerSelected(servers[currentSelection - 2]);
+                }
             }
 
-            if (horizontal != 0)
+            if (horizontal != 0 && optionsList.Count > 0)
             {
                 switch (optionsList[currentSelection].id)
                 {
                     case "Gamemode": hostServerSettings.gamemode = MathHelper.NumClamp(hostServerSettings.gamemode + horizontal, 0, gd.onlineGameModes.Length); break;
                     case "AIDifficulty": hostServerSettings.aiDifficulty = MathHelper.NumClamp(hostServerSettings.aiDifficulty + horizontal, 0, 4); break;
-                    case "HostGamemode": host.ChangeGamemode(host.currentGamemode + 1); break;
+                    case "HostGamemode": host.ChangeGamemode((int)host.currentGamemode + 1); break;
                     case "MinPlayers": hostServerSettings.minPlayers = MathHelper.NumClamp(hostServerSettings.minPlayers + horizontal, 1, 13); break;
                 }
             }
@@ -475,7 +531,7 @@ public class NetworkSelection : MonoBehaviour
             case "AIDifficulty": hostServerSettings.aiDifficulty = MathHelper.NumClamp(hostServerSettings.aiDifficulty + 1, 0, 4); break;
             case "LeaveServer": LeaveServer(); break;
             case "ChangeCharacter": ChangeLayout(); break;
-            case "HostGamemode": host.ChangeGamemode(host.currentGamemode + 1); break;
+            case "HostGamemode": host.ChangeGamemode((int)host.currentGamemode + 1); break;
             case "StartGamemode": host.StartGamemode(); break;
             case "MinPlayers": hostServerSettings.minPlayers = MathHelper.NumClamp(hostServerSettings.minPlayers + 1, 1, 13); break;
             default:
