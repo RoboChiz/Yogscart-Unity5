@@ -59,7 +59,10 @@ public class KartPositionPass : NetworkBehaviour
                 transform.rotation = syncRot;
 
                 kartMovement.kartBody.position = lastPos;
-                kartMovement.kartBody.rotation = lastRot;
+
+                if (!kartMovement.spinningOut)
+                    kartMovement.kartBody.rotation = lastRot;
+
                 kartMovement.SlideKartBody();
             }
         }

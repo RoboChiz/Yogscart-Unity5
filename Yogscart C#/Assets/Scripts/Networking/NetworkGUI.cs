@@ -863,6 +863,8 @@ public class ServerInfo
     public string ip, password;
     public int port;
 
+    public float size;
+
     public ServerInfo()
     {
         serverName = "New Server";
@@ -873,6 +875,8 @@ public class ServerInfo
         ip = "127.0.0.1";
         port = 25000;
         password = "";
+
+        size = 0.75f;
     }
 
     public override string ToString()

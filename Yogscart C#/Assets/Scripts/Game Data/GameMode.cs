@@ -260,7 +260,7 @@ abstract public class GameMode : MonoBehaviour
     public void StartCountdown()
     {
         if (!countdowning)
-            StartCoroutine("ActualStartCountdown");
+            StartCoroutine(ActualStartCountdown());
     }
 
     private IEnumerator ActualStartCountdown()

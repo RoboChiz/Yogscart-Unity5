@@ -16,22 +16,16 @@ public class KartNetworker : NetworkBehaviour
     [SyncVar]
     private float throttle, steer, expectedSpeed, boostTime;
     [SyncVar]
-    private bool drift, spinningOut;
+    private bool drift;
     [SyncVar]
     private int boostType, lapisAmount;
-
-    //Used to call local Item Functions
-    public int recieveItem, useItem, useShield, dropShield, currentItem;
-    public float currentItemDir;
-
-    private int lastRecieveItem, lastUseItem, lastUseShield, lastDropShield;
 
     [SyncVar]
     public string kartPlayerName = "Player";
 
     private KartMovement kartMovement;
-    private KartItem ki;
-    private bool isMine = false;
+    private KartItem kartItem;
+    public bool isMine = false;
 
     private void Awake()
     {
@@ -42,7 +36,7 @@ public class KartNetworker : NetworkBehaviour
     void Start()
     {
         kartMovement = GetComponent<KartMovement>();
-        ki = GetComponent<KartItem>();
+        kartItem = GetComponent<KartItem>();
     }
 
     // Update is called once per frame
@@ -79,44 +73,11 @@ public class KartNetworker : NetworkBehaviour
                 boostType = 0;
             }
 
-            //Do Spinout
-            if(spinningOut)
-            {
-                kartMovement.localSpinOut();
-                spinningOut = false;
-            }
-
             //Add Player Name
             Text text = GetComponentInChildren<Text>();
             text.text = kartPlayerName;
 
-            if(ki != null)
-            {
-                //If a function has been again since last time call the function locally
-                if(recieveItem != lastRecieveItem)
-                {
-                    ki.RecieveItem(currentItem);
-                    lastRecieveItem = recieveItem;
-                }
-
-                if (useItem != lastUseItem)
-                {
-                    ki.UseItem();
-                    lastUseItem = useItem;
-                }
-
-                if(useShield != lastUseShield)
-                {
-                    ki.UseShield();
-                    lastUseShield = useShield;
-                }
-
-                if (dropShield != lastDropShield)
-                {
-                    ki.DropShield(currentItemDir);
-                    lastDropShield = dropShield;
-                }
-            }
+            text.transform.parent.SetParent(kartMovement.kartBody);
         }         
     }
 
@@ -138,9 +99,6 @@ public class KartNetworker : NetworkBehaviour
         if (lapisAmount != _lapisAmount)
             lapisAmount = _lapisAmount;
 
-        if(spinningOut != _spinningOut)
-            spinningOut = _spinningOut;
-
         if(boostType != _boostType)
             boostType = _boostType;
 
@@ -148,6 +106,86 @@ public class KartNetworker : NetworkBehaviour
             boostTime = _boostTime;
     }
 
+    //Send Spin Outs and Tricks
+    [Command]
+    public void CmdSendKartSpinOut(bool doNoise)
+    {
+        Debug.Log("Recieved Spinout");
+        RpcSendKartSpinOut(doNoise);
+    }
+
+    [Command]
+    public void CmdSendKartDoTrick()
+    {
+        RpcSendKartDoTrick();
+    }
+
+    [ClientRpc]
+    public void RpcSendKartSpinOut(bool doNoise)
+    {
+        if(!isMine)
+            kartMovement.ForceSpinOut(doNoise);
+    }
+
+    [ClientRpc]
+    public void RpcSendKartDoTrick()
+    {
+        if (!isMine)
+            kartMovement.ForceTrick();
+    }
+
+    //Send Items - Server
+    [Command]
+    public void CmdRecieveItem(int _item)
+    {
+        RpcRecieveItem(_item);
+    }
+
+    [Command]
+    public void CmdUseItem(int _direction)
+    {
+        RpcUseItem(_direction);
+    }
+
+    [Command]
+    public void CmdUseShield(int _direction)
+    {
+        RpcUseShield(_direction);
+    }
+
+    [Command]
+    public void CmdDropShield(int _direction)
+    {
+        RpcDropShield(_direction);
+    }
+
+    //Send Items - Client
+    [ClientRpc]
+    public void RpcRecieveItem(int _item)
+    {
+        kartItem.RecieveItem(_item);
+    }
+
+    [ClientRpc]
+    public void RpcUseItem(int _direction)
+    {
+        kartItem.direction = _direction;
+        kartItem.UseItem();
+    }
+
+    [ClientRpc]
+    public void RpcUseShield(int _direction)
+    {
+        kartItem.direction = _direction;
+        kartItem.UseShield();
+    }
+
+    [ClientRpc]
+    public void RpcDropShield(int _direction)
+    {
+        kartItem.direction = _direction;
+        kartItem.DropShield(_direction);
+    }
 
     //Called on client when Player is created
     public override void OnStartLocalPlayer()

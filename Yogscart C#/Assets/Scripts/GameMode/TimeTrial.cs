@@ -7,6 +7,9 @@ using UnityEngine;
 
 public class TimeTrial : Race
 {
+    public const int saveVersion = 0;
+    //0 - Default when created
+
     protected override bool enableAI { get { return false; } }
     public bool isReplay = false;
 
@@ -103,36 +106,22 @@ public class TimeTrial : Race
 
             foreach (MeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<MeshRenderer>())
             {
-                Material material = mr.material;
+                Texture baseTexture = mr.material.GetTexture("_MainTex");
+                Texture normalTexture = mr.material.GetTexture("_BumpMap");
 
-                material.SetFloat("_Mode", 2);
-                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                //material.SetInt("_ZWrite", 0);
-                material.DisableKeyword("_ALPHATEST_ON");
-                material.EnableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                material.renderQueue = 3000;
-                material.color = new Color(1f, 1f, 1f, 0.4f);
-
-                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;          
+                mr.material = new Material(Resources.Load<Material>("Materials/Ghost"));
+                mr.material.SetTexture("_MainTex", baseTexture);
+                mr.material.SetTexture("_BumpMap", normalTexture);
             }
 
             foreach (SkinnedMeshRenderer mr in ghostTransform.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
-                Material material = mr.material;
+                Texture baseTexture = mr.material.GetTexture("_MainTex");
+                Texture normalTexture = mr.material.GetTexture("_BumpMap");
 
-                material.SetFloat("_Mode", 2);
-                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                //material.SetInt("_ZWrite", 0);
-                material.DisableKeyword("_ALPHATEST_ON");
-                material.EnableKeyword("_ALPHABLEND_ON");
-                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                material.renderQueue = 3000;
-                material.color = new Color(1f, 1f, 1f, 0.4f);
-
-                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                mr.material = new Material(Resources.Load<Material>("Materials/Ghost"));
+                mr.material.SetTexture("_MainTex", baseTexture);
+                mr.material.SetTexture("_BumpMap", normalTexture);
             }
         }
     }
@@ -297,7 +286,7 @@ public class TimeTrial : Race
 
             BinaryFormatter bf = new BinaryFormatter();
             sw = File.Create(saveLocation);
-            bf.Serialize(sw, new GhostData(racers[0], preRaceState[0].DataToString(), currentCup, currentTrack, gd.playerName, gd.version));
+            bf.Serialize(sw, new GhostData(racers[0], preRaceState[0].DataToString(), currentCup, currentTrack, gd.playerName, saveVersion.ToString()));
             sw.Flush();
 
             popUp = gameObject.AddComponent<InfoPopUp>();

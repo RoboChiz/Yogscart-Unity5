@@ -7,7 +7,7 @@ public class KartItem : MonoBehaviour
 {
     private CurrentGameData gd;
     private KartInfo ki;
-    private KartInput kaI;
+    private KartNetworker kartNetworker;
     private PositionFinding pf;
     private SoundManager sm;
 
@@ -27,12 +27,11 @@ public class KartItem : MonoBehaviour
 
     private bool spinning = false;
 
-    public bool input = false, locked = true, hidden = true;
-    public bool inputLock = false;
-    private float inputDirection;
     public float itemDistance = 2f;
     private float itemScale = 0f;
 
+    public bool input, hidden, locked, itemLock;
+    public int direction;
 
     // Use this for initialization
     void Awake()
@@ -40,21 +39,21 @@ public class KartItem : MonoBehaviour
         gd = FindObjectOfType<CurrentGameData>();
         sm = FindObjectOfType<SoundManager>();
             
-        frame = Resources.Load<Texture2D>("UI/Power Ups/item frame");
-
-        if (GetComponent<AI>() || GetComponent<KartReplayer>())//If AI detected must be AI
-            itemOwner = ItemOwner.Ai;
-        if (GetComponent<KartInput>())//If Input is detected, is mine
-            itemOwner = ItemOwner.Mine;
-        if (!GetComponent<KartInput>() && GetComponent<KartNetworker>())//If Online Component is detected, is Online
-            itemOwner = ItemOwner.Online;
+        frame = Resources.Load<Texture2D>("UI/Power Ups/item frame");      
     }
 
     void Start()
     {
         ki = GetComponent<KartInfo>();
-        kaI = GetComponent<KartInput>();
+        kartNetworker = GetComponent<KartNetworker>();
         pf = GetComponent<PositionFinding>();
+
+        if (GetComponent<AI>() || GetComponent<KartReplayer>())//If AI detected must be AI
+            itemOwner = ItemOwner.Ai;
+        if (GetComponent<KartInput>())//If Input is detected, is mine
+            itemOwner = ItemOwner.Mine;
+        if (!GetComponent<KartInput>() && kartNetworker != null)//If Online Component is detected, is Online
+            itemOwner = ItemOwner.Online;
     }
 
     //Informs all clients that this kart has recieved an item
@@ -86,7 +85,7 @@ public class KartItem : MonoBehaviour
                     myItem.parent = transform;
 
                     if (myItem.GetComponent<Projectile>() != null)
-                        myItem.GetComponent<Projectile>().Setup(inputDirection, false);
+                        myItem.GetComponent<Projectile>().Setup(direction, false);
 
                     if (myItem.GetComponent<DamagingItem>() != null)
                         myItem.GetComponent<DamagingItem>().owner = GetComponent<KartMovement>();
@@ -139,7 +138,7 @@ public class KartItem : MonoBehaviour
         }   
     }
 
-    public void DropShield(float dir)
+    public void DropShield(int dir)
     {
         if (Time.timeScale != 0f)
         {
@@ -152,14 +151,11 @@ public class KartItem : MonoBehaviour
                 if (myItem.GetComponent<Projectile>() != null)
                 {
                     //Move Item
-                    if (inputDirection >= 0)
-                    {
+                    if (direction >= 0)
                         myItem.position = transform.position + (transform.forward * itemDistance * 2f) + (transform.up * 0.5f);
-                        inputDirection = 1;
-                    }
 
                     //Start Projectile Behaviour
-                    myItem.GetComponent<Projectile>().Setup(inputDirection, false);
+                    myItem.GetComponent<Projectile>().Setup(direction, false);
                 }
 
                 myItem.parent = null;
@@ -247,7 +243,7 @@ public class KartItem : MonoBehaviour
         //If Online tell Server about the item
         if (onlineGame && itemOwner == ItemOwner.Mine)
         {
-            FindObjectOfType<UnetClient>().client.Send(UnetMessages.recieveItemMsg, new IntMessage(nItem));
+            kartNetworker.CmdRecieveItem(nItem);
         }
     }
 
@@ -327,69 +323,50 @@ public class KartItem : MonoBehaviour
         {
             if (itemOwner != ItemOwner.Ai && GetComponent<AI>())//If AI detected must be AI
                 itemOwner = ItemOwner.Ai;
+            if (GetComponent<KartInput>())//If Input is detected, is mine
+                itemOwner = ItemOwner.Mine;
+            if (!GetComponent<KartInput>() && kartNetworker != null)//If Online Component is detected, is Online
+                itemOwner = ItemOwner.Online;
 
-            if (kaI != null && InputManager.controllers.Count > kaI.myController)
+            if (!locked)
             {
-                input = InputManager.controllers[kaI.myController].GetInput("Item") != 0;
+                if (!input)
+                    itemLock = false;
 
-                if (InputManager.controllers[kaI.myController].GetInput("RearView") != 0)
-                {
-                    inputDirection = -1;
-                }
-                else
-                {
-                    inputDirection = 1;
-
-                    if (InputManager.controllers[kaI.myController].inputType != InputType.Keyboard)
-                    {
-                        inputDirection = -InputManager.controllers[kaI.myController].GetInput("MenuVertical");
-                    }
-                }
-
-            }
-
-            if (!input)
-                inputLock = false;
-
-            if (itemOwner == ItemOwner.Mine)
-            {
                 if (heldPowerUp != -1)
                 {
                     if (!gd.powerUps[heldPowerUp].useableShield)
                     {
-                        bool itemKey = input && !inputLock && !locked;
-                        if (itemKey)
+                        if (input && !itemLock)
                         {
+                            itemLock = true;
+
                             UseItem();
                             //If Online tell Server about the item use
                             if (onlineGame && itemOwner == ItemOwner.Mine)
-                                FindObjectOfType<UnetClient>().client.Send(UnetMessages.useItemMsg, new EmptyMessage());
-
-                            inputLock = true;
+                                kartNetworker.CmdUseItem(direction);
                         }
                     }
                     else
                     {
                         if (input)
                         {
-                            if (!sheilding && !inputLock)
+                            if (!sheilding)
                             {
                                 UseShield();
                                 //If Online tell Server about the shield use
                                 if (onlineGame && itemOwner == ItemOwner.Mine)
-                                    FindObjectOfType<UnetClient>().client.Send(UnetMessages.useShieldMsg, new EmptyMessage());
-
-                                inputLock = true;
+                                    kartNetworker.CmdUseShield(direction);
                             }
                         }
                         else
                         {
                             if (sheilding)
                             {
-                                DropShield(inputDirection);
+                                DropShield(direction);
                                 //If Online tell Server about the shield drop
                                 if (onlineGame && itemOwner == ItemOwner.Mine)
-                                    FindObjectOfType<UnetClient>().client.Send(UnetMessages.dropShieldMsg, new FloatMessage(inputDirection));
+                                    kartNetworker.CmdDropShield(direction);
                             }
                         }
                     }

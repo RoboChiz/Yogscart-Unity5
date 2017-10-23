@@ -422,6 +422,7 @@
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\Grass.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\Standard_TwoSided.shader" />
     <None Include="Assets\Shader\GhostFresnel.shader" />
+    <None Include="Assets\Shader\GhostFresnelOpaque.shader" />
     <None Include="Assets\Shader\GrassShader.shader" />
     <None Include="Assets\Shader\NewGrass.shader" />
   </ItemGroup>

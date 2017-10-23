@@ -75,16 +75,18 @@ public class NetworkSelection : MonoBehaviour
     class MenuOption
     {
         public string display, id;
-        public bool selectable;
+        public bool selectable, textField;
 
-        public MenuOption(string _id, string _display, bool _selectable)
+        public MenuOption(string _id, string _display, bool _selectable, bool _textField)
         {
             id = _id;
             display = _display;
             selectable = _selectable;
+            textField = _textField;
         }
 
-        public MenuOption(string _id, string _display) : this(_id, _display, true) { }
+        public MenuOption(string _id, string _display, bool _selectable) : this(_id, _display, _selectable, false) { }
+        public MenuOption(string _id, string _display) : this(_id, _display, true, false) { }
     }
 
     void OnGUI()
@@ -135,7 +137,7 @@ public class NetworkSelection : MonoBehaviour
 
                     GUIHelper.SetGUIAlpha(guiAlpha);
 
-                    optionsList.Add(new MenuOption("Port", "Port: " + serverPort));
+                    optionsList.Add(new MenuOption("Port", "Port: " + serverPort, true, true));
                     optionsList.Add(new MenuOption("Gamemode", "Gamemode: " + gd.onlineGameModes[hostServerSettings.gamemode].gamemodeName));
                     optionsList.Add(new MenuOption("Automatic", "Automatic: " + (hostServerSettings.automatic ? "Yes" : "No")));
 
@@ -281,7 +283,14 @@ public class NetworkSelection : MonoBehaviour
                 if (optionsList[i].selectable)
                     GUIShape.RoundedRectangle(optionRect, 5, new Color(0.4f, 0.4f, 0.4f, 0.4f * guiAlpha));
 
-                GUIHelper.LeftRectLabel(GUIHelper.MoveRect(optionRect, new Vector4(50, 5, -50, -5)), 1f, optionsList[i].display, (optionsList[i].selectable && currentSelection == selectableCount) ? Color.yellow : Color.white);
+                if (!optionsList[i].textField || (optionsList[i].selectable && currentSelection != selectableCount))
+                {
+                    GUIHelper.LeftRectLabel(GUIHelper.MoveRect(optionRect, new Vector4(50, 5, -50, -5)), 1f, optionsList[i].display, (optionsList[i].selectable && currentSelection == selectableCount) ? Color.yellow : Color.white);
+                }
+                else
+                {
+                    DoTextfield(i);          
+                }
 
                 if (optionsList[i].selectable)
                 {
@@ -536,6 +545,32 @@ public class NetworkSelection : MonoBehaviour
             case "MinPlayers": hostServerSettings.minPlayers = MathHelper.NumClamp(hostServerSettings.minPlayers + 1, 1, 13); break;
             default:
                 Debug.Log(_currentSelection + " does not have any behaviour");
+                break;
+        }
+    }
+
+    void DoTextfield(int _i)
+    {
+        switch (optionsList[_i].id)
+        {
+            case "Port":
+                Rect labelRect = new Rect(50, 150 + (_i * 60), 300, 50);
+                Rect optionRect = new Rect(350, 150 + (_i * 60), 450, 50);            
+
+                GUIHelper.LeftRectLabel(GUIHelper.MoveRect(labelRect, new Vector4(50, 5, -50, -5)), 1f, "Port: ", Color.yellow);
+
+                string[] strings = optionsList[_i].display.Split(':');
+
+                GUIStyle style = new GUIStyle(GUI.skin.textField);
+                style.normal.textColor = Color.yellow;
+                string temp = GUI.TextField(GUIHelper.MoveRect(optionRect, new Vector4(50, 5, -50, -5)), strings[1], style);
+
+                int tempint;
+                if(int.TryParse(temp, out tempint) && tempint >= 0)
+                {
+                    serverPort = tempint;
+                }
+
                 break;
         }
     }

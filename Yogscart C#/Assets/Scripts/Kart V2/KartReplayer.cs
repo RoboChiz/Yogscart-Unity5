@@ -159,7 +159,7 @@ public class KartReplayer : MonoBehaviour
                     case dropShield:
                         if (kartItem != null)
                         {
-                            kartItem.DropShield(float.Parse(value));
+                            kartItem.DropShield(int.Parse(value));
                         }
                         break;
                     case driftSteer:

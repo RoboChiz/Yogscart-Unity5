@@ -15,7 +15,7 @@ public class Egg : Projectile
     readonly string[] raycastIgnoreTags = new string[] {"Kart", "Crate", "PowerUp" };
     readonly string[] ignoreTags = new string[] { "OffRoad", "Ground"};
 
-    public override void Setup(float _direction, bool _actingShield)
+    public override void Setup(int _direction, bool _actingShield)
     {
         base.Setup(_direction, _actingShield);
         desiredY = transform.position.y;

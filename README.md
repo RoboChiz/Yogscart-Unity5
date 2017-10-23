@@ -2,6 +2,22 @@
 
 ## Changelog : Started 04/08/2016
 
+# 23/10/2017
+* Added Ghost Shader to Time Trial Ghosts
+* Fixed Online Karts not unlocking for Spectators
+* Fixed Map Viewer not being hidden with Spectator UI
+* Fixed Spinning out and tricks not being sent over server
+* Fixed Canvas Names appearing to glitch
+* Moved Kart Item input to Kart Item
+* Added (Broken) Power Ups to Online
+* Made Port a textfield in Server Settings
+* Added Bloom
+* Added Bloom to Options
+* Adjusted Effects Manager to use simple version saving
+* Adjusted Time Trials to use simple version saving
+* Fixed Dropdowns overlapping other GUI
+* Fixed Cancel not closing anti-aliasing dropdown
+
 # 22/10/2017
 * Added button to Popup
 * Swapped input on Freecam height changing

@@ -18,7 +18,7 @@ public class JR : Egg
 
     private bool cancelFollowing = false;
 
-    public override void Setup(float _direction, bool _actingShield)
+    public override void Setup(int _direction, bool _actingShield)
     {
         if (_direction < 0)
             cancelFollowing = true;

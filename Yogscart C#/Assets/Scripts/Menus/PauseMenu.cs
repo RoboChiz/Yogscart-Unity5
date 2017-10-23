@@ -64,9 +64,6 @@ public class PauseMenu : MonoBehaviour
         //Turn on everyone's KartInput
         foreach (KartInput ki in FindObjectsOfType<KartInput>())
             ki.enabled = true;
-
-        foreach (KartItem ki in FindObjectsOfType<KartItem>())
-            ki.inputLock = true;
     }
 
     private IEnumerator FadeGui(float start, float end)

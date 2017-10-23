@@ -5,6 +5,9 @@ using UnityEngine.PostProcessing;
 
 public class EffectsManager : MonoBehaviour
 {
+    private const int saveVersion = 0;
+    //0 - Created Effects
+
     public PostProcessingProfile defaultStack;
 
     private const float checkAgain = 0.1f;
@@ -23,6 +26,9 @@ public class EffectsManager : MonoBehaviour
     public enum AntiAliasing { Off, FXAALow, FXAAMedium, FXAAHigh, TAA, Max}
     private AntiAliasing useAntiAliasing = AntiAliasing.FXAAMedium;
     public AntiAliasing GetAntiAliasing() { return useAntiAliasing; }
+
+    private bool useBloom = true;
+    public bool GetBloom() { return useBloom; }
 
     void Start()
     {
@@ -71,9 +77,11 @@ public class EffectsManager : MonoBehaviour
     {
         string saveString = "";
 
+        saveString += saveVersion.ToString() + ";";
         saveString += useChromaticAberration + ";";
         saveString += useAmbientOcculusion + ";";
         saveString += ((int)useAntiAliasing).ToString() + ";";
+        saveString += useBloom + ";";
 
         PlayerPrefs.SetString("YogscartPostEffectsOptions", saveString);
     }
@@ -83,19 +91,26 @@ public class EffectsManager : MonoBehaviour
         try
         {
             string[] options = PlayerPrefs.GetString("YogscartPostEffectsOptions","").Split(';');
-            useChromaticAberration = bool.Parse(options[0]);
-            useAmbientOcculusion = bool.Parse(options[1]);
 
-            int aaVal = int.Parse(options[2]);
-            if(aaVal < 0 || aaVal >= (int)AntiAliasing.Max)
-            {
-                throw new System.Exception("Impossible AA");
-            }
-            else
-            {
-                useAntiAliasing = (AntiAliasing)aaVal;
-            }
+            int version = int.Parse(options[0]);
 
+            if (version >= saveVersion)
+            {
+                useChromaticAberration = bool.Parse(options[1]);
+                useAmbientOcculusion = bool.Parse(options[2]);
+
+                int aaVal = int.Parse(options[3]);
+                if (aaVal < 0 || aaVal >= (int)AntiAliasing.Max)
+                {
+                    throw new System.Exception("Impossible AA");
+                }
+                else
+                {
+                    useAntiAliasing = (AntiAliasing)aaVal;
+                }
+
+                useBloom = bool.Parse(options[4]);
+            }
         }
         catch
         {
@@ -112,11 +127,12 @@ public class EffectsManager : MonoBehaviour
         useAntiAliasing = AntiAliasing.FXAAMedium;
     }
 
-    public void UpdateValues(bool _chromaticAberration, bool _ambientOcculusion, AntiAliasing _antiAliasing)
+    public void UpdateValues(bool _chromaticAberration, bool _ambientOcculusion, AntiAliasing _antiAliasing, bool _bloom)
     {
         useChromaticAberration = _chromaticAberration;
         useAmbientOcculusion = _ambientOcculusion;
         useAntiAliasing = _antiAliasing;
+        useBloom = _bloom;
 
         SaveProfile();
         ToggleReapply();
@@ -125,7 +141,6 @@ public class EffectsManager : MonoBehaviour
     private void ApplyLoad() { ApplyLoad(defaultStack); }
     private void ApplyLoad(PostProcessingProfile profile)
     {
-
         //ChromaticAberration
         profile.chromaticAberration.enabled = useChromaticAberration;
         if (useChromaticAberration)
@@ -165,6 +180,22 @@ public class EffectsManager : MonoBehaviour
             }
 
             profile.antialiasing.settings = aaSetings;
+        }
+
+        profile.bloom.enabled = useBloom;
+        if (useBloom)
+        {
+            BloomModel.Settings settings = profile.bloom.settings;
+
+            settings.bloom.intensity = defaultStack.bloom.settings.bloom.intensity;
+            settings.bloom.antiFlicker = defaultStack.bloom.settings.bloom.antiFlicker;
+            settings.bloom.radius = defaultStack.bloom.settings.bloom.radius;
+            settings.bloom.softKnee = defaultStack.bloom.settings.bloom.softKnee;
+            settings.bloom.threshold = defaultStack.bloom.settings.bloom.threshold;
+            settings.lensDirt.intensity = defaultStack.bloom.settings.lensDirt.intensity;
+            settings.lensDirt.texture = defaultStack.bloom.settings.lensDirt.texture;
+
+            profile.bloom.settings = settings;
         }
     }
 

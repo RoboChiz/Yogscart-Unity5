@@ -53,15 +53,22 @@ public class TimeTrialMenu : MonoBehaviour
         //Get Ghosts for this track
         foreach (GhostData ghostData in validTimeTrials.ToArray())
         {
-            if (ghostData.cup != timeTrial.currentCup || ghostData.track != timeTrial.currentTrack || !gd.CompatibleVersion(ghostData.version))
+            int tempVersion;
+            if(!int.TryParse(ghostData.version, out tempVersion) || ghostData.cup != timeTrial.currentCup || ghostData.track != timeTrial.currentTrack || tempVersion < TimeTrial.saveVersion)
+            {
                 validTimeTrials.Remove(ghostData);
+            }
+               
         }
 
         //Get Dev Ghosts
         foreach (GhostData gd in devTimeTrials.ToArray())
         {
-            if (gd.cup != timeTrial.currentCup || gd.track != timeTrial.currentTrack)
+            int tempVersion;
+            if(!int.TryParse(gd.version, out tempVersion) || gd.cup != timeTrial.currentCup || gd.track != timeTrial.currentTrack || tempVersion < TimeTrial.saveVersion)
+            {
                 devTimeTrials.Remove(gd);
+            }
         }
 
         StartCoroutine(FadeTo(1f));

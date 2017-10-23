@@ -408,7 +408,9 @@ public class DropDown
         if (toggled)
         {
             Rect scrollRect = new Rect(rect.x, rect.y + rect.height, rect.width - (toggleSize / 3.15f), rect.height * Mathf.Clamp(options.Length, 0, 5));
-            GUI.DrawTexture(scrollRect, Resources.Load<Texture2D>("UI/Options/Green"));
+
+            Texture2D greenTexture2D = Resources.Load<Texture2D>("UI/Options/Green");
+            GUI.DrawTexture(scrollRect, greenTexture2D, ScaleMode.StretchToFill);
 
             if (scrollRect.Contains(newMousePos - GUIHelper.groupOffset))
             {

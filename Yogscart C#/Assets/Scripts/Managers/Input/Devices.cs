@@ -86,6 +86,8 @@ public class XBox360Device : InputDevice
             {"Drift", new List<ControlName>() {new ControlName(LT, true), new ControlName(RT, true) } },
             {"Item", new List<ControlName>() {new ControlName(LB, false), new ControlName(RB, false) } },
             {"RearView", new List<ControlName>() {new ControlName(X, false) } },
+            {"ItemDirection", new List<ControlName>() {new ControlName(LeftStickVert + "*", true) } },
+
             //Xbox Specific
             {"Minus", new List<ControlName>() {new ControlName(Y, false) } },
             {"Edit", new List<ControlName>() {new ControlName(X, false) } },

@@ -836,6 +836,8 @@ public class NetworkRace : Race
         foreach (KartItem ki in FindObjectsOfType<KartItem>())
             ki.locked = false;
 
+        KartMovement.raceStarted = true;
+
         StartCoroutine(ChangeState(RaceState.RaceGUI));
 
         //Unlock the Pause Menu
@@ -855,6 +857,11 @@ public class NetworkRace : Race
         {
             ClientUpdate();
             yield return new WaitForSeconds(0.25f);
+
+            if (currentState != RaceState.RaceGUI)
+            {
+                StartCoroutine(ChangeState(RaceState.RaceGUI));
+            }
         }
 
         //Change Pitch Back
@@ -983,6 +990,7 @@ public class NetworkRace : Race
     {
         if (localRacer == null)
         {
+            KartMovement.raceStarted = true;
             OnUnlockKart(null);
             StartCoroutine(ActualOnSpectator());
         }
@@ -1092,6 +1100,14 @@ public class NetworkRace : Race
         {
             //Hide UI
             showUI = !showUI;
+
+            if (mapViewer != null)
+            {
+                if (showUI)
+                    mapViewer.ShowMapViewer();
+                else
+                    mapViewer.HideMapViewer();
+            }
         }
 
         //Show Controls UI

@@ -14,7 +14,7 @@ public class Options : MonoBehaviour
     private OptionsTab currentTab = OptionsTab.Game;
 
     private DropDown resDropDown, qualityDropDown, aaDropDown;
-    private Toggle fullscreenToggle, streamModeToggle, ambientOcculusionToggle, chromaticAberrationToggle;
+    private Toggle fullscreenToggle, streamModeToggle, ambientOcculusionToggle, chromaticAberrationToggle, bloomToggle;
     
     private float cancelScale = 1f, applyScale = 1f, plusScale = 2f, minusScale = 2f, editScale;
     private bool editName = false;
@@ -43,7 +43,7 @@ public class Options : MonoBehaviour
 
     //Save Graphics Lists for Effecientcy
     private string[] possibleScreens, qualityNames, antiAliasingNames;
-    private bool chromaticAberration, ambientOcculusion;
+    private bool chromaticAberration, ambientOcculusion, bloom;
     private EffectsManager.AntiAliasing antiAliasing;
 
     //Binding Menu
@@ -71,6 +71,7 @@ public class Options : MonoBehaviour
         streamModeToggle = new Toggle();
         ambientOcculusionToggle = new Toggle();
         chromaticAberrationToggle = new Toggle();
+        bloomToggle = new Toggle();
 
         //Load Textures
         line = Resources.Load<Texture2D>("UI/Lobby/Line");
@@ -173,7 +174,7 @@ public class Options : MonoBehaviour
                 vertical = InputManager.controllers[0].GetRawIntInputWithLock("MenuVertical");
                 horizontal = 0;
 
-                if ((currentTab == OptionsTab.Graphics && currentSelection == 6) || (currentTab == OptionsTab.Binding && changingSlider))
+                if ((currentTab == OptionsTab.Graphics && currentSelection == 7) || (currentTab == OptionsTab.Binding && changingSlider))
                 {
                     horizontal = InputManager.controllers[0].GetRawIntInputWithLock("MenuHorizontal");
                 }
@@ -288,7 +289,11 @@ public class Options : MonoBehaviour
                             {
                                 chromaticAberration = !chromaticAberration;
                             }
-                            else if (currentSelection == 6) //Do Apply and Cancel Stuff
+                            else if (currentSelection == 6)
+                            {
+                                bloom = !bloom;
+                            }
+                            else if (currentSelection == 7) //Do Apply and Cancel Stuff
                             {
                                 if (changingSlider)
                                 {
@@ -302,15 +307,15 @@ public class Options : MonoBehaviour
                             }
                         }
 
-                        if (currentSelection == 6 && horizontal != 0f)
+                        if (currentSelection == 7 && horizontal != 0f)
                             changingSlider = !changingSlider;
 
-                        if ((currentSelection == 6 || !changingSlider) && vertical != 0)
+                        if ((currentSelection == 7 || !changingSlider) && vertical != 0)
                         {
-                            if (currentSelection == 6)
+                            if (currentSelection == 7)
                                 changingSlider = false;
 
-                            currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 7);
+                            currentSelection = MathHelper.NumClamp(currentSelection + vertical, 0, 8);
                         }
 
 
@@ -323,12 +328,14 @@ public class Options : MonoBehaviour
                                 resDropDown.toggled = false;
                             else if (qualityDropDown.toggled)
                                 qualityDropDown.toggled = false;
+                            else if (aaDropDown.toggled)
+                                aaDropDown.toggled = false;
                         }
                         else
                         {
                             if (cancelBool)
                             {
-                                if (currentSelection == 6)
+                                if (currentSelection == 7)
                                 {
                                     Quit();
                                 }
@@ -751,65 +758,72 @@ public class Options : MonoBehaviour
 
                     GUIHelper.BeginGroup(tabAreaRect);
 
-                    //Change Resolution
-                    GUI.Label(new Rect(20, 70, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
-
-                    int newRes = resDropDown.Draw(new Rect(330, 90, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentResolution, possibleScreens);
-                    if (!locked && currentResolution != -1 && newRes != currentResolution)
-                    {
-                        somethingChanged = true;
-                        currentResolution = newRes;
-                    }
-
                     //Fullscreen
-                    GUI.Label(new Rect(20, 145, 300, 100), "Fullscreen:", (currentSelection == 1 && !Cursor.visible) ? selectedLabel : normalLabel);
-                    bool newFSVal = fullscreenToggle.Draw(new Rect(20, 170, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, fullScreen, "");
+                    GUI.Label(new Rect(20, 85, 300, 100), "Fullscreen:", (currentSelection == 1 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    bool newFSVal = fullscreenToggle.Draw(new Rect(20, 110, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, fullScreen, "");
 
                     if (!locked)
                         fullScreen = newFSVal;
 
-                    //Change Quality
-                    GUI.Label(new Rect(20, 250, 300, 100), "Graphics Quality:", (currentSelection == 2 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                    //Ambient Oculussion
+                    GUI.Label(new Rect(20, 360, 300, 100), "Ambient Occulusion:", (currentSelection == 4 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    bool newAOVal = ambientOcculusionToggle.Draw(new Rect(20, 390, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, ambientOcculusion, "");
 
-                    int newQuality = qualityDropDown.Draw(new Rect(330, 250, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentQuality, qualityNames);
-                    if (!locked && currentQuality != -1 && newQuality != currentQuality)
-                    {
-                        somethingChanged = true;
-                        currentQuality = newQuality;
-                    }
+                    if (!locked)
+                        ambientOcculusion = newAOVal;
+
+                    //Chromatic Aberration
+                    GUI.Label(new Rect(20, 450, 300, 100), "Chromatic Aberration:", (currentSelection == 5 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    bool newCAVal = chromaticAberrationToggle.Draw(new Rect(20, 480, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, chromaticAberration, "");
+
+                    if (!locked)
+                        chromaticAberration = newCAVal;
+
+                    //Bloom
+                    GUI.Label(new Rect(20, 540, 300, 100), "Bloom:", (currentSelection == 6 && !Cursor.visible) ? selectedLabel : normalLabel);
+                    bool newBloomValue = bloomToggle.Draw(new Rect(20, 570, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, bloom, "");
+
+                    if (!locked)
+                        bloom = newBloomValue;
 
                     //Anti-Aliasing
-                    GUI.Label(new Rect(20, 330, 300, 100), "Anti-Aliasing:", (currentSelection == 3 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
+                    GUI.Label(new Rect(20, 270, 300, 100), "Anti-Aliasing:", (currentSelection == 3 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
 
-                    int newAA = aaDropDown.Draw(new Rect(330, 340, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, (int)antiAliasing, antiAliasingNames);
+                    int newAA = aaDropDown.Draw(new Rect(330, 290, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, (int)antiAliasing, antiAliasingNames);
                     if (!locked && newAA != (int)antiAliasing)
                     {
                         somethingChanged = true;
                         antiAliasing = (EffectsManager.AntiAliasing)newAA;
                     }
 
-                    //Ambient Oculussion
-                    GUI.Label(new Rect(20, 420, 300, 100), "Ambient Occulusion:", (currentSelection == 4 && !Cursor.visible) ? selectedLabel : normalLabel);
-                    bool newAOVal = ambientOcculusionToggle.Draw(new Rect(20, 450, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, ambientOcculusion, "");
+                    //Change Quality
+                    GUI.Label(new Rect(20, 190, 300, 100), "Graphics Quality:", (currentSelection == 2 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
 
-                    if (!locked)
-                        ambientOcculusion = newAOVal;
+                    int newQuality = qualityDropDown.Draw(new Rect(330, 210, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentQuality, qualityNames);
+                    if (!locked && currentQuality != -1 && newQuality != currentQuality)
+                    {
+                        somethingChanged = true;
+                        currentQuality = newQuality;
+                    }
 
-                    //Chromatic Aberration
-                    GUI.Label(new Rect(20, 510, 300, 100), "Chromatic Aberration:", (currentSelection == 5 && !Cursor.visible) ? selectedLabel : normalLabel);
-                    bool newCAVal = chromaticAberrationToggle.Draw(new Rect(20, 540, 350, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, chromaticAberration, "");
+                    //Change Resolution
+                    GUI.Label(new Rect(20, 10, 300, 100), "Resolution:", (currentSelection == 0 && !changingSlider && !Cursor.visible) ? selectedLabel : normalLabel);
 
-                    if (!locked)
-                        chromaticAberration = newCAVal;
+                    int newRes = resDropDown.Draw(new Rect(330, 30, 1000, 50), new Vector2(tabAreaRect.x, tabAreaRect.y), 50, currentResolution, possibleScreens);
+                    if (!locked && currentResolution != -1 && newRes != currentResolution)
+                    {
+                        somethingChanged = true;
+                        currentResolution = newRes;
+                    }
 
                     //Apply and Cancel Buttons
-                    Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(50, 650, 150, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 6 && !changingSlider)) ? Color.yellow : Color.white);
+                    Rect cancelRect = GUIHelper.CentreRectLabel(new Rect(50, 650, 150, 100), cancelScale, "Cancel", (cancelScale > 1.1f || (currentSelection == 7 && !changingSlider)) ? Color.yellow : Color.white);
                     cancelScale = GUIHelper.SizeHover(cancelRect, cancelScale, 1f, 1.3f, 3f);
 
                     if (GUI.Button(cancelRect, ""))
                         ResetEverything();
 
-                    Rect applyRect = GUIHelper.CentreRectLabel(new Rect(270, 650, 150, 100), applyScale, "Apply", (applyScale > 1.1f || (currentSelection == 6 && changingSlider)) ? Color.yellow : Color.white);
+                    Rect applyRect = GUIHelper.CentreRectLabel(new Rect(270, 650, 150, 100), applyScale, "Apply", (applyScale > 1.1f || (currentSelection == 7 && changingSlider)) ? Color.yellow : Color.white);
                     applyScale = GUIHelper.SizeHover(applyRect, applyScale, 1f, 1.3f, 3f);
 
                     if (GUI.Button(applyRect, ""))
@@ -1235,6 +1249,7 @@ public class Options : MonoBehaviour
         chromaticAberration = effectsMan.GetUseChromaticAberration();
         ambientOcculusion = effectsMan.GetUseAmbientOcculusion();
         antiAliasing = effectsMan.GetAntiAliasing();
+        bloom = effectsMan.GetBloom();
     }
 
     public void SaveEverything()
@@ -1247,7 +1262,7 @@ public class Options : MonoBehaviour
         lastQuality = currentQuality;
 
         //Update Effects Manager
-        FindObjectOfType<EffectsManager>().UpdateValues(chromaticAberration, ambientOcculusion, antiAliasing);
+        FindObjectOfType<EffectsManager>().UpdateValues(chromaticAberration, ambientOcculusion, antiAliasing, bloom);
     }
 
     private void ChangeType(int i)

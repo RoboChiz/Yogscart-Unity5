@@ -508,8 +508,11 @@ public class KartMovement : MonoBehaviour
                 //Do cool Chromatic Aberration Effect on boost
                 if (FindObjectOfType<EffectsManager>().GetUseChromaticAberration())
                 {
-                    foreach (Camera processCamera in toProcess)
+                    foreach (Camera processCamera in toProcess.ToArray())
                     {
+                        if (processCamera == null)
+                            toProcess.Remove(processCamera);
+
                         PostProcessingBehaviour postProcess = processCamera.GetComponent<PostProcessingBehaviour>();
 
                         if (postProcess != null)
@@ -752,6 +755,11 @@ public class KartMovement : MonoBehaviour
                 trickPotential = false;
                 StartCoroutine("SpinKartBody", Vector3.right);
                 trickParticles.Play();
+
+                if(GetComponent<KartNetworker>() != null && GetComponent<KartNetworker>().isMine)
+                {
+                    GetComponent<KartNetworker>().CmdSendKartDoTrick();
+                }
             }
         }
         else
@@ -774,6 +782,13 @@ public class KartMovement : MonoBehaviour
 
         if (drift == false)
             trickLock = false;
+    }
+
+    //Allows Kart to do Tricks
+    public void ForceTrick()
+    {
+        StartCoroutine("SpinKartBody", Vector3.right);
+        trickParticles.Play();
     }
 
     public void Boost(float t, BoostMode type)
@@ -850,10 +865,28 @@ public class KartMovement : MonoBehaviour
                     kartAudioSource.PlayOneShot(soundPack.hitSounds[Random.Range(0, soundPack.hitSounds.Length)]);
             }
 
+            if (GetComponent<KartNetworker>() != null && GetComponent<KartNetworker>().isMine)
+            {
+                GetComponent<KartNetworker>().CmdSendKartSpinOut(doNoise);
+            }
+
             spinningOut = true;
         }
     }
     public void SpinOut() { SpinOut(false); }
+
+    public void ForceSpinOut(bool doNoise)
+    {
+        StartCoroutine("StartSpinOut");
+
+        if (doNoise)
+        {
+            if (soundPack.hitSounds != null && soundPack.hitSounds.Length > 0)
+                kartAudioSource.PlayOneShot(soundPack.hitSounds[Random.Range(0, soundPack.hitSounds.Length)]);
+        }
+
+        spinningOut = true;
+    }
 
     public void DoTaunt()
     {
