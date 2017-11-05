@@ -65,9 +65,9 @@ public class KartMovement : MonoBehaviour
     public bool onlineMode = false;
 
     //What state of boost we are in
-    public enum BoostMode { Not, Boost, DriftBoost, Trick };
+    public enum BoostMode { Not, DriftBoost, Trick, Boost, Chilli };
     public BoostMode isBoosting = BoostMode.Not;
-    public float boostTime;
+    public float boostTime, remainingBoostTime = 0;
 
     //Values after modifing
     private float maxSpeed, maxGrassSpeed, maxBoostSpeed, acceleration, brakeTime;
@@ -215,7 +215,15 @@ public class KartMovement : MonoBehaviour
             if (isBoosting != BoostMode.Not)
             {
                 maxSpeed = maxBoostSpeed;
-                expectedSpeed = maxBoostSpeed;
+
+                if (isBoosting != BoostMode.Chilli)
+                {        
+                    expectedSpeed = maxBoostSpeed;
+                }
+                else if (MathHelper.HaveTheSameSignHelper(expectedSpeed, throttle))           
+                {
+                    expectedSpeed = throttle * maxBoostSpeed;
+                }
             }
 
             //Get Rigidbody Stuff
@@ -553,7 +561,7 @@ public class KartMovement : MonoBehaviour
             {
                 float percentage;
 
-                if (offRoad && isBoosting != BoostMode.Boost)
+                if (offRoad && isBoosting != BoostMode.Boost && isBoosting != BoostMode.Chilli)
                     percentage = (1f / maxGrassSpeed) * Mathf.Abs(expectedSpeed);
                 else
                     percentage = (1f / maxSpeed) * Mathf.Abs(expectedSpeed);
@@ -618,7 +626,7 @@ public class KartMovement : MonoBehaviour
         bool inputValid = drift && expectedSpeed > maxSpeed * 0.5f;
 
         //If we can start a drift
-        if (inputValid && !isFalling && (!offRoad || (offRoad && isBoosting == BoostMode.Boost)))
+        if (inputValid && !isFalling && (!offRoad || (offRoad && isBoosting == BoostMode.Boost && isBoosting == BoostMode.Chilli)))
         {
             if (isDrifting == DriftMode.Not && Mathf.Abs(steer) > 0.2)
             {
@@ -793,17 +801,30 @@ public class KartMovement : MonoBehaviour
 
     public void Boost(float t, BoostMode type)
     {
-        bool playAudio = true;
-        if (isBoosting != BoostMode.Not)
-            playAudio = false;
+        //Check if this boost is better
+        if (t >= remainingBoostTime)
+        {
+            //Do Boost
+            bool playAudio = true;
+            if (isBoosting != BoostMode.Not)
+                playAudio = false;
 
-        isBoosting = type;
-        boostTime = t;
+            isBoosting = type;
+            boostTime = t;
 
-        if (lastBoost != null)
-            StopCoroutine(lastBoost);
+            if (lastBoost != null)
+                StopCoroutine(lastBoost);
 
-        lastBoost = StartCoroutine(StartBoost(t, playAudio));
+            lastBoost = StartCoroutine(StartBoost(t, playAudio));
+        }
+        else
+        {
+            //Check if type is better
+            if (type > isBoosting)
+            {
+                isBoosting = type;
+            }
+        }
     }
 
     IEnumerator StartBoost(float t, bool playAudio)
@@ -814,10 +835,16 @@ public class KartMovement : MonoBehaviour
             myAudioSource.PlayOneShot(BoostSound, 1.5f);
         }
 
-        yield return new WaitForSeconds(t);
+        float startTime = Time.time;
+        while (Time.time - startTime < t)
+        {
+            remainingBoostTime = t - (Time.time - startTime);
+            yield return null;
+        }
 
         isBoosting = BoostMode.Not;
         boostTime = 0;
+        remainingBoostTime = 0;
     }
 
     void CancelBoost()
@@ -857,7 +884,7 @@ public class KartMovement : MonoBehaviour
     {
         if (!onlineMode)
         {
-            StartCoroutine("StartSpinOut");
+            StartCoroutine(StartSpinOut());
 
             if (doNoise)
             {
@@ -877,7 +904,7 @@ public class KartMovement : MonoBehaviour
 
     public void ForceSpinOut(bool doNoise)
     {
-        StartCoroutine("StartSpinOut");
+        StartCoroutine(StartSpinOut());
 
         if (doNoise)
         {
@@ -900,7 +927,7 @@ public class KartMovement : MonoBehaviour
     //For use by Kart Networker as Kart will not spin locally otherwise
     public void localSpinOut()
     {
-        StartCoroutine("StartSpinOut");
+        StartCoroutine(StartSpinOut());
     }
 
     IEnumerator StartSpinOut()

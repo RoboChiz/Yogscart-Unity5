@@ -59,6 +59,7 @@ namespace YogscartNetwork
             NetworkServer.RegisterHandler(UnetMessages.rejectPlayerUpMsg, OnRejection);
             NetworkServer.RegisterHandler(UnetMessages.playerInfoMsg, OnPlayerUp);
             NetworkServer.RegisterHandler(UnetMessages.playerInfoUpdateMsg, OnPlayerUpdate);
+            NetworkServer.RegisterHandler(UnetMessages.pingMsg, OnServerPing);
 
             //Hide Input Manager
             InputManager.SetInputState(InputManager.InputState.Locked);
@@ -66,6 +67,19 @@ namespace YogscartNetwork
 
             //Load the Lobby
             StartCoroutine(OnReturnLobby());
+        }
+
+        protected override IEnumerator DoLobbyLoop()
+        {
+            while (isRacing && SceneManager.GetActiveScene().name == "Lobby")
+            {
+                int[] pingData = new int[finalPlayers.Count];
+                for (int i = 0; i < finalPlayers.Count; i++)
+                    pingData[i] = finalPlayers[i].ping;
+
+                NetworkServer.SendToAll(UnetMessages.pingMsg, new IntArrayMessage(pingData));
+                yield return new WaitForSeconds(5f);
+            }
         }
 
         public override void EndClient(string message)
@@ -521,6 +535,33 @@ namespace YogscartNetwork
         {
             base.OnServerConnect(conn);
             Debug.Log("OnServerConnect " + conn.address);
+        }
+
+        private void OnServerPing(NetworkMessage netMsg)
+        {
+            int racerID = -1;
+
+            //Check that Racer exists
+            for (int i = 0; i < finalPlayers.Count; i++)
+            {
+                if (finalPlayers[i].conn == netMsg.conn)
+                {
+                    racerID = i;
+                    break;
+                }
+            }
+
+            if (racerID == -1)
+            {
+                KickPlayer(netMsg.conn);
+            }
+
+            IntMessage msg = netMsg.ReadMessage<IntMessage>();
+
+            Debug.Log(netMsg.conn.address + " has sent their Ping! " + msg.value + "ms");
+
+            finalPlayers[racerID].ping = msg.value;
+            networkSelection.playerList[racerID].ping = msg.value;
         }
     }
 }

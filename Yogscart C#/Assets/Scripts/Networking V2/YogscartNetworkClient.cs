@@ -89,6 +89,7 @@ namespace YogscartNetwork
                 client.RegisterHandler(UnetMessages.returnLobbyMsg, OnReturnLobby);
                 client.RegisterHandler(UnetMessages.raceGamemodeMsg, OnGamemodeRace);
                 client.RegisterHandler(UnetMessages.loadLevelIDMsg, OnLoadLevelID);
+                client.RegisterHandler(UnetMessages.pingMsg, OnPing);
             }
 
             //Messages for all Clients and Host
@@ -461,6 +462,8 @@ namespace YogscartNetwork
                 hasReadyed = true;
                 toHost = null;
             }
+
+            StartCoroutine(DoLobbyLoop());
         }
 
         public void OnGamemodeCleanup(NetworkMessage netMsg) { OnGamemodeCleanup(); }
@@ -472,6 +475,31 @@ namespace YogscartNetwork
             //Destroy Component
             Destroy(gameMode);
         }
+
+        protected virtual IEnumerator DoLobbyLoop()
+        {
+            while(SceneManager.GetActiveScene().name == "Lobby" && !NetworkServer.active)
+            {
+                if (isRacing)
+                {
+                    client.Send(UnetMessages.pingMsg, new IntMessage(client.GetRTT()));
+                    Debug.Log("Sending ping: " + client.GetRTT() + "ms");
+                }
+
+                yield return new WaitForSeconds(5f);
+            }
+        }
+
+        public void OnPing(NetworkMessage netMsg)
+        {
+            IntArrayMessage msg = netMsg.ReadMessage<IntArrayMessage>();
+
+            for(int i = 0; i < Mathf.Min(networkSelection.playerList.Count, msg.data.Length); i++)
+            {
+                Debug.Log("Recieved ping: " + msg.data[i] + "ms");
+                networkSelection.playerList[i].ping = msg.data[i];
+            }
+        }      
 
         //------------------------------------------------------------------------------
         // Gamemode Setup

@@ -15,10 +15,17 @@ public class Egg : Projectile
     readonly string[] raycastIgnoreTags = new string[] {"Kart", "Crate", "PowerUp" };
     readonly string[] ignoreTags = new string[] { "OffRoad", "Ground"};
 
+    GameObject myParent;
+
     public override void Setup(int _direction, bool _actingShield)
     {
         base.Setup(_direction, _actingShield);
         desiredY = transform.position.y;
+    }
+
+    void Awake()
+    {
+        myParent = transform.parent.gameObject;
     }
 
     // Use this for initialization
@@ -103,6 +110,15 @@ public class Egg : Projectile
             }
         }
 
+        //Check Parent
+        Transform parentCheck = collision.collider.transform;
+        while (parentCheck.parent != null)
+            parentCheck = parentCheck.parent;
+
+        if (parentCheck == transform.parent)
+            ignore = true;
+
+        //Take the shot!
         if (!ignore)
         {
             //Debug.Log("Collided with " + collision.transform.name);

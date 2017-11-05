@@ -20,6 +20,7 @@ public static class UnetMessages
     public const short clearMsg                 = 1013;
     public const short returnLobbyMsg           = 1014;
     public const short cleanUpMsg               = 1015;
+    public const short pingMsg                  = 1016;
 
     //Gamemode Spawning Network Messages
     public const short raceGamemodeMsg          = 1050;
@@ -166,6 +167,22 @@ public class TimerMessage : MessageBase //1011
     public TimerMessage()
     {
         time = -1;
+    }
+}
+
+//Sent by Client to Server to check if both are running the same version
+public class IntArrayMessage : MessageBase //1002
+{
+    public int[] data;
+
+    public IntArrayMessage(int[] _data)
+    {
+        data = _data;
+    }
+
+    public IntArrayMessage()
+    {
+        data = new int[0];
     }
 }
 

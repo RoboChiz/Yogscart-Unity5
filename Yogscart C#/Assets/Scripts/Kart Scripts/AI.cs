@@ -80,57 +80,60 @@ public class AI : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        //Handles Start Boosting
-        if (KartMovement.startBoostVal != -1)
+        if (td != null)
         {
-            if ((myStartType == StartType.WillBoost && KartMovement.startBoostVal <= 2) || (myStartType == StartType.WillSpin && KartMovement.startBoostVal <= 3))
-                ks.throttle = 1;
-
-            if (KartMovement.startBoostVal <= 1)
-                canDrive = true;
-        }
-
-        //Stop Driving if reach finish
-        if (!td.loopedTrack && pf.currentPercent >= 1f)
-        {
-            canDrive = false;
-            ks.throttle = 0f;
-            ks.steer = 0f;
-            ks.drift = false;
-        }
-
-        if (canDrive && pf.closestPoint != null)
-        {
-            //Drive towards the nearest point
-            if (aimPoint == null || pf.closestPoint == aimPoint || pf.currentPercent >= aimPoint.percent)
-                ChooseNewPath();
-
-            //Decide how to steer
-            float angle = MathHelper.Angle(MathHelper.ZeroYPos(transform.forward), MathHelper.ZeroYPos(aimPoint.lastPos - transform.position));
-            int angleSign = MathHelper.Sign(angle);
-            ks.steer = (Mathf.Abs(angle) > requiredAngle) ? angleSign : 0f;
-
-            //Decide how to throttle
-            ks.throttle = 1f;
-
-            //Reversing Behaviour
-            RaycastHit hit;
-            if(Physics.Raycast(transform.position, transform.forward, out hit, 1.5f) && (hit.transform.GetComponent<Collider>() == null || !hit.transform.GetComponent<Collider>().isTrigger) 
-                && hit.transform.tag != "Ground" && hit.transform.tag != "OffRoad" && hit.transform != transform)
+            //Handles Start Boosting
+            if (KartMovement.startBoostVal != -1)
             {
-                //Debug.Log("Ahh! I hit " + hit.transform.name);
-                reversing = true;
+                if ((myStartType == StartType.WillBoost && KartMovement.startBoostVal <= 2) || (myStartType == StartType.WillSpin && KartMovement.startBoostVal <= 3))
+                    ks.throttle = 1;
+
+                if (KartMovement.startBoostVal <= 1)
+                    canDrive = true;
             }
 
-            Debug.DrawRay(transform.position, transform.forward * 1.5f, Color.red);
-
-            if(reversing)
+            //Stop Driving if reach finish
+            if (!td.loopedTrack && pf.currentPercent >= 1f)
             {
-                ks.throttle = -1;
-                ks.steer *= -1;
+                canDrive = false;
+                ks.throttle = 0f;
+                ks.steer = 0f;
+                ks.drift = false;
+            }
 
-                if(Mathf.Abs(angle) < requiredAngle * 2f)
-                    reversing = false;
+            if (canDrive && pf.closestPoint != null)
+            {
+                //Drive towards the nearest point
+                if (aimPoint == null || pf.closestPoint == aimPoint || pf.currentPercent >= aimPoint.percent)
+                    ChooseNewPath();
+
+                //Decide how to steer
+                float angle = MathHelper.Angle(MathHelper.ZeroYPos(transform.forward), MathHelper.ZeroYPos(aimPoint.lastPos - transform.position));
+                int angleSign = MathHelper.Sign(angle);
+                ks.steer = (Mathf.Abs(angle) > requiredAngle) ? angleSign : 0f;
+
+                //Decide how to throttle
+                ks.throttle = 1f;
+
+                //Reversing Behaviour
+                RaycastHit hit;
+                if (Physics.Raycast(transform.position, transform.forward, out hit, 1.5f) && (hit.transform.GetComponent<Collider>() == null || !hit.transform.GetComponent<Collider>().isTrigger)
+                    && hit.transform.tag != "Ground" && hit.transform.tag != "OffRoad" && hit.transform != transform)
+                {
+                    //Debug.Log("Ahh! I hit " + hit.transform.name);
+                    reversing = true;
+                }
+
+                Debug.DrawRay(transform.position, transform.forward * 1.5f, Color.red);
+
+                if (reversing)
+                {
+                    ks.throttle = -1;
+                    ks.steer *= -1;
+
+                    if (Mathf.Abs(angle) < requiredAngle * 2f)
+                        reversing = false;
+                }
             }
         }
 

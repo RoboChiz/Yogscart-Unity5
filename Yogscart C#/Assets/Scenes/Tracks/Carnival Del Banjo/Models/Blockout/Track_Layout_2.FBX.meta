@@ -1,0 +1,153 @@
+fileFormatVersion: 2
+guid: 406be5b8e6caa02408642c99c1b66e79
+timeCreated: 1509290649
+licenseType: Free
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: Circus_Tent
+    100002: Hill
+    100004: Hill2
+    100006: Mine
+    100008: Start/Market
+    100010: //RootNode
+    100012: Circus_Tent001
+    100014: Hill003
+    100016: Hill004
+    100018: Mine001
+    100020: Start/Market001
+    100022: Road
+    400000: Circus_Tent
+    400002: Hill
+    400004: Hill2
+    400006: Mine
+    400008: Start/Market
+    400010: //RootNode
+    400012: Circus_Tent001
+    400014: Hill003
+    400016: Hill004
+    400018: Mine001
+    400020: Start/Market001
+    400022: Road
+    2300000: Circus_Tent
+    2300002: Hill
+    2300004: Hill2
+    2300006: Mine
+    2300008: Start/Market
+    2300010: //RootNode
+    2300012: Circus_Tent001
+    2300014: Hill003
+    2300016: Hill004
+    2300018: Mine001
+    2300020: Start/Market001
+    2300022: Road
+    3300000: Circus_Tent
+    3300002: Hill
+    3300004: Hill2
+    3300006: Mine
+    3300008: Start/Market
+    3300010: //RootNode
+    3300012: Circus_Tent001
+    3300014: Hill003
+    3300016: Hill004
+    3300018: Mine001
+    3300020: Start/Market001
+    3300022: Road
+    4300000: TrackPieces
+    4300002: Circus_Tent
+    4300004: Start/Market
+    4300006: Hill
+    4300008: Hill2
+    4300010: Mine
+    4300012: TrackPieces_Export
+    4300014: Start/Market001
+    4300016: Mine001
+    4300018: Hill003
+    4300020: Hill004
+    4300022: Circus_Tent001
+    4300024: Track
+    4300026: Road
+    9500000: //RootNode
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: No Name
+    second: {fileID: 2100000, guid: 848c000fd237dba47ba754b91dfcd394, type: 2}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 115
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

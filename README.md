@@ -2,6 +2,12 @@
 
 ## Changelog : Started 04/08/2016
 
+# 05/11/2017
+* Added Chilli PowerUp
+* Fixed inferior boost overriding longer / more powerful boost
+* Fixed making Kart a god, not efefcting kart collisions
+* Fixed Eggs breaking on owner when just fired
+
 # 23/10/2017
 * Added Ghost Shader to Time Trial Ghosts
 * Fixed Online Karts not unlocking for Spectators

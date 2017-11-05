@@ -74,4 +74,9 @@ public class MathHelper
     {
         return (Mathf.Sign(first) == Mathf.Sign(second));
     }
+
+    public static bool HaveTheSameSignHelper(float first, float second)
+    {
+        return (Sign(first) == Sign(second));
+    }
 }

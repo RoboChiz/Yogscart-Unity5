@@ -869,7 +869,7 @@ public class PlayerInfo
 {
     public string displayName;
     public int character, hat, kart, wheel;
-    public int ping;
+    public int ping = -1;
 
     public PlayerInfo (string _displayName, int _character, int _hat, int _kart, int _wheel)
     {

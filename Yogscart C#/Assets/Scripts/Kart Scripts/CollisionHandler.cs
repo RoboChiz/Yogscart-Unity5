@@ -46,18 +46,18 @@ public class CollisionHandler : MonoBehaviour
                         collisions[i, j] = true;
 
                         KartMovement thingI = things[i].GetComponent<KartMovement>(), thingJ = things[j].GetComponent<KartMovement>();
-                        //Find out which object was travelling fastest or was in God Mode
-                        if (thingI != null && thingJ != null)
-                        {
-                            DoKartCollision(thingI, thingJ, distance - compareVect.magnitude);
-                        }
-                        else if (thingI != null && things[j].godMode)
+                        //Find out which object was travelling fastest or was in God Mode                       
+                        if (thingI != null && things[j].godMode)
                         {
                             DoKartGodCollision(thingI, things[j], distance - compareVect.magnitude);
                         }
                         else if (thingJ != null && things[i].godMode)
                         {
                             DoKartGodCollision(thingJ, things[i], distance - compareVect.magnitude);
+                        }
+                        else if (thingI != null && thingJ != null)
+                        {
+                            DoKartCollision(thingI, thingJ, distance - compareVect.magnitude);
                         }
 
                         StartCoroutine(WaitForCollision(i, j));
@@ -181,7 +181,7 @@ public class CollisionHandler : MonoBehaviour
         //Do Twist Animation
         StartCoroutine(TwistKartBody(kart.kartBody, (relativePosition.x > 0f) ? -1f : 1f));
 
-        kart.SpinOut();
+        kart.SpinOut(true);
 
         //Tell God
         god.SendMessage("OnKartHit", kart, SendMessageOptions.DontRequireReceiver);
