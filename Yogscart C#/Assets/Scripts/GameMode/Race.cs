@@ -17,6 +17,8 @@ public abstract class Race : GameMode
     public int currentCup { get; protected set; }
     //The current level we are racing on
     public int currentTrack { get; protected set; }
+    //The variation of the current level
+    public int currentVariation { get; protected set; }
 
     //How many races have taken place
     public int currentRace { get; protected set; }
@@ -75,6 +77,7 @@ public abstract class Race : GameMode
         //Reset Stuff
         currentTrack = -1;
         currentCup = -1;
+        currentVariation = -1;
         currentRace = 0;
 
         skin = Resources.Load<GUISkin>("GUISkins/Race");
@@ -195,7 +198,7 @@ public abstract class Race : GameMode
             else
             {
                 Debug.Log("Beaten the Level Select!");
-                Debug.Log("Cup:" + currentCup + " Track:" + currentTrack);
+                Debug.Log("Cup:" + currentCup + " Track:" + currentTrack + " Varation:" + currentVariation);
 
                 InputManager.SetInputState(InputManager.InputState.Locked);
                 InputManager.SetToggleState(InputManager.ToggleState.Locked);
@@ -242,7 +245,7 @@ public abstract class Race : GameMode
         FindObjectOfType<SoundManager>().SetMusicPitch(1f);
 
         //Load the Level
-        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneIDs[currentVariation]);
 
         while (!sync.isDone)
             yield return null;
@@ -507,6 +510,7 @@ public abstract class Race : GameMode
         currentCup = -1;
         currentTrack = -1;
         currentRace = 1;
+        currentVariation = -1;
 
         Destroy(mapViewer);
         StartCoroutine(QuitGame());
@@ -621,6 +625,8 @@ public abstract class Race : GameMode
     {
         currentTrack = _currentTrack;
         currentCup = _currentCup;
+
+        currentVariation = gd.GetRandomLevelForTrack(currentCup, currentTrack);
     }
 
     public IEnumerator DoIntro()

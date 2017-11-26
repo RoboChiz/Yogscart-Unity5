@@ -19,7 +19,7 @@ public class NetworkRace : Race
 
     //Needed for Race
     private List<Vote> votes;
-    int cup, track;
+    int cup, track, variation;
 
     const int voteTimer = 15;
 
@@ -150,8 +150,8 @@ public class NetworkRace : Race
             Debug.Log("Sending Level Load");
 
             //Tell Client to load level           
-            OnLoadLevel(cup, track);
-            NetworkServer.SendToAll(UnetMessages.loadLevelMsg, new TrackVoteMessage(cup, track));
+            OnLoadLevel(cup, track, variation);
+            NetworkServer.SendToAll(UnetMessages.loadLevelMsg, new TrackVoteMessage(cup, track, variation));
 
             yield return WaitForAllReady();
 
@@ -322,15 +322,17 @@ public class NetworkRace : Race
             chosenVote = Random.Range(0, votes.Count);         
 
             cup = votes[chosenVote].cup;
-            track = votes[chosenVote].track;       
+            track = votes[chosenVote].track;
+            variation = gd.GetRandomLevelForTrack(cup, track);
         }
         else
         {
             //Select a track at Random
             cup = Random.Range(0, gd.tournaments.Length);
             track = Random.Range(0, gd.tournaments[cup].tracks.Length);
+            variation = gd.GetRandomLevelForTrack(cup, track);
 
-            NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, new TrackVoteMessage(cup, track));
+            NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, new TrackVoteMessage(cup, track, variation));
             OnAddToVoteList(cup, track);
 
             //Wait for message to send
@@ -443,7 +445,7 @@ public class NetworkRace : Race
 
         if (!isHost)
         {
-            TrackVoteMessage msg = new TrackVoteMessage(cup, track);
+            TrackVoteMessage msg = new TrackVoteMessage(cup, track, 0);
             client.client.Send(UnetMessages.trackVoteMsg, msg);
         }
         else
@@ -501,7 +503,7 @@ public class NetworkRace : Race
         votes.Add(new Vote(_cup, _track));
 
         //Actually process data
-        NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, new TrackVoteMessage(_cup, _track));
+        NetworkServer.SendToAll(UnetMessages.voteListUpdateMsg, new TrackVoteMessage(_cup, _track, 0));
         OnAddToVoteList(_cup, _track);
     }
 
@@ -533,10 +535,10 @@ public class NetworkRace : Race
     }
 
     //------------------------------------------------------------------------------
-    public void OnLoadLevel(NetworkMessage netMsg) { TrackVoteMessage msg = netMsg.ReadMessage<TrackVoteMessage>(); OnLoadLevel(msg.cup, msg.track); }
-    public void OnLoadLevel(int _cup, int _track) { StartCoroutine(ActualOnLoadLevel(_cup, _track)); }
+    public void OnLoadLevel(NetworkMessage netMsg) { TrackVoteMessage msg = netMsg.ReadMessage<TrackVoteMessage>(); OnLoadLevel(msg.cup, msg.track, msg.variation); }
+    public void OnLoadLevel(int _cup, int _track, int _variation) { StartCoroutine(ActualOnLoadLevel(_cup, _track, _variation)); }
 
-    public IEnumerator ActualOnLoadLevel(int _cup, int _track)
+    public IEnumerator ActualOnLoadLevel(int _cup, int _track, int _variation)
     {
         Debug.Log("DO LEVEL LOAD!");
 
@@ -567,7 +569,7 @@ public class NetworkRace : Race
         FindObjectOfType<SoundManager>().SetMusicPitch(1f);
 
         //Load the Level
-        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneID);
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentCup].tracks[currentTrack].sceneIDs[_variation]);
 
         while (!sync.isDone)
             yield return null;

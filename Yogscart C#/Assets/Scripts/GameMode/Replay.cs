@@ -81,7 +81,7 @@ public class Replay : MonoBehaviour
         KartMovement.beQuiet = true;
 
         //Load the Level
-        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentRace.currentCup].tracks[currentRace.currentTrack].sceneID);
+        AsyncOperation sync = SceneManager.LoadSceneAsync(gd.tournaments[currentRace.currentCup].tracks[currentRace.currentTrack].sceneIDs[currentRace.currentVariation]);
 
         while (!sync.isDone)
             yield return null;

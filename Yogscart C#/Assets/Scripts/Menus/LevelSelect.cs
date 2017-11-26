@@ -11,6 +11,8 @@ public class LevelSelect : MonoBehaviour
     private int currentCup = 0, currentTrack = 0;
     public int trackNum = 4;
 
+    private const int maxVSRaces = 64;
+
     //Transtition
     private float menuAlpha = 1f;
     public bool sliding = false, canClick = false;
@@ -171,12 +173,12 @@ public class LevelSelect : MonoBehaviour
 
                 if(GUI.Button(leftRect, "", customButton))
                 {
-                    trackNum = MathHelper.NumClamp(trackNum - 1, 1, 64);
+                    trackNum = MathHelper.NumClamp(trackNum - 1, 1, 65);
                 }
 
                 if (GUI.Button(rightRect, "", customButton))
                 {
-                    trackNum = MathHelper.NumClamp(trackNum + 1, 1, 64);
+                    trackNum = MathHelper.NumClamp(trackNum + 1, 1, 65);
                 }
 
                 GUIHelper.OutLineLabel(timeRect, "Races: " + trackNum, 2, Color.black);
@@ -234,7 +236,7 @@ public class LevelSelect : MonoBehaviour
 
             if(tabChange != 0 && gamemode is VSRace && GetComponent<MainMenu>() != null)
             {
-                trackNum = MathHelper.NumClamp(trackNum + tabChange, 1, 64);
+                trackNum = MathHelper.NumClamp(trackNum + tabChange, 1, maxVSRaces + 1);
                 tabChange = 0;
             }
         }

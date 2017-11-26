@@ -2,10 +2,20 @@
 
 ## Changelog : Started 04/08/2016
 
+# 26/11/2017
+* Added Snow Flakes to Main Menu
+* Added Christmas Music to Main Menu
+* Added Placeholder Santa Hat
+* Added Christmas Sjin's Farm (Haven't actually started decorating it though)
+* Levels with multiple versions(Sjin's Farm) now have a random chance of swapping version
+* Wearing the Witches Hat will increase chances of Spooky Sjin's Farm
+* Wearing the Santa Hat will increase chances of Christmas Sjin's Farm
+* Fixed bug where the maximum number of VS Races was 63
+
 # 05/11/2017
 * Added Chilli PowerUp
 * Fixed inferior boost overriding longer / more powerful boost
-* Fixed making Kart a god, not efefcting kart collisions
+* Fixed making Kart a god, not effecting kart collisions
 * Fixed Eggs breaking on owner when just fired
 
 # 23/10/2017

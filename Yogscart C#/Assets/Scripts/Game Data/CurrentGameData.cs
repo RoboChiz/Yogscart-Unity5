@@ -342,49 +342,42 @@ public class CurrentGameData : MonoBehaviour {
             //Check every file in Ghost Data folder
             var info = new DirectoryInfo(Application.persistentDataPath + "/Ghost Data/");
             var fileInfo = info.GetFiles();
-            bool updateFile = false;
-
             foreach (FileInfo file in fileInfo)
             {
                 FileStream fileStream = null;
-                GhostData gd = null;
-
                 try
                 {
                     BinaryFormatter bf = new BinaryFormatter();
                     fileStream = file.Open(FileMode.Open);
 
-                    gd = (GhostData)bf.Deserialize(fileStream);
-                    gd.fileLocation = file.FullName;
+                    GhostData ghostData = (GhostData)bf.Deserialize(fileStream);
+                    bool updateFile = false;
 
-                    if (CompatibleVersion(gd.version))
+                    if(CompatibleVersion(ghostData.version))
                     {
-                        tournaments[gd.cup].tracks[gd.track].ghosts++;
+                        tournaments[ghostData.cup].tracks[ghostData.track].ghosts++;
 
-                        if (gd.version != version)
+                        if (ghostData.version != version)
                             updateFile = true;
                     }
+
+                    //Update Save File if Appropriate
+                    if (updateFile)
+                        UpdateFile(ghostData);
                 }
                 finally
                 {
                     if (fileStream != null)
                         fileStream.Close();
                 }
-
-                //Update Save File if Appropriate
-                if (updateFile)
-                    UpdateFile(gd);
             }
         }
         catch { }
     }
 
-    public bool CompatibleVersion(string versionName)
+    public bool CompatibleVersion(string _version)
     {
-        if (versionName == version)
-            return true;
-
-        if (versionName == "C# Version 0.7")
+        if(_version == TimeTrial.saveVersion.ToString())
             return true;
 
         return false;
@@ -433,6 +426,94 @@ public class CurrentGameData : MonoBehaviour {
         }
 
         return playClip;
+    }
+
+    public int GetRandomLevelForTrack(int _cup, int _track)
+    {
+        string[] possibleLevels = tournaments[_cup].tracks[_track].sceneIDs;
+
+        if (possibleLevels.Length == 1)
+        {
+            return 0;
+        }
+        else
+        {
+            //Choose a Level at Random, but allow programmers to change outcome
+            int[] levelchance = new int[possibleLevels.Length];
+            int totalValue = 0;
+
+            for(int i = 0; i < possibleLevels.Length; i++)
+            {
+                //Every level has a chance of coming up
+                levelchance[i] = 1 + ChangeChances(possibleLevels[i]);
+
+                totalValue += levelchance[i];
+            }
+
+            //Get Random Value
+            int randomVal = UnityEngine.Random.Range(0, totalValue);
+            for (int i = 0; i < possibleLevels.Length; i++)
+            {
+                randomVal -= levelchance[i];
+
+                if(randomVal <= 0)
+                {
+                    return i;
+                }
+            }
+        }
+
+        throw new Exception("Shouldn't get here!");
+    }
+
+    //Increase a levels chances of coming up based on player input
+    public int ChangeChances(string levelName)
+    {
+        switch(levelName)
+        {
+            case "SjinsFarm_Spooky": //If Player has chosen Witches Hat then increase odds of this level coming up
+                //Find the witches hat
+                int witchHatID = FindHatID("Witch Hat");
+
+                foreach (LoadOut loadOut in currentChoices)
+                {
+                    if(loadOut.hat == witchHatID)
+                    {
+                        return 5;
+                    }
+                }
+               
+                break;
+            case "SjinsFarm_Christmas": //If Player has chosen Santa Hat then increase odds of this level coming up
+                //Find the witches hat
+                int santaHatID = FindHatID("Santa Hat");
+
+                foreach (LoadOut loadOut in currentChoices)
+                {
+                    if (loadOut.hat == santaHatID)
+                    {
+                        return 5;
+                    }
+                }
+
+                break;
+        }
+
+        return 0;
+    }
+
+    //Return the id of a Hat in the Hats List
+    public int FindHatID(string _hatName)
+    {
+        for (int i = 0; i < hats.Length; i++)
+        {
+            if (hats[i].name == _hatName)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }
 
@@ -529,8 +610,9 @@ public class Track
     public Texture2D preview;
 
     public float bestTime;
-    public string sceneID;
+    public string[] sceneIDs;
 
+    [HideInInspector]
     public int ghosts;
 }
 

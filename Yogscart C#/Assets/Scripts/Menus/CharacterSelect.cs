@@ -586,7 +586,8 @@ public class CharacterSelect : MonoBehaviour
                         {
                             loadedModels[s] = Instantiate(gd.characters[choice[s].character].CharacterModel_Standing, platforms[s].Find("Spawn").position, oldRot);
                             loadedModels[s].GetComponent<Rigidbody>().isKinematic = true;
-                            loadedModels[s].GetComponentInChildren<FaceToCamera>().forceCamera = platforms[s].Find("Camera");
+                            if(loadedModels[s].GetComponentInChildren<FaceToCamera>() != null)
+                                loadedModels[s].GetComponentInChildren<FaceToCamera>().forceCamera = platforms[s].Find("Camera");
                         }
 
                         loadedChoice[s].character = choice[s].character;

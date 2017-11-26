@@ -32,8 +32,7 @@ public class VSRace : TournamentRace
 
     public override void FinishLevelSelect(int _currentCup, int _currentTrack)
     {
-        currentTrack = _currentTrack;
-        currentCup = _currentCup;
+        base.FinishLevelSelect(_currentCup, _currentTrack);
 
         if (FindObjectOfType<MainMenu>() == null)
         {

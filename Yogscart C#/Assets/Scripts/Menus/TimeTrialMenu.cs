@@ -181,7 +181,7 @@ public class TimeTrialMenu : MonoBehaviour
                 else
                     optionScales[i] = Mathf.Clamp(optionScales[i] - (Time.deltaTime * 3f), 1f, 1.2f);
 
-                Rect labelRect = new Rect(100, 100 + (100 * i), 500, 90);
+                Rect labelRect = new Rect(100, 100 + (100 * i), 550, 90);
                 GUIHelper.LeftRectLabel(labelRect, optionScales[i], options[i], textColor);
 
                 if(!choosingGhost && Cursor.visible)

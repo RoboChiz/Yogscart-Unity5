@@ -23,14 +23,11 @@ public class Egg : Projectile
         desiredY = transform.position.y;
     }
 
-    void Awake()
-    {
-        myParent = transform.parent.gameObject;
-    }
-
     // Use this for initialization
     void Start ()
     {
+        myParent = transform.parent.gameObject;
+
         if (fireSound == null)
             fireSound = Resources.Load<AudioClip>("Music & Sounds/clucky shoot egg");
 

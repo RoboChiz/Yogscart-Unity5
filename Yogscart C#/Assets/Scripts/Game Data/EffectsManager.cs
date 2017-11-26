@@ -47,21 +47,23 @@ public class EffectsManager : MonoBehaviour
 
             foreach(Camera camera in FindObjectsOfType<Camera>())
             {
-                PostProcessingBehaviour postProcessBehaviour = camera.GetComponent<PostProcessingBehaviour>();
-                if (postProcessBehaviour == null)
+                if (camera.GetComponent<NoEffects>() == null)
                 {
-                    //Give the Camera a copy of the default effects
-                    postProcessBehaviour = camera.gameObject.AddComponent<PostProcessingBehaviour>();
-                    postProcessBehaviour.profile = ScriptableObject.CreateInstance<PostProcessingProfile>();
+                    PostProcessingBehaviour postProcessBehaviour = camera.GetComponent<PostProcessingBehaviour>();
+                    if (postProcessBehaviour == null)
+                    {
+                        //Give the Camera a copy of the default effects
+                        postProcessBehaviour = camera.gameObject.AddComponent<PostProcessingBehaviour>();
+                        postProcessBehaviour.profile = ScriptableObject.CreateInstance<PostProcessingProfile>();
 
-                    //Update Local Behaviour
-                    ApplyLoad(postProcessBehaviour.profile);
-                }   
-                
-                if(reapply)
-                {
-                    ApplyLoad(postProcessBehaviour.profile);
-                }        
+                        //Update Local Behaviour
+                        ApplyLoad(postProcessBehaviour.profile);
+                    }
+                    else if (reapply)
+                    {
+                        ApplyLoad(postProcessBehaviour.profile);
+                    }
+                }
             }
 
             if(reapply)

@@ -191,19 +191,20 @@ public class IntArrayMessage : MessageBase //1002
 //Sent by Client to Server & From Server to all Clients
 public class TrackVoteMessage : MessageBase //1103, 1104
 {
-    public int cup;
-    public int track;
+    public int cup, track, variation;
 
     public TrackVoteMessage()
     {
         cup = 0;
         track = 0;
+        variation = 0;
     }
 
-    public TrackVoteMessage(int nCup, int nTrack)
+    public TrackVoteMessage(int _cup, int _track, int _variation)
     {
-        cup = nCup;
-        track = nTrack;
+        cup = _cup;
+        track = _track;
+        variation = _variation;
     }
 }
 
