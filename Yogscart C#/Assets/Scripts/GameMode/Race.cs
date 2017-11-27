@@ -427,7 +427,9 @@ public abstract class Race : GameMode
             }
         }
 
-        gd.SaveGame();
+        SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+        saveDataManager.SetLapisAmount(gd.overallLapisCount);
+        saveDataManager.Save();
 
         //Increment the race count
         currentRace++;

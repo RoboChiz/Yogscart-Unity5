@@ -501,7 +501,12 @@ public class Options : MonoBehaviour
     public void Quit()
     {
         //Save Mouse and Controller Scales
-        FindObjectOfType<CurrentGameData>().SaveGame();
+        SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+        CurrentGameData gd = FindObjectOfType<CurrentGameData>();
+
+        saveDataManager.SetMouseScale(gd.mouseScale);
+        saveDataManager.SetControllerScale(gd.controllerScale);
+        saveDataManager.Save();
 
         if (somethingChanged)
         {
@@ -739,7 +744,10 @@ public class Options : MonoBehaviour
                     if(streamMode != FindObjectOfType<CurrentGameData>().streamMode)
                     {
                         FindObjectOfType<CurrentGameData>().streamMode = streamMode;
-                        FindObjectOfType<CurrentGameData>().SaveGame();
+
+                        SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+                        saveDataManager.SetStreamMode(streamMode);
+                        saveDataManager.Save();
 
                         if (streamMode)
                         {

@@ -268,6 +268,7 @@
     <Compile Include="Assets\Scripts\Camera Scripts\FreeCam.cs" />
     <Compile Include="Assets\Scripts\Camera Scripts\OrbitCam.cs" />
     <Compile Include="Assets\Scripts\Character Scripts\StandingCharacter.cs" />
+    <Compile Include="Assets\Scripts\Game Data\AchievementManager.cs" />
     <Compile Include="Assets\Scripts\Game Data\AudioSourceInfo.cs" />
     <Compile Include="Assets\Scripts\Game Data\CurrentGameData.cs" />
     <Compile Include="Assets\Scripts\Game Data\EffectsManager.cs" />
@@ -275,6 +276,8 @@
     <Compile Include="Assets\Scripts\Game Data\GUIHelper.cs" />
     <Compile Include="Assets\Scripts\Game Data\NoEffects.cs" />
     <Compile Include="Assets\Scripts\Game Data\OldInputManager.cs" />
+    <Compile Include="Assets\Scripts\Game Data\SaveData.cs" />
+    <Compile Include="Assets\Scripts\Game Data\SaveDataManager.cs" />
     <Compile Include="Assets\Scripts\Game Data\SortingScript.cs" />
     <Compile Include="Assets\Scripts\Game Data\SoundManager.cs" />
     <Compile Include="Assets\Scripts\Game Data\TimeManager.cs" />
@@ -419,6 +422,7 @@
     <None Include="Assets\PostProcessing\Utilities\CustomMotionTexture\Shaders\CustomMotionVectorTexture.shader" />
     <None Include="Assets\Resources\Dev Ghosts\15_7_2017_20_05.txt" />
     <None Include="Assets\Resources\Fonts\read me.txt" />
+    <None Include="Assets\Resources\Localisation\English\Achievements.xml" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShader1.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Honey\HoneyShaderEmission.shader" />
     <None Include="Assets\Scenes\Tracks\Sjin&apos;s Farm\Shaders\GenericBlendShaderSplatWorkAround2.shader" />

@@ -1,0 +1,20 @@
+<Translation>  
+	<Item id="0"      name="WholeNewGame"         description="It's like a WHOLE NEW GAME"/>
+  <Item id="1"      name="NewGhost"             description="[Temp] Make a Time Trial Ghost"/>
+  <Item id="2"      name="RaceGhost"            description="[Temp] Race a Time Trial Ghost"/>
+  <Item id="3"      name="SjinsFarmExplorer"    description="[Temp] Race on every variation of Sjin's Farm"/>
+  <Item id="4"      name="GotPerfect"           description="[Temp] Get a Perfect Rank on any Cup"/>
+  <Item id="5"      name="DeadLast"             description="[Temp] Finished any Cup in Dead Last"/>
+  <Item id="6"      name="64VSRace"             description="[Temp] Completed a 64 Race Tournament"/>
+  <Item id="7"      name="10EggStrike"          description="[Temp] Hit 10 Racers with Eggs"/>
+  <Item id="8"      name="50EggStrike"          description="[Temp] Hit 50 Racers with Eggs"/>
+  <Item id="9"      name="100EggStrike"         description="[Temp] Hit 100 Racers with Eggs"/>
+  <Item id="10"     name="200EggStrike"         description="[Temp] Hit 200 Racers with Eggs" />
+  <Item id="11"     name="SimonJaffa"           description="[Temp] Use a Joffocake as Simon"/>
+  <Item id="12"     name="SjinChilli"           description="[Temp] Use a Chilli as Sjin"/>
+  <Item id="13"     name="DuncanChemicals"      description="[Temp] Use the Chemical Flasks as Duncan"/>
+  <Item id="14"     name="LewisOilSlip"         description="[Temp] Slip in Oil as Lewis"/>
+  <Item id="15"     name="50Lapis"              description="[Temp] Collect 50 Lapis"/>
+  <Item id="16"     name="500Lapis"             description="[Temp] Collect 500 Lapis"/>
+  <Item id="17"     name="1000Lapis"            description="[Temp] Collect 1000 Lapis"/>
+</Translation>  

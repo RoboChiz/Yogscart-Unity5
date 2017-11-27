@@ -45,7 +45,7 @@ public class IntroScript : MonoBehaviour {
         CurrentGameData.blackOut = true;
         yield return new WaitForSeconds(0.5f);
 
-        while (FindObjectOfType<CurrentGameData>().playerName == "")
+        while (!FindObjectOfType<SaveDataManager>().GetHasDonePlayerName())
         {
             ChangeName cn = FindObjectOfType<ChangeName>();
             cn.Show();

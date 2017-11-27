@@ -38,6 +38,13 @@ public class TournamentRace : Race
     {
         if(currentRace >= raceCount)
         {
+            //Check for 64 VS Race Achievement
+            if (raceCount >= 64)
+            {
+                //Achievement GET!
+                FindObjectOfType<AchievementManager>().UnlockAchievement("64VSRace");
+            }
+
             DetermineWinner();
         }
     }
@@ -68,6 +75,13 @@ public class TournamentRace : Race
             SetRank(Rank.Bronze);
         else
             SetRank(Rank.NoRank);
+
+        //Check for Dead Last Achievement
+        if(points == 16)
+        {
+            //Achievement GET!
+            FindObjectOfType<AchievementManager>().UnlockAchievement("DeadLast");
+        }
     }
 
     protected virtual void SetRank(Rank rank)
@@ -78,7 +92,24 @@ public class TournamentRace : Race
         if (rank > gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty])
         {
             gd.tournaments[currentCup].lastRank[CurrentGameData.difficulty] = rank;
-            gd.SaveGame();
+
+            SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+            saveDataManager.SetTournamentRank(currentCup, CurrentGameData.difficulty, rank);
+
+            //Check if Insane is unlocked
+            if(!saveDataManager.GetUnlockedInsane())
+            {
+                saveDataManager.SetUnlockedInsane(gd.CanUnlockInsane());
+            }
+
+            //Check for Achievements
+            if(rank == Rank.Perfect)
+            {
+                //Achievement GET!
+                FindObjectOfType<AchievementManager>().UnlockAchievement("GotPerfect");
+            }
+
+            saveDataManager.Save();
         }
     }
 

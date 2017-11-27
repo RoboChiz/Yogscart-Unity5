@@ -1,6 +1,19 @@
-# Yogscart Alpha V2
+# Yogscart Beta
 
 ## Changelog : Started 04/08/2016
+
+# 27/11/2017
+* Moved Saving to new Save Data manager
+* Added unlocking Insane mode if you get a gold or higher on any difficulty on every cup
+* Added Achievement System
+* Added "Whole New Game" Achievement
+* Added "Lapis" Achievement for 50, 500 and 1000 pieces of Lapis collected
+* Added "Eggs Hit" Achievement for 50, 100 and 200 racers hit by eggs
+* Added "Perfect Rank" Achievement
+* Added "Dead Last" Achievement
+* Added "64 VS Races" Achievement
+* Made Credits scroll properly and faster
+* Added "Stats" option to Main Menu
 
 # 26/11/2017
 * Added Snow Flakes to Main Menu
@@ -11,6 +24,9 @@
 * Wearing the Witches Hat will increase chances of Spooky Sjin's Farm
 * Wearing the Santa Hat will increase chances of Christmas Sjin's Farm
 * Fixed bug where the maximum number of VS Races was 63
+
+# 24/11/2017
+* Fixed Eggs not firing properly
 
 # 05/11/2017
 * Added Chilli PowerUp

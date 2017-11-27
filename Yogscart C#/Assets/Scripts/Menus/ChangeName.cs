@@ -153,7 +153,10 @@ public class ChangeName : MonoBehaviour
         if (gd != null)
         {
             gd.playerName = playerName;
-            gd.SaveGame();
+
+            SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+            saveDataManager.SetPlayerName(gd.playerName);
+            saveDataManager.Save();
         }
 
         locked = true;

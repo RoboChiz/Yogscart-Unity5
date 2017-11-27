@@ -42,7 +42,7 @@ public class MainMenu : MonoBehaviour
 
     private string popupText = "";
 
-    public enum MenuState {Start, Main, SinglePlayer, Difficulty, Multiplayer, CharacterSelect, LevelSelect, Online, Options, Popup, Credits };
+    public enum MenuState {Start, Main, SinglePlayer, Difficulty, Multiplayer, CharacterSelect, LevelSelect, Online, Options, Popup, Credits, Stats };
     public MenuState state = MenuState.Start;
     private MenuState nextState = MenuState.Start;
 
@@ -170,7 +170,7 @@ public class MainMenu : MonoBehaviour
 
         Vector2 newMousePos = GUIHelper.GetMousePosition();
         string randoImage = "UI/New Main Menu/Side Images/" + randomImage.ToString();
-        string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage };
+        string[] possibleSideImages = new string[] { randoImage, "UI/New Main Menu/Side Images/Multiplayer", "UI/New Main Menu/Side Images/Online", "UI/New Main Menu/Side Images/Options", randoImage, randoImage, randoImage };
 
         if (state == MenuState.Main || state == MenuState.Start)
         {
@@ -221,7 +221,7 @@ public class MainMenu : MonoBehaviour
 
                 break;
             case MenuState.Main:
-                options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Quit" };
+                options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Stats", "Quit" };
                 break;
             case MenuState.SinglePlayer:
                 options = new string[] { "Tournament", "VS Race", "Time Trial" };
@@ -235,7 +235,7 @@ public class MainMenu : MonoBehaviour
             break;
             case MenuState.Difficulty:
                 //options = ["50cc - Only for little Babby!","100cc - You mother trucker!","150cc - Oh what big strong muscles!","Insane - Prepare your butts!","Back"];
-                if (CurrentGameData.unlockedInsane)
+                if (gd.unlockedInsane)
                     options = new string[] { "50cc", "100cc", "150cc", "Insane" };
                 else
                     options = new string[] { "50cc", "100cc", "150cc" };
@@ -244,8 +244,11 @@ public class MainMenu : MonoBehaviour
                 options = new string[] { };
                 GUI.Label(new Rect(box.x + 40, 20 + (box.height / 4f), box.width - 20, box.height - 20 - (box.height / 4f)), popupText);
              break;
-            case MenuState.Credits:
-                break;
+            case MenuState.Credits:            
+            break;
+            case MenuState.Stats:
+                options = new string[] { };
+                    break;
             case MenuState.CharacterSelect:
                 break;
         }
@@ -283,7 +286,7 @@ public class MainMenu : MonoBehaviour
                         optionSizes[i] = 1f;
                 }
                 
-                Rect optionRect = GUIHelper.LeftRectLabel(new Rect(40, 20 + (box.height / 3f) + (i * optionHeight), box.width - 20, optionHeight - 20), optionSizes[i], options[i], (currentSelection == i) ? Color.yellow : Color.white);
+                Rect optionRect = GUIHelper.LeftRectLabel(new Rect(40, 300 + (i * optionHeight), box.width - 20, optionHeight - 20), optionSizes[i], options[i], (currentSelection == i) ? Color.yellow : Color.white);
 
                 if (!sliding)
                 {
@@ -361,6 +364,12 @@ public class MainMenu : MonoBehaviour
                                 case "Credits":
                                     moveTitle = true;
                                     ChangeMenu(MenuState.Credits);
+                                    GetComponent<Credits>().enabled = true;
+                                    GetComponent<Credits>().StartCredits();
+                                    break;
+                                case "Stats":
+                                    moveTitle = true;
+                                    ChangeMenu(MenuState.Stats);
                                     GetComponent<Credits>().enabled = true;
                                     GetComponent<Credits>().StartCredits();
                                     break;

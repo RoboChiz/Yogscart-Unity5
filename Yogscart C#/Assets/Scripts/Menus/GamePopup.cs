@@ -106,8 +106,8 @@ public class GamePopup : MonoBehaviour
 
     protected virtual void DoInput()
     {
-        if (!noSelected)
-            FindObjectOfType<CurrentGameData>().ResetData();
+        SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+        saveDataManager.ResetSave();
 
         HidePopUp();
     }

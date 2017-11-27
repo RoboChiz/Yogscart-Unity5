@@ -21,7 +21,7 @@ public class CurrentGameData : MonoBehaviour {
     3 = Insane
     */
 
-    public static bool unlockedInsane = false;
+    public bool unlockedInsane = false;
 
     public Character[] characters;
     public Hat[] hats;
@@ -66,9 +66,11 @@ public class CurrentGameData : MonoBehaviour {
         blackTexture.Apply();
 
         playerName = "";
+    }
 
+    private void Start()
+    {
         LoadGame();
-
     }
 
     void OnGUI()
@@ -111,221 +113,77 @@ public class CurrentGameData : MonoBehaviour {
         controllerScale = Mathf.Clamp(controllerScale, 0.1f, 10f);
     }
 
-    public void SaveGame()
-    {
-        string gameData = "";
-
-        //Data Layout
-        //0 - Version Number
-        gameData += version + ";";
-        //1 - Unlocked Characters
-        gameData += ";";
-        //2 - Unlocked Hats
-        gameData += ";";
-        //3 - Unlocked Karts
-        gameData += ";";
-        //4 - Unlocked Wheels
-        gameData += ";";
-        //5 - Tournament Ranks
-        for (int i = 0; i < tournaments.Length; i++)
-        {
-            if (tournaments[i].lastRank.Length != 4)
-                tournaments[i].lastRank = new Rank[4];
-
-            for (int j = 0; j < tournaments[i].lastRank.Length; j++)
-            {
-                gameData += (int)tournaments[i].lastRank[j];
-
-                if (i != tournaments.Length - 1 || j != tournaments[i].lastRank.Length - 1)
-                {
-                    gameData += ",";
-                }
-            }
-        }
-        gameData += ";";
-        //6 - Track Times
-        for (int i = 0; i < tournaments.Length; i++)
-        {
-            for(int j = 0; j < tournaments[i].tracks.Length; j++)
-            {
-                gameData += tournaments[i].tracks[j].bestTime;
-                if (i != tournaments.Length - 1 || j != tournaments[i].lastRank.Length - 1)
-                {
-                    gameData += ",";
-                }
-            }
-        }
-        gameData += ";";
-
-        //7 - Lapis
-        gameData += overallLapisCount;
-        gameData += ";";
-
-        //8 - Player Name
-        gameData += playerName;
-        gameData += ";";
-
-        //9 - Stream Mode
-        gameData += streamMode.ToString();
-        gameData += ";";
-
-        //10 - Mouse Scale
-        gameData += mouseScale;
-        gameData += ";";
-
-        //11 - Controller Scale
-        gameData += controllerScale;
-
-        PlayerPrefs.SetString("YogscartData", gameData);
-    }
-
     void LoadGame()
     {
         string gameData = PlayerPrefs.GetString("YogscartData","");
-
-        if (gameData == "")
+        if(gameData != "")
         {
-            //No Data Available
-            Debug.Log("No Data Available");
-            SaveGame();
+            //Achievement GET!
+            FindObjectOfType<AchievementManager>().UnlockAchievement("WholeNewGame");
         }
 
-        try
+        SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+        overallLapisCount = saveDataManager.GetLapisAmount();
+        playerName = saveDataManager.GetPlayerName();
+        streamMode = saveDataManager.GetStreamMode();
+        mouseScale = saveDataManager.GetMouseScale();
+        controllerScale = saveDataManager.GetControllerScale();
+        unlockedInsane = saveDataManager.GetUnlockedInsane();
+
+        //Unlock Characters
+        for (int i = 0; i < characters.Length; i++)
         {
-            string[] splitData = gameData.Split(";"[0]);
-
-            //Data Layout
-            //0 - Version Number
-            /*switch (splitData[0])
+            if(characters[i].unlocked != UnlockedState.FromStart)
             {
-                case "C# Version 0.1":
-                    Debug.Log("Version is compatible!");
-                    break;
-                default:
-                    ResetData();
-                    return;
-            }*/
-            //1 - Unlocked Characters
-            //2 - Unlocked Hats
-            //3 - Unlocked Karts
-            //4 - Unlocked Wheels
-            //5 - Tournament Ranks
-            string[] tournamentRanks = splitData[5].Split(","[0]);
-            //Debug.Log("tournamentRanks:" + tournamentRanks.Length + " tournaments.Length:" + tournaments.Length);
-
-            if (tournamentRanks.Length != (tournaments.Length * 4))
-            {
-                ResetData();
-                return;
+                characters[i].unlocked = saveDataManager.GetCharacterUnlocked(i) ? UnlockedState.Unlocked : UnlockedState.Locked;
             }
-            else
-            {
-                Debug.Log("Tournament Ranks is compatible!");
-                int rankCount = 0;
-                for (int i = 0; i < tournaments.Length; i++)
-                {
-                    Rank[] ranks = new Rank[4];
-
-                    for (int j = 0; j < ranks.Length; j++)
-                    {
-                        int outVal = -1;
-
-                        if (!int.TryParse(tournamentRanks[rankCount], out outVal) || ranks[j] < 0 || (int)ranks[j] >= 5)
-                        {
-                            ResetData();
-                            return;
-                        }
-
-                        ranks[j] = (Rank)outVal;
-
-                        rankCount++;
-                    }
-
-                    tournaments[i].lastRank = ranks;
-                }
-            }
-            //6 - Track Times
-            string[] trackTimes = splitData[6].Split(","[0]);
-            int timeCount = 0;
-            for (int i = 0; i < tournaments.Length; i++)
-            {
-                for (int j = 0; j < tournaments[i].tracks.Length; j++)
-                {
-                    float outFloat = -1;
-                    if (!float.TryParse(trackTimes[timeCount], out outFloat) || outFloat < 0 || outFloat >= 3600)
-                    {
-                        ResetData();
-                        return;
-                    }
-
-                    tournaments[i].tracks[j].bestTime = outFloat;
-                    tournaments[i].tracks[j].ghosts = 0;
-
-                    timeCount++;
-                }
-            }
-            Debug.Log("Track Times is compatible!");
-            //7 - Lapis
-            overallLapisCount = int.Parse(splitData[7]);
-            //8 - Player Name
-            playerName = splitData[8];
-            //9 - Stream Mode
-            streamMode = bool.Parse(splitData[9]);
-            //10 - Mouse Scale
-            mouseScale = float.Parse(splitData[10]);
-            //11 - Controller Scale
-            controllerScale = float.Parse(splitData[11]);
-        }
-        catch
-        {
-            ResetData();
         }
 
-        Debug.Log("All data loaded!");
+        //Unlock Hats
+        for (int i = 0; i < hats.Length; i++)
+        {
+            if (hats[i].unlocked != UnlockedState.FromStart)
+            {
+                hats[i].unlocked = saveDataManager.GetHatUnlocked(i) ? UnlockedState.Unlocked : UnlockedState.Locked;
+            }
+        }
 
-        CountGhosts();
+        //Unlock Karts
+        for (int i = 0; i < karts.Length; i++)
+        {
+            if (karts[i].unlocked != UnlockedState.FromStart)
+            {
+                karts[i].unlocked = saveDataManager.GetKartUnlocked(i) ? UnlockedState.Unlocked : UnlockedState.Locked;
+            }
+        }
 
-        Debug.Log("All ghosts loaded!");
-    }
+        //Unlock Wheels
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            if (wheels[i].unlocked != UnlockedState.FromStart)
+            {
+                wheels[i].unlocked = saveDataManager.GetWheelUnlocked(i) ? UnlockedState.Unlocked : UnlockedState.Locked;
+            }
+        }
 
-    public void ResetData()
-    {
-        Debug.Log("Data not compatible!");
-
-        //Data Layout
-        //0 - Version Number
-        //1 - Unlocked Characters
-        //2 - Unlocked Hats
-        //3 - Unlocked Karts
-        //4 - Unlocked Wheels
-        //5 - Tournament Ranks
+        //Tournament Ranks
         for (int i = 0; i < tournaments.Length; i++)
-        {
-            tournaments[i].lastRank = new Rank[4];
-        }
-        //6 - Track Times
+            tournaments[i].lastRank = saveDataManager.GetTournamentRanks(i);
+
+        //Track Times
+        int trackCount = 0;
         for (int i = 0; i < tournaments.Length; i++)
         {
             for (int j = 0; j < tournaments[i].tracks.Length; j++)
             {
-                tournaments[i].tracks[j].bestTime = 0f;
+                Track track = tournaments[i].tracks[j];
+
+                track.bestTime = saveDataManager.GetTrackTime(trackCount);
+                trackCount++;
             }
         }
-        //7 - Lapis
-        overallLapisCount = 0;
 
-        //8 - PlayerName
-
-        //9 - Stream Mode
-        streamMode = false;
-
-        //10 - Mouse Scale
-        mouseScale = 1f;
-
-        //11 - Controller Scale
-        controllerScale = 1f;
-
-        SaveGame();
+        Debug.Log("All data loaded!");
     }
 
     public void CountGhosts()
@@ -514,6 +372,29 @@ public class CurrentGameData : MonoBehaviour {
         }
 
         return -1;
+    }
+
+    public bool CanUnlockInsane()
+    {
+        foreach(Tournament tournament in tournaments)
+        {
+            bool validTournament = false;
+
+            for(int i = 0; i < tournament.lastRank.Length; i++)
+            {
+                if(tournament.lastRank[i] >= Rank.Gold)
+                {
+                    validTournament = true;
+                    break;
+                }
+            }
+
+            if (!validTournament)
+                return false;
+        }
+
+        Debug.Log("Insane Unlocked!");
+        return true;
     }
 }
 

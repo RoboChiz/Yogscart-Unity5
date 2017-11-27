@@ -242,7 +242,22 @@ public class TimeTrial : Race
         if (racers[0].timer <= bestTime || bestTime == 0)
         {
             gd.tournaments[currentCup].tracks[currentTrack].bestTime = racers[0].timer;
-            gd.SaveGame();
+
+            int trackCount = 0;
+            for (int i = 0; i < gd.tournaments.Length; i++)
+            {
+                for (int j = 0; j < gd.tournaments[i].tracks.Length; j++)
+                {
+                    if (currentCup == i && currentTrack == j)
+                        break;
+
+                    trackCount++;
+                }
+            }
+
+            SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+            saveDataManager.SetTrackTime(trackCount, racers[0].timer);
+            saveDataManager.Save();
         }
     }
 

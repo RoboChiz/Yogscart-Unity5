@@ -732,7 +732,7 @@ public class NetworkRace : Race
         inGameCam.GetChild(1).transform.GetComponent<KartCamera>().rotTarget = localRacer.ingameObj;
         localRacer.cameras = inGameCam;
 
-        KartInfo kartInfo = localRacer.ingameObj.gameObject.AddComponent<KartInfo>();
+        localRacer.ingameObj.gameObject.AddComponent<KartInfo>();
         localRacer.ingameObj.gameObject.GetComponent<PositionFinding>().racePosition = localRacer.position;
 
         if(isHost)
@@ -900,7 +900,10 @@ public class NetworkRace : Race
     private IEnumerator TidyRacer()
     {
         gd.overallLapisCount += localRacer.ingameObj.GetComponent<KartMovement>().lapisAmount;
-        gd.SaveGame();
+
+        SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+        saveDataManager.SetLapisAmount(gd.overallLapisCount);
+        saveDataManager.Save();
 
         localRacer.ingameObj.gameObject.AddComponent<AI>();
         Destroy(localRacer.ingameObj.GetComponent<KartInput>());

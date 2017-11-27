@@ -11,7 +11,7 @@ public class Credits : MonoBehaviour
 
     public static bool isPlaying = false;
     private float actualCreditsHeight = 0f;
-    private const float scrollSpeed = 15f;
+    private const float scrollSpeed = 50f;
     private float creditsAlpha = 0f;
 
     public void StartCredits()
@@ -36,14 +36,8 @@ public class Credits : MonoBehaviour
         enabled = false;
     }
 
-    void OnGUI()
+    private void Update()
     {
-        GUI.skin = skin;
-        Color white = Color.white;
-        white.a = creditsAlpha;
-        GUI.color = white;
-        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,Vector3.one);
-
         if (isPlaying)
         {
             actualCreditsHeight += Time.deltaTime * scrollSpeed;
@@ -53,6 +47,15 @@ public class Credits : MonoBehaviour
         {
             creditsAlpha = Mathf.Lerp(creditsAlpha, 0f, Time.deltaTime * 5f);
         }
+    }
+
+    void OnGUI()
+    {
+        GUI.skin = skin;
+        Color white = Color.white;
+        white.a = creditsAlpha;
+        GUI.color = white;
+        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity,Vector3.one);
 
         float creditsHeight = Mathf.Floor(actualCreditsHeight);
 
