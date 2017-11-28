@@ -545,7 +545,7 @@ public class KartMovement : MonoBehaviour
     /// </summary>
     void CalculateExpectedSpeed()
     {
-        if (throttle == 0 || locked)
+        if (throttle == 0 || locked || spinningOut)
         {
             float cacceleration = -expectedSpeed / brakeTime;
             expectedSpeed += (cacceleration * Time.fixedDeltaTime);

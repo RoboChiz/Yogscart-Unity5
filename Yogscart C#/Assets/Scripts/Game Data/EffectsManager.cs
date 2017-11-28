@@ -10,12 +10,6 @@ public class EffectsManager : MonoBehaviour
 
     public PostProcessingProfile defaultStack;
 
-    private const float checkAgain = 0.1f;
-    private float currentTime;
-
-    private bool reapply = false;
-    public void ToggleReapply() { reapply = true; }
-
     //Settings
     private bool useChromaticAberration = true;
     public bool GetUseChromaticAberration() { return useChromaticAberration; }
@@ -39,40 +33,31 @@ public class EffectsManager : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        //Stagger Updates
-        currentTime += Time.deltaTime;
-        if(currentTime >= checkAgain)
+        foreach(Camera camera in FindObjectsOfType<Camera>())
         {
-            currentTime = 0f;
+            NoEffects noEffects = camera.GetComponent<NoEffects>();
+            PostProcessingBehaviour postProcessBehaviour = camera.GetComponent<PostProcessingBehaviour>();
 
-            foreach(Camera camera in FindObjectsOfType<Camera>())
-            {
-                if (camera.GetComponent<NoEffects>() == null)
+            if (noEffects == null || !noEffects.enabled)
+            {             
+                if (postProcessBehaviour == null)
                 {
-                    PostProcessingBehaviour postProcessBehaviour = camera.GetComponent<PostProcessingBehaviour>();
-                    if (postProcessBehaviour == null)
-                    {
-                        //Give the Camera a copy of the default effects
-                        postProcessBehaviour = camera.gameObject.AddComponent<PostProcessingBehaviour>();
-                        postProcessBehaviour.profile = ScriptableObject.CreateInstance<PostProcessingProfile>();
+                    //Give the Camera a copy of the default effects
+                    postProcessBehaviour = camera.gameObject.AddComponent<PostProcessingBehaviour>();
+                    postProcessBehaviour.profile = ScriptableObject.CreateInstance<PostProcessingProfile>();          
+                }
 
-                        //Update Local Behaviour
-                        ApplyLoad(postProcessBehaviour.profile);
-                    }
-                    else if (reapply)
-                    {
-                        ApplyLoad(postProcessBehaviour.profile);
-                    }
+                //Update Local Behaviour
+                UpdateProfile(postProcessBehaviour.profile);
+            }
+            else
+            {
+                if (postProcessBehaviour != null)
+                {
+                    Destroy(postProcessBehaviour);
                 }
             }
-
-            if(reapply)
-            {
-                reapply = false;
-            }
-
         }
-
     }
 
     public void SaveProfile()
@@ -137,7 +122,6 @@ public class EffectsManager : MonoBehaviour
         useBloom = _bloom;
 
         SaveProfile();
-        ToggleReapply();
     }
 
     private void ApplyLoad() { ApplyLoad(defaultStack); }
@@ -201,5 +185,65 @@ public class EffectsManager : MonoBehaviour
         }
     }
 
-    
+    private void UpdateProfile(PostProcessingProfile profile)
+    {
+        //ChromaticAberration
+        profile.chromaticAberration.enabled = useChromaticAberration;
+        if (useChromaticAberration)
+        {
+            ChromaticAberrationModel.Settings settings = profile.chromaticAberration.settings;
+            settings.spectralTexture = defaultStack.chromaticAberration.settings.spectralTexture;
+            profile.chromaticAberration.settings = settings;
+        }
+
+        //Ambient Occulusion
+        profile.ambientOcclusion.enabled = useAmbientOcculusion;
+
+        //Antialiasing
+        if (useAntiAliasing > AntiAliasing.Off)
+        {
+            profile.antialiasing.enabled = true;
+
+            AntialiasingModel.Settings aaSetings = profile.antialiasing.settings;
+            switch (useAntiAliasing)
+            {
+                case AntiAliasing.FXAALow:
+                    aaSetings.method = AntialiasingModel.Method.Fxaa;
+                    aaSetings.fxaaSettings.preset = AntialiasingModel.FxaaPreset.Performance;
+                    break;
+                case AntiAliasing.FXAAMedium:
+                    aaSetings.method = AntialiasingModel.Method.Fxaa;
+                    aaSetings.fxaaSettings.preset = AntialiasingModel.FxaaPreset.Default;
+                    break;
+                case AntiAliasing.FXAAHigh:
+                    aaSetings.method = AntialiasingModel.Method.Fxaa;
+                    aaSetings.fxaaSettings.preset = AntialiasingModel.FxaaPreset.ExtremeQuality;
+                    break;
+                case AntiAliasing.TAA:
+                    aaSetings.method = AntialiasingModel.Method.Taa;
+                    break;
+            }
+
+            profile.antialiasing.settings = aaSetings;
+        }
+
+        //Bloom
+        profile.bloom.enabled = useBloom;
+        if (useBloom)
+        {
+            BloomModel.Settings settings = profile.bloom.settings;
+
+            settings.bloom.intensity = defaultStack.bloom.settings.bloom.intensity;
+            settings.bloom.antiFlicker = defaultStack.bloom.settings.bloom.antiFlicker;
+            settings.bloom.radius = defaultStack.bloom.settings.bloom.radius;
+            settings.bloom.softKnee = defaultStack.bloom.settings.bloom.softKnee;
+            settings.bloom.threshold = defaultStack.bloom.settings.bloom.threshold;
+            settings.lensDirt.intensity = defaultStack.bloom.settings.lensDirt.intensity;
+            settings.lensDirt.texture = defaultStack.bloom.settings.lensDirt.texture;
+
+            profile.bloom.settings = settings;
+        }
+    }
+
+
 }

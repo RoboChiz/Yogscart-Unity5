@@ -42,7 +42,7 @@ public class MainMenu : MonoBehaviour
 
     private string popupText = "";
 
-    public enum MenuState {Start, Main, SinglePlayer, Difficulty, Multiplayer, CharacterSelect, LevelSelect, Online, Options, Popup, Credits, Stats };
+    public enum MenuState {Start, Main, SinglePlayer, Difficulty, Multiplayer, CharacterSelect, LevelSelect, Online, Options, Popup, Credits };
     public MenuState state = MenuState.Start;
     private MenuState nextState = MenuState.Start;
 
@@ -221,7 +221,7 @@ public class MainMenu : MonoBehaviour
 
                 break;
             case MenuState.Main:
-                options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Stats", "Quit" };
+                options = new string[] { "Single Player", "Multiplayer", "Online", "Options", "Credits", "Quit" };
                 break;
             case MenuState.SinglePlayer:
                 options = new string[] { "Tournament", "VS Race", "Time Trial" };
@@ -246,9 +246,6 @@ public class MainMenu : MonoBehaviour
              break;
             case MenuState.Credits:            
             break;
-            case MenuState.Stats:
-                options = new string[] { };
-                    break;
             case MenuState.CharacterSelect:
                 break;
         }
@@ -286,7 +283,7 @@ public class MainMenu : MonoBehaviour
                         optionSizes[i] = 1f;
                 }
                 
-                Rect optionRect = GUIHelper.LeftRectLabel(new Rect(40, 300 + (i * optionHeight), box.width - 20, optionHeight - 20), optionSizes[i], options[i], (currentSelection == i) ? Color.yellow : Color.white);
+                Rect optionRect = GUIHelper.LeftRectLabel(new Rect(40, 350 + (i * optionHeight), box.width - 20, optionHeight - 20), optionSizes[i], options[i], (currentSelection == i) ? Color.yellow : Color.white);
 
                 if (!sliding)
                 {
@@ -364,12 +361,6 @@ public class MainMenu : MonoBehaviour
                                 case "Credits":
                                     moveTitle = true;
                                     ChangeMenu(MenuState.Credits);
-                                    GetComponent<Credits>().enabled = true;
-                                    GetComponent<Credits>().StartCredits();
-                                    break;
-                                case "Stats":
-                                    moveTitle = true;
-                                    ChangeMenu(MenuState.Stats);
                                     GetComponent<Credits>().enabled = true;
                                     GetComponent<Credits>().StartCredits();
                                     break;

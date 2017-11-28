@@ -37,8 +37,10 @@ public class ChangeName : MonoBehaviour
 
         guiKeyboard = new GUIKeyboard(new Rect(210, 400, 1500, 540));
 
-        if(FindObjectOfType<MainMenu>() == null)
+        if(FindObjectOfType<IntroScript>() != null)
             InputManager.SetInputState(InputManager.InputState.AnyMinusKeyboard);
+        else
+            InputManager.SetInputState(InputManager.InputState.LockedShowing);
 
         StartCoroutine(FadeTo(1f));
     }
@@ -49,9 +51,13 @@ public class ChangeName : MonoBehaviour
 
         Options options = FindObjectOfType<Options>();
         options.locked = false;
-
-        if (FindObjectOfType<MainMenu>() == null)
-            InputManager.SetInputState(InputManager.InputState.Locked);
+ 
+        if (FindObjectOfType<MainMenu>() != null)
+            InputManager.SetInputState(InputManager.InputState.Any); //On the Main Menu
+        else if (FindObjectOfType<IntroScript>() != null)
+            InputManager.SetInputState(InputManager.InputState.Locked); //On the Intro Screen
+        else
+            InputManager.SetInputState(InputManager.InputState.LockedShowing); //On the Pause Menu
     }
 
     private IEnumerator FadeTo(float finalVal)

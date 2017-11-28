@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.PostProcessing;
 using UnityEngine.SceneManagement;
 
 public class NetworkRace : Race
@@ -1161,8 +1162,14 @@ public class NetworkRace : Race
             //Remove self from target
             spectatorTargets[target].toProcess.Remove(replayCamera);
 
-            //Turn off effects
-            FindObjectOfType<EffectsManager>().ToggleReapply();
+            //Turn off Chromatic Aberration
+            PostProcessingBehaviour postProcess = replayCamera.GetComponent<PostProcessingBehaviour>();
+            if (postProcess != null)
+            {
+                ChromaticAberrationModel.Settings cab = postProcess.profile.chromaticAberration.settings;
+                cab.intensity = 0f;
+                postProcess.profile.chromaticAberration.settings = cab;
+            }
         }
         else if (freeCam.enabled)
         {

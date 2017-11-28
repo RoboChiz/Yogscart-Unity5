@@ -61,26 +61,8 @@ public class SaveData
     // How many pieces of Lapis has the player collected
     public int lapisCount;
 
-    // How many joffocakes have been used
-    public int joffosUsed;
-
-    // How many dirtblocks have been fired
-    public int dirtBlocksFired;
-
-    // How many eggs have been fired
-    public int eggsFired;
-
-    // How many JR have been fired
-    public int jrsFired;
-
-    // How many dirtblocks have hit a player
-    public int dirtBlockHit;
-
     // How many eggs have hit a player
     public int eggsHit;
-
-    // How many jrs have hit a player
-    public int jrsHit;
 
 
 }

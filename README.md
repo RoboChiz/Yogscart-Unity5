@@ -2,6 +2,14 @@
 
 ## Changelog : Started 04/08/2016
 
+# 28/11/2017
+* Fixed Effects Manager not always working
+* Removed Stats from Main Menu
+* Removed Stats from SaveData
+* Made Bloom less strong
+* Fixed Inputs not being locked in Player Name Keyboard inside of options
+* Stopped Karts from moving when spinning out
+
 # 27/11/2017
 * Moved Saving to new Save Data manager
 * Added unlocking Insane mode if you get a gold or higher on any difficulty on every cup

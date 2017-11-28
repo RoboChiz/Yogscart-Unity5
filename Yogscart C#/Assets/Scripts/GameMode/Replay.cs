@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.PostProcessing;
 using UnityEngine.SceneManagement;
 
 public class Replay : MonoBehaviour
@@ -109,7 +110,7 @@ public class Replay : MonoBehaviour
 
         camera.AddComponent<AudioListener>();
         replayCamera = camera.GetComponent<Camera>();
-        
+
         //Make a Kart Camera Rotater and turn it off
         orbitCam = camera.AddComponent<OrbitCam>();
         orbitCam.enabled = false;
@@ -482,8 +483,15 @@ public class Replay : MonoBehaviour
             //Remove self from target
             racers[target].ingameObj.GetComponent<KartMovement>().toProcess.Remove(replayCamera);
 
-            //Turn off effects
-            FindObjectOfType<EffectsManager>().ToggleReapply();
+            //Turn off Chromatic Aberration
+            PostProcessingBehaviour postProcess = replayCamera.GetComponent<PostProcessingBehaviour>();
+            if (postProcess != null)
+            {
+                ChromaticAberrationModel.Settings cab = postProcess.profile.chromaticAberration.settings;
+                cab.intensity = 0f;
+                postProcess.profile.chromaticAberration.settings = cab;
+            }
+
         }
         else if(freeCam.enabled)
         {

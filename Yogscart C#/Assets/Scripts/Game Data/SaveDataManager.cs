@@ -22,13 +22,7 @@ public class SaveDataManager : MonoBehaviour
         saveData.localVersion = SaveData.saveVersion;
         saveData.hasDoneNameInput = false;
         saveData.lapisCount = 0;
-        saveData.joffosUsed = 0;
-        saveData.dirtBlocksFired = 0;
-        saveData.eggsFired = 0;
-        saveData.jrsFired = 0;
-        saveData.dirtBlockHit = 0;
         saveData.eggsHit = 0;
-        saveData.jrsHit = 0;
 
         //Do Character Unlocking
         saveData.unlockedCharacters = 0;
@@ -206,13 +200,7 @@ public class SaveDataManager : MonoBehaviour
             Debug.Log("Achivements:" + achivementsString);
 
             Debug.Log("Lapis Amount:" + saveData.lapisCount);
-            Debug.Log("Joffocakes Used:" + saveData.joffosUsed);
-            Debug.Log("Dirt Blocks Fired:" + saveData.dirtBlocksFired);
-            Debug.Log("Eggs Fired:" + saveData.eggsFired);
-            Debug.Log("JRs Fired:" + saveData.jrsFired);
-            Debug.Log("Dirt Block Hits:" + saveData.dirtBlockHit);
             Debug.Log("Egg Hits:" + saveData.eggsHit);
-            Debug.Log("JR Hits:" + saveData.jrsHit);
         }
     }
 
@@ -303,22 +291,6 @@ public class SaveDataManager : MonoBehaviour
     }
     public int GetLapisAmount() { return saveData.lapisCount; }
 
-    //Joffo Used SET/GET
-    public void SetJoffoCakeUsed(int _newUsed) { saveData.joffosUsed = _newUsed; }
-    public int GetJoffoCakeUsed() { return saveData.joffosUsed; }
-
-    //Dirt Block Fired SET/GET
-    public void SetDirtBlockFired(int _newFired) { saveData.dirtBlocksFired = _newFired; }
-    public int GetDirtBlockFired() { return saveData.dirtBlocksFired; }
-
-    //Dirt Block Hit SET/GET
-    public void SetDirtBlockHit(int _newHit) { saveData.dirtBlockHit = _newHit; }
-    public int GetDirtBlockHit() { return saveData.dirtBlockHit; }
-
-    //Eggs Fired SET/GET
-    public void SetEggsFired(int _newFired) { saveData.eggsFired = _newFired; }
-    public int GetEggsFired() { return saveData.eggsFired; }
-
     //Eggs Hit SET/GET
     public void SetEggsHit(int _newHit)
     {
@@ -332,13 +304,5 @@ public class SaveDataManager : MonoBehaviour
         if (_newHit >= 100) { achievementManager.UnlockAchievement("200EggStrike"); }
     }
     public int GetEggsHit() { return saveData.eggsHit; }
-
-    //Jrs Fired SET/GET
-    public void SetJrsFired(int _newFired) { saveData.jrsFired = _newFired; }
-    public int GetJrsFired() { return saveData.jrsFired; }
-
-    //Jrs Fired SET/GET
-    public void SetJrsHit(int _newHit) { saveData.jrsHit = _newHit; }
-    public int GetJrsHit() { return saveData.jrsHit; }
 
 }
