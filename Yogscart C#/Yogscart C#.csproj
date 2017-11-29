@@ -276,8 +276,10 @@
     <Compile Include="Assets\Scripts\Game Data\GUIHelper.cs" />
     <Compile Include="Assets\Scripts\Game Data\NoEffects.cs" />
     <Compile Include="Assets\Scripts\Game Data\OldInputManager.cs" />
-    <Compile Include="Assets\Scripts\Game Data\SaveData.cs" />
-    <Compile Include="Assets\Scripts\Game Data\SaveDataManager.cs" />
+    <Compile Include="Assets\Scripts\Game Data\Save Managers\GhostDataManager.cs" />
+    <Compile Include="Assets\Scripts\Game Data\Save Managers\SaveDataManager.cs" />
+    <Compile Include="Assets\Scripts\Game Data\Save Stuff\GhostData.cs" />
+    <Compile Include="Assets\Scripts\Game Data\Save Stuff\SaveData.cs" />
     <Compile Include="Assets\Scripts\Game Data\SortingScript.cs" />
     <Compile Include="Assets\Scripts\Game Data\SoundManager.cs" />
     <Compile Include="Assets\Scripts\Game Data\TimeManager.cs" />

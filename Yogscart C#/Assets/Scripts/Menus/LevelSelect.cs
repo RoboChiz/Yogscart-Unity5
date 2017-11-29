@@ -26,8 +26,6 @@ public class LevelSelect : MonoBehaviour
         gd = FindObjectOfType<CurrentGameData>();
         sm = FindObjectOfType<SoundManager>();
 
-        gd.CountGhosts();
-
         trackScales = new float[] { 1f, 1f, 1f, 1f };
         cupScales = new float[gd.tournaments.Length];
 
@@ -36,7 +34,6 @@ public class LevelSelect : MonoBehaviour
 
         if (skin == null)
             skin = Resources.Load<GUISkin>("GUISkins/LevelSelect");
-
     }
 
     void OnGUI()
@@ -147,7 +144,7 @@ public class LevelSelect : MonoBehaviour
 
             GUIHelper.OutLineLabel(timeRect, "Best Time:  " + timeString, 2, Color.black);
 
-            string ghostString = gd.tournaments[tempCurrentCup].tracks[currentTrack].ghosts.ToString();
+            string ghostString = gd.tournaments[tempCurrentCup].tracks[currentTrack].ghostDatas.Count.ToString();
             GUIHelper.OutLineLabel(ghostRect, "Local Ghosts:  " + ghostString, 2, Color.black);
         }
         else if(gamemode is TournamentRace && !(gamemode is VSRace))
@@ -327,6 +324,11 @@ public class LevelSelect : MonoBehaviour
 
         if (FindObjectOfType<MainMenu>() != null && FindObjectOfType<MainMenu>().state != MainMenu.MenuState.LevelSelect && !NetworkServer.active && !NetworkClient.active)
             FindObjectOfType<MainMenu>().ChangeMenu(MainMenu.MenuState.LevelSelect);
+
+        if(FindObjectOfType<TimeTrial>() != null)
+        {
+            FindObjectOfType<GhostDataManager>().LoadAllGhosts();
+        }
 
         StartCoroutine(ActualShowLevelSelect());
     }

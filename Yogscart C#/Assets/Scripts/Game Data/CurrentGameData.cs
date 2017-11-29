@@ -179,92 +179,13 @@ public class CurrentGameData : MonoBehaviour {
                 Track track = tournaments[i].tracks[j];
 
                 track.bestTime = saveDataManager.GetTrackTime(trackCount);
+                track.ghostDatas = new Dictionary<string, GhostData>();
+
                 trackCount++;
             }
         }
 
         Debug.Log("All data loaded!");
-    }
-
-    public void CountGhosts()
-    {
-        for (int i = 0; i < tournaments.Length; i++)
-            for (int j = 0; j < tournaments[i].tracks.Length; j++)
-                tournaments[i].tracks[j].ghosts = 0;
-
-        try
-        {
-            if (!Directory.Exists(Application.persistentDataPath + "/Ghost Data/"))
-                Directory.CreateDirectory(Application.persistentDataPath + "/Ghost Data/");
-
-            //Check every file in Ghost Data folder
-            var info = new DirectoryInfo(Application.persistentDataPath + "/Ghost Data/");
-            var fileInfo = info.GetFiles();
-            foreach (FileInfo file in fileInfo)
-            {
-                FileStream fileStream = null;
-                try
-                {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    fileStream = file.Open(FileMode.Open);
-
-                    GhostData ghostData = (GhostData)bf.Deserialize(fileStream);
-                    bool updateFile = false;
-
-                    if(CompatibleVersion(ghostData.version))
-                    {
-                        tournaments[ghostData.cup].tracks[ghostData.track].ghosts++;
-
-                        if (ghostData.version != version)
-                            updateFile = true;
-                    }
-
-                    //Update Save File if Appropriate
-                    if (updateFile)
-                        UpdateFile(ghostData);
-                }
-                finally
-                {
-                    if (fileStream != null)
-                        fileStream.Close();
-                }
-            }
-        }
-        catch { }
-    }
-
-    public bool CompatibleVersion(string _version)
-    {
-        if(_version == TimeTrial.saveVersion.ToString())
-            return true;
-
-        return false;
-    }
-
-    public void UpdateFile(GhostData data)
-    {
-        //Update Ghost Data
-        data.version = version;
-
-        //Save File
-        FileStream sw = null;
-        try
-        {
-            if (!Directory.Exists(Application.persistentDataPath + "/Ghost Data/"))
-                Directory.CreateDirectory(Application.persistentDataPath + "/Ghost Data/");
-
-            BinaryFormatter bf = new BinaryFormatter();
-            sw = File.Create(data.fileLocation);
-            bf.Serialize(sw, data);
-            sw.Flush();
-
-            Debug.Log("Updated " + data.fileLocation + " to " + version);
-        }
-        finally
-        {
-            if (sw != null)
-                sw.Close();
-        }
     }
 
     public CharacterSoundPack GetCustomSoundPack(int character, int hat)
@@ -494,7 +415,8 @@ public class Track
     public string[] sceneIDs;
 
     [HideInInspector]
-    public int ghosts;
+    public Dictionary<string, GhostData> ghostDatas;
+
 }
 
 public enum Rank { NoRank, Bronze, Silver, Gold, Perfect};

@@ -7,9 +7,6 @@ using UnityEngine;
 
 public class TimeTrial : Race
 {
-    public const int saveVersion = 0;
-    //0 - Default when created
-
     protected override bool enableAI { get { return false; } }
     public bool isReplay = false;
 
@@ -216,7 +213,10 @@ public class TimeTrial : Race
     {
         if (!isReplay)
         {
-            return new string[] { "Restart", "Replay", "Save Ghost", "Change Character", "Change Track", "Quit" };
+            if(!ghostSaved)
+                return new string[] { "Restart", "Replay", "Save Ghost", "Change Character", "Change Track", "Quit" };
+            else
+                return new string[] { "Restart", "Replay", "Change Character", "Change Track", "Quit" };
         }
         else
         {
@@ -286,42 +286,14 @@ public class TimeTrial : Race
     }
 
     private IEnumerator SaveGhost()
-    {
-        InfoPopUp popUp = null;
+    {        
         lockInputs = true;
 
-        FileStream sw = null;
-        try
-        {
-            if (!Directory.Exists(Application.persistentDataPath + "/Ghost Data/"))
-                Directory.CreateDirectory(Application.persistentDataPath + "/Ghost Data/");
+        GhostData ghostData = new GhostData(racers[0], preRaceState[0].DataToString(), currentCup, currentTrack, currentVariation, gd.playerName);
+        FindObjectOfType<GhostDataManager>().SaveGhost(ghostData);
 
-            DateTime now = System.DateTime.Now;
-            string saveLocation = Application.persistentDataPath + "/Ghost Data/" + now.Day + "_" + now.Month + "_" + now.Year + "_" + now.Hour.ToString("00") + "_" + now.Minute.ToString("00") + ".GhostData";
-
-            BinaryFormatter bf = new BinaryFormatter();
-            sw = File.Create(saveLocation);
-            bf.Serialize(sw, new GhostData(racers[0], preRaceState[0].DataToString(), currentCup, currentTrack, gd.playerName, saveVersion.ToString()));
-            sw.Flush();
-
-            popUp = gameObject.AddComponent<InfoPopUp>();
-
-            if (gd.streamMode)
-                saveLocation = "Disk!";
-
-            popUp.Setup("Ghost saved to " + saveLocation);
-            ghostSaved = true;
-        }
-        catch(Exception error)
-        {
-            popUp = gameObject.AddComponent<InfoPopUp>();
-            popUp.Setup(error.Message);
-        }
-        finally
-        {
-            if(sw != null)
-                sw.Close();
-        }
+        InfoPopUp popUp = gameObject.AddComponent<InfoPopUp>();
+        popUp.Setup("Ghost saved to " + (gd.streamMode ? "Disk!" : ghostData.fileLocation));
 
         yield return null;
 
@@ -329,6 +301,9 @@ public class TimeTrial : Race
             yield return null;
 
         lockInputs = false;
+        ghostSaved = true;
+
+        UpdateNextMenuOptions();
     }
 
     private IEnumerator ActualRestart()
@@ -353,63 +328,10 @@ public class TimeTrial : Race
         StartRace();
     }
 
-    public void SetLevel(int _cup, int _track)
+    public void SetLevel(int _cup, int _track, int _variation)
     {
         currentCup = _cup;
         currentTrack = _track;
-    }
-}
-
-[System.Serializable]
-public class GhostData
-{
-    public int character, hat, kart, wheel, track, cup;
-    public float time;
-    public string data, playerName, version;
-
-    [System.NonSerialized]
-    public string fileLocation;
-
-    public GhostData(Racer racer, string _data, int _cup, int _track, string _playerName, string _version)
-    {
-        character = racer.character;
-        hat = racer.hat;
-        kart = racer.kart;
-        wheel = racer.wheel;
-
-        time = racer.timer;
-        data = _data;
-
-        track = _track;
-        cup = _cup;
-        version = _version;
-        playerName = _playerName;
-    }
-
-    public GhostData()
-    {
-        data = "";
-        playerName = "";
-        fileLocation = "";
-        version = "";
-    }
-
-    public List<List<String>> ToData()
-    {
-        List<List<string>> replayData = new List<List<string>>();
-
-        string[] frames = data.Split('>');
-
-        foreach (string frame in frames)
-        {
-            //Create a new list of strings
-            List<string> actionsList = new List<string>();
-            replayData.Add(actionsList);
-
-            string[] actions = frame.Split(';');
-            actionsList.AddRange(actions);
-        }
-
-        return replayData;
+        currentVariation = _variation;
     }
 }

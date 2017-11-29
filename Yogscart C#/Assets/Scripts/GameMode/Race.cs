@@ -337,7 +337,10 @@ public abstract class Race : GameMode
         //Set Kart Components for Race
         foreach (KartInput ki in kines)
             ki.camLocked = false;
-        
+
+        foreach (KartItem ki in kitemes)
+            ki.locked = true;
+
         foreach (KartRecorder kr in kartRecorders)
             kr.Record();
 
@@ -348,9 +351,11 @@ public abstract class Race : GameMode
        
         foreach (KartInfo ki in kies)
             ki.hidden = false;
-   
+
         foreach (KartItem ki in kitemes)
+        {
             ki.hidden = false;
+        }
 
         //Let Gamemode make changes to karts
         OnPostKartStarting();
@@ -459,9 +464,7 @@ public abstract class Race : GameMode
         while (!lb.showing)
             yield return null;
 
-        //Get Options for Next Menu
-        nextMenuOptions = GetNextMenuOptions();
-        nextMenuSizes = new float[nextMenuOptions.Length];
+        UpdateNextMenuOptions();
 
         //Wait for Leaderboard to be over
         while (lb.showing)
@@ -484,6 +487,13 @@ public abstract class Race : GameMode
     protected abstract void OnRaceFinished();
     protected abstract void OnStartLeaderBoard(Leaderboard lb);
     protected abstract void OnLeaderboardUpdate(Leaderboard lb);
+
+    protected void UpdateNextMenuOptions()
+    {
+        //Get Options for Next Menu
+        nextMenuOptions = GetNextMenuOptions();
+        nextMenuSizes = new float[nextMenuOptions.Length];
+    }
 
     protected virtual IEnumerator OnEndLeaderBoard()
     {

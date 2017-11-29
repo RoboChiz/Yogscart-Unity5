@@ -2,6 +2,13 @@
 
 ## Changelog : Started 04/08/2016
 
+# 29/11/2017
+* Added GhostData Manager
+* Improved how Ghost Data is saved
+* Fixed bug where items could be used during countdown
+* Ghost Replays and Ghost VS Races use correct track variation
+* Fixed Time Trial Ghost could be saved multiple times
+
 # 28/11/2017
 * Fixed Effects Manager not always working
 * Removed Stats from Main Menu

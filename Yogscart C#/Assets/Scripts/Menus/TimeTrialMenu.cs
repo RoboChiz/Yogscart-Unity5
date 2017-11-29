@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
@@ -47,25 +48,13 @@ public class TimeTrialMenu : MonoBehaviour
         hiding = false;
 
         //Load Save Data
-        ReadInGhosts();
+        validTimeTrials = gd.tournaments[timeTrial.currentCup].tracks[timeTrial.currentTrack].ghostDatas.Values.ToList();
         ReadInDevGhosts();
-
-        //Get Ghosts for this track
-        foreach (GhostData ghostData in validTimeTrials.ToArray())
-        {
-            int tempVersion;
-            if(!int.TryParse(ghostData.version, out tempVersion) || ghostData.cup != timeTrial.currentCup || ghostData.track != timeTrial.currentTrack || tempVersion < TimeTrial.saveVersion)
-            {
-                validTimeTrials.Remove(ghostData);
-            }
-               
-        }
 
         //Get Dev Ghosts
         foreach (GhostData gd in devTimeTrials.ToArray())
         {
-            int tempVersion;
-            if(!int.TryParse(gd.version, out tempVersion) || gd.cup != timeTrial.currentCup || gd.track != timeTrial.currentTrack || tempVersion < TimeTrial.saveVersion)
+            if(gd.cup != timeTrial.currentCup || gd.track != timeTrial.currentTrack)
             {
                 devTimeTrials.Remove(gd);
             }
@@ -92,40 +81,6 @@ public class TimeTrialMenu : MonoBehaviour
         }
 
         guiAlpha = finalVal;
-    }
-
-    public void ReadInGhosts()
-    {
-        //Reset List
-        validTimeTrials = new List<GhostData>();
-
-        try
-        {
-            if (!Directory.Exists(Application.persistentDataPath + "/Ghost Data/"))
-                Directory.CreateDirectory(Application.persistentDataPath + "/Ghost Data/");
-
-            //Check every file in Ghost Data folder
-            var info = new DirectoryInfo(Application.persistentDataPath + "/Ghost Data/");
-            var fileInfo = info.GetFiles();
-            foreach (FileInfo file in fileInfo)
-            {
-                FileStream fileStream = null;
-                try
-                {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    fileStream = file.Open(FileMode.Open);
-
-                    validTimeTrials.Add((GhostData)bf.Deserialize(fileStream));
-                    validTimeTrials[validTimeTrials.Count - 1].fileLocation = file.FullName;
-                }
-                finally
-                {
-                    if (fileStream != null)
-                        fileStream.Close();
-                }
-            }
-        }
-        catch { }
     }
 
     public void ReadInDevGhosts()
@@ -444,6 +399,8 @@ public class TimeTrialMenu : MonoBehaviour
                 else
                     timeTrial.ghost = devTimeTrials[selectedTT];
 
+                timeTrial.SetLevel(timeTrial.ghost.cup, timeTrial.ghost.track, timeTrial.ghost.variation);
+
                 Hide();
                 FindObjectOfType<TimeTrial>().FinishTimeTrialMenu();
             }
@@ -456,8 +413,8 @@ public class TimeTrialMenu : MonoBehaviour
     void DeleteCurrentGhost()
     {
         GhostData kill = validTimeTrials[selectedTT];
-        File.Delete(kill.fileLocation);
 
+        FindObjectOfType<GhostDataManager>().DeleteGhost(kill);
         validTimeTrials.Remove(kill);
     }
 
@@ -472,7 +429,7 @@ public class TimeTrialMenu : MonoBehaviour
         replayGhost.ghostData = data.ToData();
 
         timeTrial.isReplay = true;
-        timeTrial.SetLevel(data.cup, data.track);
+        timeTrial.SetLevel(data.cup, data.track, data.variation);
 
         replay.Setup(timeTrial, new List<ReplayRacer>() { replayGhost });
         Hide();
