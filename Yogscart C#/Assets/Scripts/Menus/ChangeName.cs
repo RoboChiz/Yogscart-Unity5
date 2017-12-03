@@ -13,7 +13,7 @@ public class ChangeName : MonoBehaviour
 
     public bool showing { get { return guiAlpha != 0; } }
 
-    bool submitBool, cancelBool, locked = false;
+    bool submitBool, cancelBool, locked = false, beenLoaded = false;
     float hori, vert;
 
     public void Start()
@@ -28,6 +28,7 @@ public class ChangeName : MonoBehaviour
     {
         gd = FindObjectOfType<CurrentGameData>();
         locked = false;
+        beenLoaded = false;
 
         if (gd != null)
             playerName = gd.playerName;
@@ -84,6 +85,10 @@ public class ChangeName : MonoBehaviour
         GUI.skin = skin;
         GUI.depth = -150;
 
+        bool useController = true;
+        if (InputManager.controllers.Count == 0 || InputManager.controllers[0].inputType == InputType.Keyboard)
+            useController = false;
+
         if (guiAlpha > 0)
         {
             //Background
@@ -105,7 +110,16 @@ public class ChangeName : MonoBehaviour
             //Text Field
             Rect textField = GUIHelper.RectScaledbyOtherRect(new Rect(250, 210, 1420, 180),backgroundRect, guiAlpha);
             GUIShape.RoundedRectangle(textField, 10, new Color(1f, 1f, 1f, 0.2f));
-            GUI.Label(textField, playerName, adjustedLabel);
+
+            if (useController)
+            {
+                GUI.Label(textField, playerName, adjustedLabel);
+            }
+            else
+            {
+                GUI.SetNextControlName("MyTextField");
+                playerName = GUI.TextField(textField, playerName, adjustedLabel);
+            }
 
             //Remove Invalid names
             for(int i = 0; i < playerName.Length; i++)
@@ -118,11 +132,6 @@ public class ChangeName : MonoBehaviour
             }
 
             //Draw Keyboard
-            bool useController = true;
-
-            if (InputManager.controllers.Count == 0 || InputManager.controllers[0].inputType == InputType.Keyboard)
-                useController = false;
-
             guiKeyboard.guiAlpha = guiAlpha;
             guiKeyboard.drawRect = GUIHelper.RectScaledbyOtherRect(new Rect(210, 400, 1500, 540), backgroundRect, guiAlpha);
             playerName = guiKeyboard.Draw(playerName, 15, guiAlpha, useController, submitBool, cancelBool, vert, hori);
@@ -137,6 +146,18 @@ public class ChangeName : MonoBehaviour
 
             if (guiKeyboard.completed && !locked)
                 Finish();
+
+            if(beenLoaded && useController)
+            {
+                beenLoaded = false;
+            }
+
+            if (!beenLoaded && !useController)
+            {
+                beenLoaded = true;
+                GUI.FocusControl("MyTextField");
+            }
+
         }
     }
 

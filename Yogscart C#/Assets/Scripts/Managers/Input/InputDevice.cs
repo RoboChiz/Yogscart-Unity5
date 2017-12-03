@@ -46,6 +46,7 @@ public abstract class InputDevice
         joystickID = _joystickID;
         toggle = false;
         boxHeight = 0f;
+        inputLock = "Submit";
     }
 
     enum WantedInput { Either, PlusOnly, MinusOnly, Inverse }

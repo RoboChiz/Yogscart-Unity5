@@ -2,12 +2,21 @@
 
 ## Changelog : Started 04/08/2016
 
+# 03/12/2017
+* Fixed Keyboard Input when using Keyboard
+* Connecting Player One with submit will not count as an action
+* Fixed Reset Data popup always resetting even if you click No
+* Fixed weird text scaling on Reset Save PopUp
+* Made Drift Sparks more visible
+
 # 29/11/2017
 * Added GhostData Manager
 * Improved how Ghost Data is saved
 * Fixed bug where items could be used during countdown
 * Ghost Replays and Ghost VS Races use correct track variation
 * Fixed Time Trial Ghost could be saved multiple times
+* Removed Save Ghost Option after a ghost has been saved
+
 
 # 28/11/2017
 * Fixed Effects Manager not always working

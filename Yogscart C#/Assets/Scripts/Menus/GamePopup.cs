@@ -9,7 +9,7 @@ public class GamePopup : MonoBehaviour
 
     protected bool noSelected = true;
 
-    public virtual string text { get { return "Are you sure you want to reset all save data?"; } }
+    public virtual string text { get { return "Are you sure\nyou want to reset\nall save data?"; } }
     public virtual bool showYesNo { get { return true; } }
 
     public virtual Rect boxRect { get { return new Rect(760, 440, 400, 200); } }
@@ -32,41 +32,38 @@ public class GamePopup : MonoBehaviour
             GUI.matrix = GUIHelper.GetMatrix();
             GUI.depth = -100;
 
-            Rect actualBoxRect = GUIHelper.CentreRect(boxRect, guiAlpha);
-            GUIShape.RoundedRectangle(actualBoxRect, 20, new Color(52 /255f, 152 / 255f, 219 / 255f, guiAlpha * 0.8f));
+            GUIUtility.ScaleAroundPivot(Vector2.one * guiAlpha, boxRect.center);
 
+            GUIShape.RoundedRectangle(boxRect, 20, new Color(52 /255f, 152 / 255f, 219 / 255f, guiAlpha * 0.8f));
             GUIStyle adjustedLabel = new GUIStyle(skin.label);
-            adjustedLabel.fontSize = (int)(adjustedLabel.fontSize * guiAlpha);
 
             //Instructions
-            GUI.Label(GUIHelper.RectScaledbyOtherRect(labelRect, boxRect, guiAlpha), text, adjustedLabel);
+            GUI.Label(labelRect, text, adjustedLabel);
 
             if (showYesNo)
             {          
                 adjustedLabel.normal.textColor = noSelected ? Color.white : Color.yellow;
-                Rect actualYes = GUIHelper.RectScaledbyOtherRect(yesRect, boxRect, guiAlpha);
-                GUI.Label(actualYes, "Yes", adjustedLabel);
+                GUI.Label(yesRect, "Yes", adjustedLabel);
 
                 adjustedLabel.normal.textColor = !noSelected ? Color.white : Color.yellow;
-                Rect actualNo = GUIHelper.RectScaledbyOtherRect(noRect, boxRect, guiAlpha);
-                GUI.Label(actualNo, "No", adjustedLabel);
+                GUI.Label(noRect, "No", adjustedLabel);
 
-                if (GUI.Button(actualYes, ""))
+                if (GUI.Button(yesRect, ""))
                 {
                     noSelected = false;
                     DoInput();
                 }
 
-                if (GUI.Button(actualNo, ""))
+                if (GUI.Button(noRect, ""))
                 {
                     noSelected = true;
                     DoInput();
                 }
 
-                if (Cursor.visible && actualYes.Contains(GUIHelper.GetMousePosition()))
+                if (Cursor.visible && yesRect.Contains(GUIHelper.GetMousePosition()))
                     noSelected = false;
 
-                if (Cursor.visible && actualNo.Contains(GUIHelper.GetMousePosition()))
+                if (Cursor.visible && noRect.Contains(GUIHelper.GetMousePosition()))
                     noSelected = true;
             }
             else
@@ -106,8 +103,11 @@ public class GamePopup : MonoBehaviour
 
     protected virtual void DoInput()
     {
-        SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
-        saveDataManager.ResetSave();
+        if (!noSelected)
+        {
+            SaveDataManager saveDataManager = FindObjectOfType<SaveDataManager>();
+            saveDataManager.ResetSave();
+        }
 
         HidePopUp();
     }

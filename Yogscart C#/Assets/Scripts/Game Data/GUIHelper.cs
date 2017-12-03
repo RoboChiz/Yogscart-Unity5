@@ -671,87 +671,16 @@ public class GUIKeyboard
             }
             else
             {
-                bool inputDetected = false;
-
-                //Keyboard Controls
-                foreach (char character in lettersInOrder)
+                Event e = Event.current;
+                if (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.Escape)
                 {
-                    if (character == '^' || character == '<' || character == '/' || character == ' ' || character == '_')
-                    {
-                        //Duff, Don't do anything
-                    }
-                    else if (Input.GetKey(character.ToString()))
-                    {
-                        inputDetected = true;
-                        if (!buttonlock)
-                        {
-                            originalString += upperCase ? character.ToString().ToUpper() : character.ToString().ToLower();
-                            buttonlock = true;
-                        }
-                    }
-                }
-
-                if (Input.GetKey(KeyCode.Backspace) && originalString.Length >= 1)
-                {
-                    inputDetected = true;
-                    if (!buttonlock)
-                    {
-                        originalString = originalString.Remove(originalString.Length - 1);
-                        buttonlock = true;
-                    }
-                }
-
-                if (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.Escape))
-                {
-                    inputDetected = true;
                     if (!buttonlock)
                     {
                         if(originalString != "")
                             completed = true;
                         buttonlock = true;
                     }
-                }
-
-                if (Input.GetKey(KeyCode.Space))
-                {
-                    inputDetected = true;
-                    if (!buttonlock)
-                    {
-                        originalString += " ";
-                        buttonlock = true;
-                    }
-                }
-
-                if (Input.GetKey(KeyCode.Minus))
-                {
-                    inputDetected = true;
-                    if (!buttonlock)
-                    {
-                        originalString += "_";
-                        buttonlock = true;
-                    }
-                }
-
-                if (Input.GetKey(KeyCode.CapsLock))
-                {
-                    inputDetected = true;
-                    if (!buttonlock)
-                    {
-                        capsLockUpperCase = !capsLockUpperCase;
-                        buttonlock = true;
-                    }
-                }
-
-                if (!inputDetected && buttonlock)
-                    buttonlock = false;
-
-                upperCase = capsLockUpperCase;
-
-
-                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-                    upperCase = !upperCase;
-
-
+                }           
             }
         }
 
