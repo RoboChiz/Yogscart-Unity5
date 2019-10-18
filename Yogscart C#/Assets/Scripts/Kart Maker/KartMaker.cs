@@ -144,7 +144,7 @@ public class KartMaker : MonoBehaviour
 
             km.particleSystems = new Dictionary<string, ParticleSystem>();
 
-            string[] particleNames = new string[] { "Death Particles", "L_Flame", "R_Flame", "L_Sparks", "R_Sparks", "Trick", "L_DriftClouds", "R_DriftClouds", "L_StartClouds", "R_StartClouds" };
+            string[] particleNames = new string[] { "Death Particles", "L_Flame", "R_Flame", "L_Sparks", "R_Sparks", "Trick", "L_DriftClouds", "R_DriftClouds", "L_StartClouds", "R_StartClouds", "Sparkle" };
             int count = 0;
             foreach (string particle in particleNames)
             {
@@ -157,13 +157,14 @@ public class KartMaker : MonoBehaviour
                     case 0: currentparticle.position = kartSkel.deathParticlesPos; break;
                     case 1: currentparticle.position = kartSkel.rFlame; break;
                     case 2: currentparticle.position = kartSkel.lFlame; break;
-                    case 3: currentparticle.position = kartSkel.rSparks; break;
-                    case 4: currentparticle.position = kartSkel.lSparks; break;
+                    case 3: currentparticle.position = kartSkel.lSparks; break;
+                    case 4: currentparticle.position = kartSkel.rSparks; break;
                     case 5: currentparticle.position = kartSkel.trick; break;
                     case 6: currentparticle.position = kartSkel.lDriftClouds; break;
                     case 7: currentparticle.position = kartSkel.rDriftClouds; break;
                     case 8: currentparticle.position = kartSkel.lStartClouds; break;
                     case 9: currentparticle.position = kartSkel.rStartClouds; break;
+                    case 10: currentparticle.position = kartSkel.trick; break;
                 }
 
                 count++;
@@ -195,7 +196,10 @@ public class KartMaker : MonoBehaviour
 
             if (type != KartType.Ghost)
                 kb.AddComponent<KartCollider>();
-          
+
+            //Add SpotLight
+            kb.AddComponent<KartLights>();
+
         }
 
         Destroy(kartSkel);

@@ -1,0 +1,192 @@
+fileFormatVersion: 2
+guid: d3a77602d9423e34e906c0ad2905f102
+timeCreated: 1525973559
+licenseType: Free
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: Plane001
+    100004: Road_Collapsed
+    100006: Collapsed_Road
+    100008: Grass_Inside_Collapsed
+    100010: Grass_Inside
+    100012: Road
+    100014: Grass_Outside
+    100016: Grass_Joined
+    100018: Gate
+    100020: Fence
+    100022: Fence001
+    100024: Fountain
+    100026: Fountain_Water
+    100028: Fountain 1
+    100030: Fountain_Water 1
+    100032: Fountain 2
+    100034: Plaza
+    100036: Fountain_Water 2
+    100038: RockEdge
+    400000: //RootNode
+    400002: Plane001
+    400004: Road_Collapsed
+    400006: Collapsed_Road
+    400008: Grass_Inside_Collapsed
+    400010: Grass_Inside
+    400012: Road
+    400014: Grass_Outside
+    400016: Grass_Joined
+    400018: Gate
+    400020: Fence
+    400022: Fence001
+    400024: Fountain
+    400026: Fountain_Water
+    400028: Fountain 1
+    400030: Fountain_Water 1
+    400032: Fountain 2
+    400034: Plaza
+    400036: Fountain_Water 2
+    400038: RockEdge
+    2100000: No Name
+    2100002: 01 - Default
+    2100004: 02 - Default
+    2100006: 03 - Default
+    2100008: 07 - Default
+    2300000: //RootNode
+    2300002: Plane001
+    2300004: Road_Collapsed
+    2300006: Collapsed_Road
+    2300008: Grass_Inside_Collapsed
+    2300010: Grass_Inside
+    2300012: Road
+    2300014: Grass_Outside
+    2300016: Grass_Joined
+    2300018: Gate
+    2300020: Fence
+    2300022: Fence001
+    2300024: Fountain
+    2300026: Fountain_Water
+    2300028: Fountain 1
+    2300030: Fountain_Water 1
+    2300032: Fountain 2
+    2300034: Plaza
+    2300036: Fountain_Water 2
+    2300038: RockEdge
+    3300000: //RootNode
+    3300002: Plane001
+    3300004: Road_Collapsed
+    3300006: Collapsed_Road
+    3300008: Grass_Inside_Collapsed
+    3300010: Grass_Inside
+    3300012: Road
+    3300014: Grass_Outside
+    3300016: Grass_Joined
+    3300018: Gate
+    3300020: Fence
+    3300022: Fence001
+    3300024: Fountain
+    3300026: Fountain_Water
+    3300028: Fountain 1
+    3300030: Fountain_Water 1
+    3300032: Fountain 2
+    3300034: Plaza
+    3300036: Fountain_Water 2
+    3300038: RockEdge
+    4300000: Track_Centre
+    4300002: Plane001
+    4300004: Road_Collapsed
+    4300006: Collapsed_Road
+    4300008: Grass_Inside_Collapsed
+    4300010: Grass_Inside
+    4300012: Road
+    4300014: Grass_Outside
+    4300016: Grass_Joined
+    4300018: Gate
+    4300020: Fence
+    4300022: Fence001
+    4300024: Fountain
+    4300026: Fountain_Water
+    4300028: Fountain
+    4300030: Fountain_Water
+    4300032: Fountain
+    4300034: Plaza
+    4300036: Fountain_Water
+    4300038: RockEdge
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 40
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

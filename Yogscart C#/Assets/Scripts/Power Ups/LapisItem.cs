@@ -8,7 +8,7 @@ public class LapisItem : MonoBehaviour {
     {
 
         KartMovement ks = transform.parent.GetComponent<KartMovement>();
-        ks.lapisAmount += 4;
+        ks.ChangeLapis(+4);
 
         yield return new WaitForSeconds(2f);
         Destroy(gameObject);

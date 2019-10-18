@@ -81,7 +81,7 @@ public class KartMovement : MonoBehaviour
     //Store Systems as arrays for convinence
     public Transform kartBody { get; private set; }
     ParticleSystem[] startCloudParticles, flameParticles, driftParticles, driftCloudParticles;
-    ParticleSystem trickParticles;
+    ParticleSystem trickParticles, sparkleParticles;
 
     //Boost at Start
     private float startBoostAmount, wheelSpinExtra, wheelSpinPercent;
@@ -167,6 +167,7 @@ public class KartMovement : MonoBehaviour
             driftParticles = new ParticleSystem[] { particleSystems["L_Sparks"], particleSystems["R_Sparks"] };
             driftCloudParticles = new ParticleSystem[] { particleSystems["L_DriftClouds"], particleSystems["R_DriftClouds"] };
             trickParticles = particleSystems["Trick"];
+            sparkleParticles = particleSystems["Sparkle"];
         }
         catch
         {
@@ -177,6 +178,7 @@ public class KartMovement : MonoBehaviour
             driftParticles = new ParticleSystem[] { particle.Find("L_Sparks").GetComponent<ParticleSystem>(), particle.Find("R_Sparks").GetComponent<ParticleSystem>() };
             driftCloudParticles = new ParticleSystem[] { particle.Find("L_DriftClouds").GetComponent<ParticleSystem>(), particle.Find("R_DriftClouds").GetComponent<ParticleSystem>() };
             trickParticles = particle.Find("Trick").GetComponent<ParticleSystem>();
+            sparkleParticles = particle.Find("Sparkle").GetComponent<ParticleSystem>();
         }
 
         //Get Skid Marks
@@ -307,11 +309,12 @@ public class KartMovement : MonoBehaviour
             string[] ignoreTags = new string[] { "OffRoad", "Ground", "Kart", "Crate", "PowerUp" };
 
             int layerMask = ~((1 << 8) | (1 << 9) | (1 << 10) | (1 << 11));
+            Vector3 startPos = transform.position + Vector3.up;
 
             for (int i = -1; i <= 1; i += 2)
             {
-                Debug.DrawRay(transform.position, transform.forward * (2f * i), Color.red);
-                if (Physics.Raycast(transform.position, transform.forward * i, out hit, 2f, layerMask) && hit.transform.GetComponent<Collider>() != null && !hit.transform.GetComponent<Collider>().isTrigger)
+                Debug.DrawRay(startPos, transform.forward * (2f * i), Color.red);
+                if (Physics.Raycast(startPos, transform.forward * i, out hit, 2f, layerMask) && hit.transform.GetComponent<Collider>() != null && !hit.transform.GetComponent<Collider>().isTrigger)
                 {
                     bool ignore = false;
                     foreach (string tag in ignoreTags)
@@ -974,6 +977,16 @@ public class KartMovement : MonoBehaviour
         kartBody.localPosition = Vector3.zero;
 
         kartBodySliding = null;
+    }
+
+    public void ChangeLapis(int _amount)
+    {
+        lapisAmount += _amount;
+
+        if(_amount > 0 && sparkleParticles.isStopped)
+        {
+            sparkleParticles.Play();
+        }
     }
 
     public class KartWheel

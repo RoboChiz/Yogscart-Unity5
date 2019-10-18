@@ -21,7 +21,7 @@ public class Lapis : MonoBehaviour
 
         if(parent.GetComponent<KartMovement>() != null)
         {
-            parent.GetComponent<KartMovement>().lapisAmount++;
+            parent.GetComponent<KartMovement>().ChangeLapis(+1);
             GetComponent<AudioSource>().PlayOneShot(sounds[Random.Range(0, sounds.Length)]);
         }
 
